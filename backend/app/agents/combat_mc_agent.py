@@ -28,8 +28,21 @@ class CombatMCAgent:
 
     def _register_skills(self):
         """Register necessary skills for the Combat MC agent."""
-        # Will register skills once implemented
-        pass
+        try:
+            # Import plugins
+            from app.plugins.rules_engine_plugin import RulesEnginePlugin
+            
+            # Create plugin instances
+            rules_engine = RulesEnginePlugin()
+            
+            # Register plugins with the kernel
+            self.kernel.import_skill(rules_engine, "Rules")
+            
+            logger.info("Combat MC agent plugins registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering Combat MC agent plugins: {str(e)}")
+            # Continue without failing - we'll have reduced functionality
+            pass
 
     async def create_encounter(self, party_info: Dict[str, Any], narrative_context: Dict[str, Any]) -> Dict[str, Any]:
         """

@@ -24,8 +24,23 @@ class NarratorAgent:
 
     def _register_skills(self):
         """Register necessary skills for the Narrator agent."""
-        # Will register skills once implemented
-        pass
+        try:
+            # Import plugins
+            from app.plugins.narrative_memory_plugin import NarrativeMemoryPlugin
+            from app.plugins.rules_engine_plugin import RulesEnginePlugin
+            
+            # Create plugin instances
+            narrative_memory = NarrativeMemoryPlugin()
+            rules_engine = RulesEnginePlugin()
+            
+            # Register plugins with the kernel
+            self.kernel.import_skill(narrative_memory, "Memory")
+            self.kernel.import_skill(rules_engine, "Rules")
+            
+            logger.info("Narrator agent plugins registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering Narrator agent plugins: {str(e)}")
+            raise
 
     async def describe_scene(self, scene_context: Dict[str, Any]) -> str:
         """

@@ -208,11 +208,11 @@ While the Dungeon Master serves as the orchestrator, agents can communicate dire
 - Player engagement duration per session
 - Campaign completion rates
 - Character progression metrics
-- Narrative coherence and continuity
-- Combat balance and tactical satisfaction
-- Image generation quality and relevance
-- User satisfaction with agent responses
-- System stability and response times
+- Narrative coherence and continuity from player feedback
+- Combat balance and tactical satisfaction from player feedback
+- Image generation quality and relevance from player feedback
+- User satisfaction with agent responses from player feedback
+- System stability and response times based upon termianl data on execution as well as player feedback
 
 ## Conclusion
 

@@ -1,0 +1,19 @@
+[lint]
+select = ["E", "F", "B", "I", "N", "UP", "ANN", "S", "A", "COM", "C4", "T10", "RET", "SIM", "ERA"]
+ignore = ["ANN101", "ANN102"]  # Ignore missing self and cls type annotations
+
+[format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[lint.pydocstyle]
+convention = "google"
+
+[lint.per-file-ignores]
+"__init__.py" = ["E402", "F401"]  # Ignore import-related warnings in __init__ files
+"tests/*" = ["S101"]  # Allow assert in tests
+
+[lint.mccabe]
+max-complexity = 10

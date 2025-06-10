@@ -49,6 +49,47 @@ export interface Character {
   inventory: any[];
 }
 
+export interface Campaign {
+  id: string;
+  name: string;
+  setting: string;
+  tone: string;
+  homebrew_rules: string[];
+  characters: string[];
+  world_description?: string;
+  world_art?: any;
+}
+
+export interface CampaignCreateRequest {
+  name: string;
+  setting: string;
+  tone?: string;
+  homebrew_rules?: string[];
+}
+
+export interface PlayerInputRequest {
+  message: string;
+  character_id: string;
+  campaign_id: string;
+}
+
+export interface GameResponse {
+  message: string;
+  images: string[];
+  state_updates: any;
+  combat_updates: any | null;
+}
+
+export interface ImageGenerateRequest {
+  image_type: 'character_portrait' | 'scene_illustration' | 'item_visualization';
+  details: any;
+}
+
+export interface BattleMapRequest {
+  environment: any;
+  combat_context?: any;
+}
+
 export interface PlayerInputRequest {
   message: string;
   character_id: string;
@@ -89,6 +130,36 @@ export const sendPlayerInput = async (input: PlayerInputRequest): Promise<GameRe
     return response.data;
   } catch (error) {
     console.error('Error sending player input:', error);
+    throw error;
+  }
+};
+
+export const createCampaign = async (campaignData: CampaignCreateRequest): Promise<Campaign> => {
+  try {
+    const response = await apiClient.post('/game/campaign', campaignData);
+    return response.data;
+  } catch (error) {
+    console.error('Error creating campaign:', error);
+    throw error;
+  }
+};
+
+export const generateImage = async (imageRequest: ImageGenerateRequest): Promise<any> => {
+  try {
+    const response = await apiClient.post('/game/generate-image', imageRequest);
+    return response.data;
+  } catch (error) {
+    console.error('Error generating image:', error);
+    throw error;
+  }
+};
+
+export const generateBattleMap = async (mapRequest: BattleMapRequest): Promise<any> => {
+  try {
+    const response = await apiClient.post('/game/battle-map', mapRequest);
+    return response.data;
+  } catch (error) {
+    console.error('Error generating battle map:', error);
     throw error;
   }
 };

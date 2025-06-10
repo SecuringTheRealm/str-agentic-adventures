@@ -1,0 +1,75 @@
+.campaign-creation {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #2c3e50;
+  color: #ecf0f1;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.campaign-creation h2 {
+  color: #3498db;
+  margin-bottom: 20px;
+  text-align: center;
+  font-size: 1.8rem;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: #3498db;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #34495e;
+  border-radius: 4px;
+  background-color: #34495e;
+  color: #ecf0f1;
+  font-size: 16px;
+}
+
+.form-group textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.create-button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 4px;
+  background-color: #3498db;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.create-button:hover {
+  background-color: #2980b9;
+}
+
+.create-button:disabled {
+  background-color: #95a5a6;
+  cursor: not-allowed;
+}
+
+.error-message {
+  padding: 10px;
+  margin-bottom: 20px;
+  background-color: rgba(231, 76, 60, 0.2);
+  border-left: 4px solid #e74c3c;
+  border-radius: 4px;
+  color: #e74c3c;
+}

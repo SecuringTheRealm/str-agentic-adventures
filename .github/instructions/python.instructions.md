@@ -67,13 +67,6 @@ All code must follow the [general coding guidelines](./general-coding.instructio
 
 ## Security and Configuration
 
-### Environment Management
-
-- Store sensitive data in environment variables.
-- Never commit secrets or API keys.
-- Use Azure Key Vault for production secrets.
-- Secure all API endpoints with authentication.
-
 ### API Security
 
 - Validate all inputs using Pydantic.

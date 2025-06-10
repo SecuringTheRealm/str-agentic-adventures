@@ -6,13 +6,20 @@ from typing import Dict, Any, List, Optional
 
 from app.models.game_models import (
     CreateCharacterRequest,
+    CreateCampaignRequest,
     PlayerInput,
     GameResponse,
     CharacterSheet,
-    Campaign
+    Campaign,
+    GenerateImageRequest,
+    BattleMapRequest
 )
 from app.agents.dungeon_master_agent import dungeon_master
 from app.agents.scribe_agent import scribe
+from app.agents.narrator_agent import narrator
+from app.agents.combat_mc_agent import combat_mc
+from app.agents.combat_cartographer_agent import combat_cartographer
+from app.agents.artist_agent import artist
 
 router = APIRouter(tags=["game"])
 
@@ -55,6 +62,67 @@ async def get_character(character_id: str):
 
     return character
 
+@router.post("/campaign", response_model=Dict[str, Any])
+async def create_campaign(campaign_data: Dict[str, Any]):
+    """Create a new campaign."""
+    try:
+        campaign = await dungeon_master.create_campaign(campaign_data)
+
+        if "error" in campaign:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=campaign["error"]
+            )
+
+        return campaign
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create campaign: {str(e)}"
+        )
+
+@router.post("/generate-image", response_model=Dict[str, Any])
+async def generate_image(image_request: Dict[str, Any]):
+    """Generate an image based on the request details."""
+    try:
+        image_type = image_request.get("image_type")
+        details = image_request.get("details", {})
+        
+        if image_type == "character_portrait":
+            result = await artist.generate_character_portrait(details)
+        elif image_type == "scene_illustration":
+            result = await artist.illustrate_scene(details)
+        elif image_type == "item_visualization":
+            result = await artist.create_item_visualization(details)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Unsupported image type: {image_type}"
+            )
+
+        return result
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate image: {str(e)}"
+        )
+
+@router.post("/battle-map", response_model=Dict[str, Any])
+async def generate_battle_map(map_request: Dict[str, Any]):
+    """Generate a battle map based on environment details."""
+    try:
+        environment = map_request.get("environment", {})
+        combat_context = map_request.get("combat_context")
+        
+        battle_map = await combat_cartographer.generate_battle_map(environment, combat_context)
+        
+        return battle_map
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate battle map: {str(e)}"
+        )
+
 @router.post("/input", response_model=GameResponse)
 async def process_player_input(player_input: PlayerInput):
     """Process player input and get game response."""
@@ -78,13 +146,19 @@ async def process_player_input(player_input: PlayerInput):
         }
 
         # Process the input through the Dungeon Master agent
-        response = await dungeon_master.process_input(player_input.message, context)
+        dm_response = await dungeon_master.process_input(player_input.message, context)
 
-        # For now, return a simple response
+        # Transform the DM response to the GameResponse format
+        images = []
+        for visual in dm_response.get("visuals", []):
+            if visual and "image_url" in visual and visual["image_url"]:
+                images.append(visual["image_url"])
+
         return GameResponse(
-            message=response,
-            state_updates={},
-            combat_updates=None
+            message=dm_response.get("message", ""),
+            images=images,
+            state_updates=dm_response.get("state_updates", {}),
+            combat_updates=dm_response.get("combat_updates")
         )
     except HTTPException:
         raise
