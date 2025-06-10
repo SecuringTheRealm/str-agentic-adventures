@@ -96,7 +96,7 @@ While the Dungeon Master serves as the orchestrator, agents can communicate dire
 - **Chat Interface**: Primary interaction through natural language conversation
 - **Character Sheet Display**: Visual representation of character data available within the app
 - **Map Visualization**: Display battle maps and illustrations separate to the chat interface the player is interacting with
-- **Image Gallery**: Storage for generated imagery and campaign visuals separate to the chat interface by the application (not the AI) saving that image and updating the image URL
+- **Image Gallery**: Storage for generated artistic imagery and battle maps separate to the chat interface by the application (not the AI) saving that image and updating the image URL
 - **Dice Roll Visibility**: Numeric feedback for dice outcomes where the game has rolled on behalf of the player, at the request of the player
 - **Session History**: Summary record of game events and conversations
 
@@ -107,7 +107,7 @@ While the Dungeon Master serves as the orchestrator, agents can communicate dire
 
 1. Player describes desired campaign setting, tone, style and any homebrew rules
 2. Dungeon Master coordinates with Narrator to establish world and setting
-3. Artmaster generates world concept imagery which is then saved by the application, and then the image URL is updated in the 'Art' window of the webapp
+3. Artist generates world concept imagery which is then saved by the application, and then the image URL is updated in the 'art' window of the webapp
 4. Dungeon Master guides players through character creation process
 5. Scribe creates and populates templates for character creation based upon player instruction
 
@@ -116,21 +116,23 @@ While the Dungeon Master serves as the orchestrator, agents can communicate dire
 1. Player inputs action or statement
 2. Dungeon Master interprets and routes to appropriate agent(s)
 3. Agent(s) process request and generate responses
-4. Story Master updates narrative state as needed
-5. Quarter Master updates character/world data as needed
-6. Battle Master creates combat scenarios when triggered
-7. Art Master generates imagery for significant moments
+4. Narrator updates narrative state as needed
+5. Scribe updates character/world data as needed
+6. Combat MC creates combat scenarios when triggered and when applicable only
+7. Artist generates imagery for significant moments
 8. Dungeon Master synthesizes responses and presents to player
 
 ### Combat Workflow
 
-1. Battle Master establishes combat environment and participants
-2. Quarter Master provides character and NPC statistics
-3. Story Master provides narrative context
-4. Battle Master generates tactical map
-5. Art Master visualizes the battle scene
+1. Combat MC establishes combat environment and participants
+2. Scribe provides character and NPC statistics
+3. Narrator provides narrative context
+4. Combat Cartographer generates tactical map, and then the image URL is updated in the 'map' window of the webapp
+5. Artist visualizes the battle scene
 6. Combat rounds proceed through initiative order
-7. Dungeon Master narrates combat outcomes and effects
+7. Playertakes their actions and makes their decisions
+8. Dungeon Master narrates combat outcomes and effects
+9. Continue between Player and Combat MC working through each player and NPC's turns until the combat ends
 
 ## User Stories
 

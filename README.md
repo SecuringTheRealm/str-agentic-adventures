@@ -19,5 +19,30 @@ Many potential players face significant barriers to enjoying tabletop roleplayin
 
 These barriers prevent many interested players from experiencing the rich storytelling and immersive gameplay that TTRPGs can offer, resulting in a significant unmet demand in the market.
 
-## Architecture
-The Secure the Realm platform is built on the Python Microsoft Semantic Kernel framework, with a frontend in TypeScript. Semantic Kernel provides a multi-agent architecture, where each agent serves a specialized role in the tabletop RPG experience. Semantic Kernel will interface with Azure OpenAI LLMs using Python to enable the use of "plugins". This allows the LLMs to perform takes like storing and retrieving data. The Kernel enables the selection of the correct AI agent, function and plugin for the task at hand, rather than relying on a strict workflow.
+## Architecture & Technical Stack
+
+The Secure the Realm platform leverages:
+- **Frontend**: TypeScript & React for a responsive user interface
+- **Backend**: Python with Microsoft Semantic Kernel framework
+- **AI Integration**: Azure OpenAI LLMs via Semantic Kernel plugins
+- **Game Rules**: D&D 5e OGL SRD ruleset implementation
+- **Real-time Features**: Immediate response to player actions
+- **Data Management**: Structured storage for game elements and character data
+
+### Multi-Agent System
+
+Our architecture employs six specialized AI agents working in concert:
+
+1. **Dungeon Master Agent**: Orchestrates gameplay and coordinates other agents
+2. **Narrator Agent**: Manages campaign narratives and skill checks
+3. **Scribe Agent**: Handles character sheets and game data
+4. **Combat MC Agent**: Runs balanced combat encounters
+5. **Combat Cartographer Agent**: Generates tactical battle maps
+6. **Artist Agent**: Creates visual elements and character portraits
+
+The system supports:
+- Virtual dice rolling (d4-d100) with manual override
+- Complete character management including leveling and feats
+- Turn-based combat with initiative tracking
+- Rich visual aids and battle maps
+- Persistent campaign and character progression

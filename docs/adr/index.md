@@ -17,6 +17,11 @@ This directory contains Architecture Decision Records (ADRs) for the Agentic Adv
 | Number | Title | Status | Date | Description |
 |--------|-------|--------|------|-------------|
 | 0000 | [Using ADRs](template.md) | Accepted | 2025-06-10 | Template for architecture decisions |
+| 0001 | [Use Microsoft Semantic Kernel for Multi-Agent Architecture](0001-semantic-kernel-multi-agent-framework.md) | Accepted | 2025-06-10 | Selection of Microsoft Semantic Kernel as the foundation for our multi-agent system |
+| 0002 | [Specialized Multi-Agent Architecture for AI Dungeon Master](0002-specialized-multi-agent-architecture.md) | Accepted | 2025-06-10 | Approach for structuring the different AI agents in the system |
+| 0003 | [Data Storage Strategy for Game State and Assets](0003-data-storage-strategy.md) | Accepted | 2025-06-10 | Strategy for storing and managing game data and assets |
+| 0004 | [React and TypeScript Frontend Architecture](0004-react-typescript-frontend.md) | Accepted | 2025-06-10 | Selection of React with TypeScript for the frontend application |
+| 0005 | [Azure OpenAI Integration for AI Agents](0005-azure-openai-integration.md) | Accepted | 2025-06-10 | Approach for integrating Azure OpenAI services for AI capabilities |
 
 ## ADR Statuses
 
