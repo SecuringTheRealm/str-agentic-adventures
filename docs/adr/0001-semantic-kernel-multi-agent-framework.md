@@ -19,33 +19,33 @@ The AI Dungeon Master project requires a robust framework for implementing a mul
 
 * Option 1: Microsoft Semantic Kernel
     * Full-featured framework for building AI applications with plugin support
-    * Pros: 
+    * Pros:
       * Native integration with Azure OpenAI
       * Support for plugins ("skills") to extend LLM functionality
       * Connectors for various data sources
       * Support for both Python and TypeScript
       * Memory management capabilities
-    * Cons: 
+    * Cons:
       * Relatively new framework, still evolving
       * Learning curve for complex multi-agent scenarios
 
 * Option 2: LangChain
     * Popular framework for chaining LLM operations
-    * Pros: 
+    * Pros:
       * Large community and extensive documentation
       * Multiple connectors and tools
       * Support for Python and TypeScript
-    * Cons: 
+    * Cons:
       * Less native integration with Azure services
       * Agent communication requires more custom development
       * Not purpose-built for complex multi-agent orchestration
 
 * Option 3: Custom Agent Framework
     * Build our own framework specifically for the project
-    * Pros: 
+    * Pros:
       * Complete control over implementation details
       * Tailored to our specific requirements
-    * Cons: 
+    * Cons:
       * Significant development overhead
       * Need to reinvent solutions to common problems
       * Maintenance burden
