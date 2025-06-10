@@ -67,16 +67,7 @@ The Secure the Realm platform is built on the Python Microsoft Semantic Kernel f
 
 ## Communication Flow
 
-While the Dungeon Master serves as the orchestrator, agents can communicate directly with each other when appropriate wit the below as just one example:
-
-```
-Player Input → Dungeon Master → Routes to appropriate agent(s)
-                    ↓
-Narrator ↔ Scribe ↔ Combat MC ↔ Artist
-                    ↓
-                Dungeon Master → Player Output
-```
-
+While the Dungeon Master serves as the orchestrator, agents can communicate directly with each other when appropriate:
 - Agents share context and request information from each other as needed
 - The Dungeon Master synthesizes responses from multiple agents into coherent player-facing output
 - Each agent maintains its specialized knowledge domain while contributing to the whole experience
