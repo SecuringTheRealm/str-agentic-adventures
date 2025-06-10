@@ -46,17 +46,16 @@
       cd ..
     fi
 
-# Set up environment variables template
+# Set up environment variables from GitHub secrets (for GitHub Actions context)
 - name: Setup environment configuration
   run: |
-    # Create .env file from template if it exists
-    if [ -f ".env.example" ]; then
-      cp .env.example .env
-      echo "Created .env file from template. Please configure with your API keys."
-    elif [ -f ".env.template" ]; then
-      cp .env.template .env
-      echo "Created .env file from template. Please configure with your API keys."
-    fi
+    # In GitHub Actions context, environment variables should come from secrets
+    # Example: Create .env file with secrets if needed by the application
+    echo "Environment setup for GitHub Actions context"
+    echo "# Use GitHub secrets to populate environment variables in workflows:"
+    echo "# env:"
+    echo "#   API_KEY: \${{ secrets.API_KEY }}"
+    echo "#   DATABASE_URL: \${{ secrets.DATABASE_URL }}"
 
 # Install development tools
 - name: Install development tools
