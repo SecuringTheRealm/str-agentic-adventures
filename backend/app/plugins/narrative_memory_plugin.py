@@ -7,8 +7,8 @@ from typing import Dict, Any, List, Optional
 import json
 import datetime
 
-from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
-from semantic_kernel.orchestration.sk_context import SKContext
+from semantic_kernel.functions import kernel_function
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 logger = logging.getLogger(__name__)
 
@@ -26,8 +26,10 @@ class NarrativeMemoryPlugin:
         self.events = []
         self.npcs = {}
         self.locations = {}
+        self.story_arcs = {}  # For tracking story arc memories
+        self.character_arcs = {}  # For tracking character development arcs
 
-    @sk_function(
+    @kernel_function(
         description="Store a narrative fact in memory.",
         name="remember_fact"
     )
@@ -71,7 +73,7 @@ class NarrativeMemoryPlugin:
                 "message": f"Failed to store fact: {str(e)}"
             }
 
-    @sk_function(
+    @kernel_function(
         description="Record a narrative event in the campaign timeline.",
         name="record_event"
     )
@@ -119,7 +121,7 @@ class NarrativeMemoryPlugin:
                 "message": f"Failed to record event: {str(e)}"
             }
 
-    @sk_function(
+    @kernel_function(
         description="Retrieve facts related to a specific query or category.",
         name="recall_facts"
     )
@@ -165,7 +167,7 @@ class NarrativeMemoryPlugin:
                 "facts": []
             }
 
-    @sk_function(
+    @kernel_function(
         description="Retrieve a timeline of recent events.",
         name="recall_timeline"
     )
@@ -212,7 +214,7 @@ class NarrativeMemoryPlugin:
                 "events": []
             }
 
-    @sk_function(
+    @kernel_function(
         description="Add or update an NPC in the campaign.",
         name="update_npc"
     )
@@ -264,7 +266,7 @@ class NarrativeMemoryPlugin:
                 "message": f"Failed to update NPC: {str(e)}"
             }
 
-    @sk_function(
+    @kernel_function(
         description="Retrieve information about a specific NPC.",
         name="get_npc"
     )
@@ -299,4 +301,152 @@ class NarrativeMemoryPlugin:
             return {
                 "status": "error",
                 "message": f"Failed to retrieve NPC: {str(e)}"
+            }
+
+    @kernel_function(
+        description="Track progress of a story arc in the narrative memory.",
+        name="track_story_arc"
+    )
+    def track_story_arc(self, arc_id: str, arc_title: str, progress: str, 
+                       key_events: str = "", character_impact: str = "") -> Dict[str, Any]:
+        """
+        Track the progress and impact of a story arc.
+        
+        Args:
+            arc_id: Unique identifier for the story arc
+            arc_title: Title of the story arc
+            progress: Current progress description
+            key_events: Comma-separated list of key events in this arc
+            character_impact: How this arc has impacted character development
+            
+        Returns:
+            Dict[str, Any]: Confirmation of story arc tracking
+        """
+        try:
+            # Parse key events
+            events_list = [e.strip() for e in key_events.split(",") if e.strip()]
+            
+            # Create or update story arc memory
+            if arc_id in self.story_arcs:
+                arc_memory = self.story_arcs[arc_id]
+                arc_memory["progress"] = progress
+                arc_memory["key_events"].extend(events_list)
+                if character_impact:
+                    arc_memory["character_impact"] = character_impact
+                arc_memory["last_updated"] = datetime.datetime.now().isoformat()
+            else:
+                arc_memory = {
+                    "id": arc_id,
+                    "title": arc_title,
+                    "progress": progress,
+                    "key_events": events_list,
+                    "character_impact": character_impact,
+                    "created_at": datetime.datetime.now().isoformat(),
+                    "last_updated": datetime.datetime.now().isoformat()
+                }
+                self.story_arcs[arc_id] = arc_memory
+            
+            return {
+                "status": "success",
+                "message": f"Story arc '{arc_title}' progress tracked",
+                "arc_id": arc_id
+            }
+        except Exception as e:
+            logger.error(f"Error tracking story arc: {str(e)}")
+            return {
+                "status": "error",
+                "message": f"Failed to track story arc: {str(e)}"
+            }
+
+    @kernel_function(
+        description="Record a character development moment or arc progression.",
+        name="record_character_development"
+    )
+    def record_character_development(self, character_id: str, development_type: str,
+                                   description: str, story_arc_id: str = "") -> Dict[str, Any]:
+        """
+        Record character development moments and personal growth arcs.
+        
+        Args:
+            character_id: ID of the character
+            development_type: Type of development (personality, skills, relationships, backstory)
+            description: Description of the development
+            story_arc_id: Associated story arc ID (optional)
+            
+        Returns:
+            Dict[str, Any]: Confirmation of character development recording
+        """
+        try:
+            development_id = f"dev_{len(self.character_arcs) + 1}"
+            
+            # Create character development entry
+            development = {
+                "id": development_id,
+                "character_id": character_id,
+                "type": development_type,
+                "description": description,
+                "story_arc_id": story_arc_id,
+                "timestamp": datetime.datetime.now().isoformat()
+            }
+            
+            # Track in character arcs
+            if character_id not in self.character_arcs:
+                self.character_arcs[character_id] = []
+            
+            self.character_arcs[character_id].append(development)
+            
+            return {
+                "status": "success", 
+                "message": "Character development recorded",
+                "development_id": development_id
+            }
+        except Exception as e:
+            logger.error(f"Error recording character development: {str(e)}")
+            return {
+                "status": "error",
+                "message": f"Failed to record character development: {str(e)}"
+            }
+
+    @kernel_function(
+        description="Retrieve story arc memories for narrative continuity.",
+        name="recall_story_arcs"
+    )
+    def recall_story_arcs(self, character_id: str = "", status: str = "") -> Dict[str, Any]:
+        """
+        Retrieve story arc memories for narrative continuity.
+        
+        Args:
+            character_id: Filter by character involvement (optional)
+            status: Filter by arc status like "active", "completed" (optional)
+            
+        Returns:
+            Dict[str, Any]: Story arc memories
+        """
+        try:
+            filtered_arcs = []
+            
+            for arc_id, arc_memory in self.story_arcs.items():
+                # Apply filters (simplified filtering for now)
+                matches_character = not character_id or character_id in arc_memory.get("character_impact", "")
+                matches_status = not status or status in arc_memory.get("progress", "").lower()
+                
+                if matches_character and matches_status:
+                    # Update last accessed
+                    arc_memory["last_accessed"] = datetime.datetime.now().isoformat()
+                    filtered_arcs.append(arc_memory)
+            
+            # Sort by last updated
+            filtered_arcs.sort(key=lambda a: a["last_updated"], reverse=True)
+            
+            return {
+                "status": "success",
+                "story_arcs": filtered_arcs,
+                "count": len(filtered_arcs)
+            }
+        except Exception as e:
+            logger.error(f"Error recalling story arcs: {str(e)}")
+            return {
+                "status": "error",
+                "message": f"Failed to recall story arcs: {str(e)}",
+                "story_arcs": []
             }
