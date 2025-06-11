@@ -2,12 +2,11 @@
 Tests for the narrative generation system.
 """
 import pytest
-import asyncio
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 from app.plugins.narrative_generation_plugin import NarrativeGenerationPlugin
 from app.plugins.narrative_memory_plugin import NarrativeMemoryPlugin
 from app.agents.narrator_agent import NarratorAgent
-from app.models.game_models import StoryArc, PlotPoint, NarrativeChoice, NarrativeState
+from app.models.game_models import NarrativeState
 
 
 class TestNarrativeGenerationPlugin:

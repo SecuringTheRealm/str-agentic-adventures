@@ -2,11 +2,8 @@
 Dungeon Master Agent - The orchestrator agent that coordinates all other agents.
 """
 import logging
-from typing import Dict, Any, List, Tuple, Optional
-import json
+from typing import Dict, Any, Tuple
 
-import semantic_kernel as sk
-from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.tools.tool_manager import ToolManager
 
 from app.kernel_setup import kernel_manager
@@ -153,7 +150,7 @@ class DungeonMasterAgent:
                     context.get("character_id"), 
                     input_details
                 )
-                response["message"] = f"Your character has been updated."
+                response["message"] = "Your character has been updated."
                 response["state_updates"] = {"character": character_result}
                 
             elif input_type == "combat":

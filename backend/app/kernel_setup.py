@@ -1,9 +1,7 @@
 """
 Semantic Kernel setup and initialization for the AI Dungeon Master.
 """
-import os
 import logging
-from typing import Optional
 
 import semantic_kernel as sk
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, AzureTextEmbedding

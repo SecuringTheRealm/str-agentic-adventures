@@ -22,6 +22,7 @@ This directory contains Architecture Decision Records (ADRs) for the Agentic Adv
 | 0003 | [Data Storage Strategy for Game State and Assets](0003-data-storage-strategy.md) | Accepted | 2025-06-10 | Strategy for storing and managing game data and assets |
 | 0004 | [React and TypeScript Frontend Architecture](0004-react-typescript-frontend.md) | Accepted | 2025-06-10 | Selection of React with TypeScript for the frontend application |
 | 0005 | [Azure OpenAI Integration for AI Agents](0005-azure-openai-integration.md) | Accepted | 2025-06-10 | Approach for integrating Azure OpenAI services for AI capabilities |
+| 0006 | [D&D 5e Character Progression System Implementation](0006-dnd-5e-character-progression-system.md) | Accepted | 2025-06-11 | Implementation of character progression mechanics |
 
 ## ADR Statuses
 
