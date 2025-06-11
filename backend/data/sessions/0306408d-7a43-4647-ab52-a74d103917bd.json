@@ -1,0 +1,62 @@
+{
+  "id": "0306408d-7a43-4647-ab52-a74d103917bd",
+  "campaign_id": "demo_campaign",
+  "name": "Full Demo Session",
+  "created_at": "2025-06-11T05:30:02.775920",
+  "last_saved": "2025-06-11T05:30:02.778356",
+  "characters": {},
+  "narrative_memory": {
+    "memories": {},
+    "events": [],
+    "npcs": {},
+    "locations": {}
+  },
+  "campaign_state": {},
+  "session_log": [],
+  "scribe": {
+    "characters": {
+      "character_1": {
+        "id": "character_1",
+        "name": "Aragorn",
+        "race": "Human",
+        "class": "Ranger",
+        "level": 5,
+        "abilities": {
+          "strength": 16,
+          "dexterity": 15,
+          "constitution": 14,
+          "intelligence": 10,
+          "wisdom": 10,
+          "charisma": 10
+        },
+        "hitPoints": {
+          "current": 10,
+          "maximum": 10
+        },
+        "inventory": []
+      },
+      "character_2": {
+        "id": "character_2",
+        "name": "Legolas",
+        "race": "Elf",
+        "class": "Fighter",
+        "level": 5,
+        "abilities": {
+          "strength": 12,
+          "dexterity": 18,
+          "constitution": 12,
+          "intelligence": 10,
+          "wisdom": 10,
+          "charisma": 10
+        },
+        "hitPoints": {
+          "current": 10,
+          "maximum": 10
+        },
+        "inventory": []
+      }
+    },
+    "npcs": {},
+    "inventory": {}
+  }
+}

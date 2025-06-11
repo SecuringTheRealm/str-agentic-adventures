@@ -1,0 +1,16 @@
+{
+  "id": "62e3d4f4-2092-49c1-ac42-22030a845641",
+  "campaign_id": "test_campaign_456",
+  "name": "API Test Session",
+  "created_at": "2025-06-11T05:29:46.917266",
+  "last_saved": "2025-06-11T05:29:46.917273",
+  "characters": {},
+  "narrative_memory": {
+    "memories": {},
+    "events": [],
+    "npcs": {},
+    "locations": {}
+  },
+  "campaign_state": {},
+  "session_log": []
+}

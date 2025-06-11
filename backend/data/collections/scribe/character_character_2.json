@@ -1,13 +1,13 @@
 {
-  "id": "character_1",
-  "name": "Aragorn",
-  "race": "Human",
-  "class": "Ranger",
+  "id": "character_2",
+  "name": "Legolas",
+  "race": "Elf",
+  "class": "Fighter",
   "level": 5,
   "abilities": {
-    "strength": 16,
-    "dexterity": 15,
-    "constitution": 14,
+    "strength": 12,
+    "dexterity": 18,
+    "constitution": 12,
     "intelligence": 10,
     "wisdom": 10,
     "charisma": 10
