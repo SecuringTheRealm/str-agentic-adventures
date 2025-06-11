@@ -1,5 +1,5 @@
 # str-agentic-adventures
-> AI-powered web app for tabletop RPGs that replaces the human Dungeon Master while maintaining creativity, flexibility, and immersion.
+ > AI-powered web app for tabletop RPGs that replaces the human Dungeon Master while maintaining creativity, flexibility, and immersion.
 
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/SecuringTheRealm/str-agentic-adventures/CI)
 ![GitHub issues](https://img.shields.io/github/issues/SecuringTheRealm/str-agentic-adventures)
@@ -9,7 +9,9 @@
 [![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=fff)](#)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=fff)](#)
 
-Secure the Realm will democratize access to high-quality tabletop roleplaying experiences by providing an AI-powered platform that eliminates the need for a human Dungeon Master while preserving the creativity, flexibility, and immersion of traditional TTRPGs. Our vision is to create a system where anyone, anywhere can instantly jump into a personalized adventure tailored to their preferences, play style, and available time. Through specialized AI agents working in concert, we will deliver a seamless, engaging, and visually rich gaming experience that adapts to player choices and creates memorable stories worth sharing.
+## Overview
+
+Secure the Realm democratizes access to high-quality tabletop roleplaying experiences. The platform removes the need for a human Dungeon Master while preserving the creativity, flexibility, and immersion of traditional games. Anyone can instantly jump into an adventure tailored to their preferences and available time. Specialized AI agents work together to deliver a seamless and visually rich experience that adapts to player choices.
 
 ## Background and Problem Statement
 
@@ -46,3 +48,43 @@ The system supports:
 - Turn-based combat with initiative tracking
 - Rich visual aids and battle maps
 - Persistent campaign and character progression
+
+## Deployment to Azure
+
+This project uses the **Azure Developer CLI (azd)** for provisioning cloud resources.
+
+1. Install [azd](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/install-azd?WT.mc_id=AI-MVP-5004204).
+2. Sign in to your Azure account:
+   ```bash
+   azd auth login
+   ```
+3. Deploy all infrastructure and application code:
+   ```bash
+   azd up
+   ```
+   The command creates or updates Azure resources and then builds and deploys the app.
+
+## Running the Application Locally
+
+Start the backend and frontend separately:
+
+```bash
+# Backend
+cd backend
+./start.sh
+
+# Frontend
+cd ../frontend
+npm install
+npm start
+```
+The frontend is served at `http://localhost:3000` and expects the backend on `http://localhost:8000`.
+
+## Running Tests
+
+Execute the backend test suite with `pytest`:
+
+```bash
+cd backend
+python -m pytest tests/ -v
+```
