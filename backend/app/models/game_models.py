@@ -181,3 +181,62 @@ class GenerateImageRequest(BaseModel):
 class BattleMapRequest(BaseModel):
     environment: Dict[str, Any]
     combat_context: Optional[Dict[str, Any]] = None
+
+# Narrative Generation Models
+class NarrativeChoice(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    text: str
+    description: Optional[str] = None
+    consequences: Dict[str, Any] = {}
+    requirements: Dict[str, Any] = {}  # Conditions that must be met to show this choice
+    weight: float = 1.0  # Probability weight for random selection
+
+class PlotPoint(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    title: str
+    description: str
+    type: str  # "introduction", "conflict", "climax", "resolution", "subplot"
+    status: str = "pending"  # "pending", "active", "completed", "skipped"
+    dependencies: List[str] = []  # IDs of plot points that must be completed first
+    triggers: Dict[str, Any] = {}  # Conditions that activate this plot point
+    outcomes: Dict[str, Any] = {}  # Results when this plot point is completed
+    importance: int = 5  # 1-10 scale
+    estimated_duration: Optional[int] = None  # Expected number of scenes/sessions
+
+class StoryArc(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    title: str
+    description: str
+    type: str  # "main", "side", "character", "world"
+    status: str = "planning"  # "planning", "active", "paused", "completed"
+    plot_points: List[str] = []  # PlotPoint IDs in order
+    current_point: Optional[str] = None  # Current active plot point ID
+    characters_involved: List[str] = []
+    themes: List[str] = []
+    estimated_length: Optional[int] = None  # Expected number of sessions
+    player_choices: List[str] = []  # NarrativeChoice IDs that influenced this arc
+
+class NarrativeState(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    campaign_id: str
+    current_scene: Optional[str] = None
+    active_story_arcs: List[str] = []  # StoryArc IDs
+    completed_story_arcs: List[str] = []  # StoryArc IDs  
+    pending_choices: List[str] = []  # NarrativeChoice IDs available to players
+    narrative_flags: Dict[str, Any] = {}  # Story flags and variables
+    character_relationships: Dict[str, Dict[str, Any]] = {}  # Character interaction history
+    world_state: Dict[str, Any] = {}  # Current state of locations, factions, etc.
+    last_updated: datetime = Field(default_factory=datetime.now)
+
+class NarrativeEvent(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    title: str
+    description: str
+    event_type: str  # "choice_made", "plot_point_completed", "character_interaction", "world_change"
+    timestamp: datetime = Field(default_factory=datetime.now)
+    characters_involved: List[str] = []
+    location: Optional[str] = None
+    choices_made: List[str] = []  # NarrativeChoice IDs
+    consequences: Dict[str, Any] = {}
+    story_arc_id: Optional[str] = None
+    plot_point_id: Optional[str] = None
