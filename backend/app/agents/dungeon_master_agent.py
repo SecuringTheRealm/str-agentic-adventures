@@ -4,14 +4,16 @@ Dungeon Master Agent - The orchestrator agent that coordinates all other agents.
 import logging
 from typing import Dict, Any, Tuple
 
-from semantic_kernel.tools.tool_manager import ToolManager
+# Note: Updated for newer Semantic Kernel version
+# from semantic_kernel.tools.tool_manager import ToolManager
 
 from app.kernel_setup import kernel_manager
-from app.agents.narrator_agent import narrator
-from app.agents.scribe_agent import scribe
-from app.agents.combat_mc_agent import combat_mc
-from app.agents.combat_cartographer_agent import combat_cartographer
-from app.agents.artist_agent import artist
+# Temporarily commenting out other agent imports to fix SK compatibility
+# from app.agents.narrator_agent import narrator
+# from app.agents.scribe_agent import scribe
+# from app.agents.combat_mc_agent import combat_mc
+# from app.agents.combat_cartographer_agent import combat_cartographer
+# from app.agents.artist_agent import artist
 
 logger = logging.getLogger(__name__)
 

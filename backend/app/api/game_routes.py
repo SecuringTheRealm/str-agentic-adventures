@@ -2,7 +2,8 @@
 API routes for the AI Dungeon Master application.
 """
 from fastapi import APIRouter, HTTPException, status
-from typing import Dict, Any
+from typing import Dict, Any, List
+from datetime import datetime
 
 from app.models.game_models import (
     CreateCharacterRequest,
@@ -354,3 +355,339 @@ async def input_manual_roll(manual_data: Dict[str, Any]):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to input manual roll: {str(e)}"
         )
+
+# Campaign creation and world generation endpoints
+@router.post("/campaign/generate-world", response_model=Dict[str, Any])
+async def generate_campaign_world(campaign_data: Dict[str, Any]):
+    """Generate world description and setting for a new campaign."""
+    try:
+        campaign_name = campaign_data.get("name", "Unnamed Campaign")
+        setting = campaign_data.get("setting", "fantasy")
+        tone = campaign_data.get("tone", "heroic")
+        homebrew_rules = campaign_data.get("homebrew_rules", [])
+        
+        # Generate world description based on inputs
+        world_description = await generate_world_description(campaign_name, setting, tone, homebrew_rules)
+        
+        return {
+            "world_description": world_description,
+            "setting": setting,
+            "tone": tone,
+            "generated_elements": {
+                "major_locations": generate_major_locations(setting),
+                "notable_npcs": generate_notable_npcs(setting, tone),
+                "plot_hooks": generate_plot_hooks(setting, tone),
+                "world_lore": generate_world_lore(setting)
+            }
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate campaign world: {str(e)}"
+        )
+
+@router.post("/campaign/{campaign_id}/start-session", response_model=Dict[str, Any])
+async def start_game_session(campaign_id: str, session_data: Dict[str, Any]):
+    """Start a new game session for a campaign."""
+    try:
+        character_ids = session_data.get("character_ids", [])
+        session_type = session_data.get("type", "exploration")  # exploration, combat, social
+        
+        # Initialize session state
+        session_state = {
+            "session_id": f"session_{campaign_id}_{hash(str(character_ids))}",
+            "campaign_id": campaign_id,
+            "character_ids": character_ids,
+            "type": session_type,
+            "status": "active",
+            "current_scene": generate_opening_scene(session_type),
+            "available_actions": generate_available_actions(session_type),
+            "scene_count": 1,
+            "started_at": str(datetime.now())
+        }
+        
+        return session_state
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to start game session: {str(e)}"
+        )
+
+@router.post("/session/{session_id}/action", response_model=Dict[str, Any])
+async def process_player_action(session_id: str, action_data: Dict[str, Any]):
+    """Process a player action within a game session."""
+    try:
+        action_type = action_data.get("type", "general")
+        description = action_data.get("description", "")
+        character_id = action_data.get("character_id")
+        dice_rolls = action_data.get("dice_rolls", [])
+        
+        # Process the action based on type
+        if action_type == "combat":
+            result = await process_combat_action(session_id, character_id, description, dice_rolls)
+        elif action_type == "skill_check":
+            result = await process_skill_check(session_id, character_id, description, dice_rolls)
+        elif action_type == "exploration":
+            result = await process_exploration_action(session_id, character_id, description)
+        else:
+            result = await process_general_action(session_id, character_id, description)
+        
+        # Update session state
+        result["session_id"] = session_id
+        result["timestamp"] = str(datetime.now())
+        
+        return result
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to process player action: {str(e)}"
+        )
+
+# Combat workflow endpoints
+@router.post("/combat/initialize", response_model=Dict[str, Any])
+async def initialize_combat(combat_data: Dict[str, Any]):
+    """Initialize a new combat encounter."""
+    try:
+        session_id = combat_data.get("session_id")
+        participants = combat_data.get("participants", [])
+        environment = combat_data.get("environment", "standard")
+        
+        # Generate initiative order
+        initiative_order = []
+        for participant in participants:
+            if participant.get("type") == "player":
+                # Players roll initiative
+                from app.plugins.rules_engine_plugin import RulesEnginePlugin
+                rules_engine = RulesEnginePlugin()
+                character = await scribe.get_character(participant["character_id"])
+                if "error" not in character:
+                    dex_modifier = (character["abilities"]["dexterity"] - 10) // 2
+                    initiative_roll = rules_engine.roll_dice("1d20")
+                    initiative_total = initiative_roll["total"] + dex_modifier
+                else:
+                    initiative_total = 10  # Default if character not found
+                
+                initiative_order.append({
+                    "type": "player",
+                    "id": participant["character_id"],
+                    "name": participant.get("name", "Player"),
+                    "initiative": initiative_total
+                })
+            else:
+                # NPCs/enemies get random initiative
+                from random import randint
+                initiative_order.append({
+                    "type": "npc",
+                    "id": participant["id"],
+                    "name": participant.get("name", "NPC"),
+                    "initiative": randint(1, 20) + participant.get("dex_modifier", 0)
+                })
+        
+        # Sort by initiative (highest first)
+        initiative_order.sort(key=lambda x: x["initiative"], reverse=True)
+        
+        combat_state = {
+            "combat_id": f"combat_{session_id}_{hash(str(participants))}",
+            "session_id": session_id,
+            "status": "active",
+            "round": 1,
+            "current_turn": 0,
+            "initiative_order": initiative_order,
+            "environment": environment,
+            "battle_map_requested": True,
+            "started_at": str(datetime.now())
+        }
+        
+        return combat_state
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to initialize combat: {str(e)}"
+        )
+
+@router.post("/combat/{combat_id}/turn", response_model=Dict[str, Any])
+async def process_combat_turn(combat_id: str, turn_data: Dict[str, Any]):
+    """Process a single combat turn."""
+    try:
+        action_type = turn_data.get("action", "attack")  # attack, move, spell, item, etc.
+        target_id = turn_data.get("target_id")
+        character_id = turn_data.get("character_id")
+        dice_result = turn_data.get("dice_result")
+        
+        # Process the combat action
+        turn_result = {
+            "combat_id": combat_id,
+            "character_id": character_id,
+            "action": action_type,
+            "target_id": target_id,
+            "success": False,
+            "damage": 0,
+            "description": "",
+            "next_turn": True
+        }
+        
+        if action_type == "attack" and dice_result:
+            # Process attack
+            target_ac = turn_data.get("target_ac", 15)  # Default AC
+            if dice_result["total"] >= target_ac:
+                # Hit! Calculate damage
+                damage_dice = turn_data.get("damage_dice", "1d6")
+                from app.plugins.rules_engine_plugin import RulesEnginePlugin
+                rules_engine = RulesEnginePlugin()
+                damage_result = rules_engine.roll_dice(damage_dice)
+                
+                turn_result.update({
+                    "success": True,
+                    "damage": damage_result["total"],
+                    "description": f"Attack hits for {damage_result['total']} damage!",
+                    "damage_roll": damage_result
+                })
+            else:
+                turn_result.update({
+                    "success": False,
+                    "description": f"Attack misses (rolled {dice_result['total']} vs AC {target_ac})"
+                })
+        
+        turn_result["timestamp"] = str(datetime.now())
+        return turn_result
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to process combat turn: {str(e)}"
+        )
+
+# Helper functions for campaign generation
+async def generate_world_description(name: str, setting: str, tone: str, homebrew_rules: List[str]) -> str:
+    """Generate a world description for the campaign."""
+    descriptions = {
+        "fantasy": f"The realm of {name} is a land of magic and wonder, where ancient forests hide forgotten secrets and mighty kingdoms rise and fall with the tides of time.",
+        "urban": f"The sprawling metropolis of {name} is a city of shadows and neon, where corporate towers pierce the smog-filled sky and danger lurks in every alley.",
+        "post_apocalyptic": f"The wasteland of {name} stretches endlessly under a poisoned sky, where survivors eke out existence among the ruins of civilization.",
+        "space": f"The star system of {name} spans multiple worlds and space stations, where alien civilizations and human colonies struggle for dominance among the stars."
+    }
+    
+    base_description = descriptions.get(setting, f"The world of {name} awaits your exploration.")
+    
+    if tone == "dark":
+        base_description += " Dark forces move in the shadows, and hope is a precious commodity."
+    elif tone == "heroic":
+        base_description += " Heroes are needed to stand against the forces of darkness and protect the innocent."
+    elif tone == "comedic":
+        base_description += " Adventure and mishaps await around every corner in this whimsical realm."
+    
+    if homebrew_rules:
+        base_description += f" Special rules govern this realm: {', '.join(homebrew_rules)}."
+    
+    return base_description
+
+def generate_major_locations(setting: str) -> List[Dict[str, str]]:
+    """Generate major locations for the campaign world."""
+    locations = {
+        "fantasy": [
+            {"name": "The Crystal Caverns", "type": "dungeon", "description": "Ancient caves filled with magical crystals and dangerous creatures."},
+            {"name": "Goldenheart City", "type": "city", "description": "A bustling trade hub ruled by merchant princes."},
+            {"name": "The Whispering Woods", "type": "wilderness", "description": "A mystical forest where the trees themselves are said to speak."}
+        ],
+        "urban": [
+            {"name": "The Undercity", "type": "district", "description": "A lawless underground network of tunnels and abandoned stations."},
+            {"name": "Corporate Plaza", "type": "building", "description": "The gleaming headquarters of the city's most powerful corporations."},
+            {"name": "The Neon Strip", "type": "district", "description": "A vibrant entertainment district that never sleeps."}
+        ]
+    }
+    return locations.get(setting, [])
+
+def generate_notable_npcs(setting: str, tone: str) -> List[Dict[str, str]]:
+    """Generate notable NPCs for the campaign."""
+    npcs = [
+        {"name": "Sage Meridian", "role": "mentor", "description": "An wise old scholar with secrets of the past."},
+        {"name": "Captain Redhawk", "role": "ally", "description": "A brave leader who fights for justice."},
+        {"name": "The Shadow Broker", "role": "neutral", "description": "A mysterious figure who trades in information."}
+    ]
+    
+    if tone == "dark":
+        npcs.append({"name": "Lord Malachar", "role": "antagonist", "description": "A cruel tyrant who rules through fear."})
+    elif tone == "comedic":
+        npcs.append({"name": "Bumblethorne the Accident-Prone", "role": "comic relief", "description": "A well-meaning wizard whose spells rarely work as intended."})
+    
+    return npcs
+
+def generate_plot_hooks(setting: str, tone: str) -> List[str]:
+    """Generate plot hooks for the campaign."""
+    hooks = [
+        "Ancient artifacts have been stolen from the museum, and the thieves left behind only cryptic symbols.",
+        "Strange disappearances plague the local area, and survivors speak of shadowy figures in the night.",
+        "A powerful ally has gone missing, and their last known location was a dangerous territory."
+    ]
+    return hooks
+
+def generate_world_lore(setting: str) -> List[str]:
+    """Generate world lore elements."""
+    lore = [
+        "Long ago, a great cataclysm reshaped the world, leaving scars that still influence events today.",
+        "An ancient prophecy speaks of heroes who will arise in the realm's darkest hour.",
+        "Hidden throughout the world are artifacts of immense power, sought by many but understood by few."
+    ]
+    return lore
+
+def generate_opening_scene(session_type: str) -> str:
+    """Generate an opening scene for a game session."""
+    scenes = {
+        "exploration": "You find yourselves at the entrance to an unexplored region, with adventure calling from beyond.",
+        "combat": "Danger approaches! Ready your weapons and prepare for battle!",
+        "social": "You enter a bustling tavern where information and intrigue flow as freely as the ale."
+    }
+    return scenes.get(session_type, "Your adventure begins...")
+
+def generate_available_actions(session_type: str) -> List[str]:
+    """Generate available actions for a session type."""
+    actions = {
+        "exploration": ["Investigate the area", "Search for clues", "Move to a new location", "Rest and recover"],
+        "combat": ["Attack an enemy", "Cast a spell", "Use an item", "Move to a new position", "Defend"],
+        "social": ["Start a conversation", "Gather information", "Make a deal", "Intimidate someone"]
+    }
+    return actions.get(session_type, ["Take an action"])
+
+# Individual action processors
+async def process_combat_action(session_id: str, character_id: str, description: str, dice_rolls: List[Dict]) -> Dict[str, Any]:
+    """Process a combat action."""
+    return {
+        "type": "combat",
+        "description": description,
+        "result": "Combat action processed - dice rolls applied",
+        "dice_rolls": dice_rolls,
+        "effects": ["Damage dealt", "Position changed"],
+        "next_actions": ["Continue combat", "End turn"]
+    }
+
+async def process_skill_check(session_id: str, character_id: str, description: str, dice_rolls: List[Dict]) -> Dict[str, Any]:
+    """Process a skill check action."""
+    success = any(roll.get("total", 0) >= 15 for roll in dice_rolls) if dice_rolls else False
+    return {
+        "type": "skill_check",
+        "description": description,
+        "result": "Success!" if success else "Failure!",
+        "success": success,
+        "dice_rolls": dice_rolls,
+        "next_actions": ["Continue exploring", "Try a different approach"]
+    }
+
+async def process_exploration_action(session_id: str, character_id: str, description: str) -> Dict[str, Any]:
+    """Process an exploration action."""
+    return {
+        "type": "exploration",
+        "description": description,
+        "result": "You discover something interesting in your exploration.",
+        "discoveries": ["A hidden passage", "An ancient inscription", "Signs of recent activity"],
+        "next_actions": ["Investigate further", "Move to a new area", "Rest here"]
+    }
+
+async def process_general_action(session_id: str, character_id: str, description: str) -> Dict[str, Any]:
+    """Process a general action."""
+    return {
+        "type": "general",
+        "description": description,
+        "result": "Your action has consequences that ripple through the world.",
+        "effects": ["The situation changes", "New opportunities arise"],
+        "next_actions": ["Continue the adventure", "Try something else"]
+    }
