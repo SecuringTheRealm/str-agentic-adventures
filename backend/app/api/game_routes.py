@@ -1,23 +1,18 @@
 """
 API routes for the AI Dungeon Master application.
 """
-from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks, status
-from typing import Dict, Any, List, Optional
+from fastapi import APIRouter, HTTPException, status
+from typing import Dict, Any
 
 from app.models.game_models import (
     CreateCharacterRequest,
-    CreateCampaignRequest,
     PlayerInput,
     GameResponse,
     CharacterSheet,
-    Campaign,
-    GenerateImageRequest,
-    BattleMapRequest
+    LevelUpRequest
 )
 from app.agents.dungeon_master_agent import dungeon_master
 from app.agents.scribe_agent import scribe
-from app.agents.narrator_agent import narrator
-from app.agents.combat_mc_agent import combat_mc
 from app.agents.combat_cartographer_agent import combat_cartographer
 from app.agents.artist_agent import artist
 
@@ -166,4 +161,95 @@ async def process_player_input(player_input: PlayerInput):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to process input: {str(e)}"
+        )
+
+@router.post("/character/{character_id}/level-up", response_model=Dict[str, Any])
+async def level_up_character(character_id: str, level_up_data: LevelUpRequest):
+    """Level up a character."""
+    try:
+        # Level up the character via Scribe agent
+        result = await scribe.level_up_character(
+            character_id,
+            level_up_data.ability_improvements,
+            use_average_hp=True  # Default to average HP
+        )
+
+        if "error" in result:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=result["error"]
+            )
+
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to level up character: {str(e)}"
+        )
+
+@router.post("/character/{character_id}/award-experience", response_model=Dict[str, Any])
+async def award_experience(character_id: str, experience_data: Dict[str, int]):
+    """Award experience points to a character."""
+    try:
+        experience_points = experience_data.get("experience_points", 0)
+        if experience_points <= 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Experience points must be greater than 0"
+            )
+
+        result = await scribe.award_experience(character_id, experience_points)
+
+        if "error" in result:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=result["error"]
+            )
+
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to award experience: {str(e)}"
+        )
+
+@router.get("/character/{character_id}/progression-info", response_model=Dict[str, Any])
+async def get_progression_info(character_id: str):
+    """Get progression information for a character."""
+    try:
+        character = await scribe.get_character(character_id)
+        if not character:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Character {character_id} not found"
+            )
+
+        from app.plugins.rules_engine_plugin import RulesEnginePlugin
+        rules_engine = RulesEnginePlugin()
+        
+        current_experience = character.get("experience", 0)
+        current_level = character.get("level", 1)
+        asi_used = character.get("ability_score_improvements_used", 0)
+        
+        level_info = rules_engine.calculate_level(current_experience)
+        asi_info = rules_engine.check_asi_eligibility(current_level, asi_used)
+        proficiency_info = rules_engine.calculate_proficiency_bonus(current_level)
+
+        return {
+            "character_id": character_id,
+            "current_level": current_level,
+            "level_info": level_info,
+            "asi_info": asi_info,
+            "proficiency_info": proficiency_info
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get progression info: {str(e)}"
         )
