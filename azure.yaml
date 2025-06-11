@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: str-agentic-adventures
+metadata:
+  template: str-agentic-adventures@0.0.1-beta
+  
+infra:
+  provider: bicep
+  path: infra
+
+services:
+  backend:
+    project: backend
+    language: python
+    host: containerapp
+    
+  frontend:
+    project: frontend
+    language: js
+    host: staticwebapp
+
+hooks:
+  postprovision:
+    shell: sh
+    run: |
+      echo "Post-provision hook: Setting up application configuration..."
+      # The backend will be configured with environment variables from the infrastructure
+    continueOnError: false

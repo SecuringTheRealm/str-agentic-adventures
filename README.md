@@ -1,7 +1,8 @@
 # str-agentic-adventures
  > AI-powered web app for tabletop RPGs that replaces the human Dungeon Master while maintaining creativity, flexibility, and immersion.
 
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/SecuringTheRealm/str-agentic-adventures/CI)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/SecuringTheRealm/str-agentic-adventures/ci.yml?branch=main&label=CI)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/SecuringTheRealm/str-agentic-adventures/deploy-production.yml?branch=main&label=Production%20Deploy)
 ![GitHub issues](https://img.shields.io/github/issues/SecuringTheRealm/str-agentic-adventures)
 ![GitHub](https://img.shields.io/github/license/SecuringTheRealm/str-agentic-adventures)
 ![GitHub Repo stars](https://img.shields.io/github/stars/SecuringTheRealm/str-agentic-adventures?style=social)
@@ -51,18 +52,43 @@ The system supports:
 
 ## Deployment to Azure
 
-This project uses the **Azure Developer CLI (azd)** for provisioning cloud resources.
+This project supports both automated deployment through GitHub Actions and manual deployment using the Azure Developer CLI (azd).
+
+### Quick Start - Manual Deployment
 
 1. Install [azd](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/install-azd?WT.mc_id=AI-MVP-5004204).
 2. Sign in to your Azure account:
    ```bash
    azd auth login
    ```
-3. Deploy all infrastructure and application code:
+3. Set up your environment:
+   ```bash
+   azd env new <environment-name>
+   azd env set AZURE_OPENAI_ENDPOINT <your-openai-endpoint>
+   azd env set AZURE_OPENAI_API_KEY <your-openai-api-key>
+   ```
+4. Deploy all infrastructure and application code:
    ```bash
    azd up
    ```
    The command creates or updates Azure resources and then builds and deploys the app.
+
+### GitHub Actions Deployment
+
+The repository includes automated deployment workflows:
+
+- **Production Deployment**: Automatically deploys to production when pushing to `main` branch (requires Azure secrets)
+- **PR Environments**: Creates temporary environments for pull requests for testing
+- **Environment Cleanup**: Automatically removes PR environments when closed/merged
+
+For setup instructions, see [Deployment Guide](docs/deployment.md).
+
+### Required Azure Services
+
+- **Azure OpenAI Service** with deployed models (GPT-4o-mini, text-embedding-ada-002, DALL-E 3)
+- **Azure Container Apps** for backend hosting
+- **Azure Static Web Apps** for frontend hosting  
+- **Azure Storage Account** for file and image storage
 
 ## Running the Application Locally
 

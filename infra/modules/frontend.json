@@ -1,0 +1,89 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.36.1.42791",
+      "templateHash": "10865232170652119097"
+    }
+  },
+  "parameters": {
+    "name": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Static Web App"
+      }
+    },
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "The location of the Static Web App"
+      }
+    },
+    "tags": {
+      "type": "object",
+      "defaultValue": {},
+      "metadata": {
+        "description": "Tags to apply to the Static Web App"
+      }
+    },
+    "backendUrl": {
+      "type": "string",
+      "metadata": {
+        "description": "The backend API URL"
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Web/staticSites",
+      "apiVersion": "2022-09-01",
+      "name": "[parameters('name')]",
+      "location": "[parameters('location')]",
+      "tags": "[parameters('tags')]",
+      "sku": {
+        "name": "Free",
+        "tier": "Free"
+      },
+      "properties": {
+        "repositoryUrl": "",
+        "branch": "",
+        "buildProperties": {
+          "appLocation": "/frontend",
+          "outputLocation": "build",
+          "appBuildCommand": "npm run build",
+          "apiLocation": ""
+        },
+        "stagingEnvironmentPolicy": "Enabled",
+        "allowConfigFileUpdates": true,
+        "enterpriseGradeCdnStatus": "Disabled"
+      }
+    },
+    {
+      "type": "Microsoft.Web/staticSites/config",
+      "apiVersion": "2022-09-01",
+      "name": "[format('{0}/{1}', parameters('name'), 'appsettings')]",
+      "properties": {
+        "REACT_APP_API_BASE_URL": "[parameters('backendUrl')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/staticSites', parameters('name'))]"
+      ]
+    }
+  ],
+  "outputs": {
+    "id": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Web/staticSites', parameters('name'))]"
+    },
+    "name": {
+      "type": "string",
+      "value": "[parameters('name')]"
+    },
+    "uri": {
+      "type": "string",
+      "value": "[format('https://{0}', reference(resourceId('Microsoft.Web/staticSites', parameters('name')), '2022-09-01').defaultHostname)]"
+    }
+  }
+}

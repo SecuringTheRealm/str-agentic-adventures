@@ -1,0 +1,105 @@
+name: Deploy PR Environment
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [ main ]
+  
+env:
+  AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+
+jobs:
+  deploy-pr:
+    # Only run if Azure secrets are configured
+    if: ${{ secrets.AZURE_CLIENT_ID != '' && secrets.AZURE_TENANT_ID != '' && secrets.AZURE_SUBSCRIPTION_ID != '' }}
+    runs-on: ubuntu-latest
+    environment: development
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Install Azure Developer CLI
+      uses: Azure/setup-azd@v1.0.0
+      
+    - name: Log in with Azure (Federated Credentials)
+      if: ${{ env.AZURE_CLIENT_ID != '' }}
+      run: |
+        azd auth login \
+          --client-id "${{ env.AZURE_CLIENT_ID }}" \
+          --federated-credential-provider "github" \
+          --tenant-id "${{ env.AZURE_TENANT_ID }}"
+        
+    - name: Log in with Azure (Service Principal)
+      if: ${{ env.AZURE_CLIENT_ID == '' && env.AZURE_CREDENTIALS != '' }}
+      uses: Azure/login@v2
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+        
+    - name: Configure Azure Developer CLI environment
+      run: |
+        ENV_NAME="pr-${{ github.event.pull_request.number }}"
+        azd env new $ENV_NAME --subscription "${{ env.AZURE_SUBSCRIPTION_ID }}" --location "${{ vars.AZURE_LOCATION || 'eastus' }}"
+        azd env set AZURE_LOCATION "${{ vars.AZURE_LOCATION || 'eastus' }}"
+        azd env set AZURE_OPENAI_ENDPOINT "${{ secrets.AZURE_OPENAI_ENDPOINT }}"
+        azd env set AZURE_OPENAI_API_KEY "${{ secrets.AZURE_OPENAI_API_KEY }}"
+        azd env set AZURE_OPENAI_CHAT_DEPLOYMENT "${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT || 'gpt-4o-mini' }}"
+        azd env set AZURE_OPENAI_EMBEDDING_DEPLOYMENT "${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT || 'text-embedding-ada-002' }}"
+        azd env set AZURE_OPENAI_DALLE_DEPLOYMENT "${{ vars.AZURE_OPENAI_DALLE_DEPLOYMENT || 'dall-e-3' }}"
+        
+    - name: Provision and Deploy PR Environment
+      run: |
+        ENV_NAME="pr-${{ github.event.pull_request.number }}"
+        azd up --no-prompt
+      
+    - name: Get deployment outputs
+      id: azd-outputs
+      run: |
+        echo "backend-uri=$(azd env get-values | grep BACKEND_URI | cut -d'=' -f2)" >> $GITHUB_OUTPUT
+        echo "frontend-uri=$(azd env get-values | grep FRONTEND_URI | cut -d'=' -f2)" >> $GITHUB_OUTPUT
+        
+    - name: Comment on PR
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const { data: comments } = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+          });
+          
+          const botComment = comments.find(comment => 
+            comment.user.type === 'Bot' && comment.body.includes('## 🚀 PR Environment Deployed')
+          );
+          
+          const commentBody = `## 🚀 PR Environment Deployed
+          
+          Your pull request has been deployed to a temporary environment:
+          
+          - **Frontend**: ${{ steps.azd-outputs.outputs.frontend-uri }}
+          - **Backend API**: ${{ steps.azd-outputs.outputs.backend-uri }}
+          
+          ### Test Your Changes
+          Use the deployed environment to test your changes before merging.
+          
+          > **Note**: This environment will be automatically deleted when the PR is closed or merged.
+          `;
+          
+          if (botComment) {
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: botComment.id,
+              body: commentBody
+            });
+          } else {
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: commentBody
+            });
+          }

@@ -407,3 +407,6 @@ $RECYCLE.BIN/
 data/*.csv
 rag.db
 evidence.csv
+
+# Azure Developer CLI
+.azure/
