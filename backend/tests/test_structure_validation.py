@@ -173,7 +173,7 @@ class TestFrontendBackendAPIMapping:
         # Map frontend calls to backend endpoints
         mappings = [
             ('"/game/character"', '@router.post("/character"'),
-            ('"/game/character/${characterId}"', '@router.get("/character/{character_id}"'),
+            ('`/game/character/${characterId}`', '@router.get("/character/{character_id}"'),
             ('"/game/input"', '@router.post("/input"'),
             ('"/game/campaign"', '@router.post("/campaign"'),
             ('"/game/generate-image"', '@router.post("/generate-image"'),
