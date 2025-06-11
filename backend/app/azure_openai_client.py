@@ -1,4 +1,4 @@
-"""Azure OpenAI client for asynchronous chat completion calls."""
+"""Azure OpenAI client for asynchronous chat completion and image generation calls."""
 
 from __future__ import annotations
 
@@ -36,3 +36,50 @@ class AzureOpenAIClient:
             **kwargs,
         )
         return response.choices[0].message["content"].strip()
+
+    @retry(
+        wait=wait_exponential(multiplier=2, min=2, max=10), stop=stop_after_attempt(3)
+    )
+    async def generate_image(
+        self,
+        prompt: str,
+        size: str = "1024x1024",
+        quality: str = "standard",
+        style: str = "vivid",
+        deployment: str | None = None,
+        **kwargs: Any,
+    ) -> Dict[str, Any]:
+        """Generate an image using Azure OpenAI DALL-E."""
+        deployment_name = deployment or settings.azure_openai_dalle_deployment
+        try:
+            response = await openai.Image.acreate(
+                deployment_id=deployment_name,
+                prompt=prompt,
+                size=size,
+                quality=quality,
+                style=style,
+                n=1,
+                **kwargs,
+            )
+            
+            if response and response.data:
+                image_data = response.data[0]
+                return {
+                    "success": True,
+                    "image_url": image_data.get("url"),
+                    "revised_prompt": image_data.get("revised_prompt", prompt),
+                    "size": size,
+                    "quality": quality,
+                    "style": style
+                }
+            else:
+                return {
+                    "success": False,
+                    "error": "No image data returned from Azure OpenAI"
+                }
+                
+        except Exception as e:
+            return {
+                "success": False,
+                "error": f"Failed to generate image: {str(e)}"
+            }

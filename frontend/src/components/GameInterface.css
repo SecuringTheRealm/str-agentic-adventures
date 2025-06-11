@@ -35,6 +35,45 @@
   overflow-y: auto;
 }
 
+.visual-controls {
+  padding: 15px;
+  border-bottom: 1px solid #2c3e50;
+}
+
+.visual-controls h4 {
+  margin: 0 0 10px 0;
+  color: #ecf0f1;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.visual-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.visual-button {
+  padding: 8px 12px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.3s ease;
+}
+
+.visual-button:hover:not(:disabled) {
+  background-color: #2980b9;
+}
+
+.visual-button:disabled {
+  background-color: #7f8c8d;
+  cursor: not-allowed;
+}
+
 .image-section {
   flex: 1;
   min-height: 200px;

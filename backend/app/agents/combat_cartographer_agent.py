@@ -4,7 +4,7 @@ Combat Cartographer Agent - Generates tactical battle maps for combat encounters
 import logging
 from typing import Dict, Any
 
-
+from app.azure_openai_client import AzureOpenAIClient
 from app.kernel_setup import kernel_manager
 
 logger = logging.getLogger(__name__)
@@ -18,6 +18,7 @@ class CombatCartographerAgent:
     def __init__(self):
         """Initialize the Combat Cartographer agent with its own kernel instance."""
         self.kernel = kernel_manager.create_kernel()
+        self.azure_client = AzureOpenAIClient()
         self._register_skills()
         
         # Store map references
@@ -44,28 +45,61 @@ class CombatCartographerAgent:
             map_id = f"map_{len(self.battle_maps) + 1}"
             
             # Extract key environment details
-            location = environment_context.get("location", "generic")
+            location = environment_context.get("location", "generic battlefield")
             terrain = environment_context.get("terrain", "plain")
             size = environment_context.get("size", "medium")
             features = environment_context.get("features", [])
+            hazards = environment_context.get("hazards", [])
             
-            # TODO: Implement the actual battle map generation using Azure OpenAI
-            # For now, we'll return a placeholder with the map details
-            
-            # Create a description for the image generation
-            map_description = f"A tactical battle map of a {terrain} {location}"
+            # Create a detailed prompt for tactical battle map generation
+            prompt = f"Top-down tactical battle map of a {terrain} {location}"
             if features:
-                map_description += f" with {', '.join(features)}"
-                
-            battle_map = {
-                "id": map_id,
-                "name": f"{location.capitalize()} Battle Map",
-                "description": map_description,
-                "size": size,
-                "terrain": terrain,
-                "features": features,
-                "image_url": None  # Would be populated with the actual generated image URL
-            }
+                prompt += f" with {', '.join(features)}"
+            if hazards:
+                prompt += f", including {', '.join(hazards)}"
+            
+            # Add tactical map specifics
+            prompt += ". Grid-based tactical map, D&D battle map style, clear terrain features, strategic positioning elements, top-down orthographic view, detailed but clear, suitable for tabletop RPG combat"
+            
+            # Generate the map using Azure OpenAI DALL-E
+            image_result = await self.azure_client.generate_image(
+                prompt=prompt,
+                size="1024x1024",
+                quality="standard",
+                style="vivid"
+            )
+            
+            if image_result["success"]:
+                battle_map = {
+                    "id": map_id,
+                    "name": f"{location.capitalize()} Battle Map",
+                    "description": prompt,
+                    "size": size,
+                    "terrain": terrain,
+                    "features": features,
+                    "hazards": hazards,
+                    "image_url": image_result["image_url"],
+                    "revised_prompt": image_result.get("revised_prompt", prompt),
+                    "environment_context": environment_context,
+                    "combat_context": combat_context,
+                    "generation_details": {
+                        "size": image_result["size"],
+                        "quality": image_result["quality"],
+                        "style": image_result["style"]
+                    }
+                }
+            else:
+                # Fallback to placeholder if generation fails
+                battle_map = {
+                    "id": map_id,
+                    "name": f"{location.capitalize()} Battle Map",
+                    "description": prompt,
+                    "size": size,
+                    "terrain": terrain,
+                    "features": features,
+                    "image_url": None,
+                    "error": image_result.get("error", "Battle map generation failed")
+                }
             
             # Store the battle map
             self.battle_maps[map_id] = battle_map
