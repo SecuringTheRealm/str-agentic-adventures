@@ -1,9 +1,8 @@
 import type React from "react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
 	type Campaign,
 	type Character,
-	type GameResponse,
 	sendPlayerInput,
 	generateImage,
 	generateBattleMap,
@@ -64,7 +63,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 		}
 	};
 
-	const { socket, isConnected, sendMessage } = useWebSocket(wsUrl, {
+	const { socket, isConnected } = useWebSocket(wsUrl, {
 		onMessage: handleWebSocketMessage,
 		onConnect: () => console.log('Connected to campaign WebSocket'),
 		onDisconnect: () => console.log('Disconnected from campaign WebSocket'),
