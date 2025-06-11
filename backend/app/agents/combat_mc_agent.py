@@ -6,7 +6,7 @@ import random
 from typing import Dict, Any, List
 
 import semantic_kernel as sk
-from semantic_kernel.orchestration.context_variables import ContextVariables
+from semantic_kernel.functions import KernelArguments, KernelPlugin
 
 from app.kernel_setup import kernel_manager
 
@@ -36,7 +36,12 @@ class CombatMCAgent:
             rules_engine = RulesEnginePlugin()
             
             # Register plugins with the kernel
-            self.kernel.import_skill(rules_engine, "Rules")
+            rules_plugin = KernelPlugin.from_object(
+                plugin_name="Rules",
+                plugin_instance=rules_engine,
+                description="Plugin for D&D 5e rules engine"
+            )
+            self.kernel.add_plugin(rules_plugin)
             
             logger.info("Combat MC agent plugins registered successfully")
         except Exception as e:

@@ -5,7 +5,7 @@ import logging
 from typing import Dict, Any, List
 
 import semantic_kernel as sk
-from semantic_kernel.orchestration.context_variables import ContextVariables
+from semantic_kernel.functions import KernelArguments, KernelPlugin
 
 from app.kernel_setup import kernel_manager
 
@@ -34,8 +34,19 @@ class NarratorAgent:
             rules_engine = RulesEnginePlugin()
             
             # Register plugins with the kernel
-            self.kernel.import_skill(narrative_memory, "Memory")
-            self.kernel.import_skill(rules_engine, "Rules")
+            memory_plugin = KernelPlugin.from_object(
+                plugin_name="Memory",
+                plugin_instance=narrative_memory,
+                description="Plugin for narrative memory management"
+            )
+            rules_plugin = KernelPlugin.from_object(
+                plugin_name="Rules",
+                plugin_instance=rules_engine,
+                description="Plugin for D&D 5e rules engine"
+            )
+            
+            self.kernel.add_plugin(memory_plugin)
+            self.kernel.add_plugin(rules_plugin)
             
             logger.info("Narrator agent plugins registered successfully")
         except Exception as e:
