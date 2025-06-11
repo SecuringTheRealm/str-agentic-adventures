@@ -27,7 +27,7 @@ The Secure the Realm platform leverages:
 - **Frontend**: TypeScript & React for a responsive user interface
 - **Backend**: Python with Microsoft Semantic Kernel framework
 - **AI Integration**: Azure OpenAI LLMs via Semantic Kernel plugins
-- **Game Rules**: D&D 5e OGL SRD ruleset implementation
+- **Game Rules**: D&D 5e OGL SRD ruleset implementation ([reference docs](docs/reference/srd-5.2.1.md))
 - **Real-time Features**: Immediate response to player actions
 - **Data Management**: Structured storage for game elements and character data
 

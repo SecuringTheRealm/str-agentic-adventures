@@ -208,6 +208,7 @@ While the Dungeon Master serves as the orchestrator, agents can communicate dire
 - Proper attribution for OGL content will be maintained
 - Non-OGL content will be clearly separated from OGL content
 - Terms of use will include appropriate OGL notices
+- Complete SRD 5.2.1 reference documentation is available at [docs/reference/srd-5.2.1.md](reference/srd-5.2.1.md)
 
 ## Success Metrics
 

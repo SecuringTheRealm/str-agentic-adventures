@@ -96,4 +96,5 @@ Justification:
 * Related ADRs: [ADR-0001 Semantic Kernel Multi-Agent Framework](0001-semantic-kernel-multi-agent-framework.md)
 * Related ADRs: [ADR-0002 Specialized Multi-Agent Architecture](0002-specialized-multi-agent-architecture.md)
 * References: [D&D 5e SRD Character Advancement](https://dnd.wizards.com/resources/systems-reference-document)
+* References: [SRD 5.2.1 Local Documentation](../reference/srd-5.2.1.md)
 * References: Product Requirements Document - Character progression metrics
