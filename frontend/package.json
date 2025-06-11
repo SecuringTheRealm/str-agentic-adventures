@@ -12,7 +12,7 @@
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^13.5.0",
     "@types/jest": "^27.5.2",
-    "@types/node": "^16.18.126",
+    "@types/node": "^20.0.0",
     "@types/react": "^19.1.7",
     "@types/react-dom": "^19.1.6",
     "axios": "^1.9.0",
@@ -26,9 +26,9 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "vitest",
-    "test:ui": "vitest --ui",
-    "test:run": "vitest run",
+    "test": "NODE_OPTIONS='--max-old-space-size=4096' vitest",
+    "test:ui": "NODE_OPTIONS='--max-old-space-size=4096' vitest --ui",
+    "test:run": "NODE_OPTIONS='--max-old-space-size=4096' vitest run --no-watch",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {

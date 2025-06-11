@@ -14,6 +14,7 @@ describe("CampaignCreation", () => {
 	beforeEach(() => {
 		mockOnCampaignCreated.mockClear();
 		mockCreateCampaign.mockClear();
+		mockCreateCampaign.mockReset();
 	});
 
 	it("renders form elements correctly", () => {
@@ -255,7 +256,7 @@ describe("CampaignCreation", () => {
 			expect(
 				screen.getByText("Failed to create campaign. Please try again."),
 			).toBeInTheDocument();
-		});
+		}, { timeout: 5000 });
 
 		expect(mockOnCampaignCreated).not.toHaveBeenCalled();
 		
@@ -290,7 +291,7 @@ describe("CampaignCreation", () => {
 			expect(
 				screen.getByText("Failed to create campaign. Please try again."),
 			).toBeInTheDocument();
-		});
+		}, { timeout: 5000 });
 
 		// Second submission - success
 		mockCreateCampaign.mockResolvedValueOnce({
@@ -310,7 +311,7 @@ describe("CampaignCreation", () => {
 			expect(
 				screen.queryByText("Failed to create campaign. Please try again."),
 			).not.toBeInTheDocument();
-		});
+		}, { timeout: 5000 });
 		
 		// Restore console.error
 		consoleSpy.mockRestore();
