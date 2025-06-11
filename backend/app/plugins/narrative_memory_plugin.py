@@ -3,12 +3,10 @@ Narrative Memory Plugin for the Semantic Kernel.
 This plugin provides memory storage and retrieval for narrative elements.
 """
 import logging
-from typing import Dict, Any, List, Optional
-import json
+from typing import Dict, Any
 import datetime
 
-from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
-from semantic_kernel.orchestration.sk_context import SKContext
+from semantic_kernel.functions import kernel_function
 
 logger = logging.getLogger(__name__)
 
@@ -27,11 +25,11 @@ class NarrativeMemoryPlugin:
         self.npcs = {}
         self.locations = {}
 
-    @sk_function(
+    @kernel_function(
         description="Store a narrative fact in memory.",
         name="remember_fact"
     )
-    def remember_fact(self, fact: str, category: str, importance: int = 5) -> Dict[str, Any]:
+    def remember_fact(self, fact: str, category: str, importance: int = 5) -> str:
         """
         Store a narrative fact in memory.
         
@@ -59,23 +57,16 @@ class NarrativeMemoryPlugin:
             # Store the memory
             self.memories[fact_id] = memory
             
-            return {
-                "status": "success",
-                "message": "Fact stored in narrative memory",
-                "fact_id": fact_id
-            }
+            return f"Fact stored successfully with ID: {fact_id}"
         except Exception as e:
             logger.error(f"Error storing fact in memory: {str(e)}")
-            return {
-                "status": "error",
-                "message": f"Failed to store fact: {str(e)}"
-            }
+            return f"Failed to store fact: {str(e)}"
 
-    @sk_function(
+    @kernel_function(
         description="Record a narrative event in the campaign timeline.",
         name="record_event"
     )
-    def record_event(self, event: str, location: str, characters: str, importance: int = 5) -> Dict[str, Any]:
+    def record_event(self, event: str, location: str, characters: str, importance: int = 5) -> str:
         """
         Record a narrative event in the campaign timeline.
         
@@ -107,23 +98,16 @@ class NarrativeMemoryPlugin:
             # Store the event
             self.events.append(event_entry)
             
-            return {
-                "status": "success",
-                "message": "Event recorded in narrative timeline",
-                "event_id": event_id
-            }
+            return f"Event recorded successfully with ID: {event_id}"
         except Exception as e:
             logger.error(f"Error recording event: {str(e)}")
-            return {
-                "status": "error",
-                "message": f"Failed to record event: {str(e)}"
-            }
+            return f"Failed to record event: {str(e)}"
 
-    @sk_function(
+    @kernel_function(
         description="Retrieve facts related to a specific query or category.",
         name="recall_facts"
     )
-    def recall_facts(self, query: str = "", category: str = "") -> Dict[str, Any]:
+    def recall_facts(self, query: str = "", category: str = "") -> str:
         """
         Retrieve facts related to a specific query or category.
         
@@ -152,24 +136,22 @@ class NarrativeMemoryPlugin:
             # Sort by importance
             filtered_memories.sort(key=lambda m: m["importance"], reverse=True)
             
-            return {
-                "status": "success",
-                "facts": filtered_memories,
-                "count": len(filtered_memories)
-            }
+            if filtered_memories:
+                result = f"Found {len(filtered_memories)} relevant facts:\n"
+                for memory in filtered_memories[:5]:  # Limit to top 5
+                    result += f"- [{memory['category']}] {memory['content']} (importance: {memory['importance']})\n"
+                return result
+            else:
+                return "No relevant facts found in memory."
         except Exception as e:
             logger.error(f"Error recalling facts: {str(e)}")
-            return {
-                "status": "error",
-                "message": f"Failed to recall facts: {str(e)}",
-                "facts": []
-            }
+            return f"Failed to recall facts: {str(e)}"
 
-    @sk_function(
+    @kernel_function(
         description="Retrieve a timeline of recent events.",
         name="recall_timeline"
     )
-    def recall_timeline(self, character: str = "", location: str = "", limit: int = 5) -> Dict[str, Any]:
+    def recall_timeline(self, character: str = "", location: str = "", limit: int = 5) -> str:
         """
         Retrieve a timeline of recent events.
         
@@ -199,24 +181,23 @@ class NarrativeMemoryPlugin:
             # Apply limit
             filtered_events = filtered_events[:limit]
             
-            return {
-                "status": "success",
-                "events": filtered_events,
-                "count": len(filtered_events)
-            }
+            if filtered_events:
+                result = f"Recent events timeline ({len(filtered_events)} events):\n"
+                for event in filtered_events:
+                    result += f"- {event['description']} at {event['location']} "
+                    result += f"(characters: {', '.join(event['characters'])})\n"
+                return result
+            else:
+                return "No recent events found in timeline."
         except Exception as e:
             logger.error(f"Error recalling timeline: {str(e)}")
-            return {
-                "status": "error",
-                "message": f"Failed to recall timeline: {str(e)}",
-                "events": []
-            }
+            return f"Failed to recall timeline: {str(e)}"
 
-    @sk_function(
+    @kernel_function(
         description="Add or update an NPC in the campaign.",
         name="update_npc"
     )
-    def update_npc(self, name: str, description: str, location: str, relationships: str = "") -> Dict[str, Any]:
+    def update_npc(self, name: str, description: str, location: str, relationships: str = "") -> str:
         """
         Add or update an NPC in the campaign.
         
@@ -252,23 +233,16 @@ class NarrativeMemoryPlugin:
                 
                 self.npcs[name] = npc
             
-            return {
-                "status": "success",
-                "message": f"NPC {name} updated",
-                "npc": npc
-            }
+            return f"NPC {name} updated successfully at {location}"
         except Exception as e:
             logger.error(f"Error updating NPC: {str(e)}")
-            return {
-                "status": "error",
-                "message": f"Failed to update NPC: {str(e)}"
-            }
+            return f"Failed to update NPC: {str(e)}"
 
-    @sk_function(
+    @kernel_function(
         description="Retrieve information about a specific NPC.",
         name="get_npc"
     )
-    def get_npc(self, name: str) -> Dict[str, Any]:
+    def get_npc(self, name: str) -> str:
         """
         Retrieve information about a specific NPC.
         
@@ -285,18 +259,14 @@ class NarrativeMemoryPlugin:
                 # Update last accessed time
                 npc["last_accessed"] = datetime.datetime.now().isoformat()
                 
-                return {
-                    "status": "success",
-                    "npc": npc
-                }
+                result = f"NPC: {npc['name']}\n"
+                result += f"Description: {npc['description']}\n"
+                result += f"Location: {npc['location']}\n"
+                if npc.get('relationships'):
+                    result += f"Relationships: {npc['relationships']}\n"
+                return result
             else:
-                return {
-                    "status": "not_found",
-                    "message": f"NPC {name} not found"
-                }
+                return f"NPC {name} not found in records."
         except Exception as e:
             logger.error(f"Error retrieving NPC: {str(e)}")
-            return {
-                "status": "error",
-                "message": f"Failed to retrieve NPC: {str(e)}"
-            }
+            return f"Failed to retrieve NPC: {str(e)}"

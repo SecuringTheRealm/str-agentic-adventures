@@ -2,11 +2,10 @@
 Scribe Agent - Manages character sheets and game data.
 """
 import logging
-import json
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, Optional
 
 import semantic_kernel as sk
-from semantic_kernel.orchestration.context_variables import ContextVariables
+from semantic_kernel.functions import KernelArguments
 
 from app.kernel_setup import kernel_manager
 

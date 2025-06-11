@@ -2,12 +2,10 @@
 Dungeon Master Agent - The orchestrator agent that coordinates all other agents.
 """
 import logging
-from typing import Dict, Any, List, Tuple, Optional
-import json
+from typing import Dict, Any, Tuple
 
 import semantic_kernel as sk
-from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.tools.tool_manager import ToolManager
+from semantic_kernel.functions import KernelArguments
 
 from app.kernel_setup import kernel_manager
 from app.agents.narrator_agent import narrator
@@ -27,7 +25,6 @@ class DungeonMasterAgent:
     def __init__(self):
         """Initialize the Dungeon Master agent with its own kernel instance."""
         self.kernel = kernel_manager.create_kernel()
-        self.tool_manager = ToolManager(self.kernel)
         self._register_plugins()
         
         # Game session tracking
@@ -45,13 +42,8 @@ class DungeonMasterAgent:
             rules_engine = RulesEnginePlugin()
             
             # Register plugins with the kernel
-            self.kernel.import_skill(narrative_memory, "Memory")
-            self.kernel.import_skill(rules_engine, "Rules")
-            
-            # Add tools to the tool manager
-            # self.tool_manager.add_tool(narrative_memory.remember_fact)
-            # self.tool_manager.add_tool(narrative_memory.recall_facts)
-            # self.tool_manager.add_tool(rules_engine.roll_dice)
+            self.kernel.add_plugin(narrative_memory, plugin_name="Memory")
+            self.kernel.add_plugin(rules_engine, plugin_name="Rules")
             
             logger.info("Dungeon Master agent plugins registered successfully")
         except Exception as e:

@@ -3,10 +3,10 @@ Combat MC Agent - Manages combat encounters, tactics, and battle flow.
 """
 import logging
 import random
-from typing import Dict, Any, List
+from typing import Dict, Any
 
 import semantic_kernel as sk
-from semantic_kernel.orchestration.context_variables import ContextVariables
+from semantic_kernel.functions import KernelArguments
 
 from app.kernel_setup import kernel_manager
 
@@ -36,7 +36,7 @@ class CombatMCAgent:
             rules_engine = RulesEnginePlugin()
             
             # Register plugins with the kernel
-            self.kernel.import_skill(rules_engine, "Rules")
+            self.kernel.add_plugin(rules_engine, plugin_name="Rules")
             
             logger.info("Combat MC agent plugins registered successfully")
         except Exception as e:
