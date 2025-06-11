@@ -1,6 +1,7 @@
 """
 Tests for Pydantic models validation and serialization.
 """
+
 import pytest
 import sys
 import os
@@ -9,7 +10,6 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from pydantic import ValidationError
-from datetime import datetime
 
 from app.models.game_models import (
     CharacterClass,
@@ -27,7 +27,7 @@ from app.models.game_models import (
     Campaign,
     CreateCampaignRequest,
     GenerateImageRequest,
-    BattleMapRequest
+    BattleMapRequest,
 )
 
 
@@ -65,7 +65,7 @@ class TestAbilities:
     def test_abilities_default_values(self):
         """Test that Abilities model has correct default values."""
         abilities = Abilities()
-        
+
         assert abilities.strength == 10
         assert abilities.dexterity == 10
         assert abilities.constitution == 10
@@ -81,9 +81,9 @@ class TestAbilities:
             constitution=15,
             intelligence=12,
             wisdom=13,
-            charisma=8
+            charisma=8,
         )
-        
+
         assert abilities.strength == 16
         assert abilities.dexterity == 14
         assert abilities.constitution == 15
@@ -98,7 +98,7 @@ class TestHitPoints:
     def test_hit_points_valid(self):
         """Test valid HitPoints creation."""
         hp = HitPoints(current=25, maximum=30)
-        
+
         assert hp.current == 25
         assert hp.maximum == 30
 
@@ -115,7 +115,7 @@ class TestItem:
     def test_item_minimal(self):
         """Test Item creation with minimal required fields."""
         item = Item(name="Sword")
-        
+
         assert item.name == "Sword"
         assert item.quantity == 1
         assert item.description is None
@@ -132,9 +132,9 @@ class TestItem:
             quantity=1,
             weight=3.5,
             value=500,
-            properties={"damage": "1d8+1", "magical": True}
+            properties={"damage": "1d8+1", "magical": True},
         )
-        
+
         assert item.name == "Magic Sword"
         assert item.description == "A gleaming magical blade"
         assert item.quantity == 1
@@ -157,9 +157,9 @@ class TestSpell:
             range="150 feet",
             components="V, S, M",
             duration="Instantaneous",
-            description="A bright streak flashes from your pointing finger..."
+            description="A bright streak flashes from your pointing finger...",
         )
-        
+
         assert spell.name == "Fireball"
         assert spell.level == 3
         assert spell.school == "Evocation"
@@ -178,15 +178,15 @@ class TestCharacterSheet:
         """Test CharacterSheet creation with minimal required fields."""
         abilities = Abilities(strength=16, dexterity=14, constitution=15)
         hit_points = HitPoints(current=10, maximum=10)
-        
+
         character = CharacterSheet(
             name="Test Hero",
             race=Race.HUMAN,
             character_class=CharacterClass.FIGHTER,
             abilities=abilities,
-            hit_points=hit_points
+            hit_points=hit_points,
         )
-        
+
         assert character.name == "Test Hero"
         assert character.race == Race.HUMAN
         assert character.character_class == CharacterClass.FIGHTER
@@ -209,15 +209,15 @@ class TestCreateCharacterRequest:
     def test_create_character_request_valid(self):
         """Test valid CreateCharacterRequest."""
         abilities = Abilities(strength=16, dexterity=14, constitution=15)
-        
+
         request = CreateCharacterRequest(
             name="Test Hero",
             race=Race.HUMAN,
             character_class=CharacterClass.FIGHTER,
             abilities=abilities,
-            backstory="A brave warrior"
+            backstory="A brave warrior",
         )
-        
+
         assert request.name == "Test Hero"
         assert request.race == Race.HUMAN
         assert request.character_class == CharacterClass.FIGHTER
@@ -227,14 +227,14 @@ class TestCreateCharacterRequest:
     def test_create_character_request_without_backstory(self):
         """Test CreateCharacterRequest without optional backstory."""
         abilities = Abilities()
-        
+
         request = CreateCharacterRequest(
             name="Test Hero",
             race=Race.HUMAN,
             character_class=CharacterClass.FIGHTER,
-            abilities=abilities
+            abilities=abilities,
         )
-        
+
         assert request.backstory is None
 
 
@@ -246,9 +246,9 @@ class TestPlayerInput:
         player_input = PlayerInput(
             message="I want to explore the forest",
             character_id="char_123",
-            campaign_id="camp_456"
+            campaign_id="camp_456",
         )
-        
+
         assert player_input.message == "I want to explore the forest"
         assert player_input.character_id == "char_123"
         assert player_input.campaign_id == "camp_456"
@@ -265,7 +265,7 @@ class TestGameResponse:
     def test_game_response_minimal(self):
         """Test GameResponse with minimal required fields."""
         response = GameResponse(message="You see a dark forest ahead.")
-        
+
         assert response.message == "You see a dark forest ahead."
         assert response.images == []  # Default empty list
         assert response.state_updates == {}  # Default empty dict
@@ -277,9 +277,9 @@ class TestGameResponse:
             message="Combat begins!",
             images=["http://example.com/battle.jpg"],
             state_updates={"health": 20, "location": "Forest"},
-            combat_updates={"initiative": [1, 2, 3]}
+            combat_updates={"initiative": [1, 2, 3]},
         )
-        
+
         assert response.message == "Combat begins!"
         assert response.images == ["http://example.com/battle.jpg"]
         assert response.state_updates["health"] == 20
@@ -291,12 +291,8 @@ class TestCampaign:
 
     def test_campaign_creation(self):
         """Test Campaign model creation."""
-        campaign = Campaign(
-            name="Test Campaign",
-            setting="Fantasy",
-            tone="heroic"
-        )
-        
+        campaign = Campaign(name="Test Campaign", setting="Fantasy", tone="heroic")
+
         assert campaign.name == "Test Campaign"
         assert campaign.setting == "Fantasy"
         assert campaign.tone == "heroic"
@@ -312,11 +308,8 @@ class TestCreateCampaignRequest:
 
     def test_create_campaign_request_minimal(self):
         """Test CreateCampaignRequest with minimal fields."""
-        request = CreateCampaignRequest(
-            name="Test Campaign",
-            setting="Fantasy World"
-        )
-        
+        request = CreateCampaignRequest(name="Test Campaign", setting="Fantasy World")
+
         assert request.name == "Test Campaign"
         assert request.setting == "Fantasy World"
         assert request.tone == "heroic"  # Default value
@@ -328,9 +321,9 @@ class TestCreateCampaignRequest:
             name="Dark Campaign",
             setting="Gothic Horror",
             tone="dark",
-            homebrew_rules=["Custom rule 1", "Custom rule 2"]
+            homebrew_rules=["Custom rule 1", "Custom rule 2"],
         )
-        
+
         assert request.name == "Dark Campaign"
         assert request.setting == "Gothic Horror"
         assert request.tone == "dark"
@@ -343,10 +336,9 @@ class TestGenerateImageRequest:
     def test_generate_image_request(self):
         """Test GenerateImageRequest creation."""
         request = GenerateImageRequest(
-            image_type="character_portrait",
-            details={"name": "Hero", "race": "human"}
+            image_type="character_portrait", details={"name": "Hero", "race": "human"}
         )
-        
+
         assert request.image_type == "character_portrait"
         assert request.details["name"] == "Hero"
         assert request.details["race"] == "human"
@@ -357,10 +349,8 @@ class TestBattleMapRequest:
 
     def test_battle_map_request_minimal(self):
         """Test BattleMapRequest with minimal fields."""
-        request = BattleMapRequest(
-            environment={"terrain": "forest", "size": "medium"}
-        )
-        
+        request = BattleMapRequest(environment={"terrain": "forest", "size": "medium"})
+
         assert request.environment["terrain"] == "forest"
         assert request.environment["size"] == "medium"
         assert request.combat_context is None  # Default value
@@ -369,9 +359,9 @@ class TestBattleMapRequest:
         """Test BattleMapRequest with all fields."""
         request = BattleMapRequest(
             environment={"terrain": "forest", "size": "medium"},
-            combat_context={"participants": 4, "difficulty": "hard"}
+            combat_context={"participants": 4, "difficulty": "hard"},
         )
-        
+
         assert request.environment["terrain"] == "forest"
         assert request.combat_context["participants"] == 4
         assert request.combat_context["difficulty"] == "hard"
