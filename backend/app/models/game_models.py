@@ -2,7 +2,7 @@
 Data models for the AI Dungeon Master application.
 """
 from pydantic import BaseModel, Field
-from typing import Dict, List, Optional, Union, Any
+from typing import Dict, List, Optional, Any
 from enum import Enum
 from datetime import datetime
 import uuid
@@ -155,18 +155,6 @@ class GameResponse(BaseModel):
     images: List[str] = []
     state_updates: Dict[str, Any] = {}
     combat_updates: Optional[Dict[str, Any]] = None
-    
-class Campaign(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    name: str
-    setting: str
-    tone: str = "heroic"
-    homebrew_rules: List[str] = []
-    characters: List[str] = []
-    session_log: List[Dict[str, Any]] = []
-    state: str = "created"
-    world_description: Optional[str] = None
-    world_art: Optional[Dict[str, Any]] = None
 
 class CreateCampaignRequest(BaseModel):
     name: str

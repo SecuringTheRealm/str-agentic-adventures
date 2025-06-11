@@ -1,23 +1,17 @@
 """
 API routes for the AI Dungeon Master application.
 """
-from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks, status
-from typing import Dict, Any, List, Optional
+from fastapi import APIRouter, HTTPException, status
+from typing import Dict, Any
 
 from app.models.game_models import (
     CreateCharacterRequest,
-    CreateCampaignRequest,
     PlayerInput,
     GameResponse,
-    CharacterSheet,
-    Campaign,
-    GenerateImageRequest,
-    BattleMapRequest
+    CharacterSheet
 )
 from app.agents.dungeon_master_agent import dungeon_master
 from app.agents.scribe_agent import scribe
-from app.agents.narrator_agent import narrator
-from app.agents.combat_mc_agent import combat_mc
 from app.agents.combat_cartographer_agent import combat_cartographer
 from app.agents.artist_agent import artist
 
