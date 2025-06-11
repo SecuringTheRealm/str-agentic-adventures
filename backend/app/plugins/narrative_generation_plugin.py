@@ -3,13 +3,12 @@ Narrative Generation Plugin for the Semantic Kernel.
 This plugin provides dynamic storyline generation and branching narrative capabilities.
 """
 import logging
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 import json
 import datetime
 import random
 
 from semantic_kernel.functions import kernel_function
-from semantic_kernel.functions.kernel_arguments import KernelArguments
 from app.models.game_models import (
     StoryArc, PlotPoint, NarrativeChoice, NarrativeState, NarrativeEvent
 )
@@ -302,7 +301,7 @@ class NarrativeGenerationPlugin:
             if trigger_data:
                 try:
                     triggers = json.loads(trigger_data)
-                except:
+                except (json.JSONDecodeError, TypeError):
                     triggers = {}
             
             # Check for plot point activations
