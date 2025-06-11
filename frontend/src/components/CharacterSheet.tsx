@@ -19,7 +19,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
 				<h2>{character.name}</h2>
 				<div className="character-basics">
 					<div>
-						Level {character.level} {character.race} {character.class}
+						Level {character.level} {character.race} {character.character_class}
 					</div>
 				</div>
 			</div>
@@ -28,7 +28,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
 				<div className="hit-points">
 					<div className="stat-label">Hit Points</div>
 					<div className="stat-value">
-						{character.hitPoints.current} / {character.hitPoints.maximum}
+						{character.hit_points.current} / {character.hit_points.maximum}
 					</div>
 				</div>
 

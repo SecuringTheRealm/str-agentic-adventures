@@ -90,7 +90,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 				details: {
 					name: character.name,
 					race: character.race,
-					class: character.class,
+					class: character.character_class,
 					// Add any additional character details for better portraits
 				}
 			});
