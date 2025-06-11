@@ -16,12 +16,14 @@ class Settings(BaseSettings):
     # Model Deployments
     azure_openai_chat_deployment: str = os.getenv("AZURE_OPENAI_CHAT_DEPLOYMENT", "")
     azure_openai_embedding_deployment: str = os.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT", "")
+    azure_openai_dalle_deployment: str = os.getenv("AZURE_OPENAI_DALLE_DEPLOYMENT", "dall-e-3")
 
     # Semantic Kernel Settings
     semantic_kernel_debug: bool = os.getenv("SEMANTIC_KERNEL_DEBUG", "False").lower() == "true"
 
     # Storage Settings
     storage_connection_string: str = os.getenv("STORAGE_CONNECTION_STRING", "")
+    image_storage_container: str = os.getenv("IMAGE_STORAGE_CONTAINER", "generated-images")
 
     # App Settings
     app_host: str = os.getenv("APP_HOST", "0.0.0.0")

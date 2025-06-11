@@ -7,6 +7,7 @@ from typing import Dict, Any, List, Optional
 import semantic_kernel as sk
 
 from app.kernel_setup import kernel_manager
+from app.services.image_generation_service import image_service
 
 logger = logging.getLogger(__name__)
 
@@ -49,23 +50,61 @@ class CombatCartographerAgent:
             terrain = environment_context.get("terrain", "plain")
             size = environment_context.get("size", "medium")
             features = environment_context.get("features", [])
+            hazards = environment_context.get("hazards", [])
+            lighting = environment_context.get("lighting", "normal")
             
-            # TODO: Implement the actual battle map generation using Azure OpenAI
-            # For now, we'll return a placeholder with the map details
+            # Extract combat context if provided
+            encounter_type = ""
+            enemy_count = 0
+            if combat_context:
+                encounter_type = combat_context.get("encounter_type", "")
+                enemy_count = combat_context.get("enemy_count", 0)
             
-            # Create a description for the image generation
-            map_description = f"A tactical battle map of a {terrain} {location}"
+            # Create a detailed prompt for battle map generation
+            prompt_parts = [f"Top-down tactical battle map of a {terrain} {location}"]
+            
             if features:
-                map_description += f" with {', '.join(features)}"
+                prompt_parts.append(f"Features: {', '.join(features)}")
+            if hazards:
+                prompt_parts.append(f"Hazards: {', '.join(hazards)}")
+            if lighting != "normal":
+                prompt_parts.append(f"Lighting: {lighting}")
+            if encounter_type:
+                prompt_parts.append(f"Designed for {encounter_type} encounter")
+            if enemy_count > 0:
+                prompt_parts.append(f"Suitable for {enemy_count} enemies")
                 
+            prompt_parts.extend([
+                "Grid-based tactical map",
+                "Clear visibility",
+                "Fantasy RPG battle map",
+                "Top-down view",
+                "Game board style",
+                "High contrast",
+                "Dungeons and Dragons style map"
+            ])
+            
+            prompt = ". ".join(prompt_parts)
+            
+            # Generate the battle map using the image service
+            image_result = await image_service.generate_image(
+                prompt=prompt,
+                size="1024x1024",  # Square format for battle maps
+                quality="standard",
+                style="natural"
+            )
+            
             battle_map = {
                 "id": map_id,
                 "name": f"{location.capitalize()} Battle Map",
-                "description": map_description,
+                "description": prompt,
                 "size": size,
                 "terrain": terrain,
                 "features": features,
-                "image_url": None  # Would be populated with the actual generated image URL
+                "image_url": image_result.get("image_url"),
+                "image_id": image_result.get("id"),
+                "generated_at": image_result.get("created_at"),
+                "placeholder": image_result.get("placeholder", False)
             }
             
             # Store the battle map
