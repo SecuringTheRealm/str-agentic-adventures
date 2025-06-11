@@ -1,265 +1,306 @@
-import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import GameInterface from './GameInterface';
-import { Character, Campaign } from '../services/api';
-import * as api from '../services/api';
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import React from "react";
+import * as api from "../services/api";
+import type { Campaign, Character } from "../services/api";
+import GameInterface from "./GameInterface";
 
 // Mock the API module
-vi.mock('../services/api');
+vi.mock("../services/api");
 const mockSendPlayerInput = vi.mocked(api.sendPlayerInput);
 
 // Mock child components
-vi.mock('./ChatBox', () => ({
-  default: ({ messages, onSendMessage, isLoading }: any) => (
-    <div data-testid="chat-box">
-      <div data-testid="messages">
-        {messages.map((msg: any, idx: number) => (
-          <div key={idx}>{msg.text}</div>
-        ))}
-      </div>
-      <button onClick={() => onSendMessage('test message')} disabled={isLoading}>
-        Send Message
-      </button>
-    </div>
-  ),
+vi.mock("./ChatBox", () => ({
+	default: ({
+		messages,
+		onSendMessage,
+		isLoading,
+	}: {
+		messages: Array<{ text: string }>;
+		onSendMessage: (msg: string) => void;
+		isLoading: boolean;
+	}) => (
+		<div data-testid="chat-box">
+			<div data-testid="messages">
+				{messages.map((msg, idx) => (
+					<div key={`${msg.text}-${idx}`}>{msg.text}</div>
+				))}
+			</div>
+			<button
+				type="button"
+				onClick={() => onSendMessage("test message")}
+				disabled={isLoading}
+			>
+				Send Message
+			</button>
+		</div>
+	),
 }));
 
-vi.mock('./CharacterSheet', () => ({
-  default: ({ character }: any) => (
-    <div data-testid="character-sheet">{character.name}</div>
-  ),
+vi.mock("./CharacterSheet", () => ({
+	default: ({ character }: { character: Character }) => (
+		<div data-testid="character-sheet">{character.name}</div>
+	),
 }));
 
-vi.mock('./ImageDisplay', () => ({
-  default: ({ imageUrl }: any) => (
-    <div data-testid="image-display">{imageUrl || 'No image'}</div>
-  ),
+vi.mock("./ImageDisplay", () => ({
+	default: ({ imageUrl }: { imageUrl: string | null }) => (
+		<div data-testid="image-display">{imageUrl || "No image"}</div>
+	),
 }));
 
-vi.mock('./BattleMap', () => ({
-  default: ({ mapUrl }: any) => (
-    <div data-testid="battle-map">{mapUrl || 'No map'}</div>
-  ),
+vi.mock("./BattleMap", () => ({
+	default: ({ mapUrl }: { mapUrl: string | null }) => (
+		<div data-testid="battle-map">{mapUrl || "No map"}</div>
+	),
 }));
 
-describe('GameInterface', () => {
-  const mockCharacter: Character = {
-    id: '1',
-    name: 'Aragorn',
-    race: 'Human',
-    class: 'Ranger',
-    level: 5,
-    abilities: {
-      strength: 16,
-      dexterity: 14,
-      constitution: 15,
-      intelligence: 12,
-      wisdom: 18,
-      charisma: 10,
-    },
-    hitPoints: {
-      current: 45,
-      maximum: 50,
-    },
-    inventory: [],
-  };
+describe("GameInterface", () => {
+	const mockCharacter: Character = {
+		id: "1",
+		name: "Aragorn",
+		race: "Human",
+		class: "Ranger",
+		level: 5,
+		abilities: {
+			strength: 16,
+			dexterity: 14,
+			constitution: 15,
+			intelligence: 12,
+			wisdom: 18,
+			charisma: 10,
+		},
+		hitPoints: {
+			current: 45,
+			maximum: 50,
+		},
+		inventory: [],
+	};
 
-  const mockCampaign: Campaign = {
-    id: '1',
-    name: 'The Lost Kingdom',
-    setting: 'Medieval Fantasy',
-    tone: 'heroic',
-    homebrew_rules: [],
-    characters: ['1'],
-    world_description: 'A mystical realm awaits.',
-  };
+	const mockCampaign: Campaign = {
+		id: "1",
+		name: "The Lost Kingdom",
+		setting: "Medieval Fantasy",
+		tone: "heroic",
+		homebrew_rules: [],
+		characters: ["1"],
+		world_description: "A mystical realm awaits.",
+	};
 
-  beforeEach(() => {
-    mockSendPlayerInput.mockClear();
-  });
+	beforeEach(() => {
+		mockSendPlayerInput.mockClear();
+	});
 
-  it('renders all child components', () => {
-    render(<GameInterface character={mockCharacter} campaign={mockCampaign} />);
+	it("renders all child components", () => {
+		render(<GameInterface character={mockCharacter} campaign={mockCampaign} />);
 
-    expect(screen.getByTestId('character-sheet')).toBeInTheDocument();
-    expect(screen.getByTestId('chat-box')).toBeInTheDocument();
-    expect(screen.getByTestId('image-display')).toBeInTheDocument();
-  });
+		expect(screen.getByTestId("character-sheet")).toBeInTheDocument();
+		expect(screen.getByTestId("chat-box")).toBeInTheDocument();
+		expect(screen.getByTestId("image-display")).toBeInTheDocument();
+	});
 
-  it('displays welcome message on mount', () => {
-    render(<GameInterface character={mockCharacter} campaign={mockCampaign} />);
+	it("displays welcome message on mount", () => {
+		render(<GameInterface character={mockCharacter} campaign={mockCampaign} />);
 
-    const expectedMessage = 'Welcome, Aragorn! Your adventure in The Lost Kingdom begins now. A mystical realm awaits.';
-    expect(screen.getByText(expectedMessage)).toBeInTheDocument();
-  });
+		const expectedMessage =
+			"Welcome, Aragorn! Your adventure in The Lost Kingdom begins now. A mystical realm awaits.";
+		expect(screen.getByText(expectedMessage)).toBeInTheDocument();
+	});
 
-  it('displays welcome message without world description', () => {
-    const campaignWithoutDescription = { ...mockCampaign, world_description: undefined };
-    render(<GameInterface character={mockCharacter} campaign={campaignWithoutDescription} />);
+	it("displays welcome message without world description", () => {
+		const campaignWithoutDescription = {
+			...mockCampaign,
+			world_description: undefined,
+		};
+		render(
+			<GameInterface
+				character={mockCharacter}
+				campaign={campaignWithoutDescription}
+			/>,
+		);
 
-    expect(screen.getByText(/Welcome, Aragorn! Your adventure in The Lost Kingdom begins now\./)).toBeInTheDocument();
-  });
+		expect(
+			screen.getByText(
+				/Welcome, Aragorn! Your adventure in The Lost Kingdom begins now\./,
+			),
+		).toBeInTheDocument();
+	});
 
-  it('shows initial world art if available', () => {
-    const campaignWithArt = {
-      ...mockCampaign,
-      world_art: { image_url: 'https://example.com/world.jpg' },
-    };
-    render(<GameInterface character={mockCharacter} campaign={campaignWithArt} />);
+	it("shows initial world art if available", () => {
+		const campaignWithArt = {
+			...mockCampaign,
+			world_art: { image_url: "https://example.com/world.jpg" },
+		};
+		render(
+			<GameInterface character={mockCharacter} campaign={campaignWithArt} />,
+		);
 
-    expect(screen.getByText('https://example.com/world.jpg')).toBeInTheDocument();
-  });
+		expect(
+			screen.getByText("https://example.com/world.jpg"),
+		).toBeInTheDocument();
+	});
 
-  it('handles player input and API response', async () => {
-    const mockResponse = {
-      message: 'You see a castle in the distance.',
-      images: ['https://example.com/castle.jpg'],
-      state_updates: {},
-      combat_updates: null,
-    };
-    mockSendPlayerInput.mockResolvedValue(mockResponse);
+	it("handles player input and API response", async () => {
+		const mockResponse = {
+			message: "You see a castle in the distance.",
+			images: ["https://example.com/castle.jpg"],
+			state_updates: {},
+			combat_updates: null,
+		};
+		mockSendPlayerInput.mockResolvedValue(mockResponse);
 
-    render(<GameInterface character={mockCharacter} campaign={mockCampaign} />);
+		render(<GameInterface character={mockCharacter} campaign={mockCampaign} />);
 
-    const sendButton = screen.getByText('Send Message');
-    await userEvent.click(sendButton);
+		const sendButton = screen.getByText("Send Message");
+		await userEvent.click(sendButton);
 
-    await waitFor(() => {
-      expect(mockSendPlayerInput).toHaveBeenCalledWith({
-        message: 'test message',
-        character_id: '1',
-        campaign_id: '1',
-      });
-    });
+		await waitFor(() => {
+			expect(mockSendPlayerInput).toHaveBeenCalledWith({
+				message: "test message",
+				character_id: "1",
+				campaign_id: "1",
+			});
+		});
 
-    await waitFor(() => {
-      expect(screen.getByText('You see a castle in the distance.')).toBeInTheDocument();
-    });
-  });
+		await waitFor(() => {
+			expect(
+				screen.getByText("You see a castle in the distance."),
+			).toBeInTheDocument();
+		});
+	});
 
-  it('updates image when response includes new image', async () => {
-    const mockResponse = {
-      message: 'Response with image',
-      images: ['https://example.com/new-image.jpg'],
-      state_updates: {},
-      combat_updates: null,
-    };
-    mockSendPlayerInput.mockResolvedValue(mockResponse);
+	it("updates image when response includes new image", async () => {
+		const mockResponse = {
+			message: "Response with image",
+			images: ["https://example.com/new-image.jpg"],
+			state_updates: {},
+			combat_updates: null,
+		};
+		mockSendPlayerInput.mockResolvedValue(mockResponse);
 
-    render(<GameInterface character={mockCharacter} campaign={mockCampaign} />);
+		render(<GameInterface character={mockCharacter} campaign={mockCampaign} />);
 
-    const sendButton = screen.getByText('Send Message');
-    await userEvent.click(sendButton);
+		const sendButton = screen.getByText("Send Message");
+		await userEvent.click(sendButton);
 
-    await waitFor(() => {
-      expect(screen.getByText('https://example.com/new-image.jpg')).toBeInTheDocument();
-    });
-  });
+		await waitFor(() => {
+			expect(
+				screen.getByText("https://example.com/new-image.jpg"),
+			).toBeInTheDocument();
+		});
+	});
 
-  it('activates combat mode when combat updates received', async () => {
-    const mockResponse = {
-      message: 'Combat begins!',
-      images: [],
-      state_updates: {},
-      combat_updates: {
-        status: 'active',
-        map_url: 'https://example.com/battle-map.jpg',
-      },
-    };
-    mockSendPlayerInput.mockResolvedValue(mockResponse);
+	it("activates combat mode when combat updates received", async () => {
+		const mockResponse = {
+			message: "Combat begins!",
+			images: [],
+			state_updates: {},
+			combat_updates: {
+				status: "active",
+				map_url: "https://example.com/battle-map.jpg",
+			},
+		};
+		mockSendPlayerInput.mockResolvedValue(mockResponse);
 
-    render(<GameInterface character={mockCharacter} campaign={mockCampaign} />);
+		render(<GameInterface character={mockCharacter} campaign={mockCampaign} />);
 
-    // Battle map should not be visible initially
-    expect(screen.queryByTestId('battle-map')).not.toBeInTheDocument();
+		// Battle map should not be visible initially
+		expect(screen.queryByTestId("battle-map")).not.toBeInTheDocument();
 
-    const sendButton = screen.getByText('Send Message');
-    await userEvent.click(sendButton);
+		const sendButton = screen.getByText("Send Message");
+		await userEvent.click(sendButton);
 
-    await waitFor(() => {
-      expect(screen.getByTestId('battle-map')).toBeInTheDocument();
-      expect(screen.getByText('https://example.com/battle-map.jpg')).toBeInTheDocument();
-    });
-  });
+		await waitFor(() => {
+			expect(screen.getByTestId("battle-map")).toBeInTheDocument();
+			expect(
+				screen.getByText("https://example.com/battle-map.jpg"),
+			).toBeInTheDocument();
+		});
+	});
 
-  it('handles API errors gracefully', async () => {
-    mockSendPlayerInput.mockRejectedValue(new Error('API Error'));
+	it("handles API errors gracefully", async () => {
+		mockSendPlayerInput.mockRejectedValue(new Error("API Error"));
 
-    render(<GameInterface character={mockCharacter} campaign={mockCampaign} />);
+		render(<GameInterface character={mockCharacter} campaign={mockCampaign} />);
 
-    const sendButton = screen.getByText('Send Message');
-    await userEvent.click(sendButton);
+		const sendButton = screen.getByText("Send Message");
+		await userEvent.click(sendButton);
 
-    await waitFor(() => {
-      expect(screen.getByText('Something went wrong. Please try again.')).toBeInTheDocument();
-    });
-  });
+		await waitFor(() => {
+			expect(
+				screen.getByText("Something went wrong. Please try again."),
+			).toBeInTheDocument();
+		});
+	});
 
-  it('shows loading state during API call', async () => {
-    let resolvePromise: (value: any) => void;
-    const promise = new Promise(resolve => { resolvePromise = resolve; });
-    mockSendPlayerInput.mockReturnValue(promise);
+	it("shows loading state during API call", async () => {
+		let resolvePromise: ((value: unknown) => void) | undefined;
+		const promise = new Promise((resolve) => {
+			resolvePromise = resolve;
+		});
+		mockSendPlayerInput.mockReturnValue(promise);
 
-    render(<GameInterface character={mockCharacter} campaign={mockCampaign} />);
+		render(<GameInterface character={mockCharacter} campaign={mockCampaign} />);
 
-    const sendButton = screen.getByText('Send Message');
-    await userEvent.click(sendButton);
+		const sendButton = screen.getByText("Send Message");
+		await userEvent.click(sendButton);
 
-    // Should be disabled during loading
-    expect(sendButton).toBeDisabled();
+		// Should be disabled during loading
+		expect(sendButton).toBeDisabled();
 
-    // Resolve to clean up
-    resolvePromise!({
-      message: 'Response',
-      images: [],
-      state_updates: {},
-      combat_updates: null,
-    });
-  });
+		// Resolve to clean up
+		resolvePromise?.({
+			message: "Response",
+			images: [],
+			state_updates: {},
+			combat_updates: null,
+		});
+	});
 
-  it('deactivates combat mode when combat is no longer active', async () => {
-    // First activate combat
-    const activateCombatResponse = {
-      message: 'Combat begins!',
-      images: [],
-      state_updates: {},
-      combat_updates: { status: 'active', map_url: 'battle.jpg' },
-    };
-    mockSendPlayerInput.mockResolvedValueOnce(activateCombatResponse);
+	it("deactivates combat mode when combat is no longer active", async () => {
+		// First activate combat
+		const activateCombatResponse = {
+			message: "Combat begins!",
+			images: [],
+			state_updates: {},
+			combat_updates: { status: "active", map_url: "battle.jpg" },
+		};
+		mockSendPlayerInput.mockResolvedValueOnce(activateCombatResponse);
 
-    render(<GameInterface character={mockCharacter} campaign={mockCampaign} />);
+		render(<GameInterface character={mockCharacter} campaign={mockCampaign} />);
 
-    const sendButton = screen.getByText('Send Message');
-    await userEvent.click(sendButton);
+		const sendButton = screen.getByText("Send Message");
+		await userEvent.click(sendButton);
 
-    await waitFor(() => {
-      expect(screen.getByTestId('battle-map')).toBeInTheDocument();
-    });
+		await waitFor(() => {
+			expect(screen.getByTestId("battle-map")).toBeInTheDocument();
+		});
 
-    // Then deactivate combat
-    const deactivateCombatResponse = {
-      message: 'Combat ends!',
-      images: [],
-      state_updates: {},
-      combat_updates: { status: 'inactive' },
-    };
-    mockSendPlayerInput.mockResolvedValueOnce(deactivateCombatResponse);
+		// Then deactivate combat
+		const deactivateCombatResponse = {
+			message: "Combat ends!",
+			images: [],
+			state_updates: {},
+			combat_updates: { status: "inactive" },
+		};
+		mockSendPlayerInput.mockResolvedValueOnce(deactivateCombatResponse);
 
-    await userEvent.click(sendButton);
+		await userEvent.click(sendButton);
 
-    await waitFor(() => {
-      expect(screen.queryByTestId('battle-map')).not.toBeInTheDocument();
-    });
-  });
+		await waitFor(() => {
+			expect(screen.queryByTestId("battle-map")).not.toBeInTheDocument();
+		});
+	});
 
-  it('has correct CSS structure', () => {
-    const { container } = render(<GameInterface character={mockCharacter} campaign={mockCampaign} />);
+	it("has correct CSS structure", () => {
+		const { container } = render(
+			<GameInterface character={mockCharacter} campaign={mockCampaign} />,
+		);
 
-    expect(container.querySelector('.game-interface')).toBeInTheDocument();
-    expect(container.querySelector('.game-container')).toBeInTheDocument();
-    expect(container.querySelector('.left-panel')).toBeInTheDocument();
-    expect(container.querySelector('.center-panel')).toBeInTheDocument();
-    expect(container.querySelector('.right-panel')).toBeInTheDocument();
-  });
+		expect(container.querySelector(".game-interface")).toBeInTheDocument();
+		expect(container.querySelector(".game-container")).toBeInTheDocument();
+		expect(container.querySelector(".left-panel")).toBeInTheDocument();
+		expect(container.querySelector(".center-panel")).toBeInTheDocument();
+		expect(container.querySelector(".right-panel")).toBeInTheDocument();
+	});
 });
