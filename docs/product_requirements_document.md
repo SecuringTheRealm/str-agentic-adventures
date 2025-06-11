@@ -46,6 +46,8 @@ The Secure the Realm platform is built on the Python Microsoft Semantic Kernel f
    - Tracks inventory, equipment, and loot
    - Handles NPC data and attributes
    - Monitors spell slots, abilities, and resources
+   - Manages character progression including level-ups, experience tracking, and ability score improvements
+   - Enforces D&D 5e progression rules and validates character advancement
    - Maintains structured data records for lookup and recall excluding campaign data managed by Narrator
 
 4. **Combat MC Agent**
@@ -88,6 +90,7 @@ While the Dungeon Master serves as the orchestrator, agents can communicate dire
 - **Rules Implementation**: D&D 5e OGL SRD ruleset
 - **Dice Rolling System**: Virtual dice implementation supporting all standard RPG dice (d4, d6, d8, d10, d12, d20, d100) and the ability of the user to bring their own dice by telling the DM what their roll or total score was
 - **Character Management**: Character creation, leveling, and stat tracking in line with standard character sheets for 5th edition e.g. feats
+- **Character Progression**: Experience-based leveling system with automatic proficiency bonus scaling, ability score improvements at appropriate levels (4, 8, 12, 16, 19), and hit point calculation using class-specific hit dice
 - **Combat System**: Turn-based combat with initiative tracking and number of actions
 - **Spell System**: Implementation of 5e spell mechanics and spell slots
 
@@ -146,7 +149,9 @@ While the Dungeon Master serves as the orchestrator, agents can communicate dire
 6. As a player, I want to track my character's inventory, spells, and abilities, so that I can manage my resources effectively during gameplay.
 7. As a player, I want to experience a coherent and dynamic campaign narrative, so that my actions feel meaningful within the story.
 8. As a player, I want to have my character's backstory integrated into the ongoing campaign, so that my character feels like a natural part of the world.
-9. As a player, I want to save and resume gameplay sessions, so that I can enjoy the campaign over multiple playing sessions without losing progress.
+9. As a player, I want to gain experience points and level up my character, so that I can see meaningful progression and unlock new abilities over time.
+10. As a player, I want to make ability score improvements when my character reaches appropriate levels, so that I can customize my character's development according to my playstyle.
+11. As a player, I want to save and resume gameplay sessions, so that I can enjoy the campaign over multiple playing sessions without losing progress.
 
 ### Dungeon Master (AI) Stories
 
@@ -157,7 +162,8 @@ While the Dungeon Master serves as the orchestrator, agents can communicate dire
 5. As a Dungeon Master (AI), I want to provide rule clarifications and adjudicate player actions, so that gameplay remains smooth and accessible.
 6. As a Dungeon Master (AI), I want to generate evocative descriptions of environments and situations, so that players can visualize and immerse themselves in the world.
 7. As a Dungeon Master (AI), I want to track multiple threads of story and character development, so that the campaign maintains continuity and depth.
-8. As a Dungeon Master (AI), I want to create a sense of immersion and agency for players, so that they feel emotionally invested in the game experience.
+8. As a Dungeon Master (AI), I want to manage character progression and enforce D&D 5e advancement rules, so that character development remains balanced and true to the game system.
+9. As a Dungeon Master (AI), I want to create a sense of immersion and agency for players, so that they feel emotionally invested in the game experience.
 
 ## Implementation Phases
 
@@ -207,12 +213,12 @@ While the Dungeon Master serves as the orchestrator, agents can communicate dire
 
 - Player engagement duration per session
 - Campaign completion rates
-- Character progression metrics
+- Character progression metrics ✅ **Implemented**: Experience tracking, level-ups, and ability score improvements
 - Narrative coherence and continuity from player feedback
 - Combat balance and tactical satisfaction from player feedback
 - Image generation quality and relevance from player feedback
 - User satisfaction with agent responses from player feedback
-- System stability and response times based upon termianl data on execution as well as player feedback
+- System stability and response times based upon terminal data on execution as well as player feedback
 
 ## Conclusion
 
