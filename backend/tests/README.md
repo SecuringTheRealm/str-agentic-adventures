@@ -91,15 +91,23 @@ The test suite uses:
 - `pydantic`: Model validation testing
 - Standard library modules for UUID, datetime testing
 
+### `test_adr_compliance.py`
+Comprehensive validation tests for ADR implementation compliance:
+- **ADR Implementation Verification**: Testing that all architectural decisions are properly implemented
+- **File Structure Validation**: Ensuring required components exist and contain expected implementations
+- **Integration Validation**: Testing that components are properly integrated (agents with storage, etc.)
+- **Compliance Scoring**: Automated verification of ADR compliance status
+
 ## Notes
 
 - Tests are designed to run without external dependencies (Azure OpenAI, databases, etc.)
 - Complex FastAPI integration tests were intentionally simplified to focus on testable components
 - Agent tests use mocking to avoid Semantic Kernel dependency issues
+- ADR compliance tests validate actual implementation exists and is integrated correctly
 - All tests pass reliably and provide good coverage of the core functionality
 
 ## Test Results
 
-Current test suite: **36 tests, all passing** ✅
+Current test suite: **36+ tests covering core functionality plus ADR compliance validation** ✅
 
-This provides solid foundation test coverage for the core backend functionality while maintaining simplicity and reliability.
+This provides comprehensive test coverage for the core backend functionality, architectural compliance, and maintains simplicity and reliability.

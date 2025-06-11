@@ -5,6 +5,8 @@ import {
 	type Character,
 	type GameResponse,
 	sendPlayerInput,
+	generateImage,
+	generateBattleMap,
 } from "../services/api";
 import BattleMap from "./BattleMap";
 import CharacterSheet from "./CharacterSheet";
@@ -25,6 +27,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 		Array<{ text: string; sender: "player" | "dm" }>
 	>([]);
 	const [loading, setLoading] = useState<boolean>(false);
+	const [imageLoading, setImageLoading] = useState<boolean>(false);
 	const [currentImage, setCurrentImage] = useState<string | null>(null);
 	const [battleMapUrl, setBattleMapUrl] = useState<string | null>(null);
 	const [combatActive, setCombatActive] = useState<boolean>(false);
@@ -39,6 +42,99 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 			setCurrentImage(campaign.world_art.image_url);
 		}
 	}, [character, campaign]);
+
+	const handleGenerateCharacterPortrait = async () => {
+		setImageLoading(true);
+		try {
+			const portraitData = await generateImage({
+				image_type: "character_portrait",
+				details: {
+					name: character.name,
+					race: character.race,
+					class: character.class,
+					// Add any additional character details for better portraits
+				}
+			});
+
+			if (portraitData && typeof portraitData === 'object' && 'image_url' in portraitData) {
+				setCurrentImage(portraitData.image_url as string);
+				setMessages(prev => [...prev, { 
+					text: `Generated character portrait for ${character.name}`, 
+					sender: "dm" 
+				}]);
+			}
+		} catch (error) {
+			console.error("Error generating character portrait:", error);
+			setMessages(prev => [...prev, { 
+				text: "Failed to generate character portrait. Please try again.", 
+				sender: "dm" 
+			}]);
+		} finally {
+			setImageLoading(false);
+		}
+	};
+
+	const handleGenerateSceneIllustration = async () => {
+		setImageLoading(true);
+		try {
+			const sceneData = await generateImage({
+				image_type: "scene_illustration",
+				details: {
+					location: "fantasy tavern", // Default scene, could be dynamic
+					mood: "atmospheric",
+					time: "evening",
+					notable_elements: ["wooden tables", "fireplace", "adventurers"]
+				}
+			});
+
+			if (sceneData && typeof sceneData === 'object' && 'image_url' in sceneData) {
+				setCurrentImage(sceneData.image_url as string);
+				setMessages(prev => [...prev, { 
+					text: "Generated scene illustration", 
+					sender: "dm" 
+				}]);
+			}
+		} catch (error) {
+			console.error("Error generating scene illustration:", error);
+			setMessages(prev => [...prev, { 
+				text: "Failed to generate scene illustration. Please try again.", 
+				sender: "dm" 
+			}]);
+		} finally {
+			setImageLoading(false);
+		}
+	};
+
+	const handleGenerateBattleMap = async () => {
+		setImageLoading(true);
+		try {
+			const mapData = await generateBattleMap({
+				environment: {
+					location: "dungeon corridor",
+					terrain: "stone",
+					size: "medium",
+					features: ["pillars", "doorways", "torches"]
+				}
+			});
+
+			if (mapData && typeof mapData === 'object' && 'image_url' in mapData) {
+				setBattleMapUrl(mapData.image_url as string);
+				setCombatActive(true);
+				setMessages(prev => [...prev, { 
+					text: "Generated tactical battle map", 
+					sender: "dm" 
+				}]);
+			}
+		} catch (error) {
+			console.error("Error generating battle map:", error);
+			setMessages(prev => [...prev, { 
+				text: "Failed to generate battle map. Please try again.", 
+				sender: "dm" 
+			}]);
+		} finally {
+			setImageLoading(false);
+		}
+	};
 
 	const handlePlayerInput = async (message: string) => {
 		// Add player message to chat
@@ -103,6 +199,33 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 				</div>
 
 				<div className="right-panel">
+					<div className="visual-controls">
+						<h4>Generate Visuals</h4>
+						<div className="visual-buttons">
+							<button 
+								onClick={handleGenerateCharacterPortrait}
+								disabled={imageLoading}
+								className="visual-button"
+							>
+								{imageLoading ? "Generating..." : "Character Portrait"}
+							</button>
+							<button 
+								onClick={handleGenerateSceneIllustration}
+								disabled={imageLoading}
+								className="visual-button"
+							>
+								{imageLoading ? "Generating..." : "Scene Illustration"}
+							</button>
+							<button 
+								onClick={handleGenerateBattleMap}
+								disabled={imageLoading}
+								className="visual-button"
+							>
+								{imageLoading ? "Generating..." : "Battle Map"}
+							</button>
+						</div>
+					</div>
+
 					<div className="image-section">
 						<ImageDisplay imageUrl={currentImage} />
 					</div>

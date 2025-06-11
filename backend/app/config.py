@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     # Model Deployments
     azure_openai_chat_deployment: str = os.getenv("AZURE_OPENAI_CHAT_DEPLOYMENT")
     azure_openai_embedding_deployment: str = os.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT")
+    azure_openai_dalle_deployment: str = os.getenv("AZURE_OPENAI_DALLE_DEPLOYMENT", "dall-e-3")
 
     # Semantic Kernel Settings
     semantic_kernel_debug: bool = os.getenv("SEMANTIC_KERNEL_DEBUG", "False").lower() == "true"

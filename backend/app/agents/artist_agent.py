@@ -4,7 +4,7 @@ Artist Agent - Generates visual imagery for the game.
 import logging
 from typing import Dict, Any
 
-
+from app.azure_openai_client import AzureOpenAIClient
 from app.kernel_setup import kernel_manager
 
 logger = logging.getLogger(__name__)
@@ -18,6 +18,7 @@ class ArtistAgent:
     def __init__(self):
         """Initialize the Artist agent with its own kernel instance."""
         self.kernel = kernel_manager.create_kernel()
+        self.azure_client = AzureOpenAIClient()
         self._register_skills()
         
         # Store generated art references
@@ -46,20 +47,53 @@ class ArtistAgent:
             name = character_details.get("name", "Unnamed Character")
             race = character_details.get("race", "human")
             character_class = character_details.get("class", "adventurer")
+            gender = character_details.get("gender", "")
+            description = character_details.get("description", "")
             
-            # Create a description for the image generation
-            description = f"Fantasy portrait of {name}, a {race} {character_class}"
+            # Create a detailed prompt for DALL-E
+            prompt = f"Fantasy character portrait of {name}, a {race} {character_class}"
+            if gender:
+                prompt = f"Fantasy character portrait of {name}, a {gender} {race} {character_class}"
             
-            # TODO: Implement the actual portrait generation using Azure OpenAI
-            # For now, we'll return a placeholder with portrait details
+            # Add physical description if available
+            if description:
+                prompt += f". {description}"
             
-            portrait = {
-                "id": art_id,
-                "type": "character_portrait",
-                "character_name": name,
-                "description": description,
-                "image_url": None  # Would be populated with the actual generated image URL
-            }
+            # Add D&D fantasy styling
+            prompt += ". High quality digital art, fantasy RPG character, detailed armor or clothing, atmospheric lighting, professional character portrait"
+            
+            # Generate the image using Azure OpenAI DALL-E
+            image_result = await self.azure_client.generate_image(
+                prompt=prompt,
+                size="1024x1024",
+                quality="standard",
+                style="vivid"
+            )
+            
+            if image_result["success"]:
+                portrait = {
+                    "id": art_id,
+                    "type": "character_portrait",
+                    "character_name": name,
+                    "description": prompt,
+                    "image_url": image_result["image_url"],
+                    "revised_prompt": image_result.get("revised_prompt", prompt),
+                    "generation_details": {
+                        "size": image_result["size"],
+                        "quality": image_result["quality"],
+                        "style": image_result["style"]
+                    }
+                }
+            else:
+                # Fallback to placeholder if generation fails
+                portrait = {
+                    "id": art_id,
+                    "type": "character_portrait",
+                    "character_name": name,
+                    "description": prompt,
+                    "image_url": None,
+                    "error": image_result.get("error", "Image generation failed")
+                }
             
             # Store the generated art
             self.generated_art[art_id] = portrait
@@ -89,22 +123,56 @@ class ArtistAgent:
             mood = scene_context.get("mood", "atmospheric")
             time = scene_context.get("time", "day")
             notable_elements = scene_context.get("notable_elements", [])
+            weather = scene_context.get("weather", "")
             
-            # Create a description for the image generation
-            description = f"Fantasy illustration of a {mood} {location} during {time}"
+            # Create a detailed prompt for DALL-E
+            prompt = f"Fantasy illustration of a {mood} {location} during {time}"
             if notable_elements:
-                description += f", featuring {', '.join(notable_elements)}"
+                prompt += f", featuring {', '.join(notable_elements)}"
+            if weather:
+                prompt += f", {weather} weather"
             
-            # TODO: Implement the actual scene illustration generation using Azure OpenAI
-            # For now, we'll return a placeholder with illustration details
+            # Add D&D fantasy styling
+            prompt += ". High quality digital art, fantasy RPG environment, detailed textures, atmospheric lighting, cinematic composition, concept art style"
             
-            illustration = {
-                "id": art_id,
-                "type": "scene_illustration",
-                "location": location,
-                "description": description,
-                "image_url": None  # Would be populated with the actual generated image URL
-            }
+            # Generate the image using Azure OpenAI DALL-E
+            image_result = await self.azure_client.generate_image(
+                prompt=prompt,
+                size="1024x1024",
+                quality="standard",
+                style="vivid"
+            )
+            
+            if image_result["success"]:
+                illustration = {
+                    "id": art_id,
+                    "type": "scene_illustration",
+                    "location": location,
+                    "description": prompt,
+                    "image_url": image_result["image_url"],
+                    "revised_prompt": image_result.get("revised_prompt", prompt),
+                    "scene_details": {
+                        "mood": mood,
+                        "time": time,
+                        "notable_elements": notable_elements,
+                        "weather": weather
+                    },
+                    "generation_details": {
+                        "size": image_result["size"],
+                        "quality": image_result["quality"],
+                        "style": image_result["style"]
+                    }
+                }
+            else:
+                # Fallback to placeholder if generation fails
+                illustration = {
+                    "id": art_id,
+                    "type": "scene_illustration",
+                    "location": location,
+                    "description": prompt,
+                    "image_url": None,
+                    "error": image_result.get("error", "Image generation failed")
+                }
             
             # Store the generated art
             self.generated_art[art_id] = illustration
@@ -134,22 +202,56 @@ class ArtistAgent:
             item_type = item_details.get("type", "object")
             rarity = item_details.get("rarity", "common")
             description = item_details.get("description", "")
+            magical = item_details.get("magical", False)
             
-            # Create a description for the image generation
-            image_description = f"Fantasy {rarity} {item_type} named {name}"
+            # Create a detailed prompt for DALL-E
+            prompt = f"Fantasy {rarity} {item_type} named '{name}'"
+            if magical:
+                prompt += ", magical item with glowing or mystical properties"
             if description:
-                image_description += f". {description}"
+                prompt += f". {description}"
             
-            # TODO: Implement the actual item visualization generation using Azure OpenAI
-            # For now, we'll return a placeholder with item visualization details
+            # Add D&D fantasy styling
+            prompt += ". High quality digital art, fantasy RPG item, detailed textures, studio lighting, clean background, item showcase style"
             
-            item_visualization = {
-                "id": art_id,
-                "type": "item_visualization",
-                "item_name": name,
-                "description": image_description,
-                "image_url": None  # Would be populated with the actual generated image URL
-            }
+            # Generate the image using Azure OpenAI DALL-E
+            image_result = await self.azure_client.generate_image(
+                prompt=prompt,
+                size="1024x1024",
+                quality="standard",
+                style="vivid"
+            )
+            
+            if image_result["success"]:
+                item_visualization = {
+                    "id": art_id,
+                    "type": "item_visualization",
+                    "item_name": name,
+                    "description": prompt,
+                    "image_url": image_result["image_url"],
+                    "revised_prompt": image_result.get("revised_prompt", prompt),
+                    "item_details": {
+                        "item_type": item_type,
+                        "rarity": rarity,
+                        "magical": magical,
+                        "description": description
+                    },
+                    "generation_details": {
+                        "size": image_result["size"],
+                        "quality": image_result["quality"],
+                        "style": image_result["style"]
+                    }
+                }
+            else:
+                # Fallback to placeholder if generation fails
+                item_visualization = {
+                    "id": art_id,
+                    "type": "item_visualization",
+                    "item_name": name,
+                    "description": prompt,
+                    "image_url": None,
+                    "error": image_result.get("error", "Image generation failed")
+                }
             
             # Store the generated art
             self.generated_art[art_id] = item_visualization
