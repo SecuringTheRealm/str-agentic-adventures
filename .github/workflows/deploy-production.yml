@@ -1,0 +1,79 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+
+jobs:
+  deploy:
+    # Only run if Azure secrets are configured
+    if: ${{ secrets.AZURE_CLIENT_ID != '' && secrets.AZURE_TENANT_ID != '' && secrets.AZURE_SUBSCRIPTION_ID != '' }}
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Install Azure Developer CLI
+      uses: Azure/setup-azd@v1.0.0
+      
+    - name: Log in with Azure (Federated Credentials)
+      if: ${{ env.AZURE_CLIENT_ID != '' }}
+      run: |
+        azd auth login \
+          --client-id "${{ env.AZURE_CLIENT_ID }}" \
+          --federated-credential-provider "github" \
+          --tenant-id "${{ env.AZURE_TENANT_ID }}"
+        
+    - name: Log in with Azure (Service Principal)
+      if: ${{ env.AZURE_CLIENT_ID == '' && env.AZURE_CREDENTIALS != '' }}
+      uses: Azure/login@v2
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+        
+    - name: Configure Azure Developer CLI environment
+      run: |
+        azd env new production --subscription "${{ env.AZURE_SUBSCRIPTION_ID }}" --location "${{ vars.AZURE_LOCATION || 'eastus' }}"
+        azd env set AZURE_LOCATION "${{ vars.AZURE_LOCATION || 'eastus' }}"
+        azd env set AZURE_OPENAI_ENDPOINT "${{ secrets.AZURE_OPENAI_ENDPOINT }}"
+        azd env set AZURE_OPENAI_API_KEY "${{ secrets.AZURE_OPENAI_API_KEY }}"
+        azd env set AZURE_OPENAI_CHAT_DEPLOYMENT "${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT || 'gpt-4o-mini' }}"
+        azd env set AZURE_OPENAI_EMBEDDING_DEPLOYMENT "${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT || 'text-embedding-ada-002' }}"
+        azd env set AZURE_OPENAI_DALLE_DEPLOYMENT "${{ vars.AZURE_OPENAI_DALLE_DEPLOYMENT || 'dall-e-3' }}"
+        
+    - name: Provision and Deploy to Azure
+      run: azd up --no-prompt
+      
+    - name: Get deployment outputs
+      id: azd-outputs
+      run: |
+        echo "backend-uri=$(azd env get-values | grep BACKEND_URI | cut -d'=' -f2)" >> $GITHUB_OUTPUT
+        echo "frontend-uri=$(azd env get-values | grep FRONTEND_URI | cut -d'=' -f2)" >> $GITHUB_OUTPUT
+        
+    - name: Create deployment summary
+      run: |
+        cat << EOF >> $GITHUB_STEP_SUMMARY
+        ## 🚀 Production Deployment Successful
+        
+        ### Deployed Resources
+        - **Backend API**: ${{ steps.azd-outputs.outputs.backend-uri }}
+        - **Frontend App**: ${{ steps.azd-outputs.outputs.frontend-uri }}
+        
+        ### Environment
+        - **Azure Subscription**: ${{ env.AZURE_SUBSCRIPTION_ID }}
+        - **Location**: ${{ vars.AZURE_LOCATION || 'eastus' }}
+        - **Environment**: production
+        
+        ### Next Steps
+        1. Verify the application is running correctly
+        2. Check Azure OpenAI integration
+        3. Test the AI Dungeon Master functionality
+        EOF

@@ -1,0 +1,71 @@
+name: Cleanup PR Environment
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [ main ]
+  
+env:
+  AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+
+jobs:
+  cleanup-pr:
+    # Only run if Azure secrets are configured
+    if: ${{ secrets.AZURE_CLIENT_ID != '' && secrets.AZURE_TENANT_ID != '' && secrets.AZURE_SUBSCRIPTION_ID != '' }}
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Install Azure Developer CLI
+      uses: Azure/setup-azd@v1.0.0
+      
+    - name: Log in with Azure (Federated Credentials)
+      if: ${{ env.AZURE_CLIENT_ID != '' }}
+      run: |
+        azd auth login \
+          --client-id "${{ env.AZURE_CLIENT_ID }}" \
+          --federated-credential-provider "github" \
+          --tenant-id "${{ env.AZURE_TENANT_ID }}"
+        
+    - name: Log in with Azure (Service Principal)
+      if: ${{ env.AZURE_CLIENT_ID == '' && env.AZURE_CREDENTIALS != '' }}
+      uses: Azure/login@v2
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+        
+    - name: Cleanup PR Environment
+      run: |
+        ENV_NAME="pr-${{ github.event.pull_request.number }}"
+        
+        # Check if environment exists
+        if azd env list | grep -q "$ENV_NAME"; then
+          echo "Found environment $ENV_NAME, cleaning up..."
+          azd env select $ENV_NAME
+          azd down --force --purge --no-prompt
+          echo "Environment $ENV_NAME cleaned up successfully"
+        else
+          echo "Environment $ENV_NAME not found, nothing to clean up"
+        fi
+        
+    - name: Comment on PR
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const commentBody = `## 🧹 PR Environment Cleaned Up
+          
+          The temporary environment for this pull request has been deleted.
+          
+          ${github.event.pull_request.merged ? '✅ **Merged**: Changes are now available in the main branch' : '❌ **Closed**: No changes were merged'}
+          `;
+          
+          await github.rest.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+            body: commentBody
+          });

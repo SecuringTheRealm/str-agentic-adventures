@@ -1,0 +1,199 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.36.1.42791",
+      "templateHash": "9020680351195856195"
+    }
+  },
+  "parameters": {
+    "name": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Container App"
+      }
+    },
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "The location of the Container App"
+      }
+    },
+    "tags": {
+      "type": "object",
+      "defaultValue": {},
+      "metadata": {
+        "description": "Tags to apply to the Container App"
+      }
+    },
+    "containerAppsEnvironmentId": {
+      "type": "string",
+      "metadata": {
+        "description": "The resource ID of the Container Apps environment"
+      }
+    },
+    "azureOpenAiApiKey": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Azure OpenAI API Key"
+      }
+    },
+    "azureOpenAiEndpoint": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure OpenAI Endpoint"
+      }
+    },
+    "azureOpenAiChatDeployment": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure OpenAI Chat Deployment Name"
+      }
+    },
+    "azureOpenAiEmbeddingDeployment": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure OpenAI Embedding Deployment Name"
+      }
+    },
+    "azureOpenAiDalleDeployment": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure OpenAI DALL-E Deployment Name"
+      }
+    },
+    "storageConnectionString": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Storage connection string"
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.App/containerApps",
+      "apiVersion": "2023-05-01",
+      "name": "[parameters('name')]",
+      "location": "[parameters('location')]",
+      "tags": "[parameters('tags')]",
+      "properties": {
+        "managedEnvironmentId": "[parameters('containerAppsEnvironmentId')]",
+        "configuration": {
+          "ingress": {
+            "external": true,
+            "targetPort": 8000,
+            "allowInsecure": false,
+            "traffic": [
+              {
+                "weight": 100,
+                "latestRevision": true
+              }
+            ]
+          },
+          "secrets": [
+            {
+              "name": "azure-openai-api-key",
+              "value": "[parameters('azureOpenAiApiKey')]"
+            },
+            {
+              "name": "storage-connection-string",
+              "value": "[parameters('storageConnectionString')]"
+            }
+          ]
+        },
+        "template": {
+          "containers": [
+            {
+              "image": "mcr.microsoft.com/azuredocs/containerapps-helloworld:latest",
+              "name": "backend",
+              "env": [
+                {
+                  "name": "AZURE_OPENAI_ENDPOINT",
+                  "value": "[parameters('azureOpenAiEndpoint')]"
+                },
+                {
+                  "name": "AZURE_OPENAI_API_KEY",
+                  "secretRef": "azure-openai-api-key"
+                },
+                {
+                  "name": "AZURE_OPENAI_API_VERSION",
+                  "value": "2023-12-01-preview"
+                },
+                {
+                  "name": "AZURE_OPENAI_CHAT_DEPLOYMENT",
+                  "value": "[parameters('azureOpenAiChatDeployment')]"
+                },
+                {
+                  "name": "AZURE_OPENAI_EMBEDDING_DEPLOYMENT",
+                  "value": "[parameters('azureOpenAiEmbeddingDeployment')]"
+                },
+                {
+                  "name": "AZURE_OPENAI_DALLE_DEPLOYMENT",
+                  "value": "[parameters('azureOpenAiDalleDeployment')]"
+                },
+                {
+                  "name": "STORAGE_CONNECTION_STRING",
+                  "secretRef": "storage-connection-string"
+                },
+                {
+                  "name": "APP_HOST",
+                  "value": "0.0.0.0"
+                },
+                {
+                  "name": "APP_PORT",
+                  "value": "8000"
+                },
+                {
+                  "name": "APP_DEBUG",
+                  "value": "false"
+                },
+                {
+                  "name": "APP_LOG_LEVEL",
+                  "value": "info"
+                },
+                {
+                  "name": "SEMANTIC_KERNEL_DEBUG",
+                  "value": "false"
+                }
+              ],
+              "resources": {
+                "cpu": "[json('1.0')]",
+                "memory": "2Gi"
+              }
+            }
+          ],
+          "scale": {
+            "minReplicas": 1,
+            "maxReplicas": 3,
+            "rules": [
+              {
+                "name": "http-scale",
+                "http": {
+                  "metadata": {
+                    "concurrentRequests": "10"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "id": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.App/containerApps', parameters('name'))]"
+    },
+    "name": {
+      "type": "string",
+      "value": "[parameters('name')]"
+    },
+    "uri": {
+      "type": "string",
+      "value": "[format('https://{0}', reference(resourceId('Microsoft.App/containerApps', parameters('name')), '2023-05-01').configuration.ingress.fqdn)]"
+    }
+  }
+}
