@@ -6,7 +6,7 @@ import logging
 from typing import Optional
 
 import semantic_kernel as sk
-from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, AzureTextEmbedding
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, AzureTextEmbedding, AzureTextToImage
 
 from app.config import settings
 
@@ -45,6 +45,16 @@ class KernelManager:
                 api_version=settings.azure_openai_api_version
             )
             kernel.add_service(embedding_service)
+
+            # Add Azure Text-to-Image service
+            if settings.azure_openai_image_deployment:
+                image_service = AzureTextToImage(
+                    deployment_name=settings.azure_openai_image_deployment,
+                    endpoint=settings.azure_openai_endpoint,
+                    api_key=settings.azure_openai_api_key,
+                    api_version=settings.azure_openai_api_version
+                )
+                kernel.add_service(image_service)
 
             logger.info("Semantic Kernel configured successfully with Azure OpenAI services.")
         except Exception as e:

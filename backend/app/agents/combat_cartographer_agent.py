@@ -3,9 +3,12 @@ Combat Cartographer Agent - Generates tactical battle maps for combat encounters
 """
 import logging
 from typing import Dict, Any, List, Optional
+import base64
+import os
+from datetime import datetime
 
 import semantic_kernel as sk
-from semantic_kernel.orchestration.context_variables import ContextVariables
+from semantic_kernel.connectors.ai.open_ai import AzureTextToImage
 
 from app.kernel_setup import kernel_manager
 
@@ -30,6 +33,50 @@ class CombatCartographerAgent:
         # Will register skills once implemented
         pass
 
+    def _get_image_service(self) -> AzureTextToImage:
+        """Get the text-to-image service from the kernel."""
+        # Get the service by type
+        services = self.kernel.get_services_by_type(AzureTextToImage)
+        if not services:
+            raise ValueError("No text-to-image service configured in kernel")
+        return services[0]
+
+    async def _generate_and_store_map_image(self, description: str, map_id: str) -> str:
+        """
+        Generate a battle map image and store it, returning the URL.
+        
+        Args:
+            description: Description for map generation
+            map_id: Unique identifier for the map
+            
+        Returns:
+            str: URL or base64 data URL of the generated map
+        """
+        try:
+            image_service = self._get_image_service()
+            
+            # Generate the map image
+            image_data = await image_service.generate_image(
+                description=description,
+                width=1024,
+                height=1024
+            )
+            
+            # For now, return as base64 data URL since we don't have blob storage set up
+            if isinstance(image_data, bytes):
+                base64_data = base64.b64encode(image_data).decode('utf-8')
+                return f"data:image/png;base64,{base64_data}"
+            elif isinstance(image_data, str):
+                # Assume it's already a URL or base64 string
+                return image_data
+            else:
+                raise ValueError(f"Unexpected image data type: {type(image_data)}")
+                
+        except Exception as e:
+            logger.error(f"Error generating map image: {str(e)}")
+            # Return a placeholder for failed generation
+            return None
+
     async def generate_battle_map(self, environment_context: Dict[str, Any], combat_context: Dict[str, Any] = None) -> Dict[str, Any]:
         """
         Generate a battle map based on environment context and combat requirements.
@@ -50,14 +97,30 @@ class CombatCartographerAgent:
             terrain = environment_context.get("terrain", "plain")
             size = environment_context.get("size", "medium")
             features = environment_context.get("features", [])
+            obstacles = environment_context.get("obstacles", [])
+            cover_elements = environment_context.get("cover_elements", [])
             
-            # TODO: Implement the actual battle map generation using Azure OpenAI
-            # For now, we'll return a placeholder with the map details
+            # Create a detailed description for tactical battle map generation
+            map_description = f"Top-down tactical battle map of a {terrain} {location}, grid-based RPG battle map, {size} size."
             
-            # Create a description for the image generation
-            map_description = f"A tactical battle map of a {terrain} {location}"
             if features:
-                map_description += f" with {', '.join(features)}"
+                map_description += f" Environmental features: {', '.join(features)}."
+                
+            if obstacles:
+                map_description += f" Obstacles: {', '.join(obstacles)}."
+                
+            if cover_elements:
+                map_description += f" Cover elements: {', '.join(cover_elements)}."
+                
+            if combat_context:
+                encounter_type = combat_context.get("encounter_type", "")
+                if encounter_type:
+                    map_description += f" Designed for {encounter_type} encounter."
+                    
+            map_description += " Professional tactical grid map, clear visibility, strategic positioning, fantasy RPG style."
+            
+            # Generate the actual battle map image
+            image_url = await self._generate_and_store_map_image(map_description, map_id)
                 
             battle_map = {
                 "id": map_id,
@@ -66,7 +129,7 @@ class CombatCartographerAgent:
                 "size": size,
                 "terrain": terrain,
                 "features": features,
-                "image_url": None  # Would be populated with the actual generated image URL
+                "image_url": image_url
             }
             
             # Store the battle map
