@@ -1,16 +1,16 @@
 """
 Main FastAPI application to serve the AI Dungeon Master backend.
 """
-from fastapi import FastAPI, HTTPException, Depends, status, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 import uvicorn
 import os
 import logging
 from dotenv import load_dotenv
 
 # Local imports
-from app.api import game_routes
+# from app.api import game_routes  # Commented out due to compatibility issues
+from app.api import npc_routes
 
 # Load environment variables
 load_dotenv()
@@ -39,7 +39,8 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(game_routes.router, prefix="/api/game")
+# app.include_router(game_routes.router, prefix="/api/game")  # Commented out due to compatibility issues
+app.include_router(npc_routes.router, prefix="/api")
 
 # Health check endpoint
 @app.get("/health")

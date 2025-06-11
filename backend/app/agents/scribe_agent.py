@@ -5,10 +5,16 @@ import logging
 import json
 from typing import Dict, Any, List, Optional
 
-import semantic_kernel as sk
-from semantic_kernel.orchestration.context_variables import ContextVariables
+try:
+    import semantic_kernel as sk
+    from semantic_kernel.orchestration.context_variables import ContextVariables
+except ImportError:
+    # Handle new semantic kernel API
+    import semantic_kernel as sk
+    ContextVariables = None
 
 from app.kernel_setup import kernel_manager
+from app.plugins.npc_management_plugin import NPCManagementPlugin
 
 logger = logging.getLogger(__name__)
 
@@ -20,13 +26,21 @@ class ScribeAgent:
 
     def __init__(self):
         """Initialize the Scribe agent with its own kernel instance."""
-        self.kernel = kernel_manager.create_kernel()
+        try:
+            self.kernel = kernel_manager.create_kernel()
+        except Exception as e:
+            logger.warning(f"Could not create kernel: {e}. Operating in standalone mode.")
+            self.kernel = None
+        
         self._register_skills()
 
         # In-memory storage for testing - would be replaced with persistent storage
         self.characters = {}
         self.npcs = {}
         self.inventory = {}
+        
+        # Initialize NPC management plugin
+        self.npc_manager = NPCManagementPlugin()
 
     def _register_skills(self):
         """Register necessary skills for the Scribe agent."""
@@ -142,6 +156,140 @@ class ScribeAgent:
         except Exception as e:
             logger.error(f"Error adding to inventory: {str(e)}")
             return {"error": "Failed to add item to inventory"}
+
+    # NPC Management Methods
+    async def create_npc(self, npc_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Create a new NPC using the NPC management plugin.
+
+        Args:
+            npc_data: Dictionary containing NPC creation details
+
+        Returns:
+            Dict[str, Any]: The created NPC information
+        """
+        try:
+            result = self.npc_manager.create_npc(
+                name=npc_data.get("name", "Unnamed NPC"),
+                description=npc_data.get("description", "A mysterious figure"),
+                race=npc_data.get("race", "human"),
+                role=npc_data.get("role", "commoner"),
+                location=npc_data.get("location", "unknown"),
+                personality=npc_data.get("personality", "neutral")
+            )
+            
+            # Also store in legacy format for compatibility
+            if result["status"] == "success":
+                npc_id = result["npc_id"]
+                self.npcs[npc_id] = result["npc"]
+                
+            return result
+
+        except Exception as e:
+            logger.error(f"Error creating NPC: {str(e)}")
+            return {"error": "Failed to create NPC"}
+
+    async def get_npc(self, npc_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Get NPC details by ID.
+
+        Args:
+            npc_id: ID of the NPC
+
+        Returns:
+            Optional[Dict[str, Any]]: NPC information or None if not found
+        """
+        try:
+            result = self.npc_manager.get_npc_details(npc_id)
+            if result["status"] == "success":
+                return result["npc"]
+            return None
+
+        except Exception as e:
+            logger.error(f"Error getting NPC: {str(e)}")
+            return None
+
+    async def update_npc_relationship(
+        self, 
+        npc_id: str, 
+        character_id: str, 
+        relationship_changes: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Update relationship between NPC and character.
+
+        Args:
+            npc_id: ID of the NPC
+            character_id: ID of the character
+            relationship_changes: Dictionary with relationship changes
+
+        Returns:
+            Dict[str, Any]: Updated relationship information
+        """
+        try:
+            result = self.npc_manager.update_npc_relationship(
+                npc_id=npc_id,
+                character_id=character_id,
+                affection_change=relationship_changes.get("affection_change", 0),
+                trust_change=relationship_changes.get("trust_change", 0),
+                respect_change=relationship_changes.get("respect_change", 0),
+                event_description=relationship_changes.get("event_description", "")
+            )
+            return result
+
+        except Exception as e:
+            logger.error(f"Error updating NPC relationship: {str(e)}")
+            return {"error": "Failed to update relationship"}
+
+    async def get_npcs_in_location(self, location: str) -> List[Dict[str, Any]]:
+        """
+        Get all NPCs in a specific location.
+
+        Args:
+            location: Name of the location
+
+        Returns:
+            List[Dict[str, Any]]: List of NPCs in the location
+        """
+        try:
+            result = self.npc_manager.get_npcs_in_location(location)
+            if result["status"] == "success":
+                return result["npcs"]
+            return []
+
+        except Exception as e:
+            logger.error(f"Error getting NPCs in location: {str(e)}")
+            return []
+
+    async def generate_npc_interaction(
+        self, 
+        npc_id: str, 
+        character_id: str, 
+        interaction_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Generate an NPC interaction response.
+
+        Args:
+            npc_id: ID of the NPC
+            character_id: ID of the character
+            interaction_data: Interaction context and details
+
+        Returns:
+            Dict[str, Any]: NPC response and interaction result
+        """
+        try:
+            result = self.npc_manager.generate_npc_response(
+                npc_id=npc_id,
+                character_id=character_id,
+                player_message=interaction_data.get("message", ""),
+                context=interaction_data.get("context", "")
+            )
+            return result
+
+        except Exception as e:
+            logger.error(f"Error generating NPC interaction: {str(e)}")
+            return {"error": "Failed to generate NPC interaction"}
 
 # Singleton instance
 scribe = ScribeAgent()
