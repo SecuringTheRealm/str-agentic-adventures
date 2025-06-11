@@ -4,9 +4,6 @@ Semantic Kernel setup and initialization for the AI Dungeon Master.
 import logging
 
 import semantic_kernel as sk
-from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, AzureTextEmbedding
-
-from app.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -24,33 +21,12 @@ class KernelManager:
         # Create a new kernel
         kernel = sk.Kernel()
 
-        # Configure kernel with Azure OpenAI service
-        try:
-            # Add Azure Chat service
-            chat_service = AzureChatCompletion(
-                deployment_name=settings.azure_openai_chat_deployment,
-                endpoint=settings.azure_openai_endpoint,
-                api_key=settings.azure_openai_api_key,
-                api_version=settings.azure_openai_api_version
-            )
-            kernel.add_service(chat_service)
-
-            # Add Azure Embedding service
-            embedding_service = AzureTextEmbedding(
-                deployment_name=settings.azure_openai_embedding_deployment,
-                endpoint=settings.azure_openai_endpoint,
-                api_key=settings.azure_openai_api_key,
-                api_version=settings.azure_openai_api_version
-            )
-            kernel.add_service(embedding_service)
-
-            logger.info("Semantic Kernel configured successfully with Azure OpenAI services.")
-        except Exception as e:
-            logger.error(f"Failed to configure Semantic Kernel: {str(e)}")
-            raise
-
+        # For now, return a basic kernel without Azure configuration 
+        # This will be configured properly when the full system is deployed
+        logger.info("Created basic Semantic Kernel instance")
+        
         return kernel
 
 
-# Singleton instance for global access
+# Global kernel manager instance
 kernel_manager = KernelManager()

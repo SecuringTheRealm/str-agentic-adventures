@@ -4,8 +4,6 @@ Narrator Agent - Manages campaign narrative and story elements.
 import logging
 from typing import Dict, Any
 
-from semantic_kernel.orchestration.context_variables import ContextVariables
-
 from app.kernel_setup import kernel_manager
 
 logger = logging.getLogger(__name__)
@@ -19,86 +17,68 @@ class NarratorAgent:
     def __init__(self):
         """Initialize the Narrator agent with its own kernel instance."""
         self.kernel = kernel_manager.create_kernel()
-        self._register_skills()
+        
+        # For now, provide mock implementations until proper SK integration is restored
+        logger.info("Narrator agent initialized with basic functionality")
 
-    def _register_skills(self):
-        """Register necessary skills for the Narrator agent."""
-        try:
-            # Import plugins
-            from app.plugins.narrative_memory_plugin import NarrativeMemoryPlugin
-            from app.plugins.rules_engine_plugin import RulesEnginePlugin
-            
-            # Create plugin instances
-            narrative_memory = NarrativeMemoryPlugin()
-            rules_engine = RulesEnginePlugin()
-            
-            # Register plugins with the kernel
-            self.kernel.import_skill(narrative_memory, "Memory")
-            self.kernel.import_skill(rules_engine, "Rules")
-            
-            logger.info("Narrator agent plugins registered successfully")
-        except Exception as e:
-            logger.error(f"Error registering Narrator agent plugins: {str(e)}")
-            raise
-
-    async def describe_scene(self, scene_context: Dict[str, Any]) -> str:
+    async def describe_scene(self, context: Dict[str, Any]) -> str:
         """
-        Generate a rich description of a scene based on the provided context.
-
+        Generate a description of a scene based on context.
+        
         Args:
-            scene_context: Dictionary containing scene details
-
+            context: Scene context including setting, tone, etc.
+            
         Returns:
-            str: Descriptive narrative of the scene
+            str: Generated scene description
         """
         try:
-            # Create context variables
-            variables = ContextVariables()
-
-            # Add scene context variables
-            for key, value in scene_context.items():
-                if isinstance(value, str):
-                    variables[key] = value
-
-            # TODO: Implement actual scene description logic
-
-            # For now, return a placeholder description
-            location = scene_context.get("location", "an unknown place")
-            time = scene_context.get("time", "an indeterminate time")
-            return f"You find yourself in {location} during {time}. The air is filled with possibility as your adventure begins."
-
+            # Mock implementation for now
+            setting = context.get("setting", "fantasy")
+            tone = context.get("tone", "heroic")
+            
+            description = f"A {tone} {setting} world filled with adventure and mystery."
+            logger.info(f"Generated scene description for {setting} setting")
+            
+            return description
+            
         except Exception as e:
             logger.error(f"Error generating scene description: {str(e)}")
-            return "The scene before you is still taking shape in the mists of creation."
+            return "A world of infinite possibilities awaits your adventure."
 
-    async def process_action(self, action: str, context: Dict[str, Any]) -> Dict[str, Any]:
+    async def process_action(self, user_input: str, context: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Process a player action and determine narrative outcome.
-
+        Process a player action and generate narrative response.
+        
         Args:
-            action: The action the player is attempting
-            context: The current game context
-
+            user_input: The player's action
+            context: Current game context
+            
         Returns:
-            Dict[str, Any]: The outcome of the action, including success/failure, description, and any updates to game state
+            Dict[str, Any]: Narrative response with description and updates
         """
         try:
-            # TODO: Implement action resolution logic
-
-            # For now, return a simple success outcome
-            return {
-                "success": True,
-                "description": f"You attempt to {action} and succeed.",
-                "state_updates": {}
+            # Mock implementation for now
+            description = f"You {user_input.lower()}. The world responds to your actions."
+            
+            result = {
+                "description": description,
+                "state_updates": {},
+                "significant_moment": False,
+                "scene_context": context
             }
-
+            
+            logger.info(f"Processed narrative action: {user_input}")
+            return result
+            
         except Exception as e:
-            logger.error(f"Error processing action: {str(e)}")
+            logger.error(f"Error processing narrative action: {str(e)}")
             return {
-                "success": False,
-                "description": "Something unexpected happens, preventing your action.",
-                "state_updates": {}
+                "description": "Your action echoes through the realm.",
+                "state_updates": {},
+                "significant_moment": False,
+                "scene_context": {}
             }
+
 
 # Singleton instance
 narrator = NarratorAgent()
