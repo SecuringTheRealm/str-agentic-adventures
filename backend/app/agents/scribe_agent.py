@@ -6,13 +6,13 @@ import json
 from typing import Dict, Any, List, Optional
 
 import semantic_kernel as sk
-from semantic_kernel.orchestration.context_variables import ContextVariables
 
 from app.kernel_setup import kernel_manager
+from app.persistence import PersistentAgent, session_manager
 
 logger = logging.getLogger(__name__)
 
-class ScribeAgent:
+class ScribeAgent(PersistentAgent):
     """
     Scribe Agent that manages character sheets, inventory, equipment, and game data.
     This agent is responsible for tracking and updating structured game data.
@@ -20,6 +20,7 @@ class ScribeAgent:
 
     def __init__(self):
         """Initialize the Scribe agent with its own kernel instance."""
+        super().__init__("scribe")
         self.kernel = kernel_manager.create_kernel()
         self._register_skills()
 
@@ -68,8 +69,11 @@ class ScribeAgent:
                 "inventory": []
             }
 
-            # Store character
+            # Store character in memory for backwards compatibility
             self.characters[character_id] = character_sheet
+            
+            # Store character persistently
+            await self.save_agent_data(f"character_{character_id}", character_sheet)
 
             return character_sheet
 
@@ -89,15 +93,20 @@ class ScribeAgent:
             Dict[str, Any]: The updated character sheet
         """
         try:
-            if character_id not in self.characters:
+            character = await self.get_character(character_id)
+            if not character:
                 return {"error": f"Character {character_id} not found"}
-
-            character = self.characters[character_id]
 
             # Apply updates (simplified for now)
             for key, value in updates.items():
                 if key in character and not key == "id":  # Don't allow changing the ID
                     character[key] = value
+
+            # Update memory cache
+            self.characters[character_id] = character
+            
+            # Save to persistence
+            await self.save_agent_data(f"character_{character_id}", character)
 
             return character
 
@@ -115,7 +124,17 @@ class ScribeAgent:
         Returns:
             Optional[Dict[str, Any]]: The character sheet if found, None otherwise
         """
-        return self.characters.get(character_id)
+        # Try memory first for backwards compatibility
+        if character_id in self.characters:
+            return self.characters[character_id]
+        
+        # Try loading from persistence
+        character = await self.load_agent_data(f"character_{character_id}")
+        if character:
+            # Cache in memory
+            self.characters[character_id] = character
+        
+        return character
 
     async def add_to_inventory(self, character_id: str, item: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -142,6 +161,50 @@ class ScribeAgent:
         except Exception as e:
             logger.error(f"Error adding to inventory: {str(e)}")
             return {"error": "Failed to add item to inventory"}
+
+    async def save_to_session(self, session_id: str) -> bool:
+        """
+        Save scribe agent state to a session.
+        
+        Args:
+            session_id: The session ID to save to
+            
+        Returns:
+            bool: True if successful
+        """
+        try:
+            agent_data = {
+                "characters": self.characters,
+                "npcs": self.npcs,
+                "inventory": self.inventory
+            }
+            return await super().save_to_session(session_id, agent_data)
+        except Exception as e:
+            logger.error(f"Error saving to session {session_id}: {str(e)}")
+            return False
+    
+    async def load_from_session(self, session_id: str) -> bool:
+        """
+        Load scribe agent state from a session.
+        
+        Args:
+            session_id: The session ID to load from
+            
+        Returns:
+            bool: True if successful
+        """
+        try:
+            agent_data = await self.get_session_data(session_id)
+            if agent_data:
+                self.characters = agent_data.get("characters", {})
+                self.npcs = agent_data.get("npcs", {})
+                self.inventory = agent_data.get("inventory", {})
+                logger.info(f"Loaded scribe state from session {session_id}")
+                return True
+            return False
+        except Exception as e:
+            logger.error(f"Error loading from session {session_id}: {str(e)}")
+            return False
 
 # Singleton instance
 scribe = ScribeAgent()

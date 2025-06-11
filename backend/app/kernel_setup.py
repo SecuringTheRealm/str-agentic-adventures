@@ -28,25 +28,33 @@ class KernelManager:
 
         # Configure kernel with Azure OpenAI service
         try:
-            # Add Azure Chat service
-            chat_service = AzureChatCompletion(
-                deployment_name=settings.azure_openai_chat_deployment,
-                endpoint=settings.azure_openai_endpoint,
-                api_key=settings.azure_openai_api_key,
-                api_version=settings.azure_openai_api_version
-            )
-            kernel.add_service(chat_service)
+            # Only configure Azure services if credentials are provided
+            if (settings.azure_openai_endpoint and 
+                settings.azure_openai_api_key and 
+                settings.azure_openai_chat_deployment):
+                
+                # Add Azure Chat service
+                chat_service = AzureChatCompletion(
+                    deployment_name=settings.azure_openai_chat_deployment,
+                    endpoint=settings.azure_openai_endpoint,
+                    api_key=settings.azure_openai_api_key,
+                    api_version=settings.azure_openai_api_version
+                )
+                kernel.add_service(chat_service)
 
-            # Add Azure Embedding service
-            embedding_service = AzureTextEmbedding(
-                deployment_name=settings.azure_openai_embedding_deployment,
-                endpoint=settings.azure_openai_endpoint,
-                api_key=settings.azure_openai_api_key,
-                api_version=settings.azure_openai_api_version
-            )
-            kernel.add_service(embedding_service)
+                # Add Azure Embedding service if configured
+                if settings.azure_openai_embedding_deployment:
+                    embedding_service = AzureTextEmbedding(
+                        deployment_name=settings.azure_openai_embedding_deployment,
+                        endpoint=settings.azure_openai_endpoint,
+                        api_key=settings.azure_openai_api_key,
+                        api_version=settings.azure_openai_api_version
+                    )
+                    kernel.add_service(embedding_service)
 
-            logger.info("Semantic Kernel configured successfully with Azure OpenAI services.")
+                logger.info("Semantic Kernel configured successfully with Azure OpenAI services.")
+            else:
+                logger.warning("Azure OpenAI credentials not configured. Kernel created without services.")
         except Exception as e:
             logger.error(f"Failed to configure Semantic Kernel: {str(e)}")
             raise

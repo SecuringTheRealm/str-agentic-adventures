@@ -181,3 +181,30 @@ class GenerateImageRequest(BaseModel):
 class BattleMapRequest(BaseModel):
     environment: Dict[str, Any]
     combat_context: Optional[Dict[str, Any]] = None
+
+# Session management models
+class GameSession(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    campaign_id: str
+    created_at: datetime = Field(default_factory=datetime.now)
+    last_saved: datetime = Field(default_factory=datetime.now)
+    characters: Dict[str, Any] = {}
+    narrative_memory: Dict[str, Any] = {}
+    campaign_state: Dict[str, Any] = {}
+    session_log: List[Dict[str, Any]] = []
+
+class CreateSessionRequest(BaseModel):
+    campaign_id: str
+    name: Optional[str] = None
+
+class SaveSessionRequest(BaseModel):
+    session_id: str
+    session_data: Dict[str, Any]
+
+class SessionMetadata(BaseModel):
+    id: str
+    name: str
+    campaign_id: str
+    created_at: str
+    last_saved: str

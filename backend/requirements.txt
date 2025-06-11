@@ -20,6 +20,7 @@ python-multipart>=0.0.6
 aiohttp>=3.8.5
 tenacity>=8.2.2
 pyyaml>=6.0
+aiofiles>=23.1.0
 # Development tools
 ruff>=0.1.5
 pytest>=7.4.0

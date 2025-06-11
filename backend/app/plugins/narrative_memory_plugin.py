@@ -7,12 +7,13 @@ from typing import Dict, Any, List, Optional
 import json
 import datetime
 
-from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
-from semantic_kernel.orchestration.sk_context import SKContext
+from semantic_kernel.functions import kernel_function
+
+from app.persistence import PersistentAgent
 
 logger = logging.getLogger(__name__)
 
-class NarrativeMemoryPlugin:
+class NarrativeMemoryPlugin(PersistentAgent):
     """
     Plugin that provides narrative memory capabilities to the agents.
     Stores and retrieves key facts, events, and narrative elements.
@@ -20,6 +21,7 @@ class NarrativeMemoryPlugin:
 
     def __init__(self):
         """Initialize the narrative memory plugin."""
+        super().__init__("narrative_memory")
         # In-memory storage for narrative elements
         # In a production system, this would use a persistent store
         self.memories = {}
@@ -27,7 +29,7 @@ class NarrativeMemoryPlugin:
         self.npcs = {}
         self.locations = {}
 
-    @sk_function(
+    @kernel_function(
         description="Store a narrative fact in memory.",
         name="remember_fact"
     )
@@ -59,6 +61,9 @@ class NarrativeMemoryPlugin:
             # Store the memory
             self.memories[fact_id] = memory
             
+            # Save to persistence
+            self._save_memories_async()
+            
             return {
                 "status": "success",
                 "message": "Fact stored in narrative memory",
@@ -71,7 +76,7 @@ class NarrativeMemoryPlugin:
                 "message": f"Failed to store fact: {str(e)}"
             }
 
-    @sk_function(
+    @kernel_function(
         description="Record a narrative event in the campaign timeline.",
         name="record_event"
     )
@@ -107,6 +112,9 @@ class NarrativeMemoryPlugin:
             # Store the event
             self.events.append(event_entry)
             
+            # Save to persistence
+            self._save_events_async()
+            
             return {
                 "status": "success",
                 "message": "Event recorded in narrative timeline",
@@ -119,7 +127,7 @@ class NarrativeMemoryPlugin:
                 "message": f"Failed to record event: {str(e)}"
             }
 
-    @sk_function(
+    @kernel_function(
         description="Retrieve facts related to a specific query or category.",
         name="recall_facts"
     )
@@ -165,7 +173,7 @@ class NarrativeMemoryPlugin:
                 "facts": []
             }
 
-    @sk_function(
+    @kernel_function(
         description="Retrieve a timeline of recent events.",
         name="recall_timeline"
     )
@@ -212,7 +220,7 @@ class NarrativeMemoryPlugin:
                 "events": []
             }
 
-    @sk_function(
+    @kernel_function(
         description="Add or update an NPC in the campaign.",
         name="update_npc"
     )
@@ -252,6 +260,9 @@ class NarrativeMemoryPlugin:
                 
                 self.npcs[name] = npc
             
+            # Save to persistence
+            self._save_npcs_async()
+            
             return {
                 "status": "success",
                 "message": f"NPC {name} updated",
@@ -264,7 +275,7 @@ class NarrativeMemoryPlugin:
                 "message": f"Failed to update NPC: {str(e)}"
             }
 
-    @sk_function(
+    @kernel_function(
         description="Retrieve information about a specific NPC.",
         name="get_npc"
     )
@@ -300,3 +311,100 @@ class NarrativeMemoryPlugin:
                 "status": "error",
                 "message": f"Failed to retrieve NPC: {str(e)}"
             }
+    
+    def _save_memories_async(self):
+        """Save memories to persistence (non-blocking)."""
+        import asyncio
+        try:
+            loop = asyncio.get_event_loop()
+            loop.create_task(self.save_agent_data("memories", self.memories))
+        except Exception as e:
+            logger.error(f"Error scheduling memory save: {str(e)}")
+    
+    def _save_events_async(self):
+        """Save events to persistence (non-blocking)."""
+        import asyncio
+        try:
+            loop = asyncio.get_event_loop()
+            loop.create_task(self.save_agent_data("events", {"events": self.events}))
+        except Exception as e:
+            logger.error(f"Error scheduling events save: {str(e)}")
+    
+    def _save_npcs_async(self):
+        """Save NPCs to persistence (non-blocking)."""
+        import asyncio
+        try:
+            loop = asyncio.get_event_loop()
+            loop.create_task(self.save_agent_data("npcs", self.npcs))
+        except Exception as e:
+            logger.error(f"Error scheduling NPCs save: {str(e)}")
+    
+    async def load_narrative_data(self):
+        """Load narrative data from persistence."""
+        try:
+            # Load memories
+            memories_data = await self.load_agent_data("memories")
+            if memories_data:
+                self.memories = memories_data
+            
+            # Load events
+            events_data = await self.load_agent_data("events")
+            if events_data and "events" in events_data:
+                self.events = events_data["events"]
+            
+            # Load NPCs
+            npcs_data = await self.load_agent_data("npcs")
+            if npcs_data:
+                self.npcs = npcs_data
+                
+            logger.info("Loaded narrative data from persistence")
+            return True
+        except Exception as e:
+            logger.error(f"Error loading narrative data: {str(e)}")
+            return False
+    
+    async def save_to_session(self, session_id: str) -> bool:
+        """
+        Save narrative memory state to a session.
+        
+        Args:
+            session_id: The session ID to save to
+            
+        Returns:
+            bool: True if successful
+        """
+        try:
+            agent_data = {
+                "memories": self.memories,
+                "events": self.events,
+                "npcs": self.npcs,
+                "locations": self.locations
+            }
+            return await super().save_to_session(session_id, agent_data)
+        except Exception as e:
+            logger.error(f"Error saving narrative memory to session {session_id}: {str(e)}")
+            return False
+    
+    async def load_from_session(self, session_id: str) -> bool:
+        """
+        Load narrative memory state from a session.
+        
+        Args:
+            session_id: The session ID to load from
+            
+        Returns:
+            bool: True if successful
+        """
+        try:
+            agent_data = await self.get_session_data(session_id)
+            if agent_data:
+                self.memories = agent_data.get("memories", {})
+                self.events = agent_data.get("events", [])
+                self.npcs = agent_data.get("npcs", {})
+                self.locations = agent_data.get("locations", {})
+                logger.info(f"Loaded narrative memory from session {session_id}")
+                return True
+            return False
+        except Exception as e:
+            logger.error(f"Error loading narrative memory from session {session_id}: {str(e)}")
+            return False

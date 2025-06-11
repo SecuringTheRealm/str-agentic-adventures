@@ -10,7 +10,7 @@ import logging
 from dotenv import load_dotenv
 
 # Local imports
-from app.api import game_routes
+from app.api import game_routes, session_routes
 
 # Load environment variables
 load_dotenv()
@@ -40,6 +40,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(game_routes.router, prefix="/api/game")
+app.include_router(session_routes.router, prefix="/api")
 
 # Health check endpoint
 @app.get("/health")

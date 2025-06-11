@@ -1,0 +1,16 @@
+{
+  "id": "d4606b48-df95-47df-a5fc-c81d489ecd94",
+  "campaign_id": "test_campaign",
+  "name": "Test Session",
+  "created_at": "2025-06-11T05:26:06.522616",
+  "last_saved": "2025-06-11T05:26:06.522623",
+  "characters": {},
+  "narrative_memory": {
+    "memories": {},
+    "events": [],
+    "npcs": {},
+    "locations": {}
+  },
+  "campaign_state": {},
+  "session_log": []
+}
