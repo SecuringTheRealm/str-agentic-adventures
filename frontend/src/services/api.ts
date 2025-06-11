@@ -76,8 +76,8 @@ export interface PlayerInputRequest {
 export interface GameResponse {
   message: string;
   images: string[];
-  state_updates: any;
-  combat_updates: any | null;
+  state_updates: Record<string, any>;
+  combat_updates?: Record<string, any>;
 }
 
 export interface ImageGenerateRequest {
@@ -88,19 +88,6 @@ export interface ImageGenerateRequest {
 export interface BattleMapRequest {
   environment: any;
   combat_context?: any;
-}
-
-export interface PlayerInputRequest {
-  message: string;
-  character_id: string;
-  campaign_id: string;
-}
-
-export interface GameResponse {
-  message: string;
-  images: string[];
-  state_updates: Record<string, any>;
-  combat_updates?: Record<string, any>;
 }
 
 // API functions
