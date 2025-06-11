@@ -28,37 +28,217 @@ This document explains how to deploy the STR Agentic Adventures application to A
 
 ## GitHub Actions Deployment
 
-### Setting Up Secrets
+### Azure Service Principal Setup
 
-Configure the following secrets in your GitHub repository settings:
+Before setting up GitHub Actions deployment, you need to create an Azure Service Principal with appropriate permissions.
 
-#### Required for Production Deployment
-- `AZURE_CLIENT_ID`: Azure Service Principal Client ID
-- `AZURE_TENANT_ID`: Azure Tenant ID  
-- `AZURE_SUBSCRIPTION_ID`: Azure Subscription ID
-- `AZURE_OPENAI_ENDPOINT`: Your Azure OpenAI endpoint URL
-- `AZURE_OPENAI_API_KEY`: Your Azure OpenAI API key
+#### Step 1: Create Azure Service Principal
 
-#### Optional Variables
+You can create a service principal using either the Azure CLI or Azure Portal.
+
+##### Using Azure CLI (Recommended)
+
+1. **Install Azure CLI** if you haven't already:
+   ```bash
+   # Install Azure CLI (see: https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
+   curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+   ```
+
+2. **Login to Azure**:
+   ```bash
+   az login
+   ```
+
+3. **Get your subscription ID**:
+   ```bash
+   az account show --query id --output tsv
+   ```
+
+4. **Create a service principal**:
+   ```bash
+   # Replace <subscription-id> with your actual subscription ID
+   az ad sp create-for-rbac --name "str-agentic-adventures-deploy" \
+     --role "Contributor" \
+     --scopes "/subscriptions/<subscription-id>" \
+     --json-auth
+   ```
+
+   This command will output JSON similar to:
+   ```json
+   {
+     "clientId": "12345678-1234-1234-1234-123456789012",
+     "clientSecret": "your-client-secret",
+     "subscriptionId": "87654321-4321-4321-4321-210987654321",
+     "tenantId": "11111111-1111-1111-1111-111111111111",
+     "activeDirectoryEndpointUrl": "https://login.microsoftonline.com",
+     "resourceManagerEndpointUrl": "https://management.azure.com/",
+     "activeDirectoryGraphResourceId": "https://graph.windows.net/",
+     "sqlManagementEndpointUrl": "https://management.core.windows.net:8443/",
+     "galleryEndpointUrl": "https://gallery.azure.com/",
+     "managementEndpointUrl": "https://management.core.windows.net/"
+   }
+   ```
+
+   **Save this output** - you'll need these values for GitHub secrets.
+
+##### Using Azure Portal
+
+1. Go to **Azure Active Directory** > **App registrations** > **New registration**
+2. Name: `str-agentic-adventures-deploy`
+3. Supported account types: **Accounts in this organizational directory only**
+4. Click **Register**
+5. Note the **Application (client) ID** and **Directory (tenant) ID**
+6. Go to **Certificates & secrets** > **New client secret**
+7. Add description and expiration, click **Add**
+8. **Copy the secret value immediately** (it won't be shown again)
+9. Go to **Subscriptions** > Select your subscription > **Access control (IAM)**
+10. Click **Add** > **Add role assignment**
+11. Role: **Contributor**
+12. Assign access to: **User, group, or service principal**
+13. Search for your app registration name and assign
+
+#### Step 2: Configure Authentication Method
+
+Choose one of the following authentication methods:
+
+##### Option 1: Federated Credentials (Recommended - No Secrets!)
+
+This method uses OpenID Connect and doesn't require storing client secrets.
+
+1. **In Azure Portal**, go to your App Registration > **Certificates & secrets** > **Federated credentials**
+
+2. **Add credential** with these settings:
+   - Federated credential scenario: **GitHub Actions deploying Azure resources**
+   - Organization: `your-github-username` (or organization name)
+   - Repository: `str-agentic-adventures`
+   - Entity type: **Branch**
+   - GitHub branch name: `main`
+   - Name: `main-branch-deploy`
+
+3. **Add another credential** for pull requests:
+   - Same settings as above, but:
+   - Entity type: **Pull request**
+   - Name: `pull-request-deploy`
+
+4. **Required GitHub Secrets** (Go to your GitHub repository > Settings > Secrets and variables > Actions):
+   - `AZURE_CLIENT_ID`: The Application (client) ID from your service principal
+   - `AZURE_TENANT_ID`: The Directory (tenant) ID from your service principal
+   - `AZURE_SUBSCRIPTION_ID`: Your Azure subscription ID
+   - `AZURE_OPENAI_ENDPOINT`: Your Azure OpenAI endpoint URL (e.g., `https://your-openai-resource.openai.azure.com/`)
+   - `AZURE_OPENAI_API_KEY`: Your Azure OpenAI API key
+
+##### Option 2: Service Principal with Client Secret
+
+If you prefer using client secrets or federated credentials aren't available:
+
+1. **Use the client secret** created during service principal setup
+
+2. **Required GitHub Secrets**:
+   - `AZURE_CREDENTIALS`: The complete JSON output from the `az ad sp create-for-rbac` command
+   - `AZURE_OPENAI_ENDPOINT`: Your Azure OpenAI endpoint URL
+   - `AZURE_OPENAI_API_KEY`: Your Azure OpenAI API key
+
+#### Step 3: Obtain Azure OpenAI Information
+
+1. **In Azure Portal**, go to your **Azure OpenAI Service**
+2. **Endpoint**: Found in the **Overview** section (e.g., `https://your-openai-resource.openai.azure.com/`)
+3. **API Key**: Go to **Keys and Endpoint** section, copy **KEY 1** or **KEY 2**
+4. **Model Deployments**: Go to **Deployments** to see your deployed models
+
+### GitHub Repository Configuration
+
+#### Required Secrets
+Configure these in your GitHub repository (Settings > Secrets and variables > Actions > Repository secrets):
+
+**For Federated Credentials:**
+- `AZURE_CLIENT_ID`: Application (client) ID from service principal
+- `AZURE_TENANT_ID`: Directory (tenant) ID from service principal  
+- `AZURE_SUBSCRIPTION_ID`: Your Azure subscription ID
+- `AZURE_OPENAI_ENDPOINT`: Azure OpenAI endpoint URL
+- `AZURE_OPENAI_API_KEY`: Azure OpenAI API key
+
+**For Service Principal with Secret:**
+- `AZURE_CREDENTIALS`: Complete JSON from service principal creation
+- `AZURE_OPENAI_ENDPOINT`: Azure OpenAI endpoint URL
+- `AZURE_OPENAI_API_KEY`: Azure OpenAI API key
+
+#### Optional Repository Variables
+Configure these in Settings > Secrets and variables > Actions > Repository variables:
+
 - `AZURE_LOCATION`: Azure region (default: eastus)
 - `AZURE_OPENAI_CHAT_DEPLOYMENT`: Chat model deployment name (default: gpt-4o-mini)
 - `AZURE_OPENAI_EMBEDDING_DEPLOYMENT`: Embedding model deployment name (default: text-embedding-ada-002)
 - `AZURE_OPENAI_DALLE_DEPLOYMENT`: DALL-E deployment name (default: dall-e-3)
 
-### Authentication Methods
+#### Finding Your Azure Values
 
-#### Option 1: Federated Credentials (Recommended)
-This is the most secure method using OpenID Connect:
+**Subscription ID:**
+```bash
+az account show --query id --output tsv
+```
 
-1. Create an Azure Service Principal
-2. Configure federated credentials for your GitHub repository
-3. Set up the required secrets above
+**Tenant ID:**
+```bash
+az account show --query tenantId --output tsv
+```
 
-#### Option 2: Service Principal with Secret
-If federated credentials are not available:
+#### Finding Your Azure Values
 
-1. Create an Azure Service Principal with a secret
-2. Set `AZURE_CREDENTIALS` secret with the complete credential JSON
+**Subscription ID:**
+```bash
+az account show --query id --output tsv
+```
+
+**Tenant ID:**
+```bash
+az account show --query tenantId --output tsv
+```
+
+**Or in Azure Portal:** Go to **Azure Active Directory** > **Overview** to find your Tenant ID
+
+### Verification and Testing
+
+#### Test Your Service Principal Setup
+
+Before running GitHub Actions, verify your service principal works:
+
+1. **Test Azure CLI login with service principal**:
+   ```bash
+   # For federated credentials (this won't work locally, but tests the SP exists)
+   az login --service-principal \
+     --username "<AZURE_CLIENT_ID>" \
+     --tenant "<AZURE_TENANT_ID>" \
+     --federated-token "dummy"  # This will fail but shows if SP exists
+
+   # For client secret method
+   az login --service-principal \
+     --username "<AZURE_CLIENT_ID>" \
+     --password "<CLIENT_SECRET>" \
+     --tenant "<AZURE_TENANT_ID>"
+   ```
+
+2. **Test permissions**:
+   ```bash
+   # List resource groups (should work if permissions are correct)
+   az group list --query "[].name" --output tsv
+   
+   # Test creating a resource group (then delete it)
+   az group create --name "test-permissions-rg" --location "eastus"
+   az group delete --name "test-permissions-rg" --yes --no-wait
+   ```
+
+3. **Test Azure OpenAI access**:
+   ```bash
+   # Test if you can access your OpenAI endpoint
+   curl -H "api-key: <YOUR_OPENAI_API_KEY>" \
+        "<YOUR_OPENAI_ENDPOINT>/openai/deployments?api-version=2023-03-15-preview"
+   ```
+
+#### Validate GitHub Actions Setup
+
+1. **Check secrets are configured**: Go to your repository > Settings > Secrets and variables > Actions
+2. **Run a manual deployment**: Go to Actions > "Deploy to Production" > "Run workflow"
+3. **Check workflow logs**: If the deployment fails, review the GitHub Actions logs for specific error messages
 
 ### Deployment Workflows
 
@@ -135,9 +315,38 @@ The deployment creates the following Azure resources:
 - GitHub Actions provide deployment summaries
 
 ### Common Issues
-1. **Azure OpenAI Access**: Ensure your subscription has access to Azure OpenAI
-2. **Resource Limits**: Check subscription limits for Container Apps and Static Web Apps
-3. **Permissions**: Verify the service principal has Contributor access to the subscription
+
+#### Authentication Issues
+1. **"Failed to authenticate"**: 
+   - Verify your service principal credentials are correct
+   - Check that federated credentials are configured for the correct GitHub repository and branch
+   - Ensure the service principal has not expired (client secrets expire)
+
+2. **"Insufficient privileges"**:
+   - Verify the service principal has **Contributor** role on the subscription
+   - Check that the service principal is assigned to the correct subscription
+   - Ensure the role assignment hasn't expired
+
+3. **"Invalid client secret"**:
+   - Client secrets expire - create a new one in Azure Portal
+   - Verify the secret is copied correctly to GitHub secrets
+   - Check there are no extra spaces or characters in the secret
+
+#### Resource and Access Issues
+4. **Azure OpenAI Access**: 
+   - Ensure your subscription has access to Azure OpenAI service
+   - Verify your Azure OpenAI resource is in the same subscription as your deployment
+   - Check that the OpenAI endpoint URL and API key are correct
+
+5. **Resource Limits**: 
+   - Check subscription limits for Container Apps and Static Web Apps
+   - Verify quota availability in your chosen Azure region
+   - Consider using a different region if capacity is limited
+
+6. **Deployment Failures**:
+   - Check that resource names don't conflict with existing resources
+   - Verify all required Azure providers are registered in your subscription
+   - Review Azure Activity Log for detailed error messages
 
 ## Security Considerations
 
