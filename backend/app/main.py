@@ -1,9 +1,8 @@
 """
 Main FastAPI application to serve the AI Dungeon Master backend.
 """
-from fastapi import FastAPI, HTTPException, Depends, status, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 import uvicorn
 import os
 import logging

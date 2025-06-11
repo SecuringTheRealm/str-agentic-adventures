@@ -3,12 +3,10 @@ Narrative Memory Plugin for the Semantic Kernel.
 This plugin provides memory storage and retrieval for narrative elements.
 """
 import logging
-from typing import Dict, Any, List, Optional
-import json
+from typing import Dict, Any
 import datetime
 
 from semantic_kernel.functions import kernel_function
-from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 logger = logging.getLogger(__name__)
 

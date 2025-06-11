@@ -4,7 +4,6 @@ Simple integration tests focusing on testable components.
 import pytest
 import sys
 import os
-from unittest.mock import Mock, patch, AsyncMock
 
 # Add the backend directory to Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -30,7 +29,6 @@ class TestSimpleIntegration:
         """Test that request and response models are compatible."""
         from app.models.game_models import (
             CreateCharacterRequest, 
-            CharacterSheet,
             PlayerInput,
             GameResponse,
             CreateCampaignRequest,
@@ -122,7 +120,7 @@ class TestSimpleIntegration:
 
     def test_uuid_generation_works(self):
         """Test that UUID generation works for models."""
-        from app.models.game_models import Item, Spell, CharacterSheet, Campaign
+        from app.models.game_models import Item, Campaign
         
         # Test multiple items get different UUIDs
         item1 = Item(name="Sword")
@@ -214,7 +212,6 @@ class TestSimpleIntegration:
         """Test that default values are properly set on models."""
         from app.models.game_models import (
             Abilities, 
-            HitPoints, 
             Item, 
             GameResponse,
             CreateCampaignRequest,
