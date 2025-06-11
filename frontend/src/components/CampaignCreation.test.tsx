@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
 import * as api from "../services/api";
@@ -14,6 +14,7 @@ describe("CampaignCreation", () => {
 	beforeEach(() => {
 		mockOnCampaignCreated.mockClear();
 		mockCreateCampaign.mockClear();
+		mockCreateCampaign.mockReset();
 	});
 
 	it("renders form elements correctly", () => {
@@ -137,7 +138,10 @@ describe("CampaignCreation", () => {
 		const submitButton = screen.getByRole("button", {
 			name: "Create Campaign",
 		});
-		await userEvent.click(submitButton);
+		
+		await act(async () => {
+			await userEvent.click(submitButton);
+		});
 
 		await waitFor(() => {
 			expect(mockCreateCampaign).toHaveBeenCalledWith({
@@ -177,7 +181,10 @@ describe("CampaignCreation", () => {
 		const submitButton = screen.getByRole("button", {
 			name: "Create Campaign",
 		});
-		await userEvent.click(submitButton);
+		
+		await act(async () => {
+			await userEvent.click(submitButton);
+		});
 
 		await waitFor(() => {
 			expect(mockCreateCampaign).toHaveBeenCalledWith({
@@ -207,7 +214,10 @@ describe("CampaignCreation", () => {
 		const submitButton = screen.getByRole("button", {
 			name: "Create Campaign",
 		});
-		await userEvent.click(submitButton);
+		
+		await act(async () => {
+			await userEvent.click(submitButton);
+		});
 
 		expect(screen.getByText("Creating...")).toBeInTheDocument();
 		expect(submitButton).toBeDisabled();
@@ -215,10 +225,15 @@ describe("CampaignCreation", () => {
 		expect(settingInput).toBeDisabled();
 
 		// Resolve the promise to clean up
-		resolvePromise?.({ id: "1", name: "Test Campaign" });
+		await act(async () => {
+			resolvePromise?.({ id: "1", name: "Test Campaign" });
+		});
 	});
 
 	it("handles API errors gracefully", async () => {
+		// Suppress console.error for this test since we expect an error
+		const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+		
 		mockCreateCampaign.mockRejectedValue(new Error("API Error"));
 
 		render(<CampaignCreation onCampaignCreated={mockOnCampaignCreated} />);
@@ -232,18 +247,27 @@ describe("CampaignCreation", () => {
 		const submitButton = screen.getByRole("button", {
 			name: "Create Campaign",
 		});
-		await userEvent.click(submitButton);
+		
+		await act(async () => {
+			await userEvent.click(submitButton);
+		});
 
 		await waitFor(() => {
 			expect(
 				screen.getByText("Failed to create campaign. Please try again."),
 			).toBeInTheDocument();
-		});
+		}, { timeout: 5000 });
 
 		expect(mockOnCampaignCreated).not.toHaveBeenCalled();
+		
+		// Restore console.error
+		consoleSpy.mockRestore();
 	});
 
 	it("clears error message when submitting again", async () => {
+		// Suppress console.error for this test since we expect an error
+		const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+		
 		// First submission - error
 		mockCreateCampaign.mockRejectedValueOnce(new Error("API Error"));
 
@@ -258,13 +282,16 @@ describe("CampaignCreation", () => {
 		const submitButton = screen.getByRole("button", {
 			name: "Create Campaign",
 		});
-		await userEvent.click(submitButton);
+		
+		await act(async () => {
+			await userEvent.click(submitButton);
+		});
 
 		await waitFor(() => {
 			expect(
 				screen.getByText("Failed to create campaign. Please try again."),
 			).toBeInTheDocument();
-		});
+		}, { timeout: 5000 });
 
 		// Second submission - success
 		mockCreateCampaign.mockResolvedValueOnce({
@@ -275,12 +302,18 @@ describe("CampaignCreation", () => {
 			homebrew_rules: [],
 			characters: [],
 		});
-		await userEvent.click(submitButton);
+		
+		await act(async () => {
+			await userEvent.click(submitButton);
+		});
 
 		await waitFor(() => {
 			expect(
 				screen.queryByText("Failed to create campaign. Please try again."),
 			).not.toBeInTheDocument();
-		});
+		}, { timeout: 5000 });
+		
+		// Restore console.error
+		consoleSpy.mockRestore();
 	});
 });

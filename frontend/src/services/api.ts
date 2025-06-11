@@ -40,7 +40,7 @@ export interface Character {
 	id: string;
 	name: string;
 	race: string;
-	class: string;
+	character_class: string;
 	level: number;
 	abilities: {
 		strength: number;
@@ -50,7 +50,7 @@ export interface Character {
 		wisdom: number;
 		charisma: number;
 	};
-	hitPoints: {
+	hit_points: {
 		current: number;
 		maximum: number;
 	};

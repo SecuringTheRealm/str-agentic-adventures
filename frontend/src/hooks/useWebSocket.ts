@@ -99,7 +99,7 @@ export const useWebSocket = (url: string, options: UseWebSocketOptions = {}) => 
 			setError('Failed to create WebSocket connection');
 			setIsConnecting(false);
 		}
-	}, [url, onConnect, onMessage, onDisconnect, onError, reconnectInterval, maxReconnectAttempts]);
+	}, [url, onConnect, onMessage, onDisconnect, onError, reconnectInterval, maxReconnectAttempts, isConnecting, socket?.readyState]);
 
 	const disconnect = useCallback(() => {
 		shouldReconnectRef.current = false;
@@ -138,7 +138,7 @@ export const useWebSocket = (url: string, options: UseWebSocketOptions = {}) => 
 				socket.close();
 			}
 		};
-	}, [connect]);
+	}, [connect, socket]);
 
 	// Cleanup on unmount
 	useEffect(() => {

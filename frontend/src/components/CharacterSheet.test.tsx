@@ -8,7 +8,7 @@ describe("CharacterSheet", () => {
 		id: "1",
 		name: "Aragorn",
 		race: "Human",
-		class: "Ranger",
+		character_class: "Ranger",
 		level: 5,
 		abilities: {
 			strength: 16,
@@ -18,7 +18,7 @@ describe("CharacterSheet", () => {
 			wisdom: 18,
 			charisma: 10,
 		},
-		hitPoints: {
+		hit_points: {
 			current: 45,
 			maximum: 50,
 		},
