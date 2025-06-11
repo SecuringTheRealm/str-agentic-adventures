@@ -1,0 +1,111 @@
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import BattleMap from './BattleMap';
+
+describe('BattleMap', () => {
+  it('renders battle map with image when mapUrl is provided', () => {
+    const mapUrl = 'https://example.com/battle-map.jpg';
+    render(<BattleMap mapUrl={mapUrl} />);
+
+    expect(screen.getByText('Battle Map')).toBeInTheDocument();
+    
+    const image = screen.getByRole('img');
+    expect(image).toBeInTheDocument();
+    expect(image).toHaveAttribute('src', mapUrl);
+    expect(image).toHaveAttribute('alt', 'Tactical Battle Map');
+  });
+
+  it('renders empty state when mapUrl is null', () => {
+    render(<BattleMap mapUrl={null} />);
+
+    expect(screen.getByText('Battle Map')).toBeInTheDocument();
+    expect(screen.getByText('No battle map available')).toBeInTheDocument();
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
+  });
+
+  it('renders empty state when mapUrl is empty string', () => {
+    render(<BattleMap mapUrl="" />);
+
+    expect(screen.getByText('No battle map available')).toBeInTheDocument();
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
+  });
+
+  it('shows expand button initially', () => {
+    render(<BattleMap mapUrl="test.jpg" />);
+
+    const button = screen.getByRole('button', { name: 'Expand' });
+    expect(button).toBeInTheDocument();
+  });
+
+  it('toggles expand/minimize when button is clicked', async () => {
+    
+    render(<BattleMap mapUrl="test.jpg" />);
+
+    const button = screen.getByRole('button', { name: 'Expand' });
+    
+    // Initially should show Expand
+    expect(button).toHaveTextContent('Expand');
+
+    // Click to expand
+    await userEvent.click(button);
+    expect(screen.getByRole('button', { name: 'Minimize' })).toBeInTheDocument();
+
+    // Click to minimize
+    await userEvent.click(screen.getByRole('button', { name: 'Minimize' }));
+    expect(screen.getByRole('button', { name: 'Expand' })).toBeInTheDocument();
+  });
+
+  it('applies expanded CSS class when expanded', async () => {
+    
+    const { container } = render(<BattleMap mapUrl="test.jpg" />);
+
+    const battleMap = container.querySelector('.battle-map');
+    expect(battleMap).not.toHaveClass('expanded');
+
+    const expandButton = screen.getByRole('button', { name: 'Expand' });
+    await userEvent.click(expandButton);
+
+    expect(battleMap).toHaveClass('expanded');
+  });
+
+  it('removes expanded CSS class when minimized', async () => {
+    
+    const { container } = render(<BattleMap mapUrl="test.jpg" />);
+
+    const battleMap = container.querySelector('.battle-map');
+    const toggleButton = screen.getByRole('button');
+
+    // Expand first
+    await userEvent.click(toggleButton);
+    expect(battleMap).toHaveClass('expanded');
+
+    // Then minimize
+    await userEvent.click(toggleButton);
+    expect(battleMap).not.toHaveClass('expanded');
+  });
+
+  it('has correct CSS classes', () => {
+    const { container } = render(<BattleMap mapUrl="test.jpg" />);
+
+    expect(container.querySelector('.battle-map')).toBeInTheDocument();
+    expect(container.querySelector('.battle-map-header')).toBeInTheDocument();
+    expect(container.querySelector('.map-container')).toBeInTheDocument();
+    expect(container.querySelector('.toggle-button')).toBeInTheDocument();
+  });
+
+  it('has correct CSS classes for empty state', () => {
+    const { container } = render(<BattleMap mapUrl={null} />);
+
+    expect(container.querySelector('.battle-map')).toBeInTheDocument();
+    expect(container.querySelector('.map-container')).toBeInTheDocument();
+    expect(container.querySelector('.empty-map-state')).toBeInTheDocument();
+  });
+
+  it('toggle button has correct class', () => {
+    render(<BattleMap mapUrl="test.jpg" />);
+
+    const button = screen.getByRole('button');
+    expect(button).toHaveClass('toggle-button');
+  });
+});
