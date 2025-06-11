@@ -181,3 +181,9 @@ class GenerateImageRequest(BaseModel):
 class BattleMapRequest(BaseModel):
     environment: Dict[str, Any]
     combat_context: Optional[Dict[str, Any]] = None
+
+class BattleMapUpdateRequest(BaseModel):
+    combat_state: Dict[str, Any]
+
+class MapVariationRequest(BaseModel):
+    variation_type: str = "minor"  # "minor", "lighting", "weather"

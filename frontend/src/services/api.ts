@@ -90,6 +90,14 @@ export interface BattleMapRequest {
   combat_context?: any;
 }
 
+export interface MapVariationRequest {
+  variation_type?: 'minor' | 'lighting' | 'weather';
+}
+
+export interface BattleMapUpdateRequest {
+  combat_state: any;
+}
+
 // API functions
 export const createCharacter = async (characterData: CharacterCreateRequest): Promise<Character> => {
   try {
@@ -147,6 +155,36 @@ export const generateBattleMap = async (mapRequest: BattleMapRequest): Promise<a
     return response.data;
   } catch (error) {
     console.error('Error generating battle map:', error);
+    throw error;
+  }
+};
+
+export const getMapTemplates = async (): Promise<any> => {
+  try {
+    const response = await apiClient.get('/game/battle-map/templates');
+    return response.data;
+  } catch (error) {
+    console.error('Error getting map templates:', error);
+    throw error;
+  }
+};
+
+export const updateBattleMap = async (mapId: string, updateRequest: BattleMapUpdateRequest): Promise<any> => {
+  try {
+    const response = await apiClient.post(`/game/battle-map/${mapId}/update`, updateRequest);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating battle map:', error);
+    throw error;
+  }
+};
+
+export const generateMapVariation = async (mapId: string, variationRequest: MapVariationRequest): Promise<any> => {
+  try {
+    const response = await apiClient.post(`/game/battle-map/${mapId}/variation`, variationRequest);
+    return response.data;
+  } catch (error) {
+    console.error('Error generating map variation:', error);
     throw error;
   }
 };
