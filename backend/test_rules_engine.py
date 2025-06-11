@@ -1,17 +1,17 @@
 """
 Tests for the enhanced Rules Engine Plugin.
 """
-import pytest
+
 from app.plugins.rules_engine_plugin import RulesEnginePlugin
 
 
 class TestDiceRolling:
     """Test enhanced dice rolling functionality."""
-    
+
     def setup_method(self):
         """Set up test fixtures."""
         self.plugin = RulesEnginePlugin()
-    
+
     def test_basic_dice_notation(self):
         """Test basic dice notation still works."""
         result = self.plugin.roll_dice("1d20")
@@ -20,17 +20,17 @@ class TestDiceRolling:
         assert len(result["rolls"]) == 1
         assert 1 <= result["rolls"][0] <= 20
         assert result["total"] == result["rolls"][0]
-    
+
     def test_dice_with_modifier(self):
         """Test dice with positive and negative modifiers."""
         result = self.plugin.roll_dice("1d20+5")
         assert result["modifier"] == 5
         assert result["total"] == result["rolls"][0] + 5
-        
+
         result = self.plugin.roll_dice("2d6-2")
         assert result["modifier"] == -2
         assert result["total"] == sum(result["rolls"]) - 2
-    
+
     def test_drop_lowest_notation(self):
         """Test advanced notation: drop lowest."""
         result = self.plugin.roll_dice("4d6dl1")
@@ -43,7 +43,7 @@ class TestDiceRolling:
         sorted_rolls = sorted(result["rolls"], reverse=True)
         expected_total = sum(sorted_rolls[:3])
         assert result["total"] == expected_total
-    
+
     def test_keep_highest_notation(self):
         """Test advanced notation: keep highest (advantage)."""
         result = self.plugin.roll_dice("2d20kh1")
@@ -54,7 +54,7 @@ class TestDiceRolling:
         assert len(result["dropped"]) == 1
         # Total should be the highest roll
         assert result["total"] == max(result["rolls"])
-    
+
     def test_keep_lowest_notation(self):
         """Test advanced notation: keep lowest (disadvantage)."""
         result = self.plugin.roll_dice("2d20kl1")
@@ -65,7 +65,7 @@ class TestDiceRolling:
         assert len(result["dropped"]) == 1
         # Total should be the lowest roll
         assert result["total"] == min(result["rolls"])
-    
+
     def test_reroll_notation(self):
         """Test reroll notation."""
         # This test is probabilistic, so we'll run it multiple times
@@ -74,51 +74,55 @@ class TestDiceRolling:
         for _ in range(100):
             result = self.plugin.roll_dice("1d6r1")
             results.append(result)
-        
+
         # Check that we never have a final result of 1 (should be rerolled)
         final_rolls = [r["total"] for r in results]
         assert 1 not in final_rolls
-        
+
         # Check that some results have reroll information
-        reroll_results = [r for r in results if "rerolls" in r and len(r["rerolls"]) > 0]
+        reroll_results = [
+            r for r in results if "rerolls" in r and len(r["rerolls"]) > 0
+        ]
         assert len(reroll_results) > 0  # Should have some rerolls in 100 attempts
-    
+
     def test_multiple_dice_pools(self):
         """Test multiple dice pools in one expression."""
         result = self.plugin.roll_dice("2d6+1d4+3")
         assert "total" in result
         assert "pools" in result
         assert len(result["pools"]) == 3  # 2d6, 1d4, and +3
-        
+
         # Verify the total is correct
-        expected_total = (sum(result["pools"][0]["rolls"]) + 
-                         sum(result["pools"][1]["rolls"]) + 
-                         result["pools"][2]["value"])
+        expected_total = (
+            sum(result["pools"][0]["rolls"])
+            + sum(result["pools"][1]["rolls"])
+            + result["pools"][2]["value"]
+        )
         assert result["total"] == expected_total
 
 
 class TestCharacterIntegration:
     """Test character sheet integration features."""
-    
+
     def setup_method(self):
         """Set up test fixtures."""
         self.plugin = RulesEnginePlugin()
-    
+
     def test_roll_with_character_context(self):
         """Test rolling with character context for automatic modifiers."""
         character = {
             "abilities": {"strength": 16, "dexterity": 14},
             "proficiency_bonus": 3,
-            "proficiencies": ["athletics", "stealth"]
+            "proficiencies": ["athletics", "stealth"],
         }
-        
+
         result = self.plugin.roll_with_character("1d20", character, "athletics")
         assert "character_bonus" in result
         assert "total" in result
         # Should include STR modifier (3) + proficiency (3) = 6
         expected_bonus = 3 + 3  # STR mod + prof
         assert result["character_bonus"] == expected_bonus
-    
+
     def test_manual_roll_input(self):
         """Test manual roll input functionality."""
         result = self.plugin.input_manual_roll("1d20", 18)
@@ -130,35 +134,35 @@ class TestCharacterIntegration:
 
 class TestRollHistory:
     """Test roll history functionality."""
-    
+
     def setup_method(self):
         """Set up test fixtures."""
         self.plugin = RulesEnginePlugin()
-    
+
     def test_roll_history_tracking(self):
         """Test that rolls are tracked in history."""
         # Clear any existing history
         self.plugin.clear_roll_history()
-        
+
         # Make some rolls
         self.plugin.roll_dice("1d20")
         self.plugin.roll_dice("2d6+3")
-        
+
         history = self.plugin.get_roll_history()
         assert len(history) == 2
         assert history[0]["notation"] == "1d20"
         assert history[1]["notation"] == "2d6+3"
         assert "timestamp" in history[0]
         assert "timestamp" in history[1]
-    
+
     def test_roll_history_limit(self):
         """Test roll history has a reasonable limit."""
         self.plugin.clear_roll_history()
-        
+
         # Make many rolls
         for i in range(150):
             self.plugin.roll_dice("1d6")
-        
+
         history = self.plugin.get_roll_history()
         # Should be limited to 100 entries
         assert len(history) <= 100

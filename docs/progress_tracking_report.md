@@ -189,18 +189,18 @@ This report evaluates the current implementation status of the AI Dungeon Master
 
 ## Recommendations
 
-### Immediate Priorities (Weeks 1-2)
+### Immediate Priorities (Small Features)
 1. **Implement Semantic Kernel Integration**: Follow ADR 0001 by actually integrating SK
 2. **Add Azure OpenAI Connection**: Implement ADR 0005 decisions
 3. **Create Basic Agent Workflows**: Implement simple AI-powered responses
 
-### Short-term Goals (Months 1-2)
+### Next Steps (Medium Features)
 1. **Implement Data Persistence**: Follow ADR 0003 for proper storage
 2. **Basic Game Mechanics**: Dice rolling and simple skill checks
 3. **Agent Coordination**: Inter-agent communication
 4. **Unit Testing**: Test coverage for core functionality
 
-### Medium-term Goals (Months 3-6)
+### Long-term Goals (Large Features)
 1. **Complete Phase 1**: Fully functional agent framework
 2. **D&D 5e Integration**: Rules engine implementation
 3. **Visual Elements**: Image generation capabilities
