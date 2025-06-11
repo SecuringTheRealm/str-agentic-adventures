@@ -12,6 +12,8 @@ import BattleMap from "./BattleMap";
 import CharacterSheet from "./CharacterSheet";
 import ChatBox from "./ChatBox";
 import ImageDisplay from "./ImageDisplay";
+import DiceRoller from "./DiceRoller";
+import { useWebSocket, type WebSocketMessage } from "../hooks/useWebSocket";
 import "./GameInterface.css";
 
 interface GameInterfaceProps {
@@ -31,6 +33,43 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 	const [currentImage, setCurrentImage] = useState<string | null>(null);
 	const [battleMapUrl, setBattleMapUrl] = useState<string | null>(null);
 	const [combatActive, setCombatActive] = useState<boolean>(false);
+
+	// WebSocket integration for real-time updates
+	const wsUrl = `${(process.env.REACT_APP_WS_URL || 'ws://localhost:8000').replace('http', 'ws')}/api/ws/${campaign.id}`;
+	
+	const handleWebSocketMessage = (message: WebSocketMessage) => {
+		switch (message.type) {
+			case 'dice_result':
+				// Add dice result to chat
+				const diceMessage = `${message.player_name} rolled ${message.notation}: ${message.result.total}`;
+				setMessages(prev => [...prev, { text: diceMessage, sender: 'dm' }]);
+				break;
+			
+			case 'game_update':
+				// Handle game state updates
+				if (message.update_type === 'combat_start') {
+					setCombatActive(true);
+				} else if (message.update_type === 'combat_end') {
+					setCombatActive(false);
+				}
+				break;
+			
+			case 'character_update':
+				// Handle character updates (would need character state management)
+				console.log('Character update received:', message);
+				break;
+			
+			default:
+				console.log('Unknown WebSocket message:', message);
+		}
+	};
+
+	const { socket, isConnected, sendMessage } = useWebSocket(wsUrl, {
+		onMessage: handleWebSocketMessage,
+		onConnect: () => console.log('Connected to campaign WebSocket'),
+		onDisconnect: () => console.log('Disconnected from campaign WebSocket'),
+		onError: (error) => console.error('WebSocket error:', error)
+	});
 
 	useEffect(() => {
 		// Initial welcome message
@@ -188,6 +227,18 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 			<div className="game-container">
 				<div className="left-panel">
 					<CharacterSheet character={character} />
+					<DiceRoller 
+						characterId={character.id}
+						playerName={character.name}
+						websocket={socket}
+						onRoll={(result) => {
+							// Add dice roll to local chat if not using WebSocket
+							if (!isConnected) {
+								const diceMessage = `You rolled ${result.notation}: ${result.total}`;
+								setMessages(prev => [...prev, { text: diceMessage, sender: 'player' }]);
+							}
+						}}
+					/>
 				</div>
 
 				<div className="center-panel">
