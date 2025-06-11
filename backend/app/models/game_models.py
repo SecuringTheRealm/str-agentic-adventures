@@ -2,7 +2,7 @@
 Data models for the AI Dungeon Master application.
 """
 from pydantic import BaseModel, Field
-from typing import Dict, List, Optional, Union, Any
+from typing import Dict, List, Optional, Any
 from enum import Enum
 from datetime import datetime
 import uuid
@@ -129,6 +129,7 @@ class Campaign(BaseModel):
     name: str
     description: Optional[str] = None
     setting: str
+    tone: str = "heroic"
     dm_notes: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.now)
     characters: List[str] = []  # Character IDs
@@ -136,6 +137,11 @@ class Campaign(BaseModel):
     npcs: Dict[str, Any] = {}
     quests: Dict[str, Any] = {}
     current_location: Optional[str] = None
+    homebrew_rules: List[str] = []
+    session_log: List[Dict[str, Any]] = []
+    state: str = "created"
+    world_description: Optional[str] = None
+    world_art: Optional[Dict[str, Any]] = None
 
 # Request/Response models
 class CreateCharacterRequest(BaseModel):
@@ -156,17 +162,7 @@ class GameResponse(BaseModel):
     state_updates: Dict[str, Any] = {}
     combat_updates: Optional[Dict[str, Any]] = None
     
-class Campaign(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    name: str
-    setting: str
-    tone: str = "heroic"
-    homebrew_rules: List[str] = []
-    characters: List[str] = []
-    session_log: List[Dict[str, Any]] = []
-    state: str = "created"
-    world_description: Optional[str] = None
-    world_art: Optional[Dict[str, Any]] = None
+
 
 class CreateCampaignRequest(BaseModel):
     name: str

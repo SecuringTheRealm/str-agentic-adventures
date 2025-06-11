@@ -3,11 +3,10 @@ Rules Engine Plugin for the Semantic Kernel.
 This plugin provides D&D 5e SRD ruleset functionality to the agents.
 """
 import logging
-from typing import Dict, Any, List, Tuple
+from typing import Dict, Any
 import random
-import json
 
-from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
+from semantic_kernel.skill_definition import sk_function
 
 logger = logging.getLogger(__name__)
 
@@ -235,7 +234,6 @@ class RulesEnginePlugin:
                 parts = damage_dice.lower().replace(" ", "")
                 
                 # Handle modifiers
-                modifier = 0
                 if "+" in parts:
                     parts, _ = parts.split("+", 1)
                 elif "-" in parts:
