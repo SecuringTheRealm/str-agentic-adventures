@@ -9,7 +9,6 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from pydantic import ValidationError
-from datetime import datetime
 
 from app.models.game_models import (
     CharacterClass,

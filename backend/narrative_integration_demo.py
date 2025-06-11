@@ -7,7 +7,7 @@ from app.plugins.narrative_generation_plugin import NarrativeGenerationPlugin
 from app.plugins.narrative_memory_plugin import NarrativeMemoryPlugin
 from app.models.game_models import (
     Campaign, CreateCampaignRequest, PlayerInput, GameResponse, 
-    StoryArc, NarrativeState
+    NarrativeState
 )
 
 

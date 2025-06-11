@@ -1,7 +1,6 @@
 """
 Tests for the enhanced Rules Engine Plugin.
 """
-import pytest
 from app.plugins.rules_engine_plugin import RulesEnginePlugin
 
 
