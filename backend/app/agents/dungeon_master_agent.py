@@ -6,15 +6,15 @@ from typing import Dict, Any, List, Tuple, Optional
 import json
 
 import semantic_kernel as sk
-from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.tools.tool_manager import ToolManager
+from semantic_kernel.functions import KernelPlugin
 
 from app.kernel_setup import kernel_manager
-from app.agents.narrator_agent import narrator
-from app.agents.scribe_agent import scribe
-from app.agents.combat_mc_agent import combat_mc
-from app.agents.combat_cartographer_agent import combat_cartographer
-from app.agents.artist_agent import artist
+# Temporarily comment out other agent imports while fixing semantic kernel issues
+# from app.agents.narrator_agent import narrator
+# from app.agents.scribe_agent import scribe
+# from app.agents.combat_mc_agent import combat_mc
+# from app.agents.combat_cartographer_agent import combat_cartographer
+# from app.agents.artist_agent import artist
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,6 @@ class DungeonMasterAgent:
     def __init__(self):
         """Initialize the Dungeon Master agent with its own kernel instance."""
         self.kernel = kernel_manager.create_kernel()
-        self.tool_manager = ToolManager(self.kernel)
         self._register_plugins()
         
         # Game session tracking
@@ -44,14 +43,12 @@ class DungeonMasterAgent:
             narrative_memory = NarrativeMemoryPlugin()
             rules_engine = RulesEnginePlugin()
             
-            # Register plugins with the kernel
-            self.kernel.import_skill(narrative_memory, "Memory")
-            self.kernel.import_skill(rules_engine, "Rules")
+            # Register plugins with the kernel using new API
+            memory_plugin = KernelPlugin.from_object("Memory", narrative_memory, description="Narrative memory management")
+            rules_plugin = KernelPlugin.from_object("Rules", rules_engine, description="D&D 5e rules engine")
             
-            # Add tools to the tool manager
-            # self.tool_manager.add_tool(narrative_memory.remember_fact)
-            # self.tool_manager.add_tool(narrative_memory.recall_facts)
-            # self.tool_manager.add_tool(rules_engine.roll_dice)
+            self.kernel.add_plugin(memory_plugin)
+            self.kernel.add_plugin(rules_plugin)
             
             logger.info("Dungeon Master agent plugins registered successfully")
         except Exception as e:
