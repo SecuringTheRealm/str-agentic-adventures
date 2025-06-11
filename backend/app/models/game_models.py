@@ -2,7 +2,7 @@
 Data models for the AI Dungeon Master application.
 """
 from pydantic import BaseModel, Field
-from typing import Dict, List, Optional, Union, Any
+from typing import Dict, List, Optional, Any
 from enum import Enum
 from datetime import datetime
 import uuid
@@ -98,6 +98,9 @@ class CharacterSheet(BaseModel):
     spells: List[Spell] = []
     features: List[Dict[str, Any]] = []
     backstory: Optional[str] = None
+    # Progression tracking
+    ability_score_improvements_used: int = 0
+    hit_dice: str = "1d8"  # Class-specific hit dice (e.g., "1d8" for rogues, "1d10" for fighters)
 
 class CombatParticipant(BaseModel):
     id: str
@@ -136,6 +139,12 @@ class Campaign(BaseModel):
     npcs: Dict[str, Any] = {}
     quests: Dict[str, Any] = {}
     current_location: Optional[str] = None
+    tone: str = "heroic"
+    homebrew_rules: List[str] = []
+    session_log: List[Dict[str, Any]] = []
+    state: str = "created"
+    world_description: Optional[str] = None
+    world_art: Optional[Dict[str, Any]] = None
 
 # Request/Response models
 class CreateCharacterRequest(BaseModel):
@@ -144,6 +153,20 @@ class CreateCharacterRequest(BaseModel):
     character_class: CharacterClass
     abilities: Abilities
     backstory: Optional[str] = None
+
+class LevelUpRequest(BaseModel):
+    character_id: str
+    ability_improvements: Optional[Dict[str, int]] = None  # {"strength": 1, "dexterity": 1} for +2 ASI
+    feat_choice: Optional[str] = None  # Name of feat if chosen instead of ASI
+
+class LevelUpResponse(BaseModel):
+    success: bool
+    new_level: int
+    hit_points_gained: int
+    ability_improvements: Dict[str, int]
+    new_proficiency_bonus: int
+    features_gained: List[str]
+    message: str
 
 class PlayerInput(BaseModel):
     message: str
@@ -155,18 +178,6 @@ class GameResponse(BaseModel):
     images: List[str] = []
     state_updates: Dict[str, Any] = {}
     combat_updates: Optional[Dict[str, Any]] = None
-    
-class Campaign(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    name: str
-    setting: str
-    tone: str = "heroic"
-    homebrew_rules: List[str] = []
-    characters: List[str] = []
-    session_log: List[Dict[str, Any]] = []
-    state: str = "created"
-    world_description: Optional[str] = None
-    world_art: Optional[Dict[str, Any]] = None
 
 class CreateCampaignRequest(BaseModel):
     name: str
