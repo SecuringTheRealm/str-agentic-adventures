@@ -14,6 +14,13 @@ const apiClient = axios.create({
 });
 
 // Define API interface types
+export interface InventoryItem {
+	name: string;
+	quantity: number;
+	type?: string;
+	description?: string;
+}
+
 export interface CharacterCreateRequest {
 	name: string;
 	race: string;
@@ -47,7 +54,7 @@ export interface Character {
 		current: number;
 		maximum: number;
 	};
-	inventory: unknown[];
+	inventory: InventoryItem[];
 }
 
 export interface Campaign {
@@ -76,11 +83,22 @@ export interface PlayerInputRequest {
 	campaign_id: string;
 }
 
+export interface CombatUpdate {
+	status?: string;
+	map_url?: string;
+	current_turn?: string;
+	initiative?: Array<{
+		character_id: string;
+		name: string;
+		initiative: number;
+	}>;
+}
+
 export interface GameResponse {
 	message: string;
 	images: string[];
 	state_updates: Record<string, unknown>;
-	combat_updates?: Record<string, unknown>;
+	combat_updates?: CombatUpdate;
 }
 
 export interface ImageGenerateRequest {

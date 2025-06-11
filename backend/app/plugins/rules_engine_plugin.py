@@ -3,7 +3,7 @@ Rules Engine Plugin for the Semantic Kernel.
 This plugin provides D&D 5e SRD ruleset functionality to the agents.
 """
 import logging
-from typing import Dict, Any
+from typing import Dict, Any, List
 import random
 
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
@@ -18,6 +18,10 @@ class RulesEnginePlugin:
 
     def __init__(self):
         """Initialize the rules engine plugin."""
+        # Roll history for tracking dice rolls
+        self.roll_history = []
+        self.max_history = 100
+        
         # D&D 5e experience thresholds for leveling up
         self.experience_thresholds = {
             1: 0, 2: 300, 3: 900, 4: 2700, 5: 6500,
@@ -42,63 +46,254 @@ class RulesEnginePlugin:
         }
 
     @kernel_function(
-        description="Roll dice using standard RPG notation (e.g., 2d6+3).",
+        description="Roll dice using standard D&D notation with advanced features (e.g., '1d20', '2d6+3', '4d6dl1', '2d20kh1').",
         name="roll_dice"
     )
     def roll_dice(self, dice_notation: str) -> Dict[str, Any]:
         """
-        Roll dice using standard RPG notation (e.g., 2d6+3).
+        Roll dice based on the given notation with support for advanced D&D features.
+        
+        Supported notation:
+        - Basic: 1d20, 2d6+3, 3d8-1
+        - Drop lowest: 4d6dl1 (drop 1 lowest)
+        - Keep highest: 2d20kh1 (advantage)
+        - Keep lowest: 2d20kl1 (disadvantage)
+        - Reroll: 1d6r1 (reroll 1s)
+        - Multiple pools: 2d6+1d4+3
         
         Args:
-            dice_notation: The dice notation to roll (e.g., "1d20", "2d6+3")
+            dice_notation: Advanced dice notation string
             
         Returns:
-            Dict[str, Any]: The result of the dice roll
+            Dict[str, Any]: Roll results with individual rolls, modifiers, and total
         """
         try:
-            # Parse the dice notation
-            parts = dice_notation.lower().replace(" ", "")
+            result = self._parse_and_roll_dice(dice_notation)
             
-            # Handle modifiers
-            modifier = 0
-            if "+" in parts:
-                parts, mod_str = parts.split("+", 1)
-                modifier = int(mod_str)
-            elif "-" in parts:
-                parts, mod_str = parts.split("-", 1)
-                modifier = -int(mod_str)
+            # Add to roll history
+            self._add_to_history(result)
             
-            # Handle dice rolls
-            if "d" in parts:
-                num_dice, dice_type = parts.split("d", 1)
-                num_dice = int(num_dice) if num_dice else 1
-                dice_type = int(dice_type)
-                
-                # Roll the dice
-                rolls = [random.randint(1, dice_type) for _ in range(num_dice)]
-                total = sum(rolls) + modifier
-                
-                return {
-                    "notation": dice_notation,
-                    "rolls": rolls,
-                    "modifier": modifier,
-                    "total": total
-                }
-            else:
-                # Just a static number
-                total = int(parts) + modifier
-                return {
-                    "notation": dice_notation,
-                    "rolls": [],
-                    "modifier": modifier,
-                    "total": total
-                }
+            return result
+            
         except Exception as e:
             logger.error(f"Error rolling dice: {str(e)}")
             return {
                 "notation": dice_notation,
                 "error": f"Invalid dice notation: {str(e)}"
             }
+
+    def _parse_and_roll_dice(self, dice_notation: str) -> Dict[str, Any]:
+        """Parse and execute dice roll notation."""
+        original_notation = dice_notation
+        dice_notation = dice_notation.lower().replace(" ", "")
+        
+        # Check if this is actually multiple pools (more than one 'd')
+        d_count = dice_notation.count('d')
+        
+        # If only one 'd', treat as single pool even with modifiers
+        if d_count <= 1:
+            return self._roll_single_pool(original_notation, dice_notation)
+        
+        # Multiple dice pools (e.g., "2d6+1d4+3")
+        if "+" in dice_notation or "-" in dice_notation:
+            return self._handle_multiple_pools(original_notation, dice_notation)
+        
+        # Single dice pool with potential advanced notation
+        return self._roll_single_pool(original_notation, dice_notation)
+
+    def _handle_multiple_pools(self, original_notation: str, dice_notation: str) -> Dict[str, Any]:
+        """Handle multiple dice pools in one expression."""
+        import re
+        
+        # Split by + and - while preserving the operators
+        parts = re.split(r'(\+|\-)', dice_notation)
+        pools = []
+        total = 0
+        overall_modifier = 0
+        
+        current_sign = 1
+        for part in parts:
+            if part == '+':
+                current_sign = 1
+            elif part == '-':
+                current_sign = -1
+            elif part.strip():
+                if 'd' in part:
+                    # It's a dice pool
+                    pool_result = self._roll_single_pool(part, part)
+                    pool_result['modifier'] = current_sign
+                    pools.append(pool_result)
+                    total += pool_result['total'] * current_sign
+                else:
+                    # It's a static modifier
+                    value = int(part) * current_sign
+                    overall_modifier += value
+                    pools.append({
+                        "type": "modifier",
+                        "value": value,
+                        "notation": f"{'+' if current_sign > 0 else ''}{value}"
+                    })
+                    total += value
+        
+        return {
+            "notation": original_notation,
+            "pools": pools,
+            "modifier": overall_modifier,
+            "total": total
+        }
+
+    def _roll_single_pool(self, original_notation: str, dice_notation: str) -> Dict[str, Any]:
+        """Roll a single dice pool with potential advanced notation."""
+        # Parse basic dice notation (XdY)
+        if 'd' not in dice_notation:
+            # Just a number
+            return {
+                "notation": original_notation,
+                "total": int(dice_notation),
+                "rolls": [],
+                "modifier": int(dice_notation)
+            }
+        
+        # Extract modifiers first
+        modifier = 0
+        base_notation = dice_notation
+        
+        # Handle simple +/- modifiers (for single pools only)
+        if "+" in dice_notation and not any(x in dice_notation for x in ['dl', 'dh', 'kh', 'kl', 'r']):
+            base_notation, mod_str = dice_notation.split("+", 1)
+            modifier = int(mod_str)
+        elif "-" in dice_notation and not any(x in dice_notation for x in ['dl', 'dh', 'kh', 'kl', 'r']):
+            base_notation, mod_str = dice_notation.split("-", 1)
+            modifier = -int(mod_str)
+        
+        # Extract advanced notation modifiers
+        modifiers = self._extract_advanced_modifiers(base_notation)
+        base_dice = modifiers['base_dice']
+        
+        # Parse basic XdY
+        num_dice, dice_type = base_dice.split('d')
+        num_dice = int(num_dice) if num_dice else 1
+        dice_type = int(dice_type)
+        
+        # Roll initial dice
+        rolls = [random.randint(1, dice_type) for _ in range(num_dice)]
+        
+        # Apply advanced modifiers
+        result = {
+            "notation": original_notation,
+            "rolls": rolls.copy(),
+            "modifier": modifier,
+            "total": 0
+        }
+        
+        # Handle rerolls
+        if modifiers['reroll']:
+            reroll_value = modifiers['reroll']
+            rerolls = []
+            
+            # Keep rerolling until no more reroll values
+            for i, roll in enumerate(rolls):
+                while roll == reroll_value:
+                    new_roll = random.randint(1, dice_type)
+                    rerolls.append({'original': roll, 'new': new_roll, 'index': i})
+                    roll = new_roll
+                    rolls[i] = roll  # Update the roll
+            
+            if rerolls:
+                result['rerolls'] = rerolls
+                # Update the rolls in the result
+                result['rolls'] = rolls.copy()
+        
+        # Handle drop/keep modifiers
+        final_rolls = rolls.copy()
+        dropped = []
+        
+        if modifiers['drop_lowest']:
+            count = modifiers['drop_lowest']
+            sorted_indices = sorted(range(len(rolls)), key=lambda i: rolls[i])
+            for i in range(min(count, len(rolls))):
+                idx = sorted_indices[i]
+                dropped.append(rolls[idx])
+                final_rolls[idx] = 0  # Mark as dropped
+            result['dropped'] = dropped
+            
+        elif modifiers['drop_highest']:
+            count = modifiers['drop_highest']
+            sorted_indices = sorted(range(len(rolls)), key=lambda i: rolls[i], reverse=True)
+            for i in range(min(count, len(rolls))):
+                idx = sorted_indices[i]
+                dropped.append(rolls[idx])
+                final_rolls[idx] = 0  # Mark as dropped
+            result['dropped'] = dropped
+            
+        elif modifiers['keep_highest']:
+            count = modifiers['keep_highest']
+            sorted_indices = sorted(range(len(rolls)), key=lambda i: rolls[i], reverse=True)
+            for i in range(count, len(rolls)):
+                idx = sorted_indices[i]
+                dropped.append(rolls[idx])
+                final_rolls[idx] = 0  # Mark as dropped
+            result['dropped'] = dropped
+            
+        elif modifiers['keep_lowest']:
+            count = modifiers['keep_lowest']
+            sorted_indices = sorted(range(len(rolls)), key=lambda i: rolls[i])
+            for i in range(count, len(rolls)):
+                idx = sorted_indices[i]
+                dropped.append(rolls[idx])
+                final_rolls[idx] = 0  # Mark as dropped
+            result['dropped'] = dropped
+        
+        # Calculate total from non-dropped rolls plus modifier
+        dice_total = sum(roll for roll in final_rolls if roll > 0)
+        result['total'] = dice_total + modifier
+        
+        return result
+
+    def _extract_advanced_modifiers(self, dice_notation: str) -> Dict[str, Any]:
+        """Extract advanced notation modifiers from dice string."""
+        import re
+        
+        modifiers = {
+            'base_dice': dice_notation,
+            'drop_lowest': None,
+            'drop_highest': None,
+            'keep_highest': None,
+            'keep_lowest': None,
+            'reroll': None
+        }
+        
+        # Extract drop lowest (dl)
+        dl_match = re.search(r'dl(\d+)', dice_notation)
+        if dl_match:
+            modifiers['drop_lowest'] = int(dl_match.group(1))
+            modifiers['base_dice'] = dice_notation.replace(dl_match.group(0), '')
+        
+        # Extract drop highest (dh)
+        dh_match = re.search(r'dh(\d+)', dice_notation)
+        if dh_match:
+            modifiers['drop_highest'] = int(dh_match.group(1))
+            modifiers['base_dice'] = dice_notation.replace(dh_match.group(0), '')
+        
+        # Extract keep highest (kh)
+        kh_match = re.search(r'kh(\d+)', dice_notation)
+        if kh_match:
+            modifiers['keep_highest'] = int(kh_match.group(1))
+            modifiers['base_dice'] = dice_notation.replace(kh_match.group(0), '')
+        
+        # Extract keep lowest (kl)
+        kl_match = re.search(r'kl(\d+)', dice_notation)
+        if kl_match:
+            modifiers['keep_lowest'] = int(kl_match.group(1))
+            modifiers['base_dice'] = dice_notation.replace(kl_match.group(0), '')
+        
+        # Extract reroll (r)
+        r_match = re.search(r'r(\d+)', dice_notation)
+        if r_match:
+            modifiers['reroll'] = int(r_match.group(1))
+            modifiers['base_dice'] = dice_notation.replace(r_match.group(0), '')
+        
+        return modifiers
 
     @kernel_function(
         description="Perform a skill check against a target difficulty class (DC).",
@@ -441,3 +636,104 @@ class RulesEnginePlugin:
             return {
                 "error": f"Error calculating level up HP: {str(e)}"
             }
+
+    def roll_with_character(self, dice_notation: str, character: Dict[str, Any], skill: str = None) -> Dict[str, Any]:
+        """
+        Roll dice with character context for automatic modifiers.
+        
+        Args:
+            dice_notation: Dice notation to roll
+            character: Character data with abilities and proficiencies
+            skill: Skill name to apply modifiers for
+            
+        Returns:
+            Dict[str, Any]: Roll result with character bonuses applied
+        """
+        base_result = self.roll_dice(dice_notation)
+        
+        if "error" in base_result:
+            return base_result
+        
+        # Calculate character bonus
+        character_bonus = 0
+        
+        if skill and "abilities" in character:
+            # Map skills to abilities (simplified mapping)
+            skill_ability_map = {
+                "athletics": "strength",
+                "stealth": "dexterity",
+                "perception": "wisdom",
+                "investigation": "intelligence",
+                "persuasion": "charisma",
+                "intimidation": "charisma"
+            }
+            
+            ability = skill_ability_map.get(skill.lower())
+            if ability and ability in character["abilities"]:
+                ability_score = character["abilities"][ability]
+                ability_modifier = (ability_score - 10) // 2
+                character_bonus += ability_modifier
+                
+                # Add proficiency bonus if proficient
+                if "proficiencies" in character and skill in character["proficiencies"]:
+                    proficiency_bonus = character.get("proficiency_bonus", 2)
+                    character_bonus += proficiency_bonus
+        
+        # Apply character bonus to total
+        base_result["character_bonus"] = character_bonus
+        base_result["total"] += character_bonus
+        
+        return base_result
+
+    def input_manual_roll(self, dice_notation: str, result: int) -> Dict[str, Any]:
+        """
+        Input a manual roll result (for when dice are rolled physically).
+        
+        Args:
+            dice_notation: The dice notation that was supposed to be rolled
+            result: The actual result from physical dice
+            
+        Returns:
+            Dict[str, Any]: Manual roll record
+        """
+        manual_result = {
+            "notation": dice_notation,
+            "manual_result": result,
+            "total": result,
+            "type": "manual",
+            "is_manual": True
+        }
+        
+        self._add_to_history(manual_result)
+        return manual_result
+
+    def clear_roll_history(self):
+        """Clear the roll history."""
+        self.roll_history = []
+
+    def get_roll_history(self, limit: int = None) -> List[Dict[str, Any]]:
+        """
+        Get the roll history.
+        
+        Args:
+            limit: Maximum number of rolls to return
+            
+        Returns:
+            List[Dict[str, Any]]: List of recent rolls
+        """
+        if limit:
+            return self.roll_history[-limit:]
+        return self.roll_history.copy()
+
+    def _add_to_history(self, roll_result: Dict[str, Any]):
+        """Add a roll result to the history."""
+        # Add timestamp
+        import datetime
+        roll_result["timestamp"] = datetime.datetime.now().isoformat()
+        
+        # Add to history
+        self.roll_history.append(roll_result)
+        
+        # Limit history size
+        if len(self.roll_history) > self.max_history:
+            self.roll_history = self.roll_history[-self.max_history:]
