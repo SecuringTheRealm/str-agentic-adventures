@@ -1,6 +1,7 @@
 """
 API routes for the AI Dungeon Master application.
 """
+
 from fastapi import APIRouter, HTTPException, status
 from typing import Dict, Any
 
@@ -9,7 +10,7 @@ from app.models.game_models import (
     PlayerInput,
     GameResponse,
     CharacterSheet,
-    LevelUpRequest
+    LevelUpRequest,
 )
 from app.agents.dungeon_master_agent import dungeon_master
 from app.agents.scribe_agent import scribe
@@ -17,6 +18,7 @@ from app.agents.combat_cartographer_agent import combat_cartographer
 from app.agents.artist_agent import artist
 
 router = APIRouter(tags=["game"])
+
 
 @router.post("/character", response_model=CharacterSheet)
 async def create_character(character_data: CreateCharacterRequest):
@@ -33,16 +35,16 @@ async def create_character(character_data: CreateCharacterRequest):
 
         if "error" in character_sheet:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=character_sheet["error"]
+                status_code=status.HTTP_400_BAD_REQUEST, detail=character_sheet["error"]
             )
 
         return character_sheet
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to create character: {str(e)}"
+            detail=f"Failed to create character: {str(e)}",
         )
+
 
 @router.get("/character/{character_id}", response_model=Dict[str, Any])
 async def get_character(character_id: str):
@@ -52,10 +54,11 @@ async def get_character(character_id: str):
     if not character:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Character {character_id} not found"
+            detail=f"Character {character_id} not found",
         )
 
     return character
+
 
 @router.post("/campaign", response_model=Dict[str, Any])
 async def create_campaign(campaign_data: Dict[str, Any]):
@@ -65,16 +68,16 @@ async def create_campaign(campaign_data: Dict[str, Any]):
 
         if "error" in campaign:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=campaign["error"]
+                status_code=status.HTTP_400_BAD_REQUEST, detail=campaign["error"]
             )
 
         return campaign
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to create campaign: {str(e)}"
+            detail=f"Failed to create campaign: {str(e)}",
         )
+
 
 @router.post("/generate-image", response_model=Dict[str, Any])
 async def generate_image(image_request: Dict[str, Any]):
@@ -82,7 +85,7 @@ async def generate_image(image_request: Dict[str, Any]):
     try:
         image_type = image_request.get("image_type")
         details = image_request.get("details", {})
-        
+
         if image_type == "character_portrait":
             result = await artist.generate_character_portrait(details)
         elif image_type == "scene_illustration":
@@ -92,15 +95,16 @@ async def generate_image(image_request: Dict[str, Any]):
         else:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Unsupported image type: {image_type}"
+                detail=f"Unsupported image type: {image_type}",
             )
 
         return result
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to generate image: {str(e)}"
+            detail=f"Failed to generate image: {str(e)}",
         )
+
 
 @router.post("/battle-map", response_model=Dict[str, Any])
 async def generate_battle_map(map_request: Dict[str, Any]):
@@ -108,15 +112,18 @@ async def generate_battle_map(map_request: Dict[str, Any]):
     try:
         environment = map_request.get("environment", {})
         combat_context = map_request.get("combat_context")
-        
-        battle_map = await combat_cartographer.generate_battle_map(environment, combat_context)
-        
+
+        battle_map = await combat_cartographer.generate_battle_map(
+            environment, combat_context
+        )
+
         return battle_map
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to generate battle map: {str(e)}"
+            detail=f"Failed to generate battle map: {str(e)}",
         )
+
 
 @router.post("/input", response_model=GameResponse)
 async def process_player_input(player_input: PlayerInput):
@@ -128,7 +135,7 @@ async def process_player_input(player_input: PlayerInput):
         if not character:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Character {player_input.character_id} not found"
+                detail=f"Character {player_input.character_id} not found",
             )
 
         # Create context for the Dungeon Master agent
@@ -137,7 +144,7 @@ async def process_player_input(player_input: PlayerInput):
             "campaign_id": player_input.campaign_id,
             "character_name": character.get("name", "Adventurer"),
             "character_class": character.get("class", "Fighter"),
-            "character_level": str(character.get("level", 1))
+            "character_level": str(character.get("level", 1)),
         }
 
         # Process the input through the Dungeon Master agent
@@ -153,15 +160,16 @@ async def process_player_input(player_input: PlayerInput):
             message=dm_response.get("message", ""),
             images=images,
             state_updates=dm_response.get("state_updates", {}),
-            combat_updates=dm_response.get("combat_updates")
+            combat_updates=dm_response.get("combat_updates"),
         )
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to process input: {str(e)}"
+            detail=f"Failed to process input: {str(e)}",
         )
+
 
 @router.post("/character/{character_id}/level-up", response_model=Dict[str, Any])
 async def level_up_character(character_id: str, level_up_data: LevelUpRequest):
@@ -171,13 +179,12 @@ async def level_up_character(character_id: str, level_up_data: LevelUpRequest):
         result = await scribe.level_up_character(
             character_id,
             level_up_data.ability_improvements,
-            use_average_hp=True  # Default to average HP
+            use_average_hp=True,  # Default to average HP
         )
 
         if "error" in result:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=result["error"]
+                status_code=status.HTTP_400_BAD_REQUEST, detail=result["error"]
             )
 
         return result
@@ -186,10 +193,13 @@ async def level_up_character(character_id: str, level_up_data: LevelUpRequest):
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to level up character: {str(e)}"
+            detail=f"Failed to level up character: {str(e)}",
         )
 
-@router.post("/character/{character_id}/award-experience", response_model=Dict[str, Any])
+
+@router.post(
+    "/character/{character_id}/award-experience", response_model=Dict[str, Any]
+)
 async def award_experience(character_id: str, experience_data: Dict[str, int]):
     """Award experience points to a character."""
     try:
@@ -197,15 +207,14 @@ async def award_experience(character_id: str, experience_data: Dict[str, int]):
         if experience_points <= 0:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Experience points must be greater than 0"
+                detail="Experience points must be greater than 0",
             )
 
         result = await scribe.award_experience(character_id, experience_points)
 
         if "error" in result:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=result["error"]
+                status_code=status.HTTP_400_BAD_REQUEST, detail=result["error"]
             )
 
         return result
@@ -214,8 +223,9 @@ async def award_experience(character_id: str, experience_data: Dict[str, int]):
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to award experience: {str(e)}"
+            detail=f"Failed to award experience: {str(e)}",
         )
+
 
 @router.get("/character/{character_id}/progression-info", response_model=Dict[str, Any])
 async def get_progression_info(character_id: str):
@@ -225,16 +235,17 @@ async def get_progression_info(character_id: str):
         if not character:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Character {character_id} not found"
+                detail=f"Character {character_id} not found",
             )
 
         from app.plugins.rules_engine_plugin import RulesEnginePlugin
+
         rules_engine = RulesEnginePlugin()
-        
+
         current_experience = character.get("experience", 0)
         current_level = character.get("level", 1)
         asi_used = character.get("ability_score_improvements_used", 0)
-        
+
         level_info = rules_engine.calculate_level(current_experience)
         asi_info = rules_engine.check_asi_eligibility(current_level, asi_used)
         proficiency_info = rules_engine.calculate_proficiency_bonus(current_level)
@@ -244,12 +255,12 @@ async def get_progression_info(character_id: str):
             "current_level": current_level,
             "level_info": level_info,
             "asi_info": asi_info,
-            "proficiency_info": proficiency_info
+            "proficiency_info": proficiency_info,
         }
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get progression info: {str(e)}"
+            detail=f"Failed to get progression info: {str(e)}",
         )

@@ -1,11 +1,13 @@
 """
 Data models for the AI Dungeon Master application.
 """
+
 from pydantic import BaseModel, Field
 from typing import Dict, List, Optional, Any
 from enum import Enum
 from datetime import datetime
 import uuid
+
 
 # Enum definitions
 class CharacterClass(str, Enum):
@@ -22,6 +24,7 @@ class CharacterClass(str, Enum):
     SORCERER = "sorcerer"
     BARBARIAN = "barbarian"
 
+
 class Race(str, Enum):
     HUMAN = "human"
     ELF = "elf"
@@ -33,6 +36,7 @@ class Race(str, Enum):
     DRAGONBORN = "dragonborn"
     TIEFLING = "tiefling"
 
+
 class Ability(str, Enum):
     STRENGTH = "strength"
     DEXTERITY = "dexterity"
@@ -41,10 +45,12 @@ class Ability(str, Enum):
     WISDOM = "wisdom"
     CHARISMA = "charisma"
 
+
 class CombatState(str, Enum):
     READY = "ready"
     ACTIVE = "active"
     COMPLETED = "completed"
+
 
 # Base models
 class Abilities(BaseModel):
@@ -55,9 +61,11 @@ class Abilities(BaseModel):
     wisdom: int = 10
     charisma: int = 10
 
+
 class HitPoints(BaseModel):
     current: int
     maximum: int
+
 
 class Item(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -67,6 +75,7 @@ class Item(BaseModel):
     weight: Optional[float] = None
     value: Optional[int] = None
     properties: Optional[Dict[str, Any]] = None
+
 
 class Spell(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -78,6 +87,7 @@ class Spell(BaseModel):
     components: str
     duration: str
     description: str
+
 
 class CharacterSheet(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -100,13 +110,17 @@ class CharacterSheet(BaseModel):
     backstory: Optional[str] = None
     # Progression tracking
     ability_score_improvements_used: int = 0
-    hit_dice: str = "1d8"  # Class-specific hit dice (e.g., "1d8" for rogues, "1d10" for fighters)
+    hit_dice: str = (
+        "1d8"  # Class-specific hit dice (e.g., "1d8" for rogues, "1d10" for fighters)
+    )
+
 
 class CombatParticipant(BaseModel):
     id: str
     name: str
     initiative: int
     type: str  # "player" or "enemy"
+
 
 class Enemy(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -118,6 +132,7 @@ class Enemy(BaseModel):
     abilities: Optional[Abilities] = None
     armor_class: int = 10
 
+
 class CombatEncounter(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     status: CombatState = CombatState.READY
@@ -126,6 +141,7 @@ class CombatEncounter(BaseModel):
     current_turn: Optional[int] = None
     turn_order: List[CombatParticipant] = []
     narrative_context: Dict[str, Any] = {}
+
 
 class Campaign(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -146,6 +162,7 @@ class Campaign(BaseModel):
     world_description: Optional[str] = None
     world_art: Optional[Dict[str, Any]] = None
 
+
 # Request/Response models
 class CreateCharacterRequest(BaseModel):
     name: str
@@ -154,10 +171,14 @@ class CreateCharacterRequest(BaseModel):
     abilities: Abilities
     backstory: Optional[str] = None
 
+
 class LevelUpRequest(BaseModel):
     character_id: str
-    ability_improvements: Optional[Dict[str, int]] = None  # {"strength": 1, "dexterity": 1} for +2 ASI
+    ability_improvements: Optional[Dict[str, int]] = (
+        None  # {"strength": 1, "dexterity": 1} for +2 ASI
+    )
     feat_choice: Optional[str] = None  # Name of feat if chosen instead of ASI
+
 
 class LevelUpResponse(BaseModel):
     success: bool
@@ -168,10 +189,12 @@ class LevelUpResponse(BaseModel):
     features_gained: List[str]
     message: str
 
+
 class PlayerInput(BaseModel):
     message: str
     character_id: str
     campaign_id: str
+
 
 class GameResponse(BaseModel):
     message: str
@@ -179,19 +202,23 @@ class GameResponse(BaseModel):
     state_updates: Dict[str, Any] = {}
     combat_updates: Optional[Dict[str, Any]] = None
 
+
 class CreateCampaignRequest(BaseModel):
     name: str
-    setting: str 
+    setting: str
     tone: Optional[str] = "heroic"
     homebrew_rules: Optional[List[str]] = []
+
 
 class GenerateImageRequest(BaseModel):
     image_type: str  # "character_portrait", "scene_illustration", "item_visualization"
     details: Dict[str, Any]
 
+
 class BattleMapRequest(BaseModel):
     environment: Dict[str, Any]
     combat_context: Optional[Dict[str, Any]] = None
+
 
 # Narrative Generation Models
 class NarrativeChoice(BaseModel):
@@ -201,6 +228,7 @@ class NarrativeChoice(BaseModel):
     consequences: Dict[str, Any] = {}
     requirements: Dict[str, Any] = {}  # Conditions that must be met to show this choice
     weight: float = 1.0  # Probability weight for random selection
+
 
 class PlotPoint(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -213,6 +241,7 @@ class PlotPoint(BaseModel):
     outcomes: Dict[str, Any] = {}  # Results when this plot point is completed
     importance: int = 5  # 1-10 scale
     estimated_duration: Optional[int] = None  # Expected number of scenes/sessions
+
 
 class StoryArc(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -227,17 +256,21 @@ class StoryArc(BaseModel):
     estimated_length: Optional[int] = None  # Expected number of sessions
     player_choices: List[str] = []  # NarrativeChoice IDs that influenced this arc
 
+
 class NarrativeState(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     campaign_id: str
     current_scene: Optional[str] = None
     active_story_arcs: List[str] = []  # StoryArc IDs
-    completed_story_arcs: List[str] = []  # StoryArc IDs  
+    completed_story_arcs: List[str] = []  # StoryArc IDs
     pending_choices: List[str] = []  # NarrativeChoice IDs available to players
     narrative_flags: Dict[str, Any] = {}  # Story flags and variables
-    character_relationships: Dict[str, Dict[str, Any]] = {}  # Character interaction history
+    character_relationships: Dict[
+        str, Dict[str, Any]
+    ] = {}  # Character interaction history
     world_state: Dict[str, Any] = {}  # Current state of locations, factions, etc.
     last_updated: datetime = Field(default_factory=datetime.now)
+
 
 class NarrativeEvent(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
