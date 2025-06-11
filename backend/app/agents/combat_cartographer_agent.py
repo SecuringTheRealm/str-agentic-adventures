@@ -5,7 +5,6 @@ import logging
 from typing import Dict, Any, List, Optional
 
 import semantic_kernel as sk
-from semantic_kernel.orchestration.context_variables import ContextVariables
 
 from app.kernel_setup import kernel_manager
 

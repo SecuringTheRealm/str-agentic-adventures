@@ -7,8 +7,7 @@ from typing import Dict, Any, List, Optional
 import json
 import datetime
 
-from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
-from semantic_kernel.orchestration.sk_context import SKContext
+from semantic_kernel.functions import kernel_function
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +26,7 @@ class NarrativeMemoryPlugin:
         self.npcs = {}
         self.locations = {}
 
-    @sk_function(
+    @kernel_function(
         description="Store a narrative fact in memory.",
         name="remember_fact"
     )
@@ -71,7 +70,7 @@ class NarrativeMemoryPlugin:
                 "message": f"Failed to store fact: {str(e)}"
             }
 
-    @sk_function(
+    @kernel_function(
         description="Record a narrative event in the campaign timeline.",
         name="record_event"
     )
@@ -119,7 +118,7 @@ class NarrativeMemoryPlugin:
                 "message": f"Failed to record event: {str(e)}"
             }
 
-    @sk_function(
+    @kernel_function(
         description="Retrieve facts related to a specific query or category.",
         name="recall_facts"
     )
@@ -165,7 +164,7 @@ class NarrativeMemoryPlugin:
                 "facts": []
             }
 
-    @sk_function(
+    @kernel_function(
         description="Retrieve a timeline of recent events.",
         name="recall_timeline"
     )
@@ -212,7 +211,7 @@ class NarrativeMemoryPlugin:
                 "events": []
             }
 
-    @sk_function(
+    @kernel_function(
         description="Add or update an NPC in the campaign.",
         name="update_npc"
     )
@@ -264,7 +263,7 @@ class NarrativeMemoryPlugin:
                 "message": f"Failed to update NPC: {str(e)}"
             }
 
-    @sk_function(
+    @kernel_function(
         description="Retrieve information about a specific NPC.",
         name="get_npc"
     )

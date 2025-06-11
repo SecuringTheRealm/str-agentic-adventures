@@ -5,7 +5,6 @@ import logging
 from typing import Dict, Any, List
 
 import semantic_kernel as sk
-from semantic_kernel.orchestration.context_variables import ContextVariables
 
 from app.kernel_setup import kernel_manager
 
@@ -34,8 +33,8 @@ class NarratorAgent:
             rules_engine = RulesEnginePlugin()
             
             # Register plugins with the kernel
-            self.kernel.import_skill(narrative_memory, "Memory")
-            self.kernel.import_skill(rules_engine, "Rules")
+            self.kernel.add_plugin(narrative_memory, "Memory")
+            self.kernel.add_plugin(rules_engine, "Rules")
             
             logger.info("Narrator agent plugins registered successfully")
         except Exception as e:

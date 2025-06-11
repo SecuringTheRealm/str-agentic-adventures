@@ -7,7 +7,7 @@ from typing import Dict, Any, List, Tuple
 import random
 import json
 
-from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
+from semantic_kernel.functions import kernel_function
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ class RulesEnginePlugin:
         """Initialize the rules engine plugin."""
         pass
 
-    @sk_function(
+    @kernel_function(
         description="Roll dice using standard RPG notation (e.g., 2d6+3).",
         name="roll_dice"
     )
@@ -80,7 +80,7 @@ class RulesEnginePlugin:
                 "error": f"Invalid dice notation: {str(e)}"
             }
 
-    @sk_function(
+    @kernel_function(
         description="Perform a skill check against a target difficulty class (DC).",
         name="skill_check"
     )
@@ -145,7 +145,7 @@ class RulesEnginePlugin:
                 "error": f"Error performing skill check: {str(e)}"
             }
     
-    @sk_function(
+    @kernel_function(
         description="Calculate whether an attack hits based on the attack roll and target's armor class.",
         name="resolve_attack"
     )
@@ -210,7 +210,7 @@ class RulesEnginePlugin:
                 "error": f"Error resolving attack: {str(e)}"
             }
     
-    @sk_function(
+    @kernel_function(
         description="Calculate damage for an attack based on the damage dice and modifiers.",
         name="calculate_damage"
     )
