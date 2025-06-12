@@ -1,8 +1,9 @@
+---
 name: Deploy to Production
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 # Required permissions for OIDC authentication with Azure
@@ -15,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     # Note: No environment specified to generate correct federated identity subject claim:
     # repo:SecuringTheRealm/str-agentic-adventures:ref:refs/heads/main
-    
+
     steps:
     - name: Check Azure secrets
       id: check-secrets
@@ -27,24 +28,24 @@ jobs:
         else
           echo "secrets-available=true" >> $GITHUB_OUTPUT
         fi
-        
+
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Setup Node.js for frontend build
       uses: actions/setup-node@v4
       with:
         node-version: '18'
         cache: 'npm'
         cache-dependency-path: frontend/package-lock.json
-        
+
     - name: Setup Python for backend
       uses: actions/setup-python@v4
       with:
         python-version: '3.12'
         cache: 'pip'
         cache-dependency-path: backend/requirements.txt
-      
+
     - name: Log in with Azure (Federated Credentials)
       if: steps.check-secrets.outputs.secrets-available == 'true' && secrets.AZURE_CLIENT_ID != ''
       uses: azure/login@v2
@@ -52,13 +53,13 @@ jobs:
         client-id: ${{ secrets.AZURE_CLIENT_ID }}
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-        
+
     - name: Log in with Azure (Service Principal)
       if: steps.check-secrets.outputs.secrets-available == 'true' && secrets.AZURE_CLIENT_ID == '' && secrets.AZURE_CREDENTIALS != ''
       uses: azure/login@v2
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
-        
+
     - name: Deploy Infrastructure with Bicep
       id: infrastructure-deploy
       uses: Azure/arm-deploy@v2
@@ -78,7 +79,7 @@ jobs:
         deploymentName: production-${{ github.run_number }}
         failOnStdErr: false
       timeout-minutes: 20
-        
+
     - name: Build and deploy backend container
       id: backend-deploy
       if: steps.infrastructure-deploy.outcome == 'success'
@@ -86,17 +87,17 @@ jobs:
         # Get deployment outputs from the infrastructure deployment
         RESOURCE_GROUP="${{ steps.infrastructure-deploy.outputs.AZURE_RESOURCE_GROUP }}"
         CONTAINER_APP_ENVIRONMENT="${{ steps.infrastructure-deploy.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_ID }}"
-        
+
         # Use production naming
         CONTAINER_APP_NAME="production-backend"
-        
+
         echo "Deploying backend container app: $CONTAINER_APP_NAME"
         echo "Resource Group: $RESOURCE_GROUP"
         echo "Container Apps Environment: $CONTAINER_APP_ENVIRONMENT"
-        
+
         # Navigate to backend directory
         cd backend
-        
+
         # Create or update the container app with source code
         az containerapp up \
           --name "$CONTAINER_APP_NAME" \
@@ -120,16 +121,16 @@ jobs:
             "APP_LOG_LEVEL=info" \
             "SEMANTIC_KERNEL_DEBUG=false" \
           --quiet
-        
+
         # Get the FQDN of the deployed container app
         BACKEND_FQDN=$(az containerapp show --name "$CONTAINER_APP_NAME" --resource-group "$RESOURCE_GROUP" --query "properties.configuration.ingress.fqdn" --output tsv)
         BACKEND_URI="https://$BACKEND_FQDN"
-        
+
         echo "Backend deployed to: $BACKEND_URI"
         echo "backend-status=success" >> $GITHUB_OUTPUT
         echo "backend-uri=$BACKEND_URI" >> $GITHUB_OUTPUT
       timeout-minutes: 15
-      
+
     - name: Deploy frontend to Static Web App
       id: frontend-deploy
       if: steps.infrastructure-deploy.outcome == 'success' && steps.backend-deploy.outputs.backend-status == 'success'
@@ -137,18 +138,18 @@ jobs:
         # Get Static Web App details
         RESOURCE_GROUP="${{ steps.infrastructure-deploy.outputs.AZURE_RESOURCE_GROUP }}"
         SWA_NAME="production-frontend"
-        
+
         echo "Deploying frontend to Static Web App: $SWA_NAME"
         echo "Resource Group: $RESOURCE_GROUP"
-        
+
         # Build frontend with backend URL
         cd frontend
         npm ci
-        
+
         # Set backend URL for build
         export REACT_APP_API_URL="${{ steps.backend-deploy.outputs.backend-uri }}"
         npm run build
-        
+
         # Get deployment token from the Static Web App (if it exists)
         if az staticwebapp show --name "$SWA_NAME" --resource-group "$RESOURCE_GROUP" >/dev/null 2>&1; then
           DEPLOYMENT_TOKEN=$(az staticwebapp secrets list --name "$SWA_NAME" --resource-group "$RESOURCE_GROUP" --query "properties.apiKey" --output tsv 2>/dev/null || echo "")
@@ -159,7 +160,7 @@ jobs:
           DEPLOYMENT_TOKEN=""
           FRONTEND_URI="${{ steps.infrastructure-deploy.outputs.FRONTEND_URI || 'Static Web App not available' }}"
         fi
-        
+
         if [ -z "$DEPLOYMENT_TOKEN" ]; then
           echo "::warning::Could not retrieve deployment token for Static Web App $SWA_NAME"
           echo "frontend-status=token-failed" >> $GITHUB_OUTPUT
@@ -170,7 +171,7 @@ jobs:
           echo "frontend-uri=$FRONTEND_URI" >> $GITHUB_OUTPUT
         fi
       timeout-minutes: 10
-        
+
     - name: Deploy frontend using Static Web Apps action
       if: steps.frontend-deploy.outputs.frontend-status == 'success'
       uses: Azure/static-web-apps-deploy@v1
@@ -181,58 +182,58 @@ jobs:
         app_location: 'frontend'
         output_location: 'build'
         skip_deploy_on_missing_secrets: true
-        
+
     - name: Get deployment outputs
       id: deployment-outputs
       if: steps.infrastructure-deploy.outcome == 'success'
       run: |
         echo "Getting deployment outputs..."
-        
+
         # Use outputs from backend and frontend deployments
         BACKEND_URI="${{ steps.backend-deploy.outputs.backend-uri || 'Backend deployment in progress' }}"
         FRONTEND_URI="${{ steps.frontend-deploy.outputs.frontend-uri || steps.infrastructure-deploy.outputs.FRONTEND_URI || 'Frontend deployment in progress' }}"
-        
+
         echo "backend-uri=$BACKEND_URI" >> $GITHUB_OUTPUT
         echo "frontend-uri=$FRONTEND_URI" >> $GITHUB_OUTPUT
-        
+
         echo "Backend URI: $BACKEND_URI"
         echo "Frontend URI: $FRONTEND_URI"
-        
+
     - name: Create deployment summary
       if: steps.infrastructure-deploy.outcome == 'success'
       run: |
         cat << EOF >> $GITHUB_STEP_SUMMARY
         ## 🚀 Production Deployment Successful
-        
+
         ### Deployed Resources
         - **Backend API**: ${{ steps.deployment-outputs.outputs.backend-uri || 'Deployment in progress' }}
         - **Frontend App**: ${{ steps.deployment-outputs.outputs.frontend-uri || 'Deployment in progress' }}
-        
+
         ### Environment
         - **Azure Subscription**: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         - **Location**: ${{ vars.AZURE_LOCATION || 'eastus' }}
         - **Environment**: production
-        
+
         ### Next Steps
         1. Verify the application is running correctly
         2. Check Azure OpenAI integration
         3. Test the AI Dungeon Master functionality
         EOF
-        
+
     - name: Create deployment summary (Failure)
       if: failure() || steps.infrastructure-deploy.outcome == 'failure'
       run: |
         cat << EOF >> $GITHUB_STEP_SUMMARY
         ## ❌ Production Deployment Failed
-        
+
         The production deployment failed. Please check the workflow logs for details.
-        
+
         ### Common Issues:
         - Azure resource provisioning errors
         - Configuration issues
         - Resource quotas exceeded
         - Azure authentication issues
-        
+
         ### Next Steps:
         1. Review the workflow logs for specific error messages
         2. Check Azure portal for resource status
