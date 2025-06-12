@@ -117,3 +117,4 @@ output FRONTEND_URI string = frontend.outputs.uri
 output AZURE_RESOURCE_GROUP string = rg.name
 output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = containerAppsEnvironment.outputs.id
 output AZURE_STORAGE_ACCOUNT_NAME string = storage.outputs.name
+output AZURE_STATIC_WEB_APP_NAME string = frontend.outputs.name
