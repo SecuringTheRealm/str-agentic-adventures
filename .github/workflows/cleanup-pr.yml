@@ -117,6 +117,7 @@ jobs:
         location: ${{ vars.AZURE_LOCATION || vars.AZURE_REGION || 'eastus2' }}
         scope: subscription
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        action-on-unmanage-resources: delete
       continue-on-error: true
 
     - name: Set cleanup status
@@ -146,8 +147,6 @@ jobs:
           - **Backend API**: ${{ steps.get-env-info.outputs.backend-uri || 'Not available' }}
 
           ${{ github.event.pull_request.merged && '✅ **Merged**: Changes are now available in the main branch' || '❌ **Closed**: No changes were merged' }}
-        comment-author: 'github-actions[bot]'
-        comment-author-association: 'NONE'
 
     - name: Comment on PR (Success without URLs)
       if: steps.check-secrets.outputs.secrets-available == 'true' && (steps.get-env-info.outputs.environment-exists == 'false' || (steps.get-env-info.outputs.backend-uri == '' && steps.get-env-info.outputs.frontend-uri == ''))
@@ -162,5 +161,3 @@ jobs:
           ${{ github.event.pull_request.merged && '✅ **Merged**: Changes are now available in the main branch' || '❌ **Closed**: No changes were merged' }}
 
           > **Note**: No deployment URLs were found for this PR environment.
-        comment-author: 'github-actions[bot]'
-        comment-author-association: 'NONE'
