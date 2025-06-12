@@ -389,5 +389,15 @@ class ScribeAgent:
             return {"error": f"Failed to award experience: {str(e)}"}
 
 
-# Singleton instance
-scribe = ScribeAgent()
+# Lazy singleton instance
+_scribe = None
+
+def get_scribe():
+    """Get the scribe instance, creating it if necessary."""
+    global _scribe
+    if _scribe is None:
+        _scribe = ScribeAgent()
+    return _scribe
+
+# For backward compatibility during import-time checks
+scribe = None

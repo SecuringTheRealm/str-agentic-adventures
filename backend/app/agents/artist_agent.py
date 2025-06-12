@@ -262,5 +262,15 @@ class ArtistAgent:
             logger.error(f"Error creating item visualization: {str(e)}")
             return {"error": "Failed to create item visualization"}
 
-# Singleton instance
-artist = ArtistAgent()
+# Lazy singleton instance
+_artist = None
+
+def get_artist():
+    """Get the artist instance, creating it if necessary."""
+    global _artist
+    if _artist is None:
+        _artist = ArtistAgent()
+    return _artist
+
+# For backward compatibility during import-time checks
+artist = None

@@ -444,5 +444,15 @@ class NarratorAgent:
             }
 
 
-# Singleton instance
-narrator = NarratorAgent()
+# Lazy singleton instance
+_narrator = None
+
+def get_narrator():
+    """Get the narrator instance, creating it if necessary."""
+    global _narrator
+    if _narrator is None:
+        _narrator = NarratorAgent()
+    return _narrator
+
+# For backward compatibility during import-time checks
+narrator = None

@@ -318,5 +318,15 @@ class DungeonMasterAgent:
         # Default to narrative with general exploration
         return "narrative", {"action_type": "exploration", "method": "keyword_analysis"}
 
-# Singleton instance
-dungeon_master = DungeonMasterAgent()
+# Lazy singleton instance
+_dungeon_master = None
+
+def get_dungeon_master():
+    """Get the dungeon master instance, creating it if necessary."""
+    global _dungeon_master
+    if _dungeon_master is None:
+        _dungeon_master = DungeonMasterAgent()
+    return _dungeon_master
+
+# For backward compatibility during import-time checks
+dungeon_master = None

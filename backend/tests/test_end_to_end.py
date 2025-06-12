@@ -250,10 +250,10 @@ class TestComponentIntegration:
         
         # Check that agents are imported and used
         agent_imports = [
-            'from app.agents.dungeon_master_agent import dungeon_master',
-            'from app.agents.scribe_agent import scribe',
-            'from app.agents.combat_cartographer_agent import combat_cartographer',
-            'from app.agents.artist_agent import artist'
+            'from app.agents.dungeon_master_agent import get_dungeon_master',
+            'from app.agents.scribe_agent import get_scribe',
+            'from app.agents.combat_cartographer_agent import get_combat_cartographer',
+            'from app.agents.artist_agent import get_artist'
         ]
         
         for agent_import in agent_imports:
@@ -264,10 +264,10 @@ class TestComponentIntegration:
         
         # Check that agents are used in endpoints
         agent_usage = [
-            'await scribe.create_character',
-            'await scribe.get_character', 
-            'await dungeon_master.create_campaign',
-            'await artist.generate_image'
+            'await get_scribe().create_character',
+            'await get_scribe().get_character', 
+            'await get_dungeon_master().create_campaign',
+            'await get_artist().generate'
         ]
         
         used_agents = []
