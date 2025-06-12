@@ -84,7 +84,7 @@ jobs:
       uses: azure/bicep-deploy@v2
       with:
         type: deploymentStack
-        operation: create
+        operation: createOrUpdate
         name: pr-${{ github.event.pull_request.number }}
         location: ${{ vars.AZURE_LOCATION || vars.AZURE_REGION || 'eastus2' }}
         scope: subscription

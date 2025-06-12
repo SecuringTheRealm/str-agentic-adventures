@@ -75,7 +75,7 @@ jobs:
       uses: azure/bicep-deploy@v2
       with:
         type: deployment
-        operation: create
+        operation: createOrUpdate
         name: production-${{ github.run_number }}
         location: ${{ vars.AZURE_LOCATION || vars.AZURE_REGION || 'eastus2' }}
         scope: subscription
