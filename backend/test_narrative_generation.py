@@ -2,10 +2,21 @@
 Tests for the narrative generation system.
 """
 import pytest
+import os
 from unittest.mock import patch
 from app.plugins.narrative_generation_plugin import NarrativeGenerationPlugin
 from app.plugins.narrative_memory_plugin import NarrativeMemoryPlugin
-from app.agents.narrator_agent import NarratorAgent
+
+# Mock environment variables before importing agents
+with patch.dict(os.environ, {
+    'AZURE_OPENAI_ENDPOINT': 'https://test.openai.azure.com',
+    'AZURE_OPENAI_API_KEY': 'test-key',
+    'AZURE_OPENAI_CHAT_DEPLOYMENT': 'gpt-4',
+    'AZURE_OPENAI_EMBEDDING_DEPLOYMENT': 'text-embedding-ada-002',
+    'STORAGE_CONNECTION_STRING': 'test-connection'
+}):
+    from app.agents.narrator_agent import NarratorAgent
+
 from app.models.game_models import NarrativeState
 
 
