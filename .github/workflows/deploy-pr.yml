@@ -25,7 +25,8 @@ jobs:
   deploy-pr:
     # This job runs for pull requests only, not for pushes to main branch
     runs-on: ubuntu-latest
-    environment: development
+    # Note: No environment specified to generate correct federated identity subject claim:
+    # repo:SecuringTheRealm/str-agentic-adventures:pull_request
     
     steps:
     - name: Check Azure secrets

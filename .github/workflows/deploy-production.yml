@@ -19,7 +19,8 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: production
+    # Note: No environment specified to generate correct federated identity subject claim:
+    # repo:SecuringTheRealm/str-agentic-adventures:ref:refs/heads/main
     
     steps:
     - name: Check Azure secrets
