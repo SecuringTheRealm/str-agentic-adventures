@@ -242,6 +242,8 @@ Before running GitHub Actions, verify your service principal works:
 
 ### Deployment Workflows
 
+> **Note**: When a workflow triggers on `pull_request` with `branches: [ main ]`, it runs when pull requests are opened/updated that **target** the main branch, not when pushing **to** the main branch. This allows testing changes before they are merged.
+
 #### Production Deployment
 - **Trigger**: Push to `main` branch or manual trigger
 - **Workflow**: `.github/workflows/deploy-production.yml`
@@ -249,15 +251,17 @@ Before running GitHub Actions, verify your service principal works:
 - **Resources**: Creates a production environment with all Azure resources
 
 #### Pull Request Environments
-- **Trigger**: Pull request opened/updated against `main` branch
+- **Trigger**: Pull request opened/updated against `main` branch (runs when PRs target main, not when pushing to main)
 - **Workflow**: `.github/workflows/deploy-pr.yml`
-- **Environment**: development
-- **Resources**: Creates a temporary environment for testing
+- **Environment**: development (temporary environment named `pr-{PR_NUMBER}`)
+- **Resources**: Creates a temporary environment for testing each pull request
+- **Purpose**: Allows testing changes in isolation before merging to main
 
 #### Environment Cleanup
-- **Trigger**: Pull request closed/merged
+- **Trigger**: Pull request closed/merged (automatically cleans up when PR is finished)
 - **Workflow**: `.github/workflows/cleanup-pr.yml`
-- **Action**: Deletes the temporary PR environment
+- **Action**: Deletes the temporary PR environment (`pr-{PR_NUMBER}`)
+- **Purpose**: Ensures no orphaned environments remain after PR completion
 
 ## Azure Resources
 

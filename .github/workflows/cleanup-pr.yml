@@ -13,19 +13,29 @@ env:
 
 jobs:
   cleanup-pr:
-    # Only run if Azure secrets are configured
-    if: ${{ secrets.AZURE_CLIENT_ID != '' && secrets.AZURE_TENANT_ID != '' && secrets.AZURE_SUBSCRIPTION_ID != '' }}
     runs-on: ubuntu-latest
     
     steps:
+    - name: Check Azure secrets
+      id: check-secrets
+      run: |
+        if [ -z "${{ secrets.AZURE_CLIENT_ID }}" ] || [ -z "${{ secrets.AZURE_TENANT_ID }}" ] || [ -z "${{ secrets.AZURE_SUBSCRIPTION_ID }}" ]; then
+          echo "::warning::Azure secrets are not configured. Skipping PR cleanup."
+          echo "secrets-available=false" >> $GITHUB_OUTPUT
+        else
+          echo "secrets-available=true" >> $GITHUB_OUTPUT
+        fi
+        
     - name: Checkout code
+      if: steps.check-secrets.outputs.secrets-available == 'true'
       uses: actions/checkout@v4
       
     - name: Install Azure Developer CLI
+      if: steps.check-secrets.outputs.secrets-available == 'true'
       uses: Azure/setup-azd@v1.0.0
       
     - name: Log in with Azure (Federated Credentials)
-      if: ${{ env.AZURE_CLIENT_ID != '' }}
+      if: steps.check-secrets.outputs.secrets-available == 'true' && env.AZURE_CLIENT_ID != ''
       run: |
         azd auth login \
           --client-id "${{ env.AZURE_CLIENT_ID }}" \
@@ -33,12 +43,13 @@ jobs:
           --tenant-id "${{ env.AZURE_TENANT_ID }}"
         
     - name: Log in with Azure (Service Principal)
-      if: ${{ env.AZURE_CLIENT_ID == '' && env.AZURE_CREDENTIALS != '' }}
+      if: steps.check-secrets.outputs.secrets-available == 'true' && env.AZURE_CLIENT_ID == '' && env.AZURE_CREDENTIALS != ''
       uses: Azure/login@v2
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
         
     - name: Cleanup PR Environment
+      if: steps.check-secrets.outputs.secrets-available == 'true'
       run: |
         ENV_NAME="pr-${{ github.event.pull_request.number }}"
         

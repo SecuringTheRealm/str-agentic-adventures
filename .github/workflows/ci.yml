@@ -3,8 +3,9 @@ name: CI
 on:
   pull_request:
     branches: [ main, develop ]
+  # Only run on pushes to main for release validation, not for all pushes
   push:
-    branches: [ main, develop ]
+    branches: [ main ]
 
 jobs:
   frontend-tests:

@@ -85,7 +85,7 @@ module backend 'modules/backend.bicep' = {
     azureOpenAiChatDeployment: azureOpenAiChatDeployment
     azureOpenAiEmbeddingDeployment: azureOpenAiEmbeddingDeployment
     azureOpenAiDalleDeployment: azureOpenAiDalleDeployment
-    storageConnectionString: storage.outputs.connectionString
+    storageAccountName: storage.outputs.name
   }
 }
 
