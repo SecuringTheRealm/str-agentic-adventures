@@ -180,8 +180,7 @@ jobs:
             "APP_PORT=8000" \
             "APP_DEBUG=false" \
             "APP_LOG_LEVEL=info" \
-            "SEMANTIC_KERNEL_DEBUG=false" \
-          --quiet
+            "SEMANTIC_KERNEL_DEBUG=false"
 
         # Get the FQDN of the deployed container app
         BACKEND_FQDN=$(az containerapp show --name "$CONTAINER_APP_NAME" --resource-group "$RESOURCE_GROUP" --query "properties.configuration.ingress.fqdn" --output tsv)
