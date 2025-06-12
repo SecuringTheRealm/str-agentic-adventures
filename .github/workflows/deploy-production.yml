@@ -21,12 +21,22 @@ jobs:
     - name: Check Azure secrets
       id: check-secrets
       run: |
-        if [ -z "${{ secrets.AZURE_CLIENT_ID }}" ] || [ -z "${{ secrets.AZURE_TENANT_ID }}" ] || [ -z "${{ secrets.AZURE_SUBSCRIPTION_ID }}" ]; then
+        # Check if we have federated credentials
+        if [ -n "${{ secrets.AZURE_CLIENT_ID }}" ] && [ -n "${{ secrets.AZURE_TENANT_ID }}" ] && [ -n "${{ secrets.AZURE_SUBSCRIPTION_ID }}" ]; then
+          echo "secrets-available=true" >> $GITHUB_OUTPUT
+          echo "use-federated-auth=true" >> $GITHUB_OUTPUT
+          echo "use-service-principal=false" >> $GITHUB_OUTPUT
+        # Check if we have service principal credentials
+        elif [ -n "${{ secrets.AZURE_CREDENTIALS }}" ]; then
+          echo "secrets-available=true" >> $GITHUB_OUTPUT
+          echo "use-federated-auth=false" >> $GITHUB_OUTPUT
+          echo "use-service-principal=true" >> $GITHUB_OUTPUT
+        else
           echo "::error::Azure secrets are not configured. Production deployment requires Azure credentials."
           echo "secrets-available=false" >> $GITHUB_OUTPUT
+          echo "use-federated-auth=false" >> $GITHUB_OUTPUT
+          echo "use-service-principal=false" >> $GITHUB_OUTPUT
           exit 1
-        else
-          echo "secrets-available=true" >> $GITHUB_OUTPUT
         fi
 
     - name: Checkout code
@@ -47,7 +57,7 @@ jobs:
         cache-dependency-path: backend/requirements.txt
 
     - name: Log in with Azure (Federated Credentials)
-      if: steps.check-secrets.outputs.secrets-available == 'true' && secrets.AZURE_CLIENT_ID != ''
+      if: steps.check-secrets.outputs.secrets-available == 'true' && steps.check-secrets.outputs.use-federated-auth == 'true'
       uses: azure/login@v2
       with:
         client-id: ${{ secrets.AZURE_CLIENT_ID }}
@@ -55,7 +65,7 @@ jobs:
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
     - name: Log in with Azure (Service Principal)
-      if: steps.check-secrets.outputs.secrets-available == 'true' && secrets.AZURE_CLIENT_ID == '' && secrets.AZURE_CREDENTIALS != ''
+      if: steps.check-secrets.outputs.secrets-available == 'true' && steps.check-secrets.outputs.use-service-principal == 'true'
       uses: azure/login@v2
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
