@@ -76,11 +76,11 @@ jobs:
       with:
         scope: subscription
         subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-        region: ${{ vars.AZURE_LOCATION || 'eastus' }}
+        region: ${{ vars.AZURE_LOCATION || vars.AZURE_REGION || 'eastus' }}
         template: infra/main.bicep
         parameters: |
           environmentName=production
-          location=${{ vars.AZURE_LOCATION || 'eastus' }}
+          location=${{ vars.AZURE_LOCATION || vars.AZURE_REGION || 'eastus' }}
           azureOpenAiEndpoint=${{ secrets.AZURE_OPENAI_ENDPOINT }}
           azureOpenAiApiKey=${{ secrets.AZURE_OPENAI_API_KEY }}
           azureOpenAiChatDeployment=${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT || 'gpt-4o-mini' }}
@@ -221,7 +221,7 @@ jobs:
 
         ### Environment
         - **Azure Subscription**: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-        - **Location**: ${{ vars.AZURE_LOCATION || 'eastus' }}
+        - **Location**: ${{ vars.AZURE_LOCATION || vars.AZURE_REGION || 'eastus' }}
         - **Environment**: production
 
         ### Next Steps
