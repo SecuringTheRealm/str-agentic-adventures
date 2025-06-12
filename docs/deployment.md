@@ -5,26 +5,78 @@ This document explains how to deploy the STR Agentic Adventures application to A
 ## Prerequisites
 
 1. **Azure Subscription**: You need an active Azure subscription
-2. **Azure OpenAI Service**: You need access to Azure OpenAI with the following models deployed:
+2. **Azure AI Foundry Project**: You need access to Azure AI Foundry with the following models deployed:
    - GPT-4 or GPT-4o-mini for chat completion
    - text-embedding-ada-002 for embeddings
    - DALL-E 3 for image generation (optional)
 
+> **Getting Started with Azure AI Foundry**: Visit [ai.azure.com](https://ai.azure.com) to create your project and deploy the required OpenAI models. Azure AI Foundry provides a unified platform for managing Azure OpenAI services and is the recommended way to access OpenAI models in Azure.
+
 ## Local Development Setup
 
-1. Install the [Azure Developer CLI](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/install-azd)
-2. Clone this repository
-3. Configure your environment:
+### Prerequisites
+
+- **Python 3.11 or higher**
+- **Node.js 18 or higher**
+- **Azure CLI** (for authentication and deployment)
+- **Azure AI Foundry project** with deployed models
+
+### Step-by-Step Setup
+
+1. **Install the Azure Developer CLI**:
+   ```bash
+   # Download and install azd
+   # See: https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/install-azd
+   ```
+
+2. **Clone this repository**:
+   ```bash
+   git clone https://github.com/SecuringTheRealm/str-agentic-adventures.git
+   cd str-agentic-adventures
+   ```
+
+3. **Set up Azure AI Foundry credentials**:
+   - Visit [Azure AI Foundry](https://ai.azure.com)
+   - Create or select an existing project
+   - Deploy required models (GPT-4o-mini, text-embedding-ada-002, DALL-E 3)
+   - Note your project endpoint and API key from Project Settings
+
+4. **Configure your local environment**:
+   ```bash
+   # Set up backend environment
+   cd backend
+   cp .env.example .env
+   # Edit .env with your Azure AI Foundry credentials
+   ```
+
+5. **For deployment, configure azd environment**:
    ```bash
    azd auth login
    azd env new <environment-name>
-   azd env set AZURE_OPENAI_ENDPOINT <your-openai-endpoint>
-   azd env set AZURE_OPENAI_API_KEY <your-openai-api-key>
+   azd env set AZURE_OPENAI_ENDPOINT <your-ai-foundry-endpoint>
+   azd env set AZURE_OPENAI_API_KEY <your-ai-foundry-api-key>
    ```
-4. Deploy to Azure:
+
+6. **Deploy to Azure** (optional):
    ```bash
    azd up
    ```
+
+### Running Locally
+
+```bash
+# Backend
+cd backend
+pip install -r requirements.txt
+./start.sh
+
+# Frontend (in a new terminal)
+cd frontend
+npm install
+npm start
+```
+
+The application will be available at `http://localhost:3000`.
 
 ## GitHub Actions Deployment
 
@@ -124,8 +176,8 @@ This method uses OpenID Connect and doesn't require storing client secrets.
    - `AZURE_CLIENT_ID`: The Application (client) ID from your service principal
    - `AZURE_TENANT_ID`: The Directory (tenant) ID from your service principal
    - `AZURE_SUBSCRIPTION_ID`: Your Azure subscription ID
-   - `AZURE_OPENAI_ENDPOINT`: Your Azure OpenAI endpoint URL (e.g., `https://your-openai-resource.openai.azure.com/`)
-   - `AZURE_OPENAI_API_KEY`: Your Azure OpenAI API key
+   - `AZURE_OPENAI_ENDPOINT`: Your Azure AI Foundry endpoint URL (e.g., `https://your-project.openai.azure.com/`)
+   - `AZURE_OPENAI_API_KEY`: Your Azure AI Foundry API key
 
 ##### Option 2: Service Principal with Client Secret
 
@@ -135,15 +187,17 @@ If you prefer using client secrets or federated credentials aren't available:
 
 2. **Required GitHub Secrets**:
    - `AZURE_CREDENTIALS`: The complete JSON output from the `az ad sp create-for-rbac` command
-   - `AZURE_OPENAI_ENDPOINT`: Your Azure OpenAI endpoint URL
-   - `AZURE_OPENAI_API_KEY`: Your Azure OpenAI API key
+   - `AZURE_OPENAI_ENDPOINT`: Your Azure AI Foundry endpoint URL
+   - `AZURE_OPENAI_API_KEY`: Your Azure AI Foundry API key
 
-#### Step 3: Obtain Azure OpenAI Information
+#### Step 3: Obtain Azure AI Foundry Information
 
-1. **In Azure Portal**, go to your **Azure OpenAI Service**
-2. **Endpoint**: Found in the **Overview** section (e.g., `https://your-openai-resource.openai.azure.com/`)
-3. **API Key**: Go to **Keys and Endpoint** section, copy **KEY 1** or **KEY 2**
-4. **Model Deployments**: Go to **Deployments** to see your deployed models
+1. **In Azure AI Foundry**, go to [ai.azure.com](https://ai.azure.com) and select your project
+2. **Endpoint**: Found in **Project settings** (e.g., `https://your-project.openai.azure.com/`)
+3. **API Key**: In **Project settings** > **Keys and Endpoint**, copy one of the available keys
+4. **Model Deployments**: Go to **Deployments** to verify your deployed models (gpt-4o-mini, text-embedding-ada-002, dall-e-3)
+
+> **Note**: Azure AI Foundry provides a unified interface for managing your Azure OpenAI resources. If you prefer using the Azure Portal directly, you can access your Azure OpenAI Service resource, but Azure AI Foundry is the recommended approach.
 
 ### GitHub Repository Configuration
 
@@ -154,13 +208,13 @@ Configure these in your GitHub repository (Settings > Secrets and variables > Ac
 - `AZURE_CLIENT_ID`: Application (client) ID from service principal
 - `AZURE_TENANT_ID`: Directory (tenant) ID from service principal  
 - `AZURE_SUBSCRIPTION_ID`: Your Azure subscription ID
-- `AZURE_OPENAI_ENDPOINT`: Azure OpenAI endpoint URL
-- `AZURE_OPENAI_API_KEY`: Azure OpenAI API key
+- `AZURE_OPENAI_ENDPOINT`: Azure AI Foundry endpoint URL (from Project settings)
+- `AZURE_OPENAI_API_KEY`: Azure AI Foundry API key (from Project settings)
 
 **For Service Principal with Secret:**
 - `AZURE_CREDENTIALS`: Complete JSON from service principal creation
-- `AZURE_OPENAI_ENDPOINT`: Azure OpenAI endpoint URL
-- `AZURE_OPENAI_API_KEY`: Azure OpenAI API key
+- `AZURE_OPENAI_ENDPOINT`: Azure AI Foundry endpoint URL (from Project settings)
+- `AZURE_OPENAI_API_KEY`: Azure AI Foundry API key (from Project settings)
 
 #### Optional Repository Variables
 Configure these in Settings > Secrets and variables > Actions > Repository variables:
@@ -227,11 +281,11 @@ Before running GitHub Actions, verify your service principal works:
    az group delete --name "test-permissions-rg" --yes --no-wait
    ```
 
-3. **Test Azure OpenAI access**:
+3. **Test Azure AI Foundry / Azure OpenAI access**:
    ```bash
-   # Test if you can access your OpenAI endpoint
-   curl -H "api-key: <YOUR_OPENAI_API_KEY>" \
-        "<YOUR_OPENAI_ENDPOINT>/openai/deployments?api-version=2023-03-15-preview"
+   # Test if you can access your Azure AI Foundry endpoint
+   curl -H "api-key: <YOUR_AI_FOUNDRY_API_KEY>" \
+        "<YOUR_AI_FOUNDRY_ENDPOINT>/openai/deployments?api-version=2023-03-15-preview"
    ```
 
 #### Validate GitHub Actions Setup
@@ -278,7 +332,7 @@ The deployment creates the following Azure resources:
 - **Storage Account**: Stores game data and generated images
 
 ### Integration Services
-- Uses your existing **Azure OpenAI Service** for AI capabilities
+- Uses your existing **Azure AI Foundry project** for AI capabilities (Azure OpenAI models)
 
 ## Environment Configuration
 
@@ -299,7 +353,7 @@ The deployment creates the following Azure resources:
 ### Development Environments
 - Use minimal resource allocations
 - Automatically cleaned up to prevent cost accumulation
-- Shared Azure OpenAI service to minimize AI costs
+- Shared Azure AI Foundry project to minimize AI costs
 
 ### Production Environment
 - Optimized for performance and reliability
@@ -337,10 +391,11 @@ The deployment creates the following Azure resources:
    - Check there are no extra spaces or characters in the secret
 
 #### Resource and Access Issues
-4. **Azure OpenAI Access**: 
-   - Ensure your subscription has access to Azure OpenAI service
-   - Verify your Azure OpenAI resource is in the same subscription as your deployment
-   - Check that the OpenAI endpoint URL and API key are correct
+4. **Azure AI Foundry / Azure OpenAI Access**: 
+   - Ensure your subscription has access to Azure OpenAI service through Azure AI Foundry
+   - Verify your Azure AI Foundry project is in the same subscription as your deployment
+   - Check that the Azure AI Foundry endpoint URL and API key are correct
+   - Confirm your model deployments are active in Azure AI Foundry
 
 5. **Resource Limits**: 
    - Check subscription limits for Container Apps and Static Web Apps

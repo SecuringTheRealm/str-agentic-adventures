@@ -56,16 +56,18 @@ This project supports both automated deployment through GitHub Actions and manua
 
 ### Quick Start - Manual Deployment
 
+**Prerequisites**: Ensure you have an Azure AI Foundry project with deployed OpenAI models (see [local setup](#azure-ai-foundry-setup) for details).
+
 1. Install [azd](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/install-azd?WT.mc_id=AI-MVP-5004204).
 2. Sign in to your Azure account:
    ```bash
    azd auth login
    ```
-3. Set up your environment:
+3. Set up your environment with your Azure AI Foundry credentials:
    ```bash
    azd env new <environment-name>
-   azd env set AZURE_OPENAI_ENDPOINT <your-openai-endpoint>
-   azd env set AZURE_OPENAI_API_KEY <your-openai-api-key>
+   azd env set AZURE_OPENAI_ENDPOINT <your-ai-foundry-endpoint>
+   azd env set AZURE_OPENAI_API_KEY <your-ai-foundry-api-key>
    ```
 4. Deploy all infrastructure and application code:
    ```bash
@@ -85,26 +87,69 @@ For setup instructions, see [Deployment Guide](docs/deployment.md).
 
 ### Required Azure Services
 
-- **Azure OpenAI Service** with deployed models (GPT-4o-mini, text-embedding-ada-002, DALL-E 3)
+- **Azure AI Foundry project** with deployed OpenAI models (GPT-4o-mini, text-embedding-ada-002, DALL-E 3)
 - **Azure Container Apps** for backend hosting
 - **Azure Static Web Apps** for frontend hosting  
 - **Azure Storage Account** for file and image storage
 
+> **Note**: Azure AI Foundry provides the unified platform for accessing Azure OpenAI models. Create your project at [ai.azure.com](https://ai.azure.com) to get started.
+
 ## Running the Application Locally
 
-Start the backend and frontend separately:
+### Prerequisites
 
-```bash
-# Backend
-cd backend
-./start.sh
+1. **Python 3.11 or higher** for the backend
+2. **Node.js 18 or higher** for the frontend  
+3. **Azure AI Foundry access** for OpenAI models (see setup below)
 
-# Frontend
-cd ../frontend
-npm install
-npm start
-```
-The frontend is served at `http://localhost:3000` and expects the backend on `http://localhost:8000`.
+### Azure AI Foundry Setup
+
+To run the application locally, you need access to Azure OpenAI models through Azure AI Foundry:
+
+1. **Create an Azure AI Foundry project**:
+   - Go to [Azure AI Foundry](https://ai.azure.com)
+   - Sign in with your Azure account
+   - Create a new project or use an existing one
+
+2. **Deploy required models**:
+   - Navigate to **Deployments** in your Azure AI Foundry project
+   - Deploy the following models:
+     - **GPT-4o-mini** (for chat completion)
+     - **text-embedding-ada-002** (for embeddings)
+     - **DALL-E 3** (for image generation, optional)
+
+3. **Get your endpoints and keys**:
+   - In Azure AI Foundry, go to **Project settings**
+   - Note your **Endpoint URL** (e.g., `https://your-project.openai.azure.com/`)
+   - Go to **Keys and Endpoint** to get your **API key**
+
+### Environment Configuration
+
+1. **Backend setup**:
+   ```bash
+   cd backend
+   cp .env.example .env
+   # Edit .env file with your Azure AI Foundry credentials:
+   # AZURE_OPENAI_ENDPOINT=https://your-project.openai.azure.com/
+   # AZURE_OPENAI_API_KEY=your-api-key-here
+   # AZURE_OPENAI_CHAT_DEPLOYMENT=gpt-4o-mini
+   # AZURE_OPENAI_EMBEDDING_DEPLOYMENT=text-embedding-ada-002
+   ```
+
+2. **Install dependencies and start services**:
+   ```bash
+   # Backend
+   cd backend
+   pip install -r requirements.txt
+   ./start.sh
+
+   # Frontend (in a new terminal)
+   cd frontend
+   npm install
+   npm start
+   ```
+
+The frontend will be available at `http://localhost:3000` and connects to the backend at `http://localhost:8000`.
 
 ## Running Tests
 
