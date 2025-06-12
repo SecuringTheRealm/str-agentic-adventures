@@ -218,21 +218,105 @@ class DungeonMasterAgent:
         Returns:
             Tuple[str, Dict[str, Any]]: Input type and extracted details
         """
-        # TODO: Implement proper input analysis with Semantic Kernel
-        # For now, use a simple keyword-based approach
+        try:
+            # Enhanced input analysis using Azure OpenAI for better intent recognition
+            from app.azure_openai_client import AzureOpenAIClient
+            
+            openai_client = AzureOpenAIClient()
+            
+            # Prepare analysis prompt for the AI
+            analysis_prompt = f"""
+            Analyze the following D&D player input and classify it into one of these categories:
+            - "combat" (fighting, attacking, casting spells, initiative, combat actions)
+            - "character" (inventory management, leveling up, equipment, abilities, character sheet updates)
+            - "narrative" (exploration, roleplay, story actions, talking to NPCs)
+            
+            Player input: "{user_input}"
+            Current context: {context.get('location', 'unknown location')}
+            
+            Respond with JSON format:
+            {{"category": "combat|character|narrative", "action_type": "specific_action", "confidence": 0.8}}
+            """
+            
+            messages = [
+                {"role": "system", "content": "You are a D&D game assistant that analyzes player intent. Always respond with valid JSON."},
+                {"role": "user", "content": analysis_prompt}
+            ]
+            
+            # Get AI analysis
+            response = await openai_client.chat_completion(messages, max_tokens=150, temperature=0.3)
+            
+            # Parse AI response
+            import json
+            try:
+                analysis = json.loads(response.strip())
+                category = analysis.get("category", "narrative")
+                action_type = analysis.get("action_type", "general")
+                confidence = analysis.get("confidence", 0.5)
+                
+                # If confidence is too low, fall back to keyword analysis
+                if confidence < 0.6:
+                    raise ValueError("Low confidence, using fallback")
+                    
+                return category, {"action_type": action_type, "confidence": confidence, "method": "ai_analysis"}
+                
+            except (json.JSONDecodeError, ValueError):
+                # Fall back to keyword analysis if AI parsing fails
+                logger.warning("AI analysis failed, falling back to keyword-based approach")
+                
+        except Exception as e:
+            logger.warning(f"Enhanced input analysis failed: {str(e)}, using fallback approach")
         
+        # Fallback: Enhanced keyword-based approach with better patterns
         input_lower = user_input.lower()
         
-        # Check for combat indicators
-        if any(term in input_lower for term in ["attack", "fight", "cast spell", "initiative", "roll"]):
-            return "combat", {"action_type": "attack"}
+        # Combat indicators with more comprehensive patterns
+        combat_keywords = [
+            "attack", "fight", "cast spell", "initiative", "roll", "hit", "damage", 
+            "sword", "bow", "magic", "spell", "fireball", "heal", "defend", "dodge",
+            "weapon", "armor class", "saving throw", "d20", "strike", "shoot"
+        ]
+        if any(term in input_lower for term in combat_keywords):
+            # Determine specific combat action type
+            if any(term in input_lower for term in ["cast", "spell", "magic", "fireball"]):
+                action_type = "spell_casting"
+            elif any(term in input_lower for term in ["attack", "hit", "strike", "sword", "bow"]):
+                action_type = "physical_attack"
+            elif any(term in input_lower for term in ["roll", "d20", "saving throw"]):
+                action_type = "dice_roll"
+            else:
+                action_type = "combat_general"
+            return "combat", {"action_type": action_type, "method": "keyword_analysis"}
             
-        # Check for character update indicators
-        if any(term in input_lower for term in ["inventory", "equip", "level up", "spell", "ability"]):
-            return "character", {"update_type": "inventory"}
+        # Character management indicators
+        character_keywords = [
+            "inventory", "equip", "level up", "spell", "ability", "stats", "character sheet",
+            "equipment", "items", "backpack", "armor", "experience", "skills", "proficiency"
+        ]
+        if any(term in input_lower for term in character_keywords):
+            # Determine specific character action type
+            if any(term in input_lower for term in ["inventory", "items", "equipment", "equip"]):
+                action_type = "inventory_management"
+            elif any(term in input_lower for term in ["level up", "experience", "stats"]):
+                action_type = "character_advancement"
+            elif any(term in input_lower for term in ["spell", "ability", "skills"]):
+                action_type = "ability_management"
+            else:
+                action_type = "character_general"
+            return "character", {"action_type": action_type, "method": "keyword_analysis"}
+        
+        # Movement and exploration indicators
+        movement_keywords = ["go", "move", "walk", "run", "enter", "exit", "north", "south", "east", "west"]
+        if any(term in input_lower for term in movement_keywords):
+            return "narrative", {"action_type": "movement", "method": "keyword_analysis"}
+        
+        # Social interaction indicators
+        social_keywords = ["talk", "speak", "say", "tell", "ask", "persuade", "intimidate", "deceive"]
+        if any(term in input_lower for term in social_keywords):
+            return "narrative", {"action_type": "social_interaction", "method": "keyword_analysis"}
             
-        # Default to narrative
-        return "narrative", {}
+        # Default to narrative with general exploration
+        return "narrative", {"action_type": "exploration", "method": "keyword_analysis"}
 
 # Singleton instance
 dungeon_master = DungeonMasterAgent()
