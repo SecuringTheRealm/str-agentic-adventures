@@ -1,3 +1,4 @@
+---
 name: Deploy PR Environment
 # This workflow deploys pull request environments for testing using Azure GitHub Actions
 # Triggers when PRs are opened, updated, or reopened against the main branch
@@ -7,7 +8,7 @@ name: Deploy PR Environment
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-    branches: [ main ]  # Only for PRs targeting the main branch
+    branches: [main]  # Only for PRs targeting the main branch
 
 # Required permissions for OIDC authentication with Azure
 permissions:
@@ -21,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     # Note: No environment specified to generate correct federated identity subject claim:
     # repo:SecuringTheRealm/str-agentic-adventures:pull_request
-    
+
     steps:
     - name: Check Azure secrets
       id: check-secrets
@@ -32,11 +33,11 @@ jobs:
         else
           echo "secrets-available=true" >> $GITHUB_OUTPUT
         fi
-        
+
     - name: Checkout code
       if: steps.check-secrets.outputs.secrets-available == 'true'
       uses: actions/checkout@v4
-      
+
     - name: Setup Node.js for frontend build
       if: steps.check-secrets.outputs.secrets-available == 'true'
       uses: actions/setup-node@v4
@@ -44,7 +45,7 @@ jobs:
         node-version: '18'
         cache: 'npm'
         cache-dependency-path: frontend/package-lock.json
-        
+
     - name: Setup Python for backend
       if: steps.check-secrets.outputs.secrets-available == 'true'
       uses: actions/setup-python@v4
@@ -52,7 +53,7 @@ jobs:
         python-version: '3.12'
         cache: 'pip'
         cache-dependency-path: backend/requirements.txt
-      
+
     - name: Log in with Azure (Federated Credentials)
       if: steps.check-secrets.outputs.secrets-available == 'true' && secrets.AZURE_CLIENT_ID != ''
       uses: azure/login@v2
@@ -60,13 +61,13 @@ jobs:
         client-id: ${{ secrets.AZURE_CLIENT_ID }}
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-        
+
     - name: Log in with Azure (Service Principal)
       if: steps.check-secrets.outputs.secrets-available == 'true' && secrets.AZURE_CLIENT_ID == '' && secrets.AZURE_CREDENTIALS != ''
       uses: azure/login@v2
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
-        
+
     - name: Deploy Infrastructure with Bicep
       id: infrastructure-deploy
       if: steps.check-secrets.outputs.secrets-available == 'true'
@@ -87,7 +88,7 @@ jobs:
         deploymentName: pr-${{ github.event.pull_request.number }}-${{ github.run_number }}
         failOnStdErr: false
       timeout-minutes: 20
-        
+
     - name: Build and deploy backend container
       id: backend-deploy
       if: steps.check-secrets.outputs.secrets-available == 'true' && steps.infrastructure-deploy.outcome == 'success'
@@ -95,18 +96,18 @@ jobs:
         # Get deployment outputs from the infrastructure deployment
         RESOURCE_GROUP="${{ steps.infrastructure-deploy.outputs.AZURE_RESOURCE_GROUP }}"
         CONTAINER_APP_ENVIRONMENT="${{ steps.infrastructure-deploy.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_ID }}"
-        
+
         # Generate a unique resource token for consistent naming
         RESOURCE_TOKEN=$(echo "pr-${{ github.event.pull_request.number }}" | sha256sum | cut -c1-8)
         CONTAINER_APP_NAME="pr-${{ github.event.pull_request.number }}-backend-$RESOURCE_TOKEN"
-        
+
         echo "Deploying backend container app: $CONTAINER_APP_NAME"
         echo "Resource Group: $RESOURCE_GROUP"
         echo "Container Apps Environment: $CONTAINER_APP_ENVIRONMENT"
-        
+
         # Navigate to backend directory
         cd backend
-        
+
         # Create or update the container app with source code
         az containerapp up \
           --name "$CONTAINER_APP_NAME" \
@@ -130,38 +131,38 @@ jobs:
             "APP_LOG_LEVEL=info" \
             "SEMANTIC_KERNEL_DEBUG=false" \
           --quiet
-        
+
         # Get the FQDN of the deployed container app
         BACKEND_FQDN=$(az containerapp show --name "$CONTAINER_APP_NAME" --resource-group "$RESOURCE_GROUP" --query "properties.configuration.ingress.fqdn" --output tsv)
         BACKEND_URI="https://$BACKEND_FQDN"
-        
+
         echo "Backend deployed to: $BACKEND_URI"
         echo "backend-status=success" >> $GITHUB_OUTPUT
         echo "backend-uri=$BACKEND_URI" >> $GITHUB_OUTPUT
       timeout-minutes: 15
-        
+
     - name: Deploy frontend to Static Web App
       id: frontend-deploy
       if: steps.check-secrets.outputs.secrets-available == 'true' && steps.infrastructure-deploy.outcome == 'success' && steps.backend-deploy.outputs.backend-status == 'success'
       run: |
         # Get Static Web App details
         RESOURCE_GROUP="${{ steps.infrastructure-deploy.outputs.AZURE_RESOURCE_GROUP }}"
-        
+
         # Generate the same resource token for consistent naming
         RESOURCE_TOKEN=$(echo "pr-${{ github.event.pull_request.number }}" | sha256sum | cut -c1-8)
         SWA_NAME="pr-${{ github.event.pull_request.number }}-frontend-$RESOURCE_TOKEN"
-        
+
         echo "Deploying frontend to Static Web App: $SWA_NAME"
         echo "Resource Group: $RESOURCE_GROUP"
-        
+
         # Build frontend with backend URL
         cd frontend
         npm ci
-        
+
         # Set backend URL for build
         export REACT_APP_API_URL="${{ steps.backend-deploy.outputs.backend-uri }}"
         npm run build
-        
+
         # Get deployment token from the Static Web App (if it exists)
         if az staticwebapp show --name "$SWA_NAME" --resource-group "$RESOURCE_GROUP" >/dev/null 2>&1; then
           DEPLOYMENT_TOKEN=$(az staticwebapp secrets list --name "$SWA_NAME" --resource-group "$RESOURCE_GROUP" --query "properties.apiKey" --output tsv 2>/dev/null || echo "")
@@ -172,7 +173,7 @@ jobs:
           DEPLOYMENT_TOKEN=""
           FRONTEND_URI="${{ steps.infrastructure-deploy.outputs.FRONTEND_URI || 'Static Web App not available' }}"
         fi
-        
+
         if [ -z "$DEPLOYMENT_TOKEN" ]; then
           echo "::warning::Could not retrieve deployment token for Static Web App $SWA_NAME"
           echo "frontend-status=token-failed" >> $GITHUB_OUTPUT
@@ -183,7 +184,7 @@ jobs:
           echo "frontend-uri=$FRONTEND_URI" >> $GITHUB_OUTPUT
         fi
       timeout-minutes: 10
-        
+
     - name: Deploy frontend using Static Web Apps action
       if: steps.check-secrets.outputs.secrets-available == 'true' && steps.frontend-deploy.outputs.frontend-status == 'success'
       uses: Azure/static-web-apps-deploy@v1
@@ -194,23 +195,23 @@ jobs:
         app_location: 'frontend'
         output_location: 'build'
         skip_deploy_on_missing_secrets: true
-      
+
     - name: Get deployment outputs
       id: deployment-outputs
       if: steps.check-secrets.outputs.secrets-available == 'true' && steps.infrastructure-deploy.outcome == 'success'
       run: |
         echo "Getting deployment outputs..."
-        
+
         # Use outputs from backend and frontend deployments
         BACKEND_URI="${{ steps.backend-deploy.outputs.backend-uri || 'Backend deployment in progress' }}"
         FRONTEND_URI="${{ steps.frontend-deploy.outputs.frontend-uri || steps.infrastructure-deploy.outputs.FRONTEND_URI || 'Frontend deployment in progress' }}"
-        
+
         echo "backend-uri=$BACKEND_URI" >> $GITHUB_OUTPUT
         echo "frontend-uri=$FRONTEND_URI" >> $GITHUB_OUTPUT
-        
+
         echo "Backend URI: $BACKEND_URI"
         echo "Frontend URI: $FRONTEND_URI"
-        
+
     - name: Comment on PR (Success)
       if: steps.check-secrets.outputs.secrets-available == 'true' && steps.infrastructure-deploy.outcome == 'success'
       uses: peter-evans/create-or-update-comment@v4
@@ -218,19 +219,19 @@ jobs:
         issue-number: ${{ github.event.pull_request.number }}
         body: |
           ## 🚀 PR Environment Deployed
-          
+
           Your pull request has been deployed to a temporary environment:
-          
+
           - **Frontend**: ${{ steps.deployment-outputs.outputs.frontend-uri }}
           - **Backend API**: ${{ steps.deployment-outputs.outputs.backend-uri }}
-          
+
           ### Test Your Changes
           Use the deployed environment to test your changes before merging.
-          
+
           > **Note**: This environment will be automatically deleted when the PR is closed or merged.
         comment-author: 'github-actions[bot]'
         comment-author-association: 'NONE'
-          
+
     - name: Comment on PR (Failure)
       if: steps.check-secrets.outputs.secrets-available == 'true' && (failure() || steps.infrastructure-deploy.outcome == 'failure')
       uses: peter-evans/create-or-update-comment@v4
@@ -238,15 +239,15 @@ jobs:
         issue-number: ${{ github.event.pull_request.number }}
         body: |
           ## ❌ PR Environment Deployment Failed
-          
+
           The deployment of your pull request environment failed. Please check the [workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.
-          
+
           ### Common Issues:
           - Azure resource provisioning errors
           - Configuration issues
           - Resource quotas exceeded
           - Azure authentication issues
-          
+
           > **Note**: You can re-trigger the deployment by pushing new commits or re-running the workflow.
         comment-author: 'github-actions[bot]'
         comment-author-association: 'NONE'
