@@ -10,12 +10,6 @@ permissions:
   id-token: write   # Required for requesting OIDC JWT tokens
   contents: read    # Required for accessing repository content
 
-env:
-  AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-  AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-  AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-  AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -52,16 +46,16 @@ jobs:
         cache-dependency-path: backend/requirements.txt
       
     - name: Log in with Azure (Federated Credentials)
-      if: ${{ env.AZURE_CLIENT_ID != '' }}
-      uses: Azure/login@v2
+      if: secrets.AZURE_CLIENT_ID != ''
+      uses: azure/login@v2
       with:
-        client-id: ${{ env.AZURE_CLIENT_ID }}
-        tenant-id: ${{ env.AZURE_TENANT_ID }}
-        subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         
     - name: Log in with Azure (Service Principal)
-      if: ${{ env.AZURE_CLIENT_ID == '' && env.AZURE_CREDENTIALS != '' }}
-      uses: Azure/login@v2
+      if: secrets.AZURE_CLIENT_ID == '' && secrets.AZURE_CREDENTIALS != ''
+      uses: azure/login@v2
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
         
@@ -70,7 +64,7 @@ jobs:
       uses: Azure/arm-deploy@v2
       with:
         scope: subscription
-        subscriptionId: ${{ env.AZURE_SUBSCRIPTION_ID }}
+        subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         region: ${{ vars.AZURE_LOCATION || 'eastus' }}
         template: infra/main.bicep
         parameters: |
@@ -198,7 +192,7 @@ jobs:
         - **Frontend App**: ${{ steps.frontend-deploy.outputs.frontend-uri || 'Deployment in progress' }}
         
         ### Environment
-        - **Azure Subscription**: ${{ env.AZURE_SUBSCRIPTION_ID }}
+        - **Azure Subscription**: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         - **Location**: ${{ vars.AZURE_LOCATION || 'eastus' }}
         - **Environment**: production
         
