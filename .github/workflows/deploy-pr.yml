@@ -78,6 +78,54 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+    - name: Set deployment variables
+      id: deployment-vars
+      if: steps.check-secrets.outputs.secrets-available == 'true'
+      run: |
+        LOCATION="${{ vars.AZURE_LOCATION || vars.AZURE_REGION || 'eastus2' }}"
+        # Create location-aware stack name to avoid conflicts
+        STACK_NAME="pr-${{ github.event.pull_request.number }}-${LOCATION}"
+        echo "location=$LOCATION" >> $GITHUB_OUTPUT
+        echo "stack-name=$STACK_NAME" >> $GITHUB_OUTPUT
+        echo "Using deployment stack name: $STACK_NAME in location: $LOCATION"
+
+    - name: Cleanup existing deployment stack (if exists)
+      id: cleanup-stack
+      if: steps.check-secrets.outputs.secrets-available == 'true'
+      run: |
+        STACK_NAME="${{ steps.deployment-vars.outputs.stack-name }}"
+        LOCATION="${{ steps.deployment-vars.outputs.location }}"
+        
+        echo "Checking for existing deployment stack: $STACK_NAME"
+        
+        # Check if stack exists and delete it to ensure clean deployment
+        if az stack show --name "$STACK_NAME" --location "$LOCATION" --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" >/dev/null 2>&1; then
+          echo "Found existing deployment stack $STACK_NAME, deleting..."
+          az stack delete --name "$STACK_NAME" --location "$LOCATION" --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" --yes --no-wait
+          echo "Deletion initiated for stack $STACK_NAME"
+          
+          # Wait a bit for deletion to start
+          sleep 30
+          
+          # Wait for deletion to complete (with timeout)
+          TIMEOUT=300  # 5 minutes
+          ELAPSED=0
+          while az stack show --name "$STACK_NAME" --location "$LOCATION" --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" >/dev/null 2>&1; do
+            if [ $ELAPSED -ge $TIMEOUT ]; then
+              echo "::warning::Timeout waiting for stack deletion. Proceeding with deployment..."
+              break
+            fi
+            echo "Waiting for stack deletion to complete... ($ELAPSED/$TIMEOUT seconds)"
+            sleep 15
+            ELAPSED=$((ELAPSED + 15))
+          done
+          
+          echo "Stack cleanup completed"
+        else
+          echo "No existing deployment stack found"
+        fi
+      timeout-minutes: 8
+
     - name: Deploy Infrastructure with Bicep (Deployment Stack)
       id: infrastructure-deploy
       if: steps.check-secrets.outputs.secrets-available == 'true'
@@ -85,21 +133,21 @@ jobs:
       with:
         type: deploymentStack
         operation: create
-        name: pr-${{ github.event.pull_request.number }}
-        location: ${{ vars.AZURE_LOCATION || vars.AZURE_REGION || 'eastus' }}
+        name: ${{ steps.deployment-vars.outputs.stack-name }}
+        location: ${{ steps.deployment-vars.outputs.location }}
         scope: subscription
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         template-file: infra/main.bicep
         parameters: |
           {
-            "environmentName": { "value": "pr-${{ github.event.pull_request.number }}" },
-            "location": { "value": "${{ vars.AZURE_LOCATION || vars.AZURE_REGION || 'eastus' }}" },
-            "resourceGroupName": { "value": "str_agentic_pr_${{ github.event.pull_request.number }}" },
-            "azureOpenAiEndpoint": { "value": "${{ secrets.AZURE_OPENAI_ENDPOINT }}" },
-            "azureOpenAiApiKey": { "value": "${{ secrets.AZURE_OPENAI_API_KEY }}" },
-            "azureOpenAiChatDeployment": { "value": "${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT || 'gpt-4o-mini' }}" },
-            "azureOpenAiEmbeddingDeployment": { "value": "${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT || 'text-embedding-ada-002' }}" },
-            "azureOpenAiDalleDeployment": { "value": "${{ vars.AZURE_OPENAI_DALLE_DEPLOYMENT || 'dall-e-3' }}" }
+            "environmentName": "pr-${{ github.event.pull_request.number }}",
+            "location": "${{ steps.deployment-vars.outputs.location }}",
+            "resourceGroupName": "str_agentic_pr_${{ github.event.pull_request.number }}",
+            "azureOpenAiEndpoint": "${{ secrets.AZURE_OPENAI_ENDPOINT }}",
+            "azureOpenAiApiKey": "${{ secrets.AZURE_OPENAI_API_KEY }}",
+            "azureOpenAiChatDeployment": "${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT || 'gpt-4o-mini' }}",
+            "azureOpenAiEmbeddingDeployment": "${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT || 'text-embedding-ada-002' }}",
+            "azureOpenAiDalleDeployment": "${{ vars.AZURE_OPENAI_DALLE_DEPLOYMENT || 'dall-e-3' }}"
           }
         action-on-unmanage-resources: delete
         action-on-unmanage-resourcegroups: delete
@@ -133,8 +181,6 @@ jobs:
           --source . \
           --target-port 8000 \
           --ingress external \
-          --cpu 1.0 \
-          --memory 2.0Gi \
           --env-vars \
             "AZURE_OPENAI_ENDPOINT=${{ secrets.AZURE_OPENAI_ENDPOINT }}" \
             "AZURE_OPENAI_API_KEY=${{ secrets.AZURE_OPENAI_API_KEY }}" \
@@ -146,8 +192,7 @@ jobs:
             "APP_PORT=8000" \
             "APP_DEBUG=false" \
             "APP_LOG_LEVEL=info" \
-            "SEMANTIC_KERNEL_DEBUG=false" \
-          --quiet
+            "SEMANTIC_KERNEL_DEBUG=false"
 
         # Get the FQDN of the deployed container app
         BACKEND_FQDN=$(az containerapp show --name "$CONTAINER_APP_NAME" --resource-group "$RESOURCE_GROUP" --query "properties.configuration.ingress.fqdn" --output tsv)
