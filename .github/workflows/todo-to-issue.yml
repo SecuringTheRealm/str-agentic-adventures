@@ -1,0 +1,26 @@
+---
+name: "TODO to Issue"
+"on":
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+jobs:
+  todo-to-issue:
+    runs-on: "ubuntu-latest"
+    if: >
+      github.event_name == 'push' ||
+      (github.event.pull_request.merged == true)
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      - uses: "actions/checkout@v4"
+      - name: "TODO to Issue"
+        uses: "alstr/todo-to-issue-action@v5"
+        with:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
