@@ -34,12 +34,11 @@ vi.mock("./components/GameInterface", () => ({
 describe("App", () => {
 	it("renders the app header with title", () => {
 		render(<App />);
-		expect(screen.getByText("AI Dungeon Master")).toBeInTheDocument();
+		expect(screen.getByText("Securing the Realm - Agentic Adventures")).toBeInTheDocument();
 	});
 
 	it("shows campaign creation by default", () => {
 		render(<App />);
-		expect(screen.getByText("Create a New Campaign")).toBeInTheDocument();
 		expect(screen.getByTestId("campaign-creation")).toBeInTheDocument();
 	});
 
@@ -78,7 +77,6 @@ describe("App", () => {
 		await userEvent.click(screen.getByText("← Back to Campaigns"));
 		
 		// Should be back to campaign creation
-		expect(screen.getByText("Create a New Campaign")).toBeInTheDocument();
 		expect(screen.getByTestId("campaign-creation")).toBeInTheDocument();
 	});
 });

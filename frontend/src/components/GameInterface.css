@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background-color: #f0f0f0;
+  background: linear-gradient(135deg, #1a2f3a 0%, #0F404F 100%); /* Fantasy gradient */
 }
 
 .game-container {
@@ -13,39 +13,43 @@
 
 .left-panel {
   width: 250px;
-  background-color: #2c3e50;
-  color: #ecf0f1;
+  background: rgba(15, 64, 79, 0.8); /* Primary color with transparency */
+  color: #f4f1e8; /* Warm off-white */
   overflow-y: auto;
   transition: width 0.3s ease;
+  border-right: 2px solid #E4BB1E; /* Gold border */
 }
 
 .center-panel {
   flex: 2;
-  background-color: #ecf0f1;
+  background: rgba(26, 47, 58, 0.6); /* Darker fantasy background */
   display: flex;
   flex-direction: column;
 }
 
 .right-panel {
   width: 300px;
-  background-color: #34495e;
-  color: #ecf0f1;
+  background: rgba(15, 64, 79, 0.9); /* Primary color background */
+  color: #f4f1e8; /* Warm off-white */
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  border-left: 2px solid #E4BB1E; /* Gold border */
 }
 
 .visual-controls {
   padding: 15px;
-  border-bottom: 1px solid #2c3e50;
+  border-bottom: 1px solid #908C6B; /* Stone color border */
 }
 
 .visual-controls h4 {
   margin: 0 0 10px 0;
-  color: #ecf0f1;
+  color: #E4BB1E; /* Gold color for headings */
   font-size: 14px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
 }
 
 .visual-buttons {
@@ -56,22 +60,26 @@
 
 .visual-button {
   padding: 8px 12px;
-  background-color: #3498db;
+  background: linear-gradient(135deg, #B15005, #D67C2D); /* Wood gradient */
   color: white;
-  border: none;
+  border: 1px solid #E4BB1E; /* Gold border */
   border-radius: 4px;
   cursor: pointer;
   font-size: 12px;
-  transition: background-color 0.3s ease;
+  font-family: 'Cinzel', serif;
+  font-weight: 500;
+  transition: all 0.3s ease;
 }
 
 .visual-button:hover:not(:disabled) {
-  background-color: #2980b9;
+  background: linear-gradient(135deg, #D67C2D, #E4953F); /* Lighter wood on hover */
+  box-shadow: 0 2px 4px rgba(228, 187, 30, 0.3);
 }
 
 .visual-button:disabled {
-  background-color: #7f8c8d;
+  background: linear-gradient(135deg, #788070, #98A090); /* Steel colors when disabled */
   cursor: not-allowed;
+  border-color: #788070;
 }
 
 .image-section {
@@ -79,6 +87,7 @@
   min-height: 200px;
   padding: 10px;
   box-sizing: border-box;
+  background: rgba(26, 47, 58, 0.3); /* Subtle background */
 }
 
 .battle-map-section {
@@ -86,7 +95,8 @@
   min-height: 200px;
   padding: 10px;
   box-sizing: border-box;
-  border-top: 1px solid #2c3e50;
+  border-top: 1px solid #908C6B; /* Stone color border */
+  background: rgba(26, 47, 58, 0.3); /* Subtle background */
 }
 
 /* Responsive adjustments */
