@@ -8,8 +8,40 @@ on:
     branches: [ main ]
 
 jobs:
+  # Job to detect which files have changed
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      backend: ${{ steps.filter.outputs.backend }}
+      integration: ${{ steps.filter.outputs.integration }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Check for file changes
+      uses: dorny/paths-filter@v3
+      id: filter
+      with:
+        filters: |
+          frontend:
+            - 'frontend/**'
+          backend:
+            - 'backend/**'
+          integration:
+            - 'frontend/**'
+            - 'backend/**'
+            - 'docs/**'
+            - 'infra/**'
+            - '.github/workflows/**'
+            - '*.yml'
+            - '*.yaml'
+            - '*.json'
+
   frontend-tests:
     runs-on: ubuntu-latest
+    needs: changes
+    if: ${{ needs.changes.outputs.frontend == 'true' }}
     
     steps:
     - name: Checkout code
@@ -39,6 +71,8 @@ jobs:
 
   backend-tests:
     runs-on: ubuntu-latest
+    needs: changes
+    if: ${{ needs.changes.outputs.backend == 'true' }}
     
     steps:
     - name: Checkout code
@@ -123,7 +157,8 @@ jobs:
         
   integration-check:
     runs-on: ubuntu-latest
-    needs: [frontend-tests, backend-tests]
+    needs: [changes, frontend-tests, backend-tests]
+    if: ${{ always() && needs.changes.outputs.integration == 'true' && (needs.frontend-tests.result == 'success' || needs.frontend-tests.result == 'skipped') && (needs.backend-tests.result == 'success' || needs.backend-tests.result == 'skipped') }}
     
     steps:
     - name: Checkout code
