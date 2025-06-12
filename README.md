@@ -78,8 +78,8 @@ This project supports both automated deployment through GitHub Actions and manua
 The repository includes automated deployment workflows:
 
 - **Production Deployment**: Automatically deploys to production when pushing to `main` branch (requires Azure secrets)
-- **PR Environments**: Creates temporary environments for pull requests for testing
-- **Environment Cleanup**: Automatically removes PR environments when closed/merged
+- **PR Environments**: Creates temporary environments for each pull request targeting `main` branch for testing
+- **Environment Cleanup**: Automatically removes PR environments when pull requests are closed/merged
 
 For setup instructions, see [Deployment Guide](docs/deployment.md).
 

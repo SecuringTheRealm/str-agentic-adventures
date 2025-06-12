@@ -1,9 +1,12 @@
 name: Deploy PR Environment
 
+# This workflow deploys pull request environments for testing
+# Triggers when PRs are opened, updated, or reopened against the main branch
+# Creates a temporary environment named "pr-{PR_NUMBER}" for each pull request
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-    branches: [ main ]
+    branches: [ main ]  # Only for PRs targeting the main branch
   
 env:
   AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
@@ -13,6 +16,7 @@ env:
 
 jobs:
   deploy-pr:
+    # This job runs for pull requests only, not for pushes to main branch
     # Only run if Azure secrets are configured
     if: ${{ secrets.AZURE_CLIENT_ID != '' && secrets.AZURE_TENANT_ID != '' && secrets.AZURE_SUBSCRIPTION_ID != '' }}
     runs-on: ubuntu-latest
@@ -41,6 +45,7 @@ jobs:
         
     - name: Configure Azure Developer CLI environment
       run: |
+        # Create a unique environment name for this PR
         ENV_NAME="pr-${{ github.event.pull_request.number }}"
         azd env new $ENV_NAME --subscription "${{ env.AZURE_SUBSCRIPTION_ID }}" --location "${{ vars.AZURE_LOCATION || 'eastus' }}"
         azd env set AZURE_LOCATION "${{ vars.AZURE_LOCATION || 'eastus' }}"
@@ -52,6 +57,7 @@ jobs:
         
     - name: Provision and Deploy PR Environment
       run: |
+        # Deploy the PR code to a temporary Azure environment for testing
         ENV_NAME="pr-${{ github.event.pull_request.number }}"
         azd up --no-prompt
       
