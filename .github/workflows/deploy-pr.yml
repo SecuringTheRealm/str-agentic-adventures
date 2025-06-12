@@ -181,8 +181,6 @@ jobs:
           --source . \
           --target-port 8000 \
           --ingress external \
-          --cpu 1.0 \
-          --memory 2.0Gi \
           --env-vars \
             "AZURE_OPENAI_ENDPOINT=${{ secrets.AZURE_OPENAI_ENDPOINT }}" \
             "AZURE_OPENAI_API_KEY=${{ secrets.AZURE_OPENAI_API_KEY }}" \
