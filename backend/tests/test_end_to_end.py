@@ -264,10 +264,10 @@ class TestComponentIntegration:
         
         # Check that agents are used in endpoints
         agent_usage = [
-            'await scribe.create_character',
-            'await scribe.get_character', 
-            'await dungeon_master.create_campaign',
-            'await artist.generate_image'
+            'await get_scribe().create_character',
+            'await get_scribe().get_character', 
+            'await get_dungeon_master().create_campaign',
+            'await get_artist().generate'
         ]
         
         used_agents = []
