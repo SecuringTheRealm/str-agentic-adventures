@@ -5,6 +5,11 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+# Required permissions for OIDC authentication with Azure
+permissions:
+  id-token: write   # Required for requesting OIDC JWT tokens
+  contents: read    # Required for accessing repository content
+
 env:
   AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
   AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
