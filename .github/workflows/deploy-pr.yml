@@ -90,15 +90,7 @@ jobs:
         scope: subscription
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         template-file: infra/main.bicep
-        parameters: >
-          environmentName=pr-${{ github.event.pull_request.number }}
-          location=${{ vars.AZURE_LOCATION || vars.AZURE_REGION || 'eastus' }}
-          resourceGroupName=str_agentic_pr_${{ github.event.pull_request.number }}
-          azureOpenAiEndpoint=${{ secrets.AZURE_OPENAI_ENDPOINT }}
-          azureOpenAiApiKey=${{ secrets.AZURE_OPENAI_API_KEY }}
-          azureOpenAiChatDeployment=${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT || 'gpt-4o-mini' }}
-          azureOpenAiEmbeddingDeployment=${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT || 'text-embedding-ada-002' }}
-          azureOpenAiDalleDeployment=${{ vars.AZURE_OPENAI_DALLE_DEPLOYMENT || 'dall-e-3' }}
+        parameters: environmentName=pr-${{ github.event.pull_request.number }} location=${{ vars.AZURE_LOCATION || vars.AZURE_REGION || 'eastus' }} resourceGroupName=str_agentic_pr_${{ github.event.pull_request.number }} azureOpenAiEndpoint=${{ secrets.AZURE_OPENAI_ENDPOINT }} azureOpenAiApiKey=${{ secrets.AZURE_OPENAI_API_KEY }} azureOpenAiChatDeployment=${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT || 'gpt-4o-mini' }} azureOpenAiEmbeddingDeployment=${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT || 'text-embedding-ada-002' }} azureOpenAiDalleDeployment=${{ vars.AZURE_OPENAI_DALLE_DEPLOYMENT || 'dall-e-3' }}
         action-on-unmanage-resources: delete
         action-on-unmanage-resourcegroups: delete
         deny-settings-mode: none
