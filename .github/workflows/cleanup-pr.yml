@@ -114,7 +114,7 @@ jobs:
         type: deploymentStack
         operation: delete
         name: ${{ steps.get-env-info.outputs.stack-name }}
-        location: ${{ vars.AZURE_LOCATION || vars.AZURE_REGION || 'eastus' }}
+        location: ${{ vars.AZURE_LOCATION || vars.AZURE_REGION || 'eastus2' }}
         scope: subscription
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       continue-on-error: true
