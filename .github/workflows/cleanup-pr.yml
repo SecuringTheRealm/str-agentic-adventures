@@ -118,6 +118,7 @@ jobs:
         scope: subscription
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         action-on-unmanage-resources: delete
+        deny-settings-mode: none
       continue-on-error: true
 
     - name: Set cleanup status
