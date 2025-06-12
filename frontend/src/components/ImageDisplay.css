@@ -10,14 +10,16 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background-color: #2c3e50;
+  background: rgba(15, 64, 79, 0.3); /* Primary color background */
   border-radius: 5px;
+  border: 1px solid #908C6B; /* Stone border */
 }
 
 .image-container img {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
+  border-radius: 4px;
 }
 
 .empty-image-state {
@@ -26,9 +28,10 @@
   align-items: center;
   justify-content: center;
   height: 100%;
-  color: #95a5a6;
+  color: #908C6B; /* Stone color for empty state */
   padding: 20px;
   text-align: center;
+  font-family: 'Cinzel', serif;
 }
 
 .empty-image-state p {

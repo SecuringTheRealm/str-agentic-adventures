@@ -3,6 +3,7 @@
   flex-direction: column;
   height: 100%;
   overflow: hidden;
+  background: rgba(15, 64, 79, 0.1); /* Subtle primary color background */
 }
 
 .messages-container {
@@ -11,6 +12,7 @@
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  background: rgba(26, 47, 58, 0.3); /* Fantasy background */
 }
 
 .message {
@@ -29,65 +31,84 @@
 
 .player-message {
   align-self: flex-end;
-  background-color: #3498db;
-  color: white;
+  background: linear-gradient(135deg, #0F404F, #1a5a6b); /* Primary color gradient */
+  color: #f4f1e8; /* Warm off-white text */
   margin-left: auto;
   border-bottom-right-radius: 0;
+  border: 1px solid #E4BB1E; /* Gold border */
+  font-family: 'Cinzel', serif;
 }
 
 .dm-message {
   align-self: flex-start;
-  background-color: #2c3e50;
-  color: white;
+  background: linear-gradient(135deg, #B15005, #8B4513); /* Wood gradient */
+  color: #f4f1e8; /* Warm off-white text */
   margin-right: auto;
   border-bottom-left-radius: 0;
+  border: 1px solid #908C6B; /* Stone border */
+  font-family: 'Cinzel', serif;
 }
 
 .message-sender {
   font-size: 0.8em;
   margin-bottom: 5px;
   font-weight: bold;
-  opacity: 0.8;
+  opacity: 0.9;
+  color: #E4BB1E; /* Gold color for sender names */
+  font-family: 'Cinzel', serif;
 }
 
 .message-text {
   line-height: 1.4;
+  font-family: 'Cinzel', serif;
 }
 
 .input-form {
   display: flex;
   padding: 10px;
-  background-color: #f5f5f5;
-  border-top: 1px solid #ddd;
+  background: linear-gradient(135deg, #0F404F, #1a2f3a); /* Fantasy gradient */
+  border-top: 2px solid #E4BB1E; /* Gold border */
 }
 
 .input-form input {
   flex: 1;
   padding: 10px;
-  border: 1px solid #ddd;
+  border: 1px solid #908C6B; /* Stone color border */
   border-radius: 4px;
   font-size: 14px;
+  background: rgba(26, 47, 58, 0.8); /* Dark fantasy background */
+  color: #f4f1e8; /* Light text */
+  font-family: 'Cinzel', serif;
+}
+
+.input-form input:focus {
+  outline: none;
+  border-color: #E4BB1E; /* Gold focus border */
+  box-shadow: 0 0 0 2px rgba(228, 187, 30, 0.2);
 }
 
 .input-form button {
   margin-left: 10px;
   padding: 10px 16px;
-  background-color: #3498db;
+  background: linear-gradient(135deg, #B15005, #D67C2D); /* Wood gradient */
   color: white;
-  border: none;
+  border: 1px solid #E4BB1E; /* Gold border */
   border-radius: 4px;
   cursor: pointer;
   font-weight: bold;
-  transition: background-color 0.2s;
+  font-family: 'Cinzel', serif;
+  transition: all 0.3s ease;
 }
 
 .input-form button:hover {
-  background-color: #2980b9;
+  background: linear-gradient(135deg, #D67C2D, #E4953F); /* Lighter wood on hover */
+  box-shadow: 0 2px 4px rgba(228, 187, 30, 0.3);
 }
 
 .input-form button:disabled {
-  background-color: #95a5a6;
+  background: linear-gradient(135deg, #788070, #98A090); /* Steel colors when disabled */
   cursor: not-allowed;
+  border-color: #788070;
 }
 
 /* Loading animation */
