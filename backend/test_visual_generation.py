@@ -7,12 +7,22 @@ This tests the image generation capabilities without requiring Azure credentials
 import asyncio
 import sys
 import os
+from unittest.mock import patch
 
 # Add the app directory to the Python path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'app'))
 
-from app.agents.artist_agent import ArtistAgent
-from app.agents.combat_cartographer_agent import CombatCartographerAgent
+# Mock environment variables before importing agents
+with patch.dict(os.environ, {
+    'AZURE_OPENAI_ENDPOINT': 'https://test.openai.azure.com',
+    'AZURE_OPENAI_API_KEY': 'test-key',
+    'AZURE_OPENAI_CHAT_DEPLOYMENT': 'gpt-4',
+    'AZURE_OPENAI_EMBEDDING_DEPLOYMENT': 'text-embedding-ada-002',
+    'AZURE_OPENAI_DALLE_DEPLOYMENT': 'dall-e-3',
+    'STORAGE_CONNECTION_STRING': 'test-connection'
+}):
+    from app.agents.artist_agent import ArtistAgent
+    from app.agents.combat_cartographer_agent import CombatCartographerAgent
 
 async def test_artist_agent():
     """Test the Artist Agent's image generation methods."""

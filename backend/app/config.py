@@ -33,4 +33,23 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
 
-settings = Settings()
+# Lazy initialization to avoid validation during import
+_settings = None
+
+def get_settings() -> Settings:
+    """Get the settings instance, creating it if necessary."""
+    global _settings
+    if _settings is None:
+        _settings = Settings()
+    return _settings
+
+# For backward compatibility, expose as 'settings'
+class SettingsProxy:
+    """Proxy object that forwards attribute access to the settings instance."""
+    def __getattr__(self, name):
+        return getattr(get_settings(), name)
+    
+    def __setattr__(self, name, value):
+        return setattr(get_settings(), name, value)
+
+settings = SettingsProxy()
