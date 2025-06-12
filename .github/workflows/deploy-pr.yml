@@ -27,11 +27,21 @@ jobs:
     - name: Check Azure secrets
       id: check-secrets
       run: |
-        if [ -z "${{ secrets.AZURE_CLIENT_ID }}" ] || [ -z "${{ secrets.AZURE_TENANT_ID }}" ] || [ -z "${{ secrets.AZURE_SUBSCRIPTION_ID }}" ]; then
+        # Check if we have federated credentials
+        if [ -n "${{ secrets.AZURE_CLIENT_ID }}" ] && [ -n "${{ secrets.AZURE_TENANT_ID }}" ] && [ -n "${{ secrets.AZURE_SUBSCRIPTION_ID }}" ]; then
+          echo "secrets-available=true" >> $GITHUB_OUTPUT
+          echo "use-federated-auth=true" >> $GITHUB_OUTPUT
+          echo "use-service-principal=false" >> $GITHUB_OUTPUT
+        # Check if we have service principal credentials
+        elif [ -n "${{ secrets.AZURE_CREDENTIALS }}" ]; then
+          echo "secrets-available=true" >> $GITHUB_OUTPUT
+          echo "use-federated-auth=false" >> $GITHUB_OUTPUT
+          echo "use-service-principal=true" >> $GITHUB_OUTPUT
+        else
           echo "::warning::Azure secrets are not configured. Skipping PR deployment."
           echo "secrets-available=false" >> $GITHUB_OUTPUT
-        else
-          echo "secrets-available=true" >> $GITHUB_OUTPUT
+          echo "use-federated-auth=false" >> $GITHUB_OUTPUT
+          echo "use-service-principal=false" >> $GITHUB_OUTPUT
         fi
 
     - name: Checkout code
@@ -55,7 +65,7 @@ jobs:
         cache-dependency-path: backend/requirements.txt
 
     - name: Log in with Azure (Federated Credentials)
-      if: steps.check-secrets.outputs.secrets-available == 'true' && secrets.AZURE_CLIENT_ID != ''
+      if: steps.check-secrets.outputs.secrets-available == 'true' && steps.check-secrets.outputs.use-federated-auth == 'true'
       uses: azure/login@v2
       with:
         client-id: ${{ secrets.AZURE_CLIENT_ID }}
@@ -63,30 +73,37 @@ jobs:
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
     - name: Log in with Azure (Service Principal)
-      if: steps.check-secrets.outputs.secrets-available == 'true' && secrets.AZURE_CLIENT_ID == '' && secrets.AZURE_CREDENTIALS != ''
+      if: steps.check-secrets.outputs.secrets-available == 'true' && steps.check-secrets.outputs.use-service-principal == 'true'
       uses: azure/login@v2
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Deploy Infrastructure with Bicep
+    - name: Deploy Infrastructure with Bicep (Deployment Stack)
       id: infrastructure-deploy
       if: steps.check-secrets.outputs.secrets-available == 'true'
-      uses: Azure/arm-deploy@v2
+      uses: azure/bicep-deploy@v2
       with:
+        type: deploymentStack
+        operation: create
+        name: pr-${{ github.event.pull_request.number }}
+        location: ${{ vars.AZURE_LOCATION || vars.AZURE_REGION || 'eastus' }}
         scope: subscription
-        subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-        region: ${{ vars.AZURE_LOCATION || 'eastus' }}
-        template: infra/main.bicep
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        template-file: infra/main.bicep
         parameters: |
-          environmentName=pr-${{ github.event.pull_request.number }}
-          location=${{ vars.AZURE_LOCATION || 'eastus' }}
-          azureOpenAiEndpoint=${{ secrets.AZURE_OPENAI_ENDPOINT }}
-          azureOpenAiApiKey=${{ secrets.AZURE_OPENAI_API_KEY }}
-          azureOpenAiChatDeployment=${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT || 'gpt-4o-mini' }}
-          azureOpenAiEmbeddingDeployment=${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT || 'text-embedding-ada-002' }}
-          azureOpenAiDalleDeployment=${{ vars.AZURE_OPENAI_DALLE_DEPLOYMENT || 'dall-e-3' }}
-        deploymentName: pr-${{ github.event.pull_request.number }}-${{ github.run_number }}
-        failOnStdErr: false
+          {
+            "environmentName": { "value": "pr-${{ github.event.pull_request.number }}" },
+            "location": { "value": "${{ vars.AZURE_LOCATION || vars.AZURE_REGION || 'eastus' }}" },
+            "resourceGroupName": { "value": "str_agentic_pr_${{ github.event.pull_request.number }}" },
+            "azureOpenAiEndpoint": { "value": "${{ secrets.AZURE_OPENAI_ENDPOINT }}" },
+            "azureOpenAiApiKey": { "value": "${{ secrets.AZURE_OPENAI_API_KEY }}" },
+            "azureOpenAiChatDeployment": { "value": "${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT || 'gpt-4o-mini' }}" },
+            "azureOpenAiEmbeddingDeployment": { "value": "${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT || 'text-embedding-ada-002' }}" },
+            "azureOpenAiDalleDeployment": { "value": "${{ vars.AZURE_OPENAI_DALLE_DEPLOYMENT || 'dall-e-3' }}" }
+          }
+        action-on-unmanage-resources: delete
+        action-on-unmanage-resourcegroups: delete
+        deny-settings-mode: none
       timeout-minutes: 20
 
     - name: Build and deploy backend container

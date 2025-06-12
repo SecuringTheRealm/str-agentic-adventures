@@ -7,6 +7,11 @@ param environmentName string
 @description('Primary location for all resources')
 param location string
 
+@minLength(1)
+@maxLength(90)
+@description('Name of the resource group to create or use')
+param resourceGroupName string = '${environmentName}-rg'
+
 @description('Azure OpenAI API Key')
 @secure()
 param azureOpenAiApiKey string = ''
@@ -32,7 +37,7 @@ var tags = { 'azd-env-name': environmentName }
 
 // Create resource group
 resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
-  name: '${environmentName}-rg'
+  name: resourceGroupName
   location: location
   tags: tags
 }
