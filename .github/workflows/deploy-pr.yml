@@ -83,7 +83,7 @@ jobs:
       if: steps.check-secrets.outputs.secrets-available == 'true'
       uses: azure/bicep-deploy@v2
       with:
-        type: deploymentStack
+        type: deployment
         operation: createOrUpdate
         name: pr-${{ github.event.pull_request.number }}
         location: ${{ vars.AZURE_LOCATION || vars.AZURE_REGION || 'eastus2' }}
@@ -101,9 +101,6 @@ jobs:
             "azureOpenAiEmbeddingDeployment": "${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT || 'text-embedding-ada-002' }}",
             "azureOpenAiDalleDeployment": "${{ vars.AZURE_OPENAI_DALLE_DEPLOYMENT || 'dall-e-3' }}"
           }
-        action-on-unmanage-resources: delete
-        action-on-unmanage-resourcegroups: delete
-        deny-settings-mode: none
       timeout-minutes: 20
 
     - name: Build and deploy backend container
