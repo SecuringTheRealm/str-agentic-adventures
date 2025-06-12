@@ -21,4 +21,4 @@ uv pip install -r requirements.txt
 
 # Start the application
 echo "Starting AI Dungeon Master backend..."
-cd app && python main.py
+python -m app.main
