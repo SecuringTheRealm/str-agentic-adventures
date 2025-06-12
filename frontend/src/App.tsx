@@ -46,7 +46,7 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>AI Dungeon Master</h1>
+        <h1>Securing the Realm - Agentic Adventures</h1>
         {gameStarted && (
           <button onClick={handleBackToCampaigns} className="back-button">
             ← Back to Campaigns
@@ -57,7 +57,6 @@ function App() {
       <main className="App-main">
         {!gameStarted ? (
           <div className="campaign-setup">
-            <h2>Create a New Campaign</h2>
             <CampaignCreation onCampaignCreated={handleCampaignCreated} />
           </div>
         ) : (

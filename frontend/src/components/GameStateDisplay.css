@@ -1,6 +1,6 @@
 .game-state-display {
-  background: #2c2c2c;
-  border: 2px solid #8B4513;
+  background: #0F404F;
+  border: 2px solid #908C6B;
   border-radius: 8px;
   padding: 1rem;
   margin: 1rem 0;
@@ -19,11 +19,11 @@
   align-items: center;
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid #444;
+  border-bottom: 1px solid #788070;
 }
 
 .session-header h3 {
-  color: #d4af37;
+  color: #E4BB1E;
   margin: 0;
   font-family: 'Cinzel', serif;
 }
@@ -94,8 +94,8 @@
 
 /* Combat State */
 .combat-state {
-  background: #1a1a1a;
-  border: 2px solid #dc3545;
+  background: #2d3e3f;
+  border: 2px solid #B15005;
   border-radius: 6px;
   padding: 1rem;
   margin-bottom: 1rem;
@@ -107,11 +107,11 @@
   align-items: center;
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid #dc3545;
+  border-bottom: 1px solid #B15005;
 }
 
 .combat-header h3 {
-  color: #dc3545;
+  color: #B15005;
   margin: 0;
   font-family: 'Cinzel', serif;
 }
@@ -123,7 +123,7 @@
 }
 
 .round {
-  background: #dc3545;
+  background: #B15005;
   color: white;
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
@@ -144,7 +144,7 @@
 }
 
 .initiative-tracker h4 {
-  color: #d4af37;
+  color: #E4BB1E;
   margin: 0 0 0.5rem 0;
   font-size: 1rem;
 }
@@ -152,9 +152,9 @@
 .initiative-list {
   max-height: 200px;
   overflow-y: auto;
-  border: 1px solid #444;
+  border: 1px solid #788070;
   border-radius: 4px;
-  background: #0d1117;
+  background: #2d3e3f;
 }
 
 .initiative-item {
@@ -162,7 +162,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.5rem;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid #788070;
   transition: background-color 0.3s ease;
   position: relative;
 }
@@ -172,16 +172,16 @@
 }
 
 .initiative-item.current-turn {
-  background: rgba(220, 53, 69, 0.2);
-  border-left: 4px solid #dc3545;
+  background: rgba(177, 80, 5, 0.2);
+  border-left: 4px solid #B15005;
 }
 
 .initiative-item.player {
-  background: rgba(40, 167, 69, 0.1);
+  background: rgba(144, 140, 107, 0.1);
 }
 
 .initiative-item.npc {
-  background: rgba(255, 193, 7, 0.1);
+  background: rgba(228, 187, 30, 0.1);
 }
 
 .participant-info {
