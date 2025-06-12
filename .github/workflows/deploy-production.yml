@@ -78,14 +78,7 @@ jobs:
         subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         region: ${{ vars.AZURE_LOCATION || vars.AZURE_REGION || 'eastus' }}
         template: infra/main.bicep
-        parameters: |
-          environmentName=production
-          location=${{ vars.AZURE_LOCATION || vars.AZURE_REGION || 'eastus' }}
-          azureOpenAiEndpoint=${{ secrets.AZURE_OPENAI_ENDPOINT }}
-          azureOpenAiApiKey=${{ secrets.AZURE_OPENAI_API_KEY }}
-          azureOpenAiChatDeployment=${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT || 'gpt-4o-mini' }}
-          azureOpenAiEmbeddingDeployment=${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT || 'text-embedding-ada-002' }}
-          azureOpenAiDalleDeployment=${{ vars.AZURE_OPENAI_DALLE_DEPLOYMENT || 'dall-e-3' }}
+        parameters: environmentName=production location=${{ vars.AZURE_LOCATION || vars.AZURE_REGION || 'eastus' }} azureOpenAiEndpoint=${{ secrets.AZURE_OPENAI_ENDPOINT }} azureOpenAiApiKey=${{ secrets.AZURE_OPENAI_API_KEY }} azureOpenAiChatDeployment=${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT || 'gpt-4o-mini' }} azureOpenAiEmbeddingDeployment=${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT || 'text-embedding-ada-002' }} azureOpenAiDalleDeployment=${{ vars.AZURE_OPENAI_DALLE_DEPLOYMENT || 'dall-e-3' }}
         deploymentName: production-${{ github.run_number }}
         failOnStdErr: false
       timeout-minutes: 20
