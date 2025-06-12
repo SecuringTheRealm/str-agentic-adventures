@@ -2,57 +2,70 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background-color: #0a0a0a; /* Dark background for fantasy feel */
 }
 
 .App-header {
-  background-color: #1a1a1a;
+  background-color: #0F404F; /* Primary fantasy color */
   padding: 1rem 2rem;
   color: white;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border-bottom: 2px solid #E4BB1E; /* Gold accent border */
 }
 
 .App-header h1 {
   margin: 0;
   font-size: 1.8rem;
-  color: #ffd700;
+  color: #E4BB1E; /* Gold accent color for the main title */
+  font-family: 'Cinzel Decorative', serif;
+  font-weight: 700;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .back-button {
-  background-color: #444;
+  background-color: #788070; /* Steel color for secondary actions */
   color: white;
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.9rem;
-  transition: background-color 0.2s;
+  font-family: 'Cinzel', serif;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border: 1px solid #E4BB1E;
 }
 
 .back-button:hover {
-  background-color: #555;
+  background-color: #908C6B; /* Stone color on hover */
+  box-shadow: 0 2px 4px rgba(228, 187, 30, 0.3);
 }
 
 .App-main {
   flex: 1;
   padding: 2rem;
-  background-color: #f5f5f5;
+  background: linear-gradient(135deg, #1a2f3a 0%, #0F404F 100%); /* Fantasy gradient background */
   min-height: calc(100vh - 80px);
 }
 
 .campaign-setup {
   max-width: 600px;
   margin: 0 auto;
-  background: white;
+  background: rgba(15, 64, 79, 0.8); /* Semi-transparent primary color */
   padding: 2rem;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  border: 2px solid #E4BB1E; /* Gold border */
 }
 
 .campaign-setup h2 {
   text-align: center;
-  color: #333;
+  color: #E4BB1E; /* Gold color for headings */
   margin-bottom: 2rem;
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }

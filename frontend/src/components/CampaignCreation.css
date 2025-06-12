@@ -2,17 +2,21 @@
   max-width: 600px;
   margin: 0 auto;
   padding: 20px;
-  background-color: #2c3e50;
-  color: #ecf0f1;
+  background: rgba(15, 64, 79, 0.9); /* Primary fantasy color with transparency */
+  color: #f4f1e8; /* Warm off-white for readability */
   border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  border: 2px solid #E4BB1E; /* Gold border */
 }
 
 .campaign-creation h2 {
-  color: #3498db;
+  color: #E4BB1E; /* Gold for the main heading */
   margin-bottom: 20px;
   text-align: center;
   font-size: 1.8rem;
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .form-group {
@@ -23,7 +27,9 @@
   display: block;
   margin-bottom: 8px;
   font-weight: bold;
-  color: #3498db;
+  color: #E4BB1E; /* Gold for labels */
+  font-family: 'Cinzel', serif;
+  font-weight: 500;
 }
 
 .form-group input,
@@ -31,11 +37,20 @@
 .form-group textarea {
   width: 100%;
   padding: 10px;
-  border: 1px solid #34495e;
+  border: 1px solid #908C6B; /* Stone color border */
   border-radius: 4px;
-  background-color: #34495e;
-  color: #ecf0f1;
+  background-color: #2a3c47; /* Darker background for inputs */
+  color: #f4f1e8; /* Light text */
   font-size: 16px;
+  transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #E4BB1E; /* Gold focus border */
+  box-shadow: 0 0 0 2px rgba(228, 187, 30, 0.2);
 }
 
 .form-group textarea {
@@ -48,28 +63,37 @@
   padding: 12px;
   border: none;
   border-radius: 4px;
-  background-color: #3498db;
+  background: linear-gradient(135deg, #B15005, #D67C2D); /* Wood gradient */
   color: white;
   font-size: 16px;
   font-weight: bold;
+  font-family: 'Cinzel', serif;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.3s ease;
+  border: 2px solid #E4BB1E; /* Gold border */
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .create-button:hover {
-  background-color: #2980b9;
+  background: linear-gradient(135deg, #D67C2D, #E4953F); /* Lighter wood on hover */
+  box-shadow: 0 4px 8px rgba(228, 187, 30, 0.3);
+  transform: translateY(-1px);
 }
 
 .create-button:disabled {
-  background-color: #95a5a6;
+  background: linear-gradient(135deg, #788070, #98A090); /* Steel colors when disabled */
   cursor: not-allowed;
+  border-color: #788070;
+  transform: none;
+  box-shadow: none;
 }
 
 .error-message {
   padding: 10px;
   margin-bottom: 20px;
-  background-color: rgba(231, 76, 60, 0.2);
-  border-left: 4px solid #e74c3c;
+  background-color: rgba(220, 53, 69, 0.2); /* Darker red background */
+  border-left: 4px solid #dc3545;
   border-radius: 4px;
-  color: #e74c3c;
+  color: #ffcccb; /* Light red text for better contrast */
+  font-family: 'Cinzel', serif;
 }
