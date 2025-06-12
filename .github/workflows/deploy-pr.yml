@@ -221,7 +221,7 @@ jobs:
       if: steps.check-secrets.outputs.secrets-available == 'true' && steps.infrastructure-deploy.outcome == 'success'
       uses: peter-evans/create-or-update-comment@v4
       with:
-        pull-request-number: ${{ github.event.pull_request.number }}
+        issue-number: ${{ github.event.pull_request.number }}
         body: |
           ## 🚀 PR Environment Deployed
           
@@ -241,7 +241,7 @@ jobs:
       if: steps.check-secrets.outputs.secrets-available == 'true' && (failure() || steps.infrastructure-deploy.outcome == 'failure')
       uses: peter-evans/create-or-update-comment@v4
       with:
-        pull-request-number: ${{ github.event.pull_request.number }}
+        issue-number: ${{ github.event.pull_request.number }}
         body: |
           ## ❌ PR Environment Deployment Failed
           
