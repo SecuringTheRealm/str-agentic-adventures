@@ -1,8 +1,8 @@
 name: Deploy PR Environment
-
 # This workflow deploys pull request environments for testing
 # Triggers when PRs are opened, updated, or reopened against the main branch
 # Creates a temporary environment named "pr-{PR_NUMBER}" for each pull request
+
 on:
   pull_request:
     types: [opened, synchronize, reopened]
