@@ -1,19 +1,25 @@
 name: Cleanup PR Environment
+# This workflow cleans up pull request environments using Azure native actions
+# Triggers when PRs are closed/merged against the main branch
+# Deletes the temporary environment "pr-{PR_NUMBER}" for each pull request
+# Uses Azure ARM deployment actions for reliable cleanup
 
 on:
   pull_request:
     types: [closed]
     branches: [ main ]
-  
-env:
-  AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-  AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-  AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-  AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+
+# Required permissions for OIDC authentication with Azure  
+permissions:
+  id-token: write   # Required for requesting OIDC JWT tokens
+  contents: read    # Required for accessing repository content
+  pull-requests: write  # Required for commenting on pull requests
 
 jobs:
   cleanup-pr:
     runs-on: ubuntu-latest
+    # Note: No environment specified to generate correct federated identity subject claim:
+    # repo:SecuringTheRealm/str-agentic-adventures:pull_request
     
     steps:
     - name: Check Azure secrets
@@ -30,53 +36,110 @@ jobs:
       if: steps.check-secrets.outputs.secrets-available == 'true'
       uses: actions/checkout@v4
       
-    - name: Install Azure Developer CLI
-      if: steps.check-secrets.outputs.secrets-available == 'true'
-      uses: Azure/setup-azd@v1.0.0
-      
     - name: Log in with Azure (Federated Credentials)
-      if: steps.check-secrets.outputs.secrets-available == 'true' && env.AZURE_CLIENT_ID != ''
-      run: |
-        azd auth login \
-          --client-id "${{ env.AZURE_CLIENT_ID }}" \
-          --federated-credential-provider "github" \
-          --tenant-id "${{ env.AZURE_TENANT_ID }}"
+      if: steps.check-secrets.outputs.secrets-available == 'true' && secrets.AZURE_CLIENT_ID != ''
+      uses: azure/login@v2
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         
     - name: Log in with Azure (Service Principal)
-      if: steps.check-secrets.outputs.secrets-available == 'true' && env.AZURE_CLIENT_ID == '' && env.AZURE_CREDENTIALS != ''
-      uses: Azure/login@v2
+      if: steps.check-secrets.outputs.secrets-available == 'true' && secrets.AZURE_CLIENT_ID == '' && secrets.AZURE_CREDENTIALS != ''
+      uses: azure/login@v2
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
         
-    - name: Cleanup PR Environment
+    - name: Get environment information before cleanup
+      id: get-env-info
       if: steps.check-secrets.outputs.secrets-available == 'true'
       run: |
         ENV_NAME="pr-${{ github.event.pull_request.number }}"
+        RESOURCE_GROUP="${ENV_NAME}-rg"
         
-        # Check if environment exists
-        if azd env list | grep -q "$ENV_NAME"; then
-          echo "Found environment $ENV_NAME, cleaning up..."
-          azd env select $ENV_NAME
-          azd down --force --purge --no-prompt
-          echo "Environment $ENV_NAME cleaned up successfully"
+        echo "Checking for environment: $ENV_NAME"
+        echo "Resource group: $RESOURCE_GROUP"
+        
+        # Check if resource group exists
+        if az group show --name "$RESOURCE_GROUP" >/dev/null 2>&1; then
+          echo "environment-exists=true" >> $GITHUB_OUTPUT
+          echo "resource-group=$RESOURCE_GROUP" >> $GITHUB_OUTPUT
+          
+          # Try to get environment URLs before cleanup
+          RESOURCE_TOKEN=$(echo "pr-${{ github.event.pull_request.number }}" | sha256sum | cut -c1-8)
+          BACKEND_APP_NAME="pr-${{ github.event.pull_request.number }}-backend-$RESOURCE_TOKEN"
+          FRONTEND_APP_NAME="pr-${{ github.event.pull_request.number }}-frontend-$RESOURCE_TOKEN"
+          
+          # Get backend URL if container app exists
+          if az containerapp show --name "$BACKEND_APP_NAME" --resource-group "$RESOURCE_GROUP" >/dev/null 2>&1; then
+            BACKEND_FQDN=$(az containerapp show --name "$BACKEND_APP_NAME" --resource-group "$RESOURCE_GROUP" --query "properties.configuration.ingress.fqdn" --output tsv 2>/dev/null || echo "")
+            if [ -n "$BACKEND_FQDN" ]; then
+              BACKEND_URI="https://$BACKEND_FQDN"
+              echo "backend-uri=$BACKEND_URI" >> $GITHUB_OUTPUT
+            fi
+          fi
+          
+          # Get frontend URL if static web app exists  
+          if az staticwebapp show --name "$FRONTEND_APP_NAME" --resource-group "$RESOURCE_GROUP" >/dev/null 2>&1; then
+            FRONTEND_HOSTNAME=$(az staticwebapp show --name "$FRONTEND_APP_NAME" --resource-group "$RESOURCE_GROUP" --query "defaultHostname" --output tsv 2>/dev/null || echo "")
+            if [ -n "$FRONTEND_HOSTNAME" ]; then
+              FRONTEND_URI="https://$FRONTEND_HOSTNAME"
+              echo "frontend-uri=$FRONTEND_URI" >> $GITHUB_OUTPUT
+            fi
+          fi
         else
-          echo "Environment $ENV_NAME not found, nothing to clean up"
+          echo "environment-exists=false" >> $GITHUB_OUTPUT
+          echo "Resource group $RESOURCE_GROUP not found"
         fi
         
-    - name: Comment on PR
-      uses: actions/github-script@v7
+    - name: Cleanup PR Environment
+      if: steps.check-secrets.outputs.secrets-available == 'true' && steps.get-env-info.outputs.environment-exists == 'true'
+      run: |
+        ENV_NAME="pr-${{ github.event.pull_request.number }}"
+        RESOURCE_GROUP="${{ steps.get-env-info.outputs.resource-group }}"
+        
+        echo "Cleaning up environment: $ENV_NAME"
+        echo "Deleting resource group: $RESOURCE_GROUP"
+        
+        # Delete the entire resource group (this removes all resources in it)
+        az group delete \
+          --name "$RESOURCE_GROUP" \
+          --yes \
+          --no-wait
+        
+        echo "Environment $ENV_NAME cleanup initiated successfully"
+        echo "cleanup-status=success" >> $GITHUB_OUTPUT
+        
+    - name: Comment on PR (Success with URLs)
+      if: steps.check-secrets.outputs.secrets-available == 'true' && steps.get-env-info.outputs.environment-exists == 'true' && (steps.get-env-info.outputs.backend-uri != '' || steps.get-env-info.outputs.frontend-uri != '')
+      uses: peter-evans/create-or-update-comment@v4
       with:
-        script: |
-          const commentBody = `## 🧹 PR Environment Cleaned Up
+        issue-number: ${{ github.event.pull_request.number }}
+        body: |
+          ## 🧹 PR Environment Cleaned Up
           
           The temporary environment for this pull request has been deleted.
           
-          ${github.event.pull_request.merged ? '✅ **Merged**: Changes are now available in the main branch' : '❌ **Closed**: No changes were merged'}
-          `;
+          ### Environment URLs (now deleted):
+          - **Frontend**: ${{ steps.get-env-info.outputs.frontend-uri || 'Not available' }}
+          - **Backend API**: ${{ steps.get-env-info.outputs.backend-uri || 'Not available' }}
           
-          await github.rest.issues.createComment({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            issue_number: context.issue.number,
-            body: commentBody
-          });
+          ${{ github.event.pull_request.merged && '✅ **Merged**: Changes are now available in the main branch' || '❌ **Closed**: No changes were merged' }}
+        comment-author: 'github-actions[bot]'
+        comment-author-association: 'NONE'
+        
+    - name: Comment on PR (Success without URLs)
+      if: steps.check-secrets.outputs.secrets-available == 'true' && (steps.get-env-info.outputs.environment-exists == 'false' || (steps.get-env-info.outputs.backend-uri == '' && steps.get-env-info.outputs.frontend-uri == ''))
+      uses: peter-evans/create-or-update-comment@v4
+      with:
+        issue-number: ${{ github.event.pull_request.number }}
+        body: |
+          ## 🧹 PR Environment Cleaned Up
+          
+          The temporary environment for this pull request has been deleted.
+          
+          ${{ github.event.pull_request.merged && '✅ **Merged**: Changes are now available in the main branch' || '❌ **Closed**: No changes were merged' }}
+          
+          > **Note**: No deployment URLs were found for this PR environment.
+        comment-author: 'github-actions[bot]'
+        comment-author-association: 'NONE'
