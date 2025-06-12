@@ -38,6 +38,24 @@ jobs:
     - name: Install Azure Developer CLI
       if: steps.check-secrets.outputs.secrets-available == 'true'
       uses: Azure/setup-azd@v1.0.0
+      with:
+        version: 'latest'
+        
+    - name: Setup Node.js for frontend build
+      if: steps.check-secrets.outputs.secrets-available == 'true'
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+        
+    - name: Setup Python for backend
+      if: steps.check-secrets.outputs.secrets-available == 'true'
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+        cache-dependency-path: backend/requirements.txt
       
     - name: Log in with Azure (Federated Credentials)
       if: steps.check-secrets.outputs.secrets-available == 'true' && env.AZURE_CLIENT_ID != ''
@@ -58,7 +76,18 @@ jobs:
       run: |
         # Create a unique environment name for this PR
         ENV_NAME="pr-${{ github.event.pull_request.number }}"
-        azd env new $ENV_NAME --subscription "${{ env.AZURE_SUBSCRIPTION_ID }}" --location "${{ vars.AZURE_LOCATION || 'eastus' }}"
+        echo "Environment name: $ENV_NAME"
+        
+        # Check if environment already exists, if not create it
+        if ! azd env list | grep -q "$ENV_NAME"; then
+          echo "Creating new environment: $ENV_NAME"
+          azd env new $ENV_NAME --subscription "${{ env.AZURE_SUBSCRIPTION_ID }}" --location "${{ vars.AZURE_LOCATION || 'eastus' }}"
+        else
+          echo "Environment $ENV_NAME already exists, selecting it"
+          azd env select $ENV_NAME
+        fi
+        
+        # Set environment variables
         azd env set AZURE_LOCATION "${{ vars.AZURE_LOCATION || 'eastus' }}"
         azd env set AZURE_OPENAI_ENDPOINT "${{ secrets.AZURE_OPENAI_ENDPOINT }}"
         azd env set AZURE_OPENAI_API_KEY "${{ secrets.AZURE_OPENAI_API_KEY }}"
@@ -66,37 +95,66 @@ jobs:
         azd env set AZURE_OPENAI_EMBEDDING_DEPLOYMENT "${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT || 'text-embedding-ada-002' }}"
         azd env set AZURE_OPENAI_DALLE_DEPLOYMENT "${{ vars.AZURE_OPENAI_DALLE_DEPLOYMENT || 'dall-e-3' }}"
         
-    - name: Provision and Deploy PR Environment
-      id: deploy
+    - name: Deploy using Azure Developer CLI
+      id: azd-deploy
       if: steps.check-secrets.outputs.secrets-available == 'true'
       run: |
         # Deploy the PR code to a temporary Azure environment for testing
         ENV_NAME="pr-${{ github.event.pull_request.number }}"
-        azd up --no-prompt
+        echo "Deploying environment: $ENV_NAME"
+        
+        # Use azd up with verbose logging and timeout
+        timeout 1800 azd up --no-prompt --debug || {
+          echo "::warning::azd deployment failed, this may be due to resource conflicts or timeouts"
+          echo "deployment-status=failed" >> $GITHUB_OUTPUT
+          exit 1
+        }
+        
+        echo "deployment-status=success" >> $GITHUB_OUTPUT
+        
+    - name: Alternative deployment via Azure Actions (if azd fails)
+      id: alt-deploy
+      if: steps.check-secrets.outputs.secrets-available == 'true' && steps.azd-deploy.outputs.deployment-status == 'failed'
+      run: |
+        echo "::warning::Falling back to alternative deployment method"
+        echo "This would use direct Azure Resource Manager deployment actions"
+        echo "deployment-status=skipped" >> $GITHUB_OUTPUT
       
     - name: Get deployment outputs
       id: azd-outputs
-      if: steps.check-secrets.outputs.secrets-available == 'true' && steps.deploy.conclusion == 'success'
+      if: steps.check-secrets.outputs.secrets-available == 'true' && (steps.azd-deploy.outputs.deployment-status == 'success' || steps.alt-deploy.outputs.deployment-status == 'success')
       run: |
-        echo "backend-uri=$(azd env get-values | grep BACKEND_URI | cut -d'=' -f2)" >> $GITHUB_OUTPUT
-        echo "frontend-uri=$(azd env get-values | grep FRONTEND_URI | cut -d'=' -f2)" >> $GITHUB_OUTPUT
+        echo "Getting deployment outputs..."
+        
+        # Try to get outputs from azd
+        if command -v azd >/dev/null 2>&1; then
+          BACKEND_URI=$(azd env get-values 2>/dev/null | grep BACKEND_URI | cut -d'=' -f2 | tr -d '"' || echo "")
+          FRONTEND_URI=$(azd env get-values 2>/dev/null | grep FRONTEND_URI | cut -d'=' -f2 | tr -d '"' || echo "")
+          
+          if [[ -n "$BACKEND_URI" ]]; then
+            echo "backend-uri=$BACKEND_URI" >> $GITHUB_OUTPUT
+          else
+            echo "backend-uri=Not available" >> $GITHUB_OUTPUT
+          fi
+          
+          if [[ -n "$FRONTEND_URI" ]]; then
+            echo "frontend-uri=$FRONTEND_URI" >> $GITHUB_OUTPUT
+          else
+            echo "frontend-uri=Not available" >> $GITHUB_OUTPUT
+          fi
+        else
+          echo "::warning::Unable to retrieve deployment outputs"
+          echo "backend-uri=Deployment completed but URIs not available" >> $GITHUB_OUTPUT
+          echo "frontend-uri=Deployment completed but URIs not available" >> $GITHUB_OUTPUT
+        fi
         
     - name: Comment on PR (Success)
-      if: steps.check-secrets.outputs.secrets-available == 'true' && steps.deploy.conclusion == 'success'
-      uses: actions/github-script@v7
+      if: steps.check-secrets.outputs.secrets-available == 'true' && (steps.azd-deploy.outputs.deployment-status == 'success' || steps.alt-deploy.outputs.deployment-status == 'success')
+      uses: peter-evans/create-or-update-comment@v4
       with:
-        script: |
-          const { data: comments } = await github.rest.issues.listComments({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            issue_number: context.issue.number,
-          });
-          
-          const botComment = comments.find(comment => 
-            comment.user.type === 'Bot' && comment.body.includes('## 🚀 PR Environment Deployed')
-          );
-          
-          const commentBody = `## 🚀 PR Environment Deployed
+        issue-number: ${{ github.event.pull_request.number }}
+        body: |
+          ## 🚀 PR Environment Deployed
           
           Your pull request has been deployed to a temporary environment:
           
@@ -107,40 +165,16 @@ jobs:
           Use the deployed environment to test your changes before merging.
           
           > **Note**: This environment will be automatically deleted when the PR is closed or merged.
-          `;
-          
-          if (botComment) {
-            await github.rest.issues.updateComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              comment_id: botComment.id,
-              body: commentBody
-            });
-          } else {
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body: commentBody
-            });
-          }
+        comment-author: 'github-actions[bot]'
+        comment-author-association: 'NONE'
           
     - name: Comment on PR (Failure)
-      if: steps.check-secrets.outputs.secrets-available == 'true' && (failure() || steps.deploy.conclusion == 'failure')
-      uses: actions/github-script@v7
+      if: steps.check-secrets.outputs.secrets-available == 'true' && (failure() || steps.azd-deploy.outputs.deployment-status == 'failed')
+      uses: peter-evans/create-or-update-comment@v4
       with:
-        script: |
-          const { data: comments } = await github.rest.issues.listComments({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            issue_number: context.issue.number,
-          });
-          
-          const botComment = comments.find(comment => 
-            comment.user.type === 'Bot' && comment.body.includes('## ❌ PR Environment Deployment Failed')
-          );
-          
-          const commentBody = `## ❌ PR Environment Deployment Failed
+        issue-number: ${{ github.event.pull_request.number }}
+        body: |
+          ## ❌ PR Environment Deployment Failed
           
           The deployment of your pull request environment failed. Please check the [workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.
           
@@ -148,22 +182,8 @@ jobs:
           - Azure resource provisioning errors
           - Configuration issues
           - Resource quotas exceeded
+          - Azure CLI installation or authentication issues
           
           > **Note**: You can re-trigger the deployment by pushing new commits or re-running the workflow.
-          `;
-          
-          if (botComment) {
-            await github.rest.issues.updateComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              comment_id: botComment.id,
-              body: commentBody
-            });
-          } else {
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body: commentBody
-            });
-          }
+        comment-author: 'github-actions[bot]'
+        comment-author-association: 'NONE'

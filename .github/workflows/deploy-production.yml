@@ -33,6 +33,8 @@ jobs:
       
     - name: Install Azure Developer CLI
       uses: Azure/setup-azd@v1.0.0
+      with:
+        version: 'latest'
       
     - name: Log in with Azure (Federated Credentials)
       if: ${{ env.AZURE_CLIENT_ID != '' }}
@@ -50,7 +52,18 @@ jobs:
         
     - name: Configure Azure Developer CLI environment
       run: |
-        azd env new production --subscription "${{ env.AZURE_SUBSCRIPTION_ID }}" --location "${{ vars.AZURE_LOCATION || 'eastus' }}"
+        echo "Configuring production environment..."
+        
+        # Check if environment already exists, if not create it
+        if ! azd env list | grep -q "production"; then
+          echo "Creating production environment"
+          azd env new production --subscription "${{ env.AZURE_SUBSCRIPTION_ID }}" --location "${{ vars.AZURE_LOCATION || 'eastus' }}"
+        else
+          echo "Production environment already exists, selecting it"
+          azd env select production
+        fi
+        
+        # Set environment variables
         azd env set AZURE_LOCATION "${{ vars.AZURE_LOCATION || 'eastus' }}"
         azd env set AZURE_OPENAI_ENDPOINT "${{ secrets.AZURE_OPENAI_ENDPOINT }}"
         azd env set AZURE_OPENAI_API_KEY "${{ secrets.AZURE_OPENAI_API_KEY }}"
@@ -59,13 +72,23 @@ jobs:
         azd env set AZURE_OPENAI_DALLE_DEPLOYMENT "${{ vars.AZURE_OPENAI_DALLE_DEPLOYMENT || 'dall-e-3' }}"
         
     - name: Provision and Deploy to Azure
-      run: azd up --no-prompt
+      run: |
+        echo "Deploying to production environment..."
+        timeout 1800 azd up --no-prompt --debug || {
+          echo "::error::Production deployment failed"
+          exit 1
+        }
       
     - name: Get deployment outputs
       id: azd-outputs
       run: |
-        echo "backend-uri=$(azd env get-values | grep BACKEND_URI | cut -d'=' -f2)" >> $GITHUB_OUTPUT
-        echo "frontend-uri=$(azd env get-values | grep FRONTEND_URI | cut -d'=' -f2)" >> $GITHUB_OUTPUT
+        echo "Getting production deployment outputs..."
+        
+        BACKEND_URI=$(azd env get-values 2>/dev/null | grep BACKEND_URI | cut -d'=' -f2 | tr -d '"' || echo "Not available")
+        FRONTEND_URI=$(azd env get-values 2>/dev/null | grep FRONTEND_URI | cut -d'=' -f2 | tr -d '"' || echo "Not available")
+        
+        echo "backend-uri=$BACKEND_URI" >> $GITHUB_OUTPUT
+        echo "frontend-uri=$FRONTEND_URI" >> $GITHUB_OUTPUT
         
     - name: Create deployment summary
       run: |
