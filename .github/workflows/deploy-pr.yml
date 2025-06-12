@@ -1,7 +1,8 @@
 name: Deploy PR Environment
-# This workflow deploys pull request environments for testing
+# This workflow deploys pull request environments for testing using Azure GitHub Actions
 # Triggers when PRs are opened, updated, or reopened against the main branch
 # Creates a temporary environment named "pr-{PR_NUMBER}" for each pull request
+# Uses Azure ARM deployment actions instead of azd CLI for better reliability
 
 on:
   pull_request:
@@ -35,11 +36,11 @@ jobs:
       if: steps.check-secrets.outputs.secrets-available == 'true'
       uses: actions/checkout@v4
       
-    - name: Install Azure Developer CLI
+    - name: Setup Azure CLI
       if: steps.check-secrets.outputs.secrets-available == 'true'
-      uses: Azure/setup-azd@v1.0.0
+      uses: azure/CLI@v2
       with:
-        version: 'latest'
+        azcliversion: 'latest'
         
     - name: Setup Node.js for frontend build
       if: steps.check-secrets.outputs.secrets-available == 'true'
@@ -59,11 +60,11 @@ jobs:
       
     - name: Log in with Azure (Federated Credentials)
       if: steps.check-secrets.outputs.secrets-available == 'true' && env.AZURE_CLIENT_ID != ''
-      run: |
-        azd auth login \
-          --client-id "${{ env.AZURE_CLIENT_ID }}" \
-          --federated-credential-provider "github" \
-          --tenant-id "${{ env.AZURE_TENANT_ID }}"
+      uses: Azure/login@v2
+      with:
+        client-id: ${{ env.AZURE_CLIENT_ID }}
+        tenant-id: ${{ env.AZURE_TENANT_ID }}
+        subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
         
     - name: Log in with Azure (Service Principal)
       if: steps.check-secrets.outputs.secrets-available == 'true' && env.AZURE_CLIENT_ID == '' && env.AZURE_CREDENTIALS != ''
@@ -71,85 +72,152 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
         
-    - name: Configure Azure Developer CLI environment
+    - name: Deploy Infrastructure with Bicep
+      id: infrastructure-deploy
       if: steps.check-secrets.outputs.secrets-available == 'true'
-      run: |
-        # Create a unique environment name for this PR
-        ENV_NAME="pr-${{ github.event.pull_request.number }}"
-        echo "Environment name: $ENV_NAME"
+      uses: Azure/arm-deploy@v2
+      with:
+        scope: subscription
+        subscriptionId: ${{ env.AZURE_SUBSCRIPTION_ID }}
+        region: ${{ vars.AZURE_LOCATION || 'eastus' }}
+        template: infra/main.bicep
+        parameters: |
+          environmentName=pr-${{ github.event.pull_request.number }}
+          location=${{ vars.AZURE_LOCATION || 'eastus' }}
+          azureOpenAiEndpoint=${{ secrets.AZURE_OPENAI_ENDPOINT }}
+          azureOpenAiApiKey=${{ secrets.AZURE_OPENAI_API_KEY }}
+          azureOpenAiChatDeployment=${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT || 'gpt-4o-mini' }}
+          azureOpenAiEmbeddingDeployment=${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT || 'text-embedding-ada-002' }}
+          azureOpenAiDalleDeployment=${{ vars.AZURE_OPENAI_DALLE_DEPLOYMENT || 'dall-e-3' }}
+        deploymentName: pr-${{ github.event.pull_request.number }}-${{ github.run_number }}
+        failOnStdErr: false
+      timeout-minutes: 20
         
-        # Check if environment already exists, if not create it
-        if ! azd env list | grep -q "$ENV_NAME"; then
-          echo "Creating new environment: $ENV_NAME"
-          azd env new $ENV_NAME --subscription "${{ env.AZURE_SUBSCRIPTION_ID }}" --location "${{ vars.AZURE_LOCATION || 'eastus' }}"
+    - name: Build and deploy backend container
+      id: backend-deploy
+      if: steps.check-secrets.outputs.secrets-available == 'true' && steps.infrastructure-deploy.outcome == 'success'
+      run: |
+        # Get deployment outputs from the infrastructure deployment
+        RESOURCE_GROUP="${{ steps.infrastructure-deploy.outputs.AZURE_RESOURCE_GROUP }}"
+        CONTAINER_APP_ENVIRONMENT="${{ steps.infrastructure-deploy.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_ID }}"
+        
+        # Generate a unique resource token for consistent naming
+        RESOURCE_TOKEN=$(echo "pr-${{ github.event.pull_request.number }}" | sha256sum | cut -c1-8)
+        CONTAINER_APP_NAME="pr-${{ github.event.pull_request.number }}-backend-$RESOURCE_TOKEN"
+        
+        echo "Deploying backend container app: $CONTAINER_APP_NAME"
+        echo "Resource Group: $RESOURCE_GROUP"
+        echo "Container Apps Environment: $CONTAINER_APP_ENVIRONMENT"
+        
+        # Navigate to backend directory
+        cd backend
+        
+        # Create or update the container app with source code
+        az containerapp up \
+          --name "$CONTAINER_APP_NAME" \
+          --resource-group "$RESOURCE_GROUP" \
+          --environment "$CONTAINER_APP_ENVIRONMENT" \
+          --source . \
+          --target-port 8000 \
+          --ingress external \
+          --cpu 1.0 \
+          --memory 2.0Gi \
+          --env-vars \
+            "AZURE_OPENAI_ENDPOINT=${{ secrets.AZURE_OPENAI_ENDPOINT }}" \
+            "AZURE_OPENAI_API_KEY=${{ secrets.AZURE_OPENAI_API_KEY }}" \
+            "AZURE_OPENAI_API_VERSION=2023-12-01-preview" \
+            "AZURE_OPENAI_CHAT_DEPLOYMENT=${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT || 'gpt-4o-mini' }}" \
+            "AZURE_OPENAI_EMBEDDING_DEPLOYMENT=${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT || 'text-embedding-ada-002' }}" \
+            "AZURE_OPENAI_DALLE_DEPLOYMENT=${{ vars.AZURE_OPENAI_DALLE_DEPLOYMENT || 'dall-e-3' }}" \
+            "APP_HOST=0.0.0.0" \
+            "APP_PORT=8000" \
+            "APP_DEBUG=false" \
+            "APP_LOG_LEVEL=info" \
+            "SEMANTIC_KERNEL_DEBUG=false" \
+          --quiet
+        
+        # Get the FQDN of the deployed container app
+        BACKEND_FQDN=$(az containerapp show --name "$CONTAINER_APP_NAME" --resource-group "$RESOURCE_GROUP" --query "properties.configuration.ingress.fqdn" --output tsv)
+        BACKEND_URI="https://$BACKEND_FQDN"
+        
+        echo "Backend deployed to: $BACKEND_URI"
+        echo "backend-status=success" >> $GITHUB_OUTPUT
+        echo "backend-uri=$BACKEND_URI" >> $GITHUB_OUTPUT
+      timeout-minutes: 15
+        
+    - name: Deploy frontend to Static Web App
+      id: frontend-deploy
+      if: steps.check-secrets.outputs.secrets-available == 'true' && steps.infrastructure-deploy.outcome == 'success' && steps.backend-deploy.outputs.backend-status == 'success'
+      run: |
+        # Get Static Web App details
+        RESOURCE_GROUP="${{ steps.infrastructure-deploy.outputs.AZURE_RESOURCE_GROUP }}"
+        
+        # Generate the same resource token for consistent naming
+        RESOURCE_TOKEN=$(echo "pr-${{ github.event.pull_request.number }}" | sha256sum | cut -c1-8)
+        SWA_NAME="pr-${{ github.event.pull_request.number }}-frontend-$RESOURCE_TOKEN"
+        
+        echo "Deploying frontend to Static Web App: $SWA_NAME"
+        echo "Resource Group: $RESOURCE_GROUP"
+        
+        # Build frontend with backend URL
+        cd frontend
+        npm ci
+        
+        # Set backend URL for build
+        export REACT_APP_API_URL="${{ steps.backend-deploy.outputs.backend-uri }}"
+        npm run build
+        
+        # Get deployment token from the Static Web App (if it exists)
+        if az staticwebapp show --name "$SWA_NAME" --resource-group "$RESOURCE_GROUP" >/dev/null 2>&1; then
+          DEPLOYMENT_TOKEN=$(az staticwebapp secrets list --name "$SWA_NAME" --resource-group "$RESOURCE_GROUP" --query "properties.apiKey" --output tsv 2>/dev/null || echo "")
+          SWA_DEFAULT_HOSTNAME=$(az staticwebapp show --name "$SWA_NAME" --resource-group "$RESOURCE_GROUP" --query "defaultHostname" --output tsv)
+          FRONTEND_URI="https://$SWA_DEFAULT_HOSTNAME"
         else
-          echo "Environment $ENV_NAME already exists, selecting it"
-          azd env select $ENV_NAME
+          echo "::warning::Static Web App $SWA_NAME not found in resource group $RESOURCE_GROUP"
+          DEPLOYMENT_TOKEN=""
+          FRONTEND_URI="${{ steps.infrastructure-deploy.outputs.FRONTEND_URI || 'Static Web App not available' }}"
         fi
         
-        # Set environment variables
-        azd env set AZURE_LOCATION "${{ vars.AZURE_LOCATION || 'eastus' }}"
-        azd env set AZURE_OPENAI_ENDPOINT "${{ secrets.AZURE_OPENAI_ENDPOINT }}"
-        azd env set AZURE_OPENAI_API_KEY "${{ secrets.AZURE_OPENAI_API_KEY }}"
-        azd env set AZURE_OPENAI_CHAT_DEPLOYMENT "${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT || 'gpt-4o-mini' }}"
-        azd env set AZURE_OPENAI_EMBEDDING_DEPLOYMENT "${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT || 'text-embedding-ada-002' }}"
-        azd env set AZURE_OPENAI_DALLE_DEPLOYMENT "${{ vars.AZURE_OPENAI_DALLE_DEPLOYMENT || 'dall-e-3' }}"
+        if [ -z "$DEPLOYMENT_TOKEN" ]; then
+          echo "::warning::Could not retrieve deployment token for Static Web App $SWA_NAME"
+          echo "frontend-status=token-failed" >> $GITHUB_OUTPUT
+          echo "frontend-uri=$FRONTEND_URI" >> $GITHUB_OUTPUT
+        else
+          echo "frontend-status=success" >> $GITHUB_OUTPUT
+          echo "deployment-token=$DEPLOYMENT_TOKEN" >> $GITHUB_OUTPUT
+          echo "frontend-uri=$FRONTEND_URI" >> $GITHUB_OUTPUT
+        fi
+      timeout-minutes: 10
         
-    - name: Deploy using Azure Developer CLI
-      id: azd-deploy
-      if: steps.check-secrets.outputs.secrets-available == 'true'
-      run: |
-        # Deploy the PR code to a temporary Azure environment for testing
-        ENV_NAME="pr-${{ github.event.pull_request.number }}"
-        echo "Deploying environment: $ENV_NAME"
-        
-        # Use azd up with verbose logging and timeout
-        timeout 1800 azd up --no-prompt --debug || {
-          echo "::warning::azd deployment failed, this may be due to resource conflicts or timeouts"
-          echo "deployment-status=failed" >> $GITHUB_OUTPUT
-          exit 1
-        }
-        
-        echo "deployment-status=success" >> $GITHUB_OUTPUT
-        
-    - name: Alternative deployment via Azure Actions (if azd fails)
-      id: alt-deploy
-      if: steps.check-secrets.outputs.secrets-available == 'true' && steps.azd-deploy.outputs.deployment-status == 'failed'
-      run: |
-        echo "::warning::Falling back to alternative deployment method"
-        echo "This would use direct Azure Resource Manager deployment actions"
-        echo "deployment-status=skipped" >> $GITHUB_OUTPUT
+    - name: Deploy frontend using Static Web Apps action
+      if: steps.check-secrets.outputs.secrets-available == 'true' && steps.frontend-deploy.outputs.frontend-status == 'success'
+      uses: Azure/static-web-apps-deploy@v1
+      with:
+        azure_static_web_apps_api_token: ${{ steps.frontend-deploy.outputs.deployment-token }}
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        action: 'upload'
+        app_location: 'frontend'
+        output_location: 'build'
+        skip_deploy_on_missing_secrets: true
       
     - name: Get deployment outputs
-      id: azd-outputs
-      if: steps.check-secrets.outputs.secrets-available == 'true' && (steps.azd-deploy.outputs.deployment-status == 'success' || steps.alt-deploy.outputs.deployment-status == 'success')
+      id: deployment-outputs
+      if: steps.check-secrets.outputs.secrets-available == 'true' && steps.infrastructure-deploy.outcome == 'success'
       run: |
         echo "Getting deployment outputs..."
         
-        # Try to get outputs from azd
-        if command -v azd >/dev/null 2>&1; then
-          BACKEND_URI=$(azd env get-values 2>/dev/null | grep BACKEND_URI | cut -d'=' -f2 | tr -d '"' || echo "")
-          FRONTEND_URI=$(azd env get-values 2>/dev/null | grep FRONTEND_URI | cut -d'=' -f2 | tr -d '"' || echo "")
-          
-          if [[ -n "$BACKEND_URI" ]]; then
-            echo "backend-uri=$BACKEND_URI" >> $GITHUB_OUTPUT
-          else
-            echo "backend-uri=Not available" >> $GITHUB_OUTPUT
-          fi
-          
-          if [[ -n "$FRONTEND_URI" ]]; then
-            echo "frontend-uri=$FRONTEND_URI" >> $GITHUB_OUTPUT
-          else
-            echo "frontend-uri=Not available" >> $GITHUB_OUTPUT
-          fi
-        else
-          echo "::warning::Unable to retrieve deployment outputs"
-          echo "backend-uri=Deployment completed but URIs not available" >> $GITHUB_OUTPUT
-          echo "frontend-uri=Deployment completed but URIs not available" >> $GITHUB_OUTPUT
-        fi
+        # Use outputs from backend and frontend deployments
+        BACKEND_URI="${{ steps.backend-deploy.outputs.backend-uri || 'Backend deployment in progress' }}"
+        FRONTEND_URI="${{ steps.frontend-deploy.outputs.frontend-uri || steps.infrastructure-deploy.outputs.FRONTEND_URI || 'Frontend deployment in progress' }}"
+        
+        echo "backend-uri=$BACKEND_URI" >> $GITHUB_OUTPUT
+        echo "frontend-uri=$FRONTEND_URI" >> $GITHUB_OUTPUT
+        
+        echo "Backend URI: $BACKEND_URI"
+        echo "Frontend URI: $FRONTEND_URI"
         
     - name: Comment on PR (Success)
-      if: steps.check-secrets.outputs.secrets-available == 'true' && (steps.azd-deploy.outputs.deployment-status == 'success' || steps.alt-deploy.outputs.deployment-status == 'success')
+      if: steps.check-secrets.outputs.secrets-available == 'true' && steps.infrastructure-deploy.outcome == 'success'
       uses: peter-evans/create-or-update-comment@v4
       with:
         issue-number: ${{ github.event.pull_request.number }}
@@ -158,8 +226,8 @@ jobs:
           
           Your pull request has been deployed to a temporary environment:
           
-          - **Frontend**: ${{ steps.azd-outputs.outputs.frontend-uri }}
-          - **Backend API**: ${{ steps.azd-outputs.outputs.backend-uri }}
+          - **Frontend**: ${{ steps.deployment-outputs.outputs.frontend-uri }}
+          - **Backend API**: ${{ steps.deployment-outputs.outputs.backend-uri }}
           
           ### Test Your Changes
           Use the deployed environment to test your changes before merging.
@@ -169,7 +237,7 @@ jobs:
         comment-author-association: 'NONE'
           
     - name: Comment on PR (Failure)
-      if: steps.check-secrets.outputs.secrets-available == 'true' && (failure() || steps.azd-deploy.outputs.deployment-status == 'failed')
+      if: steps.check-secrets.outputs.secrets-available == 'true' && (failure() || steps.infrastructure-deploy.outcome == 'failure')
       uses: peter-evans/create-or-update-comment@v4
       with:
         issue-number: ${{ github.event.pull_request.number }}
@@ -182,7 +250,7 @@ jobs:
           - Azure resource provisioning errors
           - Configuration issues
           - Resource quotas exceeded
-          - Azure CLI installation or authentication issues
+          - Azure authentication issues
           
           > **Note**: You can re-trigger the deployment by pushing new commits or re-running the workflow.
         comment-author: 'github-actions[bot]'
