@@ -46,7 +46,7 @@ jobs:
         cache-dependency-path: backend/requirements.txt
       
     - name: Log in with Azure (Federated Credentials)
-      if: secrets.AZURE_CLIENT_ID != ''
+      if: steps.check-secrets.outputs.secrets-available == 'true' && secrets.AZURE_CLIENT_ID != ''
       uses: azure/login@v2
       with:
         client-id: ${{ secrets.AZURE_CLIENT_ID }}
@@ -54,7 +54,7 @@ jobs:
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         
     - name: Log in with Azure (Service Principal)
-      if: secrets.AZURE_CLIENT_ID == '' && secrets.AZURE_CREDENTIALS != ''
+      if: steps.check-secrets.outputs.secrets-available == 'true' && secrets.AZURE_CLIENT_ID == '' && secrets.AZURE_CREDENTIALS != ''
       uses: azure/login@v2
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
@@ -182,14 +182,31 @@ jobs:
         output_location: 'build'
         skip_deploy_on_missing_secrets: true
         
+    - name: Get deployment outputs
+      id: deployment-outputs
+      if: steps.infrastructure-deploy.outcome == 'success'
+      run: |
+        echo "Getting deployment outputs..."
+        
+        # Use outputs from backend and frontend deployments
+        BACKEND_URI="${{ steps.backend-deploy.outputs.backend-uri || 'Backend deployment in progress' }}"
+        FRONTEND_URI="${{ steps.frontend-deploy.outputs.frontend-uri || steps.infrastructure-deploy.outputs.FRONTEND_URI || 'Frontend deployment in progress' }}"
+        
+        echo "backend-uri=$BACKEND_URI" >> $GITHUB_OUTPUT
+        echo "frontend-uri=$FRONTEND_URI" >> $GITHUB_OUTPUT
+        
+        echo "Backend URI: $BACKEND_URI"
+        echo "Frontend URI: $FRONTEND_URI"
+        
     - name: Create deployment summary
+      if: steps.infrastructure-deploy.outcome == 'success'
       run: |
         cat << EOF >> $GITHUB_STEP_SUMMARY
         ## 🚀 Production Deployment Successful
         
         ### Deployed Resources
-        - **Backend API**: ${{ steps.backend-deploy.outputs.backend-uri || 'Deployment in progress' }}
-        - **Frontend App**: ${{ steps.frontend-deploy.outputs.frontend-uri || 'Deployment in progress' }}
+        - **Backend API**: ${{ steps.deployment-outputs.outputs.backend-uri || 'Deployment in progress' }}
+        - **Frontend App**: ${{ steps.deployment-outputs.outputs.frontend-uri || 'Deployment in progress' }}
         
         ### Environment
         - **Azure Subscription**: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
@@ -200,4 +217,25 @@ jobs:
         1. Verify the application is running correctly
         2. Check Azure OpenAI integration
         3. Test the AI Dungeon Master functionality
+        EOF
+        
+    - name: Create deployment summary (Failure)
+      if: failure() || steps.infrastructure-deploy.outcome == 'failure'
+      run: |
+        cat << EOF >> $GITHUB_STEP_SUMMARY
+        ## ❌ Production Deployment Failed
+        
+        The production deployment failed. Please check the workflow logs for details.
+        
+        ### Common Issues:
+        - Azure resource provisioning errors
+        - Configuration issues
+        - Resource quotas exceeded
+        - Azure authentication issues
+        
+        ### Next Steps:
+        1. Review the workflow logs for specific error messages
+        2. Check Azure portal for resource status
+        3. Verify Azure secrets and configuration
+        4. Re-run the deployment after fixing issues
         EOF
