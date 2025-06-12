@@ -224,9 +224,10 @@ describe("CampaignCreation", () => {
 		expect(nameInput).toBeDisabled();
 		expect(settingInput).toBeDisabled();
 
-		// Resolve the promise to clean up
+		// Resolve the promise to clean up and wait for completion
 		await act(async () => {
 			resolvePromise?.({ id: "1", name: "Test Campaign" });
+			await promise;
 		});
 	});
 
