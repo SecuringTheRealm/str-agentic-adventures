@@ -167,8 +167,8 @@ async def handle_dice_roll(message: Dict[str, Any], websocket: WebSocket, campai
         
         if character_id:
             # Get character for enhanced roll
-            from app.agents.scribe_agent import scribe
-            character = await scribe.get_character(character_id)
+            from app.agents.scribe_agent import get_scribe
+            character = await get_scribe().get_character(character_id)
             if "error" not in character:
                 result = rules_engine.roll_with_character(dice_notation, character, skill)
             else:

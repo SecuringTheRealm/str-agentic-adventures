@@ -260,5 +260,15 @@ class CombatCartographerAgent:
         
         return stats
 
-# Singleton instance
-combat_cartographer = CombatCartographerAgent()
+# Lazy singleton instance
+_combat_cartographer = None
+
+def get_combat_cartographer():
+    """Get the combat cartographer instance, creating it if necessary."""
+    global _combat_cartographer
+    if _combat_cartographer is None:
+        _combat_cartographer = CombatCartographerAgent()
+    return _combat_cartographer
+
+# For backward compatibility during import-time checks
+combat_cartographer = None

@@ -12,10 +12,10 @@ from app.models.game_models import (
     CharacterSheet,
     LevelUpRequest
 )
-from app.agents.dungeon_master_agent import dungeon_master
-from app.agents.scribe_agent import scribe
-from app.agents.combat_cartographer_agent import combat_cartographer
-from app.agents.artist_agent import artist
+from app.agents.dungeon_master_agent import get_dungeon_master
+from app.agents.scribe_agent import get_scribe
+from app.agents.combat_cartographer_agent import get_combat_cartographer
+from app.agents.artist_agent import get_artist
 
 router = APIRouter(tags=["game"])
 
@@ -30,7 +30,7 @@ async def create_character(character_data: CreateCharacterRequest):
         character_dict["class"] = character_dict.pop("character_class")
 
         # Create character via Scribe agent
-        character_sheet = await scribe.create_character(character_dict)
+        character_sheet = await get_scribe().create_character(character_dict)
 
         if "error" in character_sheet:
             raise HTTPException(
@@ -48,7 +48,7 @@ async def create_character(character_data: CreateCharacterRequest):
 @router.get("/character/{character_id}", response_model=Dict[str, Any])
 async def get_character(character_id: str):
     """Retrieve a character sheet by ID."""
-    character = await scribe.get_character(character_id)
+    character = await get_scribe().get_character(character_id)
 
     if not character:
         raise HTTPException(
@@ -62,7 +62,7 @@ async def get_character(character_id: str):
 async def create_campaign(campaign_data: Dict[str, Any]):
     """Create a new campaign."""
     try:
-        campaign = await dungeon_master.create_campaign(campaign_data)
+        campaign = await get_dungeon_master().create_campaign(campaign_data)
 
         if "error" in campaign:
             raise HTTPException(
@@ -85,11 +85,11 @@ async def generate_image(image_request: Dict[str, Any]):
         details = image_request.get("details", {})
         
         if image_type == "character_portrait":
-            result = await artist.generate_character_portrait(details)
+            result = await get_artist().generate_character_portrait(details)
         elif image_type == "scene_illustration":
-            result = await artist.illustrate_scene(details)
+            result = await get_artist().illustrate_scene(details)
         elif image_type == "item_visualization":
-            result = await artist.create_item_visualization(details)
+            result = await get_artist().create_item_visualization(details)
         else:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -110,7 +110,7 @@ async def generate_battle_map(map_request: Dict[str, Any]):
         environment = map_request.get("environment", {})
         combat_context = map_request.get("combat_context")
         
-        battle_map = await combat_cartographer.generate_battle_map(environment, combat_context)
+        battle_map = await get_combat_cartographer().generate_battle_map(environment, combat_context)
         
         return battle_map
     except Exception as e:
@@ -124,7 +124,7 @@ async def process_player_input(player_input: PlayerInput):
     """Process player input and get game response."""
     try:
         # Get character and campaign context
-        character = await scribe.get_character(player_input.character_id)
+        character = await get_scribe().get_character(player_input.character_id)
 
         if not character:
             raise HTTPException(
@@ -142,7 +142,7 @@ async def process_player_input(player_input: PlayerInput):
         }
 
         # Process the input through the Dungeon Master agent
-        dm_response = await dungeon_master.process_input(player_input.message, context)
+        dm_response = await get_dungeon_master().process_input(player_input.message, context)
 
         # Transform the DM response to the GameResponse format
         images = []
@@ -169,7 +169,7 @@ async def level_up_character(character_id: str, level_up_data: LevelUpRequest):
     """Level up a character."""
     try:
         # Level up the character via Scribe agent
-        result = await scribe.level_up_character(
+        result = await get_scribe().level_up_character(
             character_id,
             level_up_data.ability_improvements,
             use_average_hp=True  # Default to average HP
@@ -201,7 +201,7 @@ async def award_experience(character_id: str, experience_data: Dict[str, int]):
                 detail="Experience points must be greater than 0"
             )
 
-        result = await scribe.award_experience(character_id, experience_points)
+        result = await get_scribe().award_experience(character_id, experience_points)
 
         if "error" in result:
             raise HTTPException(
@@ -222,7 +222,7 @@ async def award_experience(character_id: str, experience_data: Dict[str, int]):
 async def get_progression_info(character_id: str):
     """Get progression information for a character."""
     try:
-        character = await scribe.get_character(character_id)
+        character = await get_scribe().get_character(character_id)
         if not character:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -304,7 +304,7 @@ async def roll_dice_with_character(roll_data: Dict[str, Any]):
             )
         
         # Get character data
-        character = await scribe.get_character(character_id)
+        character = await get_scribe().get_character(character_id)
         if "error" in character:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -459,7 +459,7 @@ async def initialize_combat(combat_data: Dict[str, Any]):
                 # Players roll initiative
                 from app.plugins.rules_engine_plugin import RulesEnginePlugin
                 rules_engine = RulesEnginePlugin()
-                character = await scribe.get_character(participant["character_id"])
+                character = await get_scribe().get_character(participant["character_id"])
                 if "error" not in character:
                     dex_modifier = (character["abilities"]["dexterity"] - 10) // 2
                     initiative_roll = rules_engine.roll_dice("1d20")

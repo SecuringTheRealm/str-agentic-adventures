@@ -228,5 +228,15 @@ class CombatMCAgent:
 
         return basic_actions
 
-# Singleton instance
-combat_mc = CombatMCAgent()
+# Lazy singleton instance
+_combat_mc = None
+
+def get_combat_mc():
+    """Get the combat MC instance, creating it if necessary."""
+    global _combat_mc
+    if _combat_mc is None:
+        _combat_mc = CombatMCAgent()
+    return _combat_mc
+
+# For backward compatibility during import-time checks
+combat_mc = None
