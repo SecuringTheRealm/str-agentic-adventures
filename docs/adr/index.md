@@ -24,6 +24,7 @@ This directory contains Architecture Decision Records (ADRs) for the Agentic Adv
 | 0005 | [Azure OpenAI Integration for AI Agents](0005-azure-openai-integration.md) | Accepted | 2025-06-10 | Approach for integrating Azure OpenAI services for AI capabilities |
 | 0006 | [D&D 5e Character Progression System Implementation](0006-dnd-5e-character-progression-system.md) | Accepted | 2025-06-11 | Implementation of character progression mechanics |
 | 0007 | [GitHub Actions CI/CD Pipeline](0007-github-actions-cicd-pipeline.md) | Accepted | 2025-06-11 | Continuous integration and deployment pipeline for automated testing and quality assurance |
+| 0008 | [Multiplayer Implementation for Real-Time Collaborative Gameplay](0008-multiplayer-implementation.md) | Accepted | 2025-01-27 | Real-time multiplayer architecture using Azure SignalR for collaborative gameplay sessions |
 
 ## ADR Statuses
 
