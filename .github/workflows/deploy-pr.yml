@@ -98,33 +98,64 @@ jobs:
         
         echo "Checking for existing deployment stack: $STACK_NAME"
         
-        # Check if stack exists and delete it to ensure clean deployment
+        # Check if stack exists
         if az stack show --name "$STACK_NAME" --location "$LOCATION" --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" >/dev/null 2>&1; then
-          echo "Found existing deployment stack $STACK_NAME, deleting..."
-          az stack delete --name "$STACK_NAME" --location "$LOCATION" --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" --yes --no-wait
-          echo "Deletion initiated for stack $STACK_NAME"
+          # Get the current provisioning state
+          STACK_STATE=$(az stack show --name "$STACK_NAME" --location "$LOCATION" --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" --query "provisioningState" -o tsv 2>/dev/null || echo "Unknown")
+          echo "Found existing deployment stack $STACK_NAME with state: $STACK_STATE"
           
-          # Wait a bit for deletion to start
-          sleep 30
+          # If stack is in a non-terminal state, wait for it to complete
+          if [[ "$STACK_STATE" == "Creating" || "$STACK_STATE" == "Updating" || "$STACK_STATE" == "Deleting" ]]; then
+            echo "Stack is in non-terminal state ($STACK_STATE). Waiting for completion..."
+            TIMEOUT=600  # 10 minutes for non-terminal states
+            ELAPSED=0
+            while true; do
+              CURRENT_STATE=$(az stack show --name "$STACK_NAME" --location "$LOCATION" --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" --query "provisioningState" -o tsv 2>/dev/null || echo "NotFound")
+              
+              if [[ "$CURRENT_STATE" == "NotFound" ]]; then
+                echo "Stack no longer exists"
+                break
+              elif [[ "$CURRENT_STATE" == "Succeeded" || "$CURRENT_STATE" == "Failed" ]]; then
+                echo "Stack reached terminal state: $CURRENT_STATE"
+                break
+              elif [ $ELAPSED -ge $TIMEOUT ]; then
+                echo "::warning::Timeout waiting for stack to reach terminal state. Current state: $CURRENT_STATE"
+                echo "::warning::Proceeding with createOrUpdate operation which should handle this case"
+                break
+              fi
+              
+              echo "Stack state: $CURRENT_STATE. Waiting... ($ELAPSED/$TIMEOUT seconds)"
+              sleep 30
+              ELAPSED=$((ELAPSED + 30))
+            done
+          fi
           
-          # Wait for deletion to complete (with timeout)
-          TIMEOUT=300  # 5 minutes
-          ELAPSED=0
-          while az stack show --name "$STACK_NAME" --location "$LOCATION" --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" >/dev/null 2>&1; do
-            if [ $ELAPSED -ge $TIMEOUT ]; then
-              echo "::warning::Timeout waiting for stack deletion. Proceeding with deployment..."
-              break
-            fi
-            echo "Waiting for stack deletion to complete... ($ELAPSED/$TIMEOUT seconds)"
-            sleep 15
-            ELAPSED=$((ELAPSED + 15))
-          done
+          # Now attempt deletion if stack still exists and is in terminal state
+          FINAL_STATE=$(az stack show --name "$STACK_NAME" --location "$LOCATION" --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" --query "provisioningState" -o tsv 2>/dev/null || echo "NotFound")
+          if [[ "$FINAL_STATE" != "NotFound" && "$FINAL_STATE" != "Deleting" ]]; then
+            echo "Attempting to delete stack in state: $FINAL_STATE"
+            az stack delete --name "$STACK_NAME" --location "$LOCATION" --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" --yes --no-wait
+            echo "Deletion initiated for stack $STACK_NAME"
+            
+            # Wait for deletion to complete (shorter timeout since we use createOrUpdate)
+            TIMEOUT=300  # 5 minutes
+            ELAPSED=0
+            while az stack show --name "$STACK_NAME" --location "$LOCATION" --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" >/dev/null 2>&1; do
+              if [ $ELAPSED -ge $TIMEOUT ]; then
+                echo "::warning::Timeout waiting for stack deletion. Using createOrUpdate to handle existing stack..."
+                break
+              fi
+              echo "Waiting for stack deletion to complete... ($ELAPSED/$TIMEOUT seconds)"
+              sleep 15
+              ELAPSED=$((ELAPSED + 15))
+            done
+          fi
           
-          echo "Stack cleanup completed"
+          echo "Stack cleanup process completed"
         else
           echo "No existing deployment stack found"
         fi
-      timeout-minutes: 8
+      timeout-minutes: 15
 
     - name: Deploy Infrastructure with Bicep (Deployment Stack)
       id: infrastructure-deploy
@@ -132,7 +163,7 @@ jobs:
       uses: azure/bicep-deploy@v2
       with:
         type: deploymentStack
-        operation: create
+        operation: createOrUpdate
         name: ${{ steps.deployment-vars.outputs.stack-name }}
         location: ${{ steps.deployment-vars.outputs.location }}
         scope: subscription
@@ -210,9 +241,8 @@ jobs:
         # Get Static Web App details
         RESOURCE_GROUP="${{ steps.infrastructure-deploy.outputs.AZURE_RESOURCE_GROUP }}"
 
-        # Generate the same resource token for consistent naming
-        RESOURCE_TOKEN=$(echo "pr-${{ github.event.pull_request.number }}" | sha256sum | cut -c1-8)
-        SWA_NAME="pr-${{ github.event.pull_request.number }}-frontend-$RESOURCE_TOKEN"
+        # Use the actual Static Web App name from Bicep deployment output
+        SWA_NAME="${{ steps.infrastructure-deploy.outputs.AZURE_STATIC_WEB_APP_NAME }}"
 
         echo "Deploying frontend to Static Web App: $SWA_NAME"
         echo "Resource Group: $RESOURCE_GROUP"
