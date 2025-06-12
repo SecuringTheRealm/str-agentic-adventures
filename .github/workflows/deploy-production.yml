@@ -70,12 +70,12 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Deploy Infrastructure with Bicep
+    - name: Deploy Infrastructure with Bicep (Deployment Stack)
       id: infrastructure-deploy
       uses: azure/bicep-deploy@v2
       with:
-        type: deployment
-        operation: createOrUpdate
+        type: deploymentStack
+        operation: create
         name: production-${{ github.run_number }}
         location: ${{ vars.AZURE_LOCATION || vars.AZURE_REGION || 'eastus2' }}
         scope: subscription
@@ -92,6 +92,8 @@ jobs:
             "azureOpenAiEmbeddingDeployment": "${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT || 'text-embedding-ada-002' }}",
             "azureOpenAiDalleDeployment": "${{ vars.AZURE_OPENAI_DALLE_DEPLOYMENT || 'dall-e-3' }}"
           }
+        action-on-unmanage-resources: delete
+        action-on-unmanage-resourcegroups: delete
       timeout-minutes: 20
 
     - name: Build and deploy backend container
