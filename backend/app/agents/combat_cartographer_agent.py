@@ -127,17 +127,138 @@ class CombatCartographerAgent:
                 
             battle_map = self.battle_maps[map_id]
             
-            # TODO: Implement logic to update the map with current combat state
-            # For now, we'll just return the existing map with a note
+            # Implement logic to update the map with current combat state
+            import datetime
             
+            # Update basic combat state
             battle_map["combat_state"] = combat_state
-            battle_map["last_updated"] = "now"  # Would be an actual timestamp
+            battle_map["last_updated"] = datetime.datetime.now().isoformat()
             
+            # Process combatant positions
+            if "combatants" in combat_state:
+                positions = {}
+                for combatant in combat_state["combatants"]:
+                    combatant_id = combatant.get("id", combatant.get("name", "unknown"))
+                    position = combatant.get("position", {"x": 0, "y": 0})
+                    status = combatant.get("status", "active")  # active, unconscious, dead, etc.
+                    
+                    positions[combatant_id] = {
+                        "position": position,
+                        "status": status,
+                        "initiative": combatant.get("initiative", 0),
+                        "hp": combatant.get("hp", {})
+                    }
+                
+                battle_map["combatant_positions"] = positions
+                
+            # Track active effects and conditions
+            if "effects" in combat_state:
+                active_effects = []
+                for effect in combat_state["effects"]:
+                    effect_data = {
+                        "name": effect.get("name", "Unknown Effect"),
+                        "area": effect.get("area", {"x": 0, "y": 0, "radius": 0}),
+                        "duration": effect.get("duration", 0),
+                        "effect_type": effect.get("type", "environmental"),
+                        "description": effect.get("description", "")
+                    }
+                    active_effects.append(effect_data)
+                
+                battle_map["active_effects"] = active_effects
+            
+            # Update turn order and initiative
+            if "turn_order" in combat_state:
+                battle_map["initiative_order"] = combat_state["turn_order"]
+                battle_map["current_turn"] = combat_state.get("current_turn", 0)
+                battle_map["round_number"] = combat_state.get("round", 1)
+            
+            # Track environmental changes
+            if "environmental_changes" in combat_state:
+                changes = combat_state["environmental_changes"]
+                if "environmental_state" not in battle_map:
+                    battle_map["environmental_state"] = {}
+                
+                # Update lighting conditions
+                if "lighting" in changes:
+                    battle_map["environmental_state"]["lighting"] = changes["lighting"]
+                
+                # Update visibility conditions (fog, darkness, etc.)
+                if "visibility" in changes:
+                    battle_map["environmental_state"]["visibility"] = changes["visibility"]
+                
+                # Update terrain modifications (broken walls, new obstacles, etc.)
+                if "terrain_modifications" in changes:
+                    if "terrain_modifications" not in battle_map["environmental_state"]:
+                        battle_map["environmental_state"]["terrain_modifications"] = []
+                    battle_map["environmental_state"]["terrain_modifications"].extend(
+                        changes["terrain_modifications"]
+                    )
+            
+            # Calculate map statistics for tactical information
+            battle_map["map_statistics"] = self._calculate_map_stats(battle_map)
+            
+            # Add update metadata
+            battle_map["update_metadata"] = {
+                "update_type": "combat_state_update",
+                "updates_applied": list(combat_state.keys()),
+                "timestamp": battle_map["last_updated"],
+                "map_version": battle_map.get("map_version", 1) + 1
+            }
+            battle_map["map_version"] = battle_map.get("map_version", 1) + 1
+            
+            logger.info(f"Successfully updated battle map {map_id} with combat state")
             return battle_map
             
         except Exception as e:
             logger.error(f"Error updating battle map: {str(e)}")
             return {"error": "Failed to update battle map"}
+    
+    def _calculate_map_stats(self, battle_map: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Calculate tactical statistics for the battle map.
+        
+        Args:
+            battle_map: The battle map data
+            
+        Returns:
+            Dict[str, Any]: Map statistics including combatant counts, area coverage, etc.
+        """
+        stats = {
+            "total_combatants": 0,
+            "active_combatants": 0,
+            "unconscious_combatants": 0,
+            "dead_combatants": 0,
+            "active_effects_count": 0,
+            "area_utilization": 0.0
+        }
+        
+        # Count combatants by status
+        if "combatant_positions" in battle_map:
+            positions = battle_map["combatant_positions"]
+            stats["total_combatants"] = len(positions)
+            
+            for combatant_data in positions.values():
+                status = combatant_data.get("status", "active")
+                if status == "active":
+                    stats["active_combatants"] += 1
+                elif status == "unconscious":
+                    stats["unconscious_combatants"] += 1
+                elif status == "dead":
+                    stats["dead_combatants"] += 1
+        
+        # Count active effects
+        if "active_effects" in battle_map:
+            stats["active_effects_count"] = len(battle_map["active_effects"])
+        
+        # Calculate area utilization (rough estimate)
+        if stats["total_combatants"] > 0:
+            # Assume each combatant occupies roughly 5x5 feet (1 square)
+            occupied_squares = stats["total_combatants"]
+            # Rough map size estimation (could be enhanced with actual map dimensions)
+            estimated_total_squares = 400  # 20x20 grid as default
+            stats["area_utilization"] = min(occupied_squares / estimated_total_squares, 1.0)
+        
+        return stats
 
 # Singleton instance
 combat_cartographer = CombatCartographerAgent()

@@ -122,7 +122,7 @@ class TestADRCompliance:
         with open(adr_path, "r") as f:
             content = f.read()
             assert "Character Progression" in content, "ADR should be about character progression"
-            assert "Status: accepted" in content.lower(), "ADR should be accepted"
+            assert "status: accepted" in content.lower(), "ADR should be accepted"
 
     def test_agent_database_integration(self):
         """Test that agents are integrated with persistent storage."""

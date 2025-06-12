@@ -1,0 +1,266 @@
+[1mdiff --git a/backend/app/agents/combat_cartographer_agent.py b/backend/app/agents/combat_cartographer_agent.py[m
+[1mindex 3ce563d..2029e7d 100644[m
+[1m--- a/backend/app/agents/combat_cartographer_agent.py[m
+[1m+++ b/backend/app/agents/combat_cartographer_agent.py[m
+[36m@@ -127,17 +127,138 @@[m [mclass CombatCartographerAgent:[m
+                 [m
+             battle_map = self.battle_maps[map_id][m
+             [m
+[31m-            # TODO: Implement logic to update the map with current combat state[m
+[31m-            # For now, we'll just return the existing map with a note[m
+[32m+[m[32m            # Implement logic to update the map with current combat state[m
+[32m+[m[32m            import datetime[m
+             [m
+[32m+[m[32m            # Update basic combat state[m
+             battle_map["combat_state"] = combat_state[m
+[31m-            battle_map["last_updated"] = "now"  # Would be an actual timestamp[m
+[32m+[m[32m            battle_map["last_updated"] = datetime.datetime.now().isoformat()[m
+             [m
+[32m+[m[32m            # Process combatant positions[m
+[32m+[m[32m            if "combatants" in combat_state:[m
+[32m+[m[32m                positions = {}[m
+[32m+[m[32m                for combatant in combat_state["combatants"]:[m
+[32m+[m[32m                    combatant_id = combatant.get("id", combatant.get("name", "unknown"))[m
+[32m+[m[32m                    position = combatant.get("position", {"x": 0, "y": 0})[m
+[32m+[m[32m                    status = combatant.get("status", "active")  # active, unconscious, dead, etc.[m
+[32m+[m[41m                    [m
+[32m+[m[32m                    positions[combatant_id] = {[m
+[32m+[m[32m                        "position": position,[m
+[32m+[m[32m                        "status": status,[m
+[32m+[m[32m                        "initiative": combatant.get("initiative", 0),[m
+[32m+[m[32m                        "hp": combatant.get("hp", {})[m
+[32m+[m[32m                    }[m
+[32m+[m[41m                [m
+[32m+[m[32m                battle_map["combatant_positions"] = positions[m
+[32m+[m[41m                [m
+[32m+[m[32m            # Track active effects and conditions[m
+[32m+[m[32m            if "effects" in combat_state:[m
+[32m+[m[32m                active_effects = [][m
+[32m+[m[32m                for effect in combat_state["effects"]:[m
+[32m+[m[32m                    effect_data = {[m
+[32m+[m[32m                        "name": effect.get("name", "Unknown Effect"),[m
+[32m+[m[32m                        "area": effect.get("area", {"x": 0, "y": 0, "radius": 0}),[m
+[32m+[m[32m                        "duration": effect.get("duration", 0),[m
+[32m+[m[32m                        "effect_type": effect.get("type", "environmental"),[m
+[32m+[m[32m                        "description": effect.get("description", "")[m
+[32m+[m[32m                    }[m
+[32m+[m[32m                    active_effects.append(effect_data)[m
+[32m+[m[41m                [m
+[32m+[m[32m                battle_map["active_effects"] = active_effects[m
+[32m+[m[41m            [m
+[32m+[m[32m            # Update turn order and initiative[m
+[32m+[m[32m            if "turn_order" in combat_state:[m
+[32m+[m[32m                battle_map["initiative_order"] = combat_state["turn_order"][m
+[32m+[m[32m                battle_map["current_turn"] = combat_state.get("current_turn", 0)[m
+[32m+[m[32m                battle_map["round_number"] = combat_state.get("round", 1)[m
+[32m+[m[41m            [m
+[32m+[m[32m            # Track environmental changes[m
+[32m+[m[32m            if "environmental_changes" in combat_state:[m
+[32m+[m[32m                changes = combat_state["environmental_changes"][m
+[32m+[m[32m                if "environmental_state" not in battle_map:[m
+[32m+[m[32m                    battle_map["environmental_state"] = {}[m
+[32m+[m[41m                [m
+[32m+[m[32m                # Update lighting conditions[m
+[32m+[m[32m                if "lighting" in changes:[m
+[32m+[m[32m                    battle_map["environmental_state"]["lighting"] = changes["lighting"][m
+[32m+[m[41m                [m
+[32m+[m[32m                # Update visibility conditions (fog, darkness, etc.)[m
+[32m+[m[32m                if "visibility" in changes:[m
+[32m+[m[32m                    battle_map["environmental_state"]["visibility"] = changes["visibility"][m
+[32m+[m[41m                [m
+[32m+[m[32m                # Update terrain modifications (broken walls, new obstacles, etc.)[m
+[32m+[m[32m                if "terrain_modifications" in changes:[m
+[32m+[m[32m                    if "terrain_modifications" not in battle_map["environmental_state"]:[m
+[32m+[m[32m                        battle_map["environmental_state"]["terrain_modifications"] = [][m
+[32m+[m[32m                    battle_map["environmental_state"]["terrain_modifications"].extend([m
+[32m+[m[32m                        changes["terrain_modifications"][m
+[32m+[m[32m                    )[m
+[32m+[m[41m            [m
+[32m+[m[32m            # Calculate map statistics for tactical information[m
+[32m+[m[32m            battle_map["map_statistics"] = self._calculate_map_stats(battle_map)[m
+[32m+[m[41m            [m
+[32m+[m[32m            # Add update metadata[m
+[32m+[m[32m            battle_map["update_metadata"] = {[m
+[32m+[m[32m                "update_type": "combat_state_update",[m
+[32m+[m[32m                "updates_applied": list(combat_state.keys()),[m
+[32m+[m[32m                "timestamp": battle_map["last_updated"],[m
+[32m+[m[32m                "map_version": battle_map.get("map_version", 1) + 1[m
+[32m+[m[32m            }[m
+[32m+[m[32m            battle_map["map_version"] = battle_map.get("map_version", 1) + 1[m
+[32m+[m[41m            [m
+[32m+[m[32m            logger.info(f"Successfully updated battle map {map_id} with combat state")[m
+             return battle_map[m
+             [m
+         except Exception as e:[m
+             logger.error(f"Error updating battle map: {str(e)}")[m
+             return {"error": "Failed to update battle map"}[m
+[32m+[m[41m    [m
+[32m+[m[32m    def _calculate_map_stats(self, battle_map: Dict[str, Any]) -> Dict[str, Any]:[m
+[32m+[m[32m        """[m
+[32m+[m[32m        Calculate tactical statistics for the battle map.[m
+[32m+[m[41m        [m
+[32m+[m[32m        Args:[m
+[32m+[m[32m            battle_map: The battle map data[m
+[32m+[m[41m            [m
+[32m+[m[32m        Returns:[m
+[32m+[m[32m            Dict[str, Any]: Map statistics including combatant counts, area coverage, etc.[m
+[32m+[m[32m        """[m
+[32m+[m[32m        stats = {[m
+[32m+[m[32m            "total_combatants": 0,[m
+[32m+[m[32m            "active_combatants": 0,[m
+[32m+[m[32m            "unconscious_combatants": 0,[m
+[32m+[m[32m            "dead_combatants": 0,[m
+[32m+[m[32m            "active_effects_count": 0,[m
+[32m+[m[32m            "area_utilization": 0.0[m
+[32m+[m[32m        }[m
+[32m+[m[41m        [m
+[32m+[m[32m        # Count combatants by status[m
+[32m+[m[32m        if "combatant_positions" in battle_map:[m
+[32m+[m[32m            positions = battle_map["combatant_positions"][m
+[32m+[m[32m            stats["total_combatants"] = len(positions)[m
+[32m+[m[41m            [m
+[32m+[m[32m            for combatant_data in positions.values():[m
+[32m+[m[32m                status = combatant_data.get("status", "active")[m
+[32m+[m[32m                if status == "active":[m
+[32m+[m[32m                    stats["active_combatants"] += 1[m
+[32m+[m[32m                elif status == "unconscious":[m
+[32m+[m[32m                    stats["unconscious_combatants"] += 1[m
+[32m+[m[32m                elif status == "dead":[m
+[32m+[m[32m                    stats["dead_combatants"] += 1[m
+[32m+[m[41m        [m
+[32m+[m[32m        # Count active effects[m
+[32m+[m[32m        if "active_effects" in battle_map:[m
+[32m+[m[32m            stats["active_effects_count"] = len(battle_map["active_effects"])[m
+[32m+[m[41m        [m
+[32m+[m[32m        # Calculate area utilization (rough estimate)[m
+[32m+[m[32m        if stats["total_combatants"] > 0:[m
+[32m+[m[32m            # Assume each combatant occupies roughly 5x5 feet (1 square)[m
+[32m+[m[32m            occupied_squares = stats["total_combatants"][m
+[32m+[m[32m            # Rough map size estimation (could be enhanced with actual map dimensions)[m
+[32m+[m[32m            estimated_total_squares = 400  # 20x20 grid as default[m
+[32m+[m[32m            stats["area_utilization"] = min(occupied_squares / estimated_total_squares, 1.0)[m
+[32m+[m[41m        [m
+[32m+[m[32m        return stats[m
+ [m
+ # Singleton instance[m
+ combat_cartographer = CombatCartographerAgent()[m
+[1mdiff --git a/backend/app/agents/dungeon_master_agent.py b/backend/app/agents/dungeon_master_agent.py[m
+[1mindex 7cfb9a3..7cd5705 100644[m
+[1m--- a/backend/app/agents/dungeon_master_agent.py[m
+[1m+++ b/backend/app/agents/dungeon_master_agent.py[m
+[36m@@ -218,21 +218,105 @@[m [mclass DungeonMasterAgent:[m
+         Returns:[m
+             Tuple[str, Dict[str, Any]]: Input type and extracted details[m
+         """[m
+[31m-        # TODO: Implement proper input analysis with Semantic Kernel[m
+[31m-        # For now, use a simple keyword-based approach[m
+[32m+[m[32m        try:[m
+[32m+[m[32m            # Enhanced input analysis using Azure OpenAI for better intent recognition[m
+[32m+[m[32m            from app.azure_openai_client import AzureOpenAIClient[m
+[32m+[m[41m            [m
+[32m+[m[32m            openai_client = AzureOpenAIClient()[m
+[32m+[m[41m            [m
+[32m+[m[32m            # Prepare analysis prompt for the AI[m
+[32m+[m[32m            analysis_prompt = f"""[m
+[32m+[m[32m            Analyze the following D&D player input and classify it into one of these categories:[m
+[32m+[m[32m            - "combat" (fighting, attacking, casting spells, initiative, combat actions)[m
+[32m+[m[32m            - "character" (inventory management, leveling up, equipment, abilities, character sheet updates)[m
+[32m+[m[32m            - "narrative" (exploration, roleplay, story actions, talking to NPCs)[m
+[32m+[m[41m            [m
+[32m+[m[32m            Player input: "{user_input}"[m
+[32m+[m[32m            Current context: {context.get('location', 'unknown location')}[m
+[32m+[m[41m            [m
+[32m+[m[32m            Respond with JSON format:[m
+[32m+[m[32m            {{"category": "combat|character|narrative", "action_type": "specific_action", "confidence": 0.8}}[m
+[32m+[m[32m            """[m
+[32m+[m[41m            [m
+[32m+[m[32m            messages = [[m
+[32m+[m[32m                {"role": "system", "content": "You are a D&D game assistant that analyzes player intent. Always respond with valid JSON."},[m
+[32m+[m[32m                {"role": "user", "content": analysis_prompt}[m
+[32m+[m[32m            ][m
+[32m+[m[41m            [m
+[32m+[m[32m            # Get AI analysis[m
+[32m+[m[32m            response = await openai_client.chat_completion(messages, max_tokens=150, temperature=0.3)[m
+[32m+[m[41m            [m
+[32m+[m[32m            # Parse AI response[m
+[32m+[m[32m            import json[m
+[32m+[m[32m            try:[m
+[32m+[m[32m                analysis = json.loads(response.strip())[m
+[32m+[m[32m                category = analysis.get("category", "narrative")[m
+[32m+[m[32m                action_type = analysis.get("action_type", "general")[m
+[32m+[m[32m                confidence = analysis.get("confidence", 0.5)[m
+[32m+[m[41m                [m
+[32m+[m[32m                # If confidence is too low, fall back to keyword analysis[m
+[32m+[m[32m                if confidence < 0.6:[m
+[32m+[m[32m                    raise ValueError("Low confidence, using fallback")[m
+[32m+[m[41m                    [m
+[32m+[m[32m                return category, {"action_type": action_type, "confidence": confidence, "method": "ai_analysis"}[m
+[32m+[m[41m                [m
+[32m+[m[32m            except (json.JSONDecodeError, ValueError):[m
+[32m+[m[32m                # Fall back to keyword analysis if AI parsing fails[m
+[32m+[m[32m                logger.warning("AI analysis failed, falling back to keyword-based approach")[m
+[32m+[m[41m                [m
+[32m+[m[32m        except Exception as e:[m
+[32m+[m[32m            logger.warning(f"Enhanced input analysis failed: {str(e)}, using fallback approach")[m
+         [m
+[32m+[m[32m        # Fallback: Enhanced keyword-based approach with better patterns[m
+         input_lower = user_input.lower()[m
+         [m
+[31m-        # Check for combat indicators[m
+[31m-        if any(term in input_lower for term in ["attack", "fight", "cast spell", "initiative", "roll"]):[m
+[31m-            return "combat", {"action_type": "attack"}[m
+[32m+[m[32m        # Combat indicators with more comprehensive patterns[m
+[32m+[m[32m        combat_keywords = [[m
+[32m+[m[32m            "attack", "fight", "cast spell", "initiative", "roll", "hit", "damage",[m[41m [m
+[32m+[m[32m            "sword", "bow", "magic", "spell", "fireball", "heal", "defend", "dodge",[m
+[32m+[m[32m            "weapon", "armor class", "saving throw", "d20", "strike", "shoot"[m
+[32m+[m[32m        ][m
+[32m+[m[32m        if any(term in input_lower for term in combat_keywords):[m
+[32m+[m[32m            # Determine specific combat action type[m
+[32m+[m[32m            if any(term in input_lower for term in ["cast", "spell", "magic", "fireball"]):[m
+[32m+[m[32m                action_type = "spell_casting"[m
+[32m+[m[32m            elif any(term in input_lower for term in ["attack", "hit", "strike", "sword", "bow"]):[m
+[32m+[m[32m                action_type = "physical_attack"[m
+[32m+[m[32m            elif any(term in input_lower for term in ["roll", "d20", "saving throw"]):[m
+[32m+[m[32m                action_type = "dice_roll"[m
+[32m+[m[32m            else:[m
+[32m+[m[32m                action_type = "combat_general"[m
+[32m+[m[32m            return "combat", {"action_type": action_type, "method": "keyword_analysis"}[m
+             [m
+[31m-        # Check for character update indicators[m
+[31m-        if any(term in input_lower for term in ["inventory", "equip", "level up", "spell", "ability"]):[m
+[31m-            return "character", {"update_type": "inventory"}[m
+[32m+[m[32m        # Character management indicators[m
+[32m+[m[32m        character_keywords = [[m
+[32m+[m[32m            "inventory", "equip", "level up", "spell", "ability", "stats", "character sheet",[m
+[32m+[m[32m            "equipment", "items", "backpack", "armor", "experience", "skills", "proficiency"[m
+[32m+[m[32m        ][m
+[32m+[m[32m        if any(term in input_lower for term in character_keywords):[m
+[32m+[m[32m            # Determine specific character action type[m
+[32m+[m[32m            if any(term in input_lower for term in ["inventory", "items", "equipment", "equip"]):[m
+[32m+[m[32m                action_type = "inventory_management"[m
+[32m+[m[32m            elif any(term in input_lower for term in ["level up", "experience", "stats"]):[m
+[32m+[m[32m                action_type = "character_advancement"[m
+[32m+[m[32m            elif any(term in input_lower for term in ["spell", "ability", "skills"]):[m
+[32m+[m[32m                action_type = "ability_management"[m
+[32m+[m[32m            else:[m
+[32m+[m[32m                action_type = "character_general"[m
+[32m+[m[32m            return "character", {"action_type": action_type, "method": "keyword_analysis"}[m
+[32m+[m[41m        [m
+[32m+[m[32m        # Movement and exploration indicators[m
+[32m+[m[32m        movement_keywords = ["go", "move", "walk", "run", "enter", "exit", "north", "south", "east", "west"][m
+[32m+[m[32m        if any(term in input_lower for term in movement_keywords):[m
+[32m+[m[32m            return "narrative", {"action_type": "movement", "method": "keyword_analysis"}[m
+[32m+[m[41m        [m
+[32m+[m[32m        # Social interaction indicators[m
+[32m+[m[32m        social_keywords = ["talk", "speak", "say", "tell", "ask", "persuade", "intimidate", "deceive"][m
+[32m+[m[32m        if any(term in input_lower for term in social_keywords):[m
+[32m+[m[32m            return "narrative", {"action_type": "social_interaction", "method": "keyword_analysis"}[m
+             [m
+[31m-        # Default to narrative[m
+[31m-        return "narrative", {}[m
+[32m+[m[32m        # Default to narrative with general exploration[m
+[32m+[m[32m        return "narrative", {"action_type": "exploration", "method": "keyword_analysis"}[m
+ [m
+ # Singleton instance[m
+ dungeon_master = DungeonMasterAgent()[m
