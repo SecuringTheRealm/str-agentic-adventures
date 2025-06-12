@@ -410,3 +410,6 @@ evidence.csv
 
 # Azure Developer CLI
 .azure/
+
+# Bicep generated files
+infra/main.json

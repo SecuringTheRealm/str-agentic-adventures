@@ -66,15 +66,18 @@ jobs:
       if: steps.check-secrets.outputs.secrets-available == 'true'
       run: |
         ENV_NAME="pr-${{ github.event.pull_request.number }}"
-        RESOURCE_GROUP="${ENV_NAME}-rg"
+        RESOURCE_GROUP="str_agentic_pr_${{ github.event.pull_request.number }}"
+        STACK_NAME="pr-${{ github.event.pull_request.number }}"
 
         echo "Checking for environment: $ENV_NAME"
         echo "Resource group: $RESOURCE_GROUP"
+        echo "Deployment stack: $STACK_NAME"
 
         # Check if resource group exists
         if az group show --name "$RESOURCE_GROUP" >/dev/null 2>&1; then
           echo "environment-exists=true" >> $GITHUB_OUTPUT
           echo "resource-group=$RESOURCE_GROUP" >> $GITHUB_OUTPUT
+          echo "stack-name=$STACK_NAME" >> $GITHUB_OUTPUT
 
           # Try to get environment URLs before cleanup
           RESOURCE_TOKEN=$(echo "pr-${{ github.event.pull_request.number }}" | sha256sum | cut -c1-8)
@@ -103,23 +106,30 @@ jobs:
           echo "Resource group $RESOURCE_GROUP not found"
         fi
 
-    - name: Cleanup PR Environment
+    - name: Cleanup PR Environment (Delete Deployment Stack)
+      id: cleanup-stack
+      if: steps.check-secrets.outputs.secrets-available == 'true' && steps.get-env-info.outputs.environment-exists == 'true'
+      uses: azure/bicep-deploy@v2
+      with:
+        type: deploymentStack
+        operation: delete
+        name: ${{ steps.get-env-info.outputs.stack-name }}
+        location: ${{ vars.AZURE_LOCATION || vars.AZURE_REGION || 'eastus' }}
+        scope: subscription
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      continue-on-error: true
+
+    - name: Set cleanup status
+      id: set-cleanup-status
       if: steps.check-secrets.outputs.secrets-available == 'true' && steps.get-env-info.outputs.environment-exists == 'true'
       run: |
-        ENV_NAME="pr-${{ github.event.pull_request.number }}"
-        RESOURCE_GROUP="${{ steps.get-env-info.outputs.resource-group }}"
-
-        echo "Cleaning up environment: $ENV_NAME"
-        echo "Deleting resource group: $RESOURCE_GROUP"
-
-        # Delete the entire resource group (this removes all resources in it)
-        az group delete \
-          --name "$RESOURCE_GROUP" \
-          --yes \
-          --no-wait
-
-        echo "Environment $ENV_NAME cleanup initiated successfully"
-        echo "cleanup-status=success" >> $GITHUB_OUTPUT
+        if [ "${{ steps.cleanup-stack.outcome }}" == "success" ]; then
+          echo "cleanup-status=success" >> $GITHUB_OUTPUT
+          echo "Environment cleanup completed successfully"
+        else
+          echo "cleanup-status=failed" >> $GITHUB_OUTPUT
+          echo "Environment cleanup failed, but continuing"
+        fi
 
     - name: Comment on PR (Success with URLs)
       if: steps.check-secrets.outputs.secrets-available == 'true' && steps.get-env-info.outputs.environment-exists == 'true' && (steps.get-env-info.outputs.backend-uri != '' || steps.get-env-info.outputs.frontend-uri != '')
