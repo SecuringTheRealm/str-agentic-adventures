@@ -8,13 +8,22 @@ name: "TODO to Issue"
     types: [closed]
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      MANUAL_COMMIT_REF:
+        description: "The SHA of the commit to get the diff for"
+        required: true
+      MANUAL_BASE_REF:
+        description: "Earlier SHA to compare against (optional)"
+        required: false
 
 jobs:
   todo-to-issue:
     runs-on: "ubuntu-latest"
     if: >
       github.event_name == 'push' ||
-      (github.event.pull_request.merged == true)
+      (github.event.pull_request.merged == true) ||
+      github.event_name == 'workflow_dispatch'
     permissions:
       issues: write
       contents: read
