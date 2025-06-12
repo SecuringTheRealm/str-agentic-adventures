@@ -31,12 +31,6 @@ jobs:
           integration:
             - 'frontend/**'
             - 'backend/**'
-            - 'docs/**'
-            - 'infra/**'
-            - '.github/workflows/**'
-            - '*.yml'
-            - '*.yaml'
-            - '*.json'
 
   frontend-tests:
     runs-on: ubuntu-latest
