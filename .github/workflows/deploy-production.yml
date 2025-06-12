@@ -13,12 +13,21 @@ env:
 
 jobs:
   deploy:
-    # Only run if Azure secrets are configured
-    if: ${{ secrets.AZURE_CLIENT_ID != '' && secrets.AZURE_TENANT_ID != '' && secrets.AZURE_SUBSCRIPTION_ID != '' }}
     runs-on: ubuntu-latest
     environment: production
     
     steps:
+    - name: Check Azure secrets
+      id: check-secrets
+      run: |
+        if [ -z "${{ secrets.AZURE_CLIENT_ID }}" ] || [ -z "${{ secrets.AZURE_TENANT_ID }}" ] || [ -z "${{ secrets.AZURE_SUBSCRIPTION_ID }}" ]; then
+          echo "::error::Azure secrets are not configured. Production deployment requires Azure credentials."
+          echo "secrets-available=false" >> $GITHUB_OUTPUT
+          exit 1
+        else
+          echo "secrets-available=true" >> $GITHUB_OUTPUT
+        fi
+        
     - name: Checkout code
       uses: actions/checkout@v4
       
