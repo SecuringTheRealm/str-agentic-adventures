@@ -26,9 +26,17 @@ param azureOpenAiEmbeddingDeployment string
 @description('Azure OpenAI DALL-E Deployment Name')
 param azureOpenAiDalleDeployment string
 
-@description('Storage connection string')
-@secure()
-param storageConnectionString string
+@description('Storage account name to retrieve connection string from')
+param storageAccountName string
+
+@description('Storage account resource group (defaults to current resource group)')
+param storageAccountResourceGroup string = resourceGroup().name
+
+// Reference existing storage account to retrieve connection string securely
+resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' existing = {
+  name: storageAccountName
+  scope: resourceGroup(storageAccountResourceGroup)
+}
 
 resource backendApp 'Microsoft.App/containerApps@2023-05-01' = {
   name: name
@@ -55,7 +63,7 @@ resource backendApp 'Microsoft.App/containerApps@2023-05-01' = {
         }
         {
           name: 'storage-connection-string'
-          value: storageConnectionString
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${storageAccount.listKeys().keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
         }
       ]
     }

@@ -67,5 +67,5 @@ resource imagesContainer 'Microsoft.Storage/storageAccounts/blobServices/contain
 
 output id string = storageAccount.id
 output name string = storageAccount.name
-// Note: Connection string includes sensitive data and should only be used in secure contexts
-output connectionString string = 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${storageAccount.listKeys().keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
+// Note: Connection string is now retrieved internally by modules that need it
+// This avoids exposing secrets in module outputs per Bicep security best practices
