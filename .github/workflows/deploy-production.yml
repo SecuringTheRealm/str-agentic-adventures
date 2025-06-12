@@ -197,7 +197,9 @@ jobs:
       run: |
         # Get Static Web App details
         RESOURCE_GROUP="${{ steps.infrastructure-deploy.outputs.AZURE_RESOURCE_GROUP }}"
-        SWA_NAME="production-frontend"
+        
+        # Use the actual Static Web App name from Bicep deployment output
+        SWA_NAME="${{ steps.infrastructure-deploy.outputs.AZURE_STATIC_WEB_APP_NAME }}"
 
         echo "Deploying frontend to Static Web App: $SWA_NAME"
         echo "Resource Group: $RESOURCE_GROUP"
