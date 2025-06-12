@@ -7,9 +7,9 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/setupTests.ts'],
     css: true,
-    testTimeout: 30000,
-    hookTimeout: 30000,
-    teardownTimeout: 10000,
+    testTimeout: 15000,  // Reduced from 30000
+    hookTimeout: 10000,  // Reduced from 30000
+    teardownTimeout: 5000,  // Reduced from 10000
     logHeapUsage: true,
     // Run tests sequentially to avoid memory issues
     sequence: {
@@ -19,5 +19,16 @@ export default defineConfig({
     // Force exit after tests complete
     forceRerunTriggers: [],
     fileParallelism: false,
+    // Pool options for better memory management
+    pool: 'threads',
+    poolOptions: {
+      threads: {
+        singleThread: true,
+      },
+    },
+    // Clear mocks between tests to prevent memory leaks
+    clearMocks: true,
+    // Better isolation between tests
+    isolate: true,
   },
 })

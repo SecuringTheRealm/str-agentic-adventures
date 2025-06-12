@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
 import * as api from "../services/api";
@@ -8,6 +8,20 @@ import GameInterface from "./GameInterface";
 // Mock the API module
 vi.mock("../services/api");
 const mockSendPlayerInput = vi.mocked(api.sendPlayerInput);
+
+// Mock the WebSocket hook
+vi.mock("../hooks/useWebSocket", () => ({
+	useWebSocket: () => ({
+		socket: null,
+		isConnected: false,
+		isConnecting: false,
+		error: null,
+		connect: vi.fn(),
+		disconnect: vi.fn(),
+		sendMessage: vi.fn(),
+		reconnectAttempts: 0,
+	}),
+}));
 
 // Mock child components
 vi.mock("./ChatBox", () => ({
@@ -248,12 +262,15 @@ describe("GameInterface", () => {
 		// Should be disabled during loading
 		expect(sendButton).toBeDisabled();
 
-		// Resolve to clean up
-		resolvePromise?.({
-			message: "Response",
-			images: [],
-			state_updates: {},
-			combat_updates: null,
+		// Resolve to clean up and wait for completion
+		await act(async () => {
+			resolvePromise?.({
+				message: "Response",
+				images: [],
+				state_updates: {},
+				combat_updates: null,
+			});
+			await promise;
 		});
 	});
 
