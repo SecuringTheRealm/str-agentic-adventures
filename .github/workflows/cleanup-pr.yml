@@ -67,7 +67,8 @@ jobs:
       run: |
         ENV_NAME="pr-${{ github.event.pull_request.number }}"
         RESOURCE_GROUP="str_agentic_pr_${{ github.event.pull_request.number }}"
-        STACK_NAME="pr-${{ github.event.pull_request.number }}"
+        LOCATION="${{ vars.AZURE_LOCATION || vars.AZURE_REGION || 'eastus2' }}"
+        STACK_NAME="pr-${{ github.event.pull_request.number }}-${LOCATION}"
 
         echo "Checking for environment: $ENV_NAME"
         echo "Resource group: $RESOURCE_GROUP"
@@ -106,20 +107,73 @@ jobs:
           echo "Resource group $RESOURCE_GROUP not found"
         fi
 
-    - name: Cleanup PR Environment (Delete Deployment Stack)
+    - name: Cleanup existing deployment stack (if exists)
       id: cleanup-stack
-      if: steps.check-secrets.outputs.secrets-available == 'true' && steps.get-env-info.outputs.environment-exists == 'true'
-      uses: azure/bicep-deploy@v2
-      with:
-        type: deploymentStack
-        operation: delete
-        name: ${{ steps.get-env-info.outputs.stack-name }}
-        location: ${{ vars.AZURE_LOCATION || vars.AZURE_REGION || 'eastus2' }}
-        scope: subscription
-        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-        action-on-unmanage-resources: delete
-        deny-settings-mode: none
-      continue-on-error: true
+      if: steps.check-secrets.outputs.secrets-available == 'true'
+      run: |
+        STACK_NAME="${{ steps.get-env-info.outputs.stack-name }}"
+        LOCATION="${{ steps.get-env-info.outputs.location }}"
+        
+        echo "Checking for existing deployment stack: $STACK_NAME"
+        
+        # Check if stack exists
+        if az stack show --name "$STACK_NAME" --location "$LOCATION" --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" >/dev/null 2>&1; then
+          # Get the current provisioning state
+          STACK_STATE=$(az stack show --name "$STACK_NAME" --location "$LOCATION" --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" --query "provisioningState" -o tsv 2>/dev/null || echo "Unknown")
+          echo "Found existing deployment stack $STACK_NAME with state: $STACK_STATE"
+          
+          # If stack is in a non-terminal state, wait for it to complete
+          if [[ "$STACK_STATE" == "Creating" || "$STACK_STATE" == "Updating" || "$STACK_STATE" == "Deleting" ]]; then
+            echo "Stack is in non-terminal state ($STACK_STATE). Waiting for completion..."
+            TIMEOUT=600  # 10 minutes for non-terminal states
+            ELAPSED=0
+            while true; do
+              CURRENT_STATE=$(az stack show --name "$STACK_NAME" --location "$LOCATION" --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" --query "provisioningState" -o tsv 2>/dev/null || echo "NotFound")
+              
+              if [[ "$CURRENT_STATE" == "NotFound" ]]; then
+                echo "Stack no longer exists"
+                break
+              elif [[ "$CURRENT_STATE" == "Succeeded" || "$CURRENT_STATE" == "Failed" ]]; then
+                echo "Stack reached terminal state: $CURRENT_STATE"
+                break
+              elif [ $ELAPSED -ge $TIMEOUT ]; then
+                echo "::warning::Timeout waiting for stack to reach terminal state. Current state: $CURRENT_STATE"
+                echo "::warning::Proceeding with createOrUpdate operation which should handle this case"
+                break
+              fi
+              
+              echo "Stack state: $CURRENT_STATE. Waiting... ($ELAPSED/$TIMEOUT seconds)"
+              sleep 30
+              ELAPSED=$((ELAPSED + 30))
+            done
+          fi
+          
+          # Now attempt deletion if stack still exists and is in terminal state
+          FINAL_STATE=$(az stack show --name "$STACK_NAME" --location "$LOCATION" --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" --query "provisioningState" -o tsv 2>/dev/null || echo "NotFound")
+          if [[ "$FINAL_STATE" != "NotFound" && "$FINAL_STATE" != "Deleting" ]]; then
+            echo "Attempting to delete stack in state: $FINAL_STATE"
+            az stack delete --name "$STACK_NAME" --location "$LOCATION" --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" --yes --no-wait
+            echo "Deletion initiated for stack $STACK_NAME"
+            
+            # Wait for deletion to complete (shorter timeout since we use createOrUpdate)
+            TIMEOUT=300  # 5 minutes
+            ELAPSED=0
+            while az stack show --name "$STACK_NAME" --location "$LOCATION" --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" >/dev/null 2>&1; do
+              if [ $ELAPSED -ge $TIMEOUT ]; then
+                echo "::warning::Timeout waiting for stack deletion. Using createOrUpdate to handle existing stack..."
+                break
+              fi
+              echo "Waiting for stack deletion to complete... ($ELAPSED/$TIMEOUT seconds)"
+              sleep 15
+              ELAPSED=$((ELAPSED + 15))
+            done
+          fi
+          
+          echo "Stack cleanup process completed"
+        else
+          echo "No existing deployment stack found"
+        fi
+      timeout-minutes: 15
 
     - name: Set cleanup status
       id: set-cleanup-status
