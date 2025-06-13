@@ -65,8 +65,68 @@ class Item(BaseModel):
     description: Optional[str] = None
     quantity: int = 1
     weight: Optional[float] = None
-    value: Optional[int] = None
+    value: Optional[int] = None  # Value in gold pieces
     properties: Optional[Dict[str, Any]] = None
+
+class ItemRarity(str, Enum):
+    COMMON = "common"
+    UNCOMMON = "uncommon"
+    RARE = "rare"
+    VERY_RARE = "very_rare"
+    LEGENDARY = "legendary"
+    ARTIFACT = "artifact"
+
+class ItemType(str, Enum):
+    WEAPON = "weapon"
+    ARMOR = "armor"
+    SHIELD = "shield"
+    TOOL = "tool"
+    CONSUMABLE = "consumable"
+    TREASURE = "treasure"
+    RING = "ring"
+    AMULET = "amulet"
+    WONDROUS = "wondrous"
+
+class Equipment(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    description: Optional[str] = None
+    item_type: ItemType
+    rarity: ItemRarity = ItemRarity.COMMON
+    weight: Optional[float] = None
+    value: Optional[int] = None
+    requires_attunement: bool = False
+    is_magical: bool = False
+    stat_modifiers: Dict[str, int] = {}  # e.g., {"strength": 2, "armor_class": 1}
+    special_abilities: List[str] = []
+    damage_dice: Optional[str] = None  # For weapons, e.g., "1d8"
+    damage_type: Optional[str] = None  # For weapons, e.g., "slashing"
+    armor_class: Optional[int] = None  # For armor/shields
+    properties: List[str] = []  # e.g., ["finesse", "light", "versatile"]
+
+class EquipmentSlot(str, Enum):
+    MAIN_HAND = "main_hand"
+    OFF_HAND = "off_hand"
+    TWO_HANDS = "two_hands"
+    HEAD = "head"
+    CHEST = "chest"
+    LEGS = "legs"
+    FEET = "feet"
+    HANDS = "hands"
+    RING_1 = "ring_1"
+    RING_2 = "ring_2"
+    NECK = "neck"
+    CLOAK = "cloak"
+
+class EquippedItem(BaseModel):
+    equipment_id: str
+    slot: EquipmentSlot
+    attuned: bool = False
+
+class InventorySlot(BaseModel):
+    item_id: str
+    quantity: int
+    equipped_slots: List[EquipmentSlot] = []  # Which slots this item is equipped in
 
 class Spell(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -79,6 +139,33 @@ class Spell(BaseModel):
     duration: str
     description: str
     requires_concentration: bool = False
+    available_classes: List[str] = []  # Classes that can learn this spell
+
+class SpellSlot(BaseModel):
+    level: int
+    total: int
+    used: int = 0
+    
+    @property
+    def remaining(self) -> int:
+        return max(0, self.total - self.used)
+
+class SpellCasting(BaseModel):
+    spellcasting_ability: str  # The ability used for spellcasting (e.g., "intelligence", "wisdom", "charisma")
+    spell_attack_bonus: int = 0
+    spell_save_dc: int = 8
+    spell_slots: List[SpellSlot] = []
+    known_spells: List[str] = []  # Spell IDs
+    prepared_spells: List[str] = []  # Subset of known spells that are prepared
+    cantrips_known: List[str] = []  # Cantrip IDs
+    concentration_spell: Optional[str] = None  # Currently concentrating spell ID
+    
+class ConcentrationSpell(BaseModel):
+    spell_id: str
+    character_id: str
+    started_at: datetime = Field(default_factory=datetime.now)
+    duration_rounds: Optional[int] = None
+    save_dc: int = 10  # Base concentration DC
 
 class CharacterSheet(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -95,8 +182,11 @@ class CharacterSheet(BaseModel):
     speed: int = 30
     proficiency_bonus: int = 2
     skills: Dict[str, bool] = {}
-    inventory: List[Item] = []
+    inventory: List[InventorySlot] = []
+    equipped_items: List[EquippedItem] = []
+    carrying_capacity: Optional[float] = None
     spells: List[Spell] = []
+    spellcasting: Optional[SpellCasting] = None
     features: List[Dict[str, Any]] = []
     backstory: Optional[str] = None
     # Progression tracking
@@ -127,6 +217,67 @@ class CombatEncounter(BaseModel):
     current_turn: Optional[int] = None
     turn_order: List[CombatParticipant] = []
     narrative_context: Dict[str, Any] = {}
+
+# NPC System Models
+class NPCPersonality(BaseModel):
+    traits: List[str] = []  # Personality traits
+    ideals: List[str] = []  # Core beliefs
+    bonds: List[str] = []   # Important connections
+    flaws: List[str] = []   # Character flaws
+    mannerisms: List[str] = []  # Speech patterns, habits
+    appearance: Optional[str] = None
+    motivations: List[str] = []
+
+class NPCRelationship(BaseModel):
+    character_id: str
+    relationship_type: str  # "friend", "enemy", "neutral", "ally", "rival"
+    trust_level: int = 0  # -100 to 100
+    notes: Optional[str] = None
+
+class NPCInteraction(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    npc_id: str
+    character_id: Optional[str] = None  # None for party interactions
+    interaction_type: str  # "conversation", "combat", "trade", "quest"
+    timestamp: datetime = Field(default_factory=datetime.now)
+    summary: str
+    outcome: Optional[str] = None
+    relationship_change: int = 0  # Change in trust/reputation
+
+class NPC(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    race: Optional[str] = None
+    gender: Optional[str] = None
+    age: Optional[int] = None
+    occupation: Optional[str] = None
+    location: Optional[str] = None
+    campaign_id: str
+    
+    # Personality and behavior
+    personality: NPCPersonality = NPCPersonality()
+    voice_description: Optional[str] = None
+    
+    # Game mechanics
+    level: int = 1
+    abilities: Optional[Abilities] = None
+    hit_points: Optional[HitPoints] = None
+    armor_class: Optional[int] = None
+    skills: Dict[str, int] = {}  # Skill bonuses
+    
+    # Relationships and interactions
+    relationships: List[NPCRelationship] = []
+    interaction_history: List[str] = []  # List of interaction IDs
+    
+    # Story relevance
+    importance: str = "minor"  # "minor", "major", "critical"
+    story_role: Optional[str] = None  # "merchant", "quest_giver", "antagonist", etc.
+    quest_involvement: List[str] = []  # Quest IDs
+    
+    # Status
+    is_alive: bool = True
+    current_mood: str = "neutral"  # "friendly", "hostile", "neutral", "suspicious"
+    notes: Optional[str] = None
 
 class Campaign(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -288,3 +439,146 @@ class SpellAttackBonusRequest(BaseModel):
     character_class: CharacterClass
     level: int
     spellcasting_ability_score: int
+
+# Spell-related request and response models
+class ManageSpellsRequest(BaseModel):
+    character_id: str
+    action: str  # "learn", "forget", "prepare", "unprepare"
+    spell_ids: List[str]
+
+class ManageSpellSlotsRequest(BaseModel):
+    character_id: str
+    action: str  # "use", "recover", "set"
+    slot_level: int
+    count: Optional[int] = 1
+
+class CastSpellRequest(BaseModel):
+    combat_id: str
+    character_id: str
+    spell_id: str
+    slot_level: int
+    target_ids: Optional[List[str]] = []
+    spell_attack_roll: Optional[int] = None
+
+class SpellListRequest(BaseModel):
+    character_class: Optional[CharacterClass] = None
+    spell_level: Optional[int] = None
+    school: Optional[str] = None
+
+class ConcentrationRequest(BaseModel):
+    character_id: str
+    action: str  # "start", "end", "check"
+    spell_id: Optional[str] = None
+    damage_taken: Optional[int] = None
+
+class SpellListResponse(BaseModel):
+    spells: List[Spell]
+    total_count: int
+
+class SpellCastingResponse(BaseModel):
+    success: bool
+    message: str
+    spell_effects: Dict[str, Any] = {}
+    concentration_broken: bool = False
+    slot_used: bool = False
+
+class ConcentrationCheckResponse(BaseModel):
+    success: bool
+    concentration_maintained: bool
+    dc: int
+    roll_result: Optional[int] = None
+    spell_ended: bool = False
+
+# Inventory-related request and response models
+class ManageEquipmentRequest(BaseModel):
+    character_id: str
+    action: str  # "equip", "unequip"
+    equipment_id: str
+    slot: Optional[EquipmentSlot] = None
+
+class EncumbranceRequest(BaseModel):
+    character_id: str
+
+class MagicalEffectsRequest(BaseModel):
+    character_id: str
+    item_id: str
+    action: str  # "apply", "remove"
+
+class ItemCatalogRequest(BaseModel):
+    item_type: Optional[ItemType] = None
+    rarity: Optional[ItemRarity] = None
+    min_value: Optional[int] = None
+    max_value: Optional[int] = None
+
+class EquipmentResponse(BaseModel):
+    success: bool
+    message: str
+    stat_changes: Dict[str, int] = {}
+    armor_class_change: Optional[int] = None
+
+class EncumbranceResponse(BaseModel):
+    character_id: str
+    current_weight: float
+    carrying_capacity: float
+    encumbrance_level: str  # "unencumbered", "encumbered", "heavily_encumbered"
+    speed_penalty: int = 0
+
+class ItemCatalogResponse(BaseModel):
+    items: List[Equipment]
+    total_count: int
+
+class MagicalEffectsResponse(BaseModel):
+    success: bool
+    message: str
+    active_effects: List[str]
+    stat_modifiers: Dict[str, int]
+
+# NPC-related request and response models
+class CreateNPCRequest(BaseModel):
+    campaign_id: str
+    name: str
+    race: Optional[str] = None
+    gender: Optional[str] = None
+    age: Optional[int] = None
+    occupation: Optional[str] = None
+    location: Optional[str] = None
+    importance: str = "minor"
+    story_role: Optional[str] = None
+
+class UpdateNPCRequest(BaseModel):
+    name: Optional[str] = None
+    occupation: Optional[str] = None
+    location: Optional[str] = None
+    current_mood: Optional[str] = None
+    notes: Optional[str] = None
+
+class NPCInteractionRequest(BaseModel):
+    npc_id: str
+    character_id: Optional[str] = None
+    interaction_type: str
+    summary: str
+    outcome: Optional[str] = None
+    relationship_change: int = 0
+
+class GenerateNPCStatsRequest(BaseModel):
+    npc_id: str
+    level: Optional[int] = None
+    role: str = "civilian"  # "civilian", "guard", "soldier", "spellcaster", "rogue"
+
+class NPCPersonalityRequest(BaseModel):
+    npc_id: str
+
+class NPCListResponse(BaseModel):
+    npcs: List[NPC]
+    total_count: int
+
+class NPCInteractionResponse(BaseModel):
+    success: bool
+    message: str
+    interaction_id: str
+    new_relationship_level: Optional[int] = None
+
+class NPCStatsResponse(BaseModel):
+    success: bool
+    message: str
+    generated_stats: Dict[str, Any]

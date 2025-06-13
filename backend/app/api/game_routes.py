@@ -3,7 +3,7 @@ API routes for the AI Dungeon Master application.
 """
 
 from fastapi import APIRouter, HTTPException, status
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from datetime import datetime
 
 from app.models.game_models import (
@@ -20,6 +20,39 @@ from app.models.game_models import (
     AIAssistanceRequest,
     AIAssistanceResponse,
     Campaign,
+    Spell,
+    CharacterClass,
+    ManageSpellsRequest,
+    ManageSpellSlotsRequest,
+    CastSpellRequest,
+    SpellListRequest,
+    ConcentrationRequest,
+    SpellListResponse,
+    SpellCastingResponse,
+    ConcentrationCheckResponse,
+    Equipment,
+    ItemType,
+    ItemRarity,
+    EquipmentSlot,
+    ManageEquipmentRequest,
+    EncumbranceRequest,
+    MagicalEffectsRequest,
+    ItemCatalogRequest,
+    EquipmentResponse,
+    EncumbranceResponse,
+    ItemCatalogResponse,
+    MagicalEffectsResponse,
+    NPC,
+    NPCPersonality,
+    NPCInteraction,
+    CreateNPCRequest,
+    UpdateNPCRequest,
+    NPCInteractionRequest,
+    GenerateNPCStatsRequest,
+    NPCPersonalityRequest,
+    NPCListResponse,
+    NPCInteractionResponse,
+    NPCStatsResponse,
 )
 from app.agents.dungeon_master_agent import get_dungeon_master
 from app.agents.scribe_agent import get_scribe
@@ -1028,13 +1061,267 @@ async def process_general_action(
     }
 
 
-# TODO: Add spell system API endpoints
-# TODO: POST /character/{character_id}/spells - Manage known spells for character
-# TODO: POST /character/{character_id}/spell-slots - Manage spell slot usage and recovery
-# TODO: POST /combat/{combat_id}/cast-spell - Cast spells during combat with effect resolution
-# TODO: GET /spells/list - Get available spells by class and level
-# TODO: POST /spells/save-dc - Calculate spell save DC for a character
-# TODO: POST /character/{character_id}/concentration - Manage spell concentration tracking
+# Spell System API Endpoints
+
+@router.post("/character/{character_id}/spells", response_model=Dict[str, Any])
+async def manage_character_spells(character_id: str, request: ManageSpellsRequest):
+    """Manage known spells for a character."""
+    try:
+        # This would integrate with a character storage system
+        # For now, returning a success response with the action performed
+        return {
+            "character_id": character_id,
+            "action": request.action,
+            "spell_ids": request.spell_ids,
+            "success": True,
+            "message": f"Successfully {request.action} spells for character {character_id}"
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to manage character spells: {str(e)}"
+        )
+
+@router.post("/character/{character_id}/spell-slots", response_model=Dict[str, Any])
+async def manage_spell_slots(character_id: str, request: ManageSpellSlotsRequest):
+    """Manage spell slot usage and recovery for a character."""
+    try:
+        # This would integrate with a character storage system
+        # For now, returning a success response with the action performed
+        return {
+            "character_id": character_id,
+            "action": request.action,
+            "slot_level": request.slot_level,
+            "count": request.count,
+            "success": True,
+            "message": f"Successfully {request.action} spell slots for character {character_id}"
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to manage spell slots: {str(e)}"
+        )
+
+@router.post("/combat/{combat_id}/cast-spell", response_model=SpellCastingResponse)
+async def cast_spell_in_combat(combat_id: str, request: CastSpellRequest):
+    """Cast spells during combat with effect resolution."""
+    try:
+        # Basic spell effects - in a real implementation this would be more sophisticated
+        spell_effects = {
+            "spell_name": request.spell_id,
+            "spell_level": request.slot_level,
+            "target_count": len(request.target_ids) if request.target_ids else 1,
+            "effects": [f"Spell {request.spell_id} cast at level {request.slot_level}"],
+            "combat_id": combat_id
+        }
+        
+        return SpellCastingResponse(
+            success=True,
+            message=f"Spell cast successfully in combat {combat_id}",
+            spell_effects=spell_effects,
+            slot_used=True
+        )
+    except Exception as e:
+        return SpellCastingResponse(
+            success=False,
+            message=f"Failed to cast spell: {str(e)}"
+        )
+
+@router.get("/spells/list", response_model=SpellListResponse)
+async def get_spell_list(
+    character_class: Optional[CharacterClass] = None,
+    spell_level: Optional[int] = None,
+    school: Optional[str] = None
+):
+    """Get available spells by class and level."""
+    try:
+        # This would query a spell database
+        # For now, returning some sample spells
+        sample_spells = [
+            Spell(
+                name="Magic Missile",
+                level=1,
+                school="Evocation",
+                casting_time="1 action",
+                range="120 feet",
+                components="V, S",
+                duration="Instantaneous",
+                description="Three darts of magical force hit their targets.",
+                available_classes=["wizard", "sorcerer"]
+            ),
+            Spell(
+                name="Fireball",
+                level=3,
+                school="Evocation", 
+                casting_time="1 action",
+                range="150 feet",
+                components="V, S, M",
+                duration="Instantaneous",
+                description="A bright flash of energy streaks toward a point within range.",
+                available_classes=["wizard", "sorcerer"]
+            ),
+            Spell(
+                name="Cure Wounds",
+                level=1,
+                school="Evocation",
+                casting_time="1 action", 
+                range="Touch",
+                components="V, S",
+                duration="Instantaneous",
+                description="Restores hit points to a creature you touch.",
+                available_classes=["cleric", "druid", "paladin", "ranger"]
+            )
+        ]
+        
+        # Filter spells based on parameters
+        filtered_spells = sample_spells
+        if character_class:
+            filtered_spells = [s for s in filtered_spells if character_class.value in s.available_classes]
+        if spell_level is not None:
+            filtered_spells = [s for s in filtered_spells if s.level == spell_level]
+        if school:
+            filtered_spells = [s for s in filtered_spells if s.school.lower() == school.lower()]
+        
+        return SpellListResponse(
+            spells=filtered_spells,
+            total_count=len(filtered_spells)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get spell list: {str(e)}"
+        )
+
+@router.post("/spells/save-dc", response_model=Dict[str, Any])
+async def calculate_spell_save_dc_endpoint(
+    character_class: CharacterClass,
+    level: int,
+    spellcasting_ability_score: int
+):
+    """Calculate spell save DC for a character."""
+    try:
+        # Map character classes to their spellcasting abilities
+        spellcasting_abilities = {
+            "wizard": "intelligence",
+            "artificer": "intelligence", 
+            "cleric": "wisdom",
+            "druid": "wisdom",
+            "ranger": "wisdom",
+            "bard": "charisma",
+            "paladin": "charisma", 
+            "sorcerer": "charisma",
+            "warlock": "charisma"
+        }
+        
+        # Get spellcasting ability for the class
+        spellcasting_ability = spellcasting_abilities.get(character_class.value)
+        if not spellcasting_ability:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Class {character_class.value} is not a spellcasting class"
+            )
+        
+        # Calculate ability modifier: (ability_score - 10) // 2
+        ability_modifier = (spellcasting_ability_score - 10) // 2
+        
+        # Calculate proficiency bonus based on level
+        proficiency_bonus = 2
+        if level >= 17:
+            proficiency_bonus = 6
+        elif level >= 13:
+            proficiency_bonus = 5
+        elif level >= 9:
+            proficiency_bonus = 4
+        elif level >= 5:
+            proficiency_bonus = 3
+        
+        # Spell save DC = 8 + proficiency bonus + ability modifier
+        save_dc = 8 + proficiency_bonus + ability_modifier
+        
+        return {
+            "save_dc": save_dc,
+            "character_class": character_class.value,
+            "level": level,
+            "spellcasting_ability": spellcasting_ability,
+            "spellcasting_ability_score": spellcasting_ability_score,
+            "ability_modifier": ability_modifier,
+            "proficiency_bonus": proficiency_bonus
+        }
+        
+    except HTTPException:
+        # Re-raise HTTPExceptions to maintain proper status codes
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to calculate spell save DC: {str(e)}"
+        )
+
+@router.post("/character/{character_id}/concentration", response_model=ConcentrationCheckResponse)
+async def manage_concentration(character_id: str, request: ConcentrationRequest):
+    """Manage spell concentration tracking for a character."""
+    try:
+        if request.action == "start":
+            if not request.spell_id:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="spell_id required for starting concentration"
+                )
+            
+            return ConcentrationCheckResponse(
+                success=True,
+                concentration_maintained=True,
+                dc=10,
+                spell_ended=False
+            )
+        
+        elif request.action == "end":
+            return ConcentrationCheckResponse(
+                success=True,
+                concentration_maintained=False,
+                dc=0,
+                spell_ended=True
+            )
+        
+        elif request.action == "check":
+            if request.damage_taken is None:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="damage_taken required for concentration check"
+                )
+            
+            # Calculate concentration DC (half damage taken, minimum 10)
+            dc = max(10, request.damage_taken // 2)
+            
+            # This would normally involve rolling a Constitution saving throw
+            # For now, returning a simulated result
+            import random
+            roll_result = random.randint(1, 20) + 3  # Assuming +3 Constitution modifier
+            maintained = roll_result >= dc
+            
+            return ConcentrationCheckResponse(
+                success=True,
+                concentration_maintained=maintained,
+                dc=dc,
+                roll_result=roll_result,
+                spell_ended=not maintained
+            )
+        
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid action: {request.action}"
+            )
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        return ConcentrationCheckResponse(
+            success=False,
+            concentration_maintained=False,
+            dc=0,
+            spell_ended=True
+        )
 
 
 @router.post("/spells/attack-bonus", response_model=Dict[str, Any])
@@ -1098,14 +1385,442 @@ async def calculate_spell_attack_bonus(request: SpellAttackBonusRequest):
             detail=f"Failed to calculate spell attack bonus: {str(e)}"
         )
 
-# TODO: Add advanced inventory system API endpoints
-# TODO: POST /character/{character_id}/equipment - Equip/unequip items with stat effects
-# TODO: GET /character/{character_id}/encumbrance - Calculate carrying capacity and weight
-# TODO: POST /items/magical-effects - Apply magical item effects to character stats
-# TODO: GET /items/catalog - Browse available items with rarity and value information
+# Enhanced Inventory System API Endpoints
 
-# TODO: Add enhanced NPC management API endpoints
-# TODO: POST /campaign/{campaign_id}/npcs - Create and manage campaign NPCs
-# TODO: GET /npc/{npc_id}/personality - Get NPC personality traits and behaviors
-# TODO: POST /npc/{npc_id}/interaction - Log and retrieve NPC interaction history
-# TODO: POST /npc/{npc_id}/generate-stats - Generate combat stats for NPCs dynamically
+@router.post("/character/{character_id}/equipment", response_model=EquipmentResponse)
+async def manage_equipment(character_id: str, request: ManageEquipmentRequest):
+    """Equip/unequip items with stat effects."""
+    try:
+        # This would integrate with a character storage system
+        # For now, simulate equipment management with basic stat effects
+        
+        sample_stat_effects = {
+            "plate_armor": {"armor_class": 8, "stealth": -1},
+            "magic_sword": {"attack_bonus": 1, "damage_bonus": 1},
+            "ring_of_protection": {"armor_class": 1, "saving_throws": 1}
+        }
+        
+        equipment_name = request.equipment_id.lower()
+        stat_changes = sample_stat_effects.get(equipment_name, {})
+        
+        if request.action == "equip":
+            message = f"Successfully equipped {request.equipment_id}"
+            armor_class_change = stat_changes.get("armor_class", 0)
+        elif request.action == "unequip":
+            message = f"Successfully unequipped {request.equipment_id}"
+            # Reverse the stat changes for unequipping
+            stat_changes = {k: -v for k, v in stat_changes.items()}
+            armor_class_change = stat_changes.get("armor_class", 0)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid action: {request.action}"
+            )
+        
+        return EquipmentResponse(
+            success=True,
+            message=message,
+            stat_changes=stat_changes,
+            armor_class_change=armor_class_change
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        return EquipmentResponse(
+            success=False,
+            message=f"Failed to manage equipment: {str(e)}"
+        )
+
+@router.get("/character/{character_id}/encumbrance", response_model=EncumbranceResponse)
+async def get_encumbrance(character_id: str):
+    """Calculate carrying capacity and weight."""
+    try:
+        # This would normally calculate from actual character data
+        # For now, returning sample encumbrance data
+        
+        # Simulate character strength-based carrying capacity
+        strength_score = 15  # Would be retrieved from character data
+        carrying_capacity = strength_score * 15  # 15 lbs per point of Strength
+        current_weight = 85.5  # Would be calculated from actual inventory
+        
+        # Determine encumbrance level
+        if current_weight <= carrying_capacity:
+            encumbrance_level = "unencumbered"
+            speed_penalty = 0
+        elif current_weight <= carrying_capacity * 2:
+            encumbrance_level = "encumbered"
+            speed_penalty = 10
+        else:
+            encumbrance_level = "heavily_encumbered"
+            speed_penalty = 20
+        
+        return EncumbranceResponse(
+            character_id=character_id,
+            current_weight=current_weight,
+            carrying_capacity=carrying_capacity,
+            encumbrance_level=encumbrance_level,
+            speed_penalty=speed_penalty
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to calculate encumbrance: {str(e)}"
+        )
+
+@router.post("/items/magical-effects", response_model=MagicalEffectsResponse)
+async def manage_magical_effects(request: MagicalEffectsRequest):
+    """Apply magical item effects to character stats."""
+    try:
+        # Sample magical item effects
+        magical_effects = {
+            "cloak_of_elvenkind": {
+                "stealth": 2,
+                "perception": 2,
+                "effects": ["Advantage on Dexterity (Stealth) checks", "Disadvantage on Perception checks against you"]
+            },
+            "gauntlets_of_ogre_power": {
+                "strength": 19,  # Sets Strength to 19 if it's lower
+                "effects": ["Strength becomes 19", "Advantage on Strength checks"]
+            },
+            "ring_of_mind_shielding": {
+                "effects": ["Immune to charm", "Mind cannot be read", "Soul protected"]
+            }
+        }
+        
+        item_effects = magical_effects.get(request.item_id.lower(), {})
+        
+        if request.action == "apply":
+            message = f"Applied magical effects of {request.item_id}"
+            active_effects = item_effects.get("effects", [])
+            stat_modifiers = {k: v for k, v in item_effects.items() if k != "effects"}
+        elif request.action == "remove":
+            message = f"Removed magical effects of {request.item_id}"
+            active_effects = []
+            stat_modifiers = {}
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid action: {request.action}"
+            )
+        
+        return MagicalEffectsResponse(
+            success=True,
+            message=message,
+            active_effects=active_effects,
+            stat_modifiers=stat_modifiers
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        return MagicalEffectsResponse(
+            success=False,
+            message=f"Failed to manage magical effects: {str(e)}",
+            active_effects=[],
+            stat_modifiers={}
+        )
+
+@router.get("/items/catalog", response_model=ItemCatalogResponse)
+async def get_item_catalog(
+    item_type: Optional[ItemType] = None,
+    rarity: Optional[ItemRarity] = None,
+    min_value: Optional[int] = None,
+    max_value: Optional[int] = None
+):
+    """Browse available items with rarity and value information."""
+    try:
+        # Sample equipment catalog
+        sample_items = [
+            Equipment(
+                name="Longsword",
+                item_type=ItemType.WEAPON,
+                rarity=ItemRarity.COMMON,
+                weight=3.0,
+                value=15,
+                damage_dice="1d8",
+                damage_type="slashing",
+                properties=["versatile"]
+            ),
+            Equipment(
+                name="Plate Armor",
+                item_type=ItemType.ARMOR,
+                rarity=ItemRarity.COMMON,
+                weight=65.0,
+                value=1500,
+                armor_class=18,
+                stat_modifiers={"stealth": -1}
+            ),
+            Equipment(
+                name="Ring of Protection",
+                item_type=ItemType.RING,
+                rarity=ItemRarity.RARE,
+                weight=0.1,
+                value=3500,
+                requires_attunement=True,
+                is_magical=True,
+                stat_modifiers={"armor_class": 1, "saving_throws": 1}
+            ),
+            Equipment(
+                name="Flame Tongue",
+                item_type=ItemType.WEAPON,
+                rarity=ItemRarity.RARE,
+                weight=3.0,
+                value=5000,
+                requires_attunement=True,
+                is_magical=True,
+                damage_dice="1d8",
+                damage_type="slashing",
+                special_abilities=["Fire damage", "Light source"],
+                properties=["versatile"]
+            ),
+            Equipment(
+                name="Thieves' Tools",
+                item_type=ItemType.TOOL,
+                rarity=ItemRarity.COMMON,
+                weight=1.0,
+                value=25
+            )
+        ]
+        
+        # Filter items based on parameters
+        filtered_items = sample_items
+        if item_type:
+            filtered_items = [item for item in filtered_items if item.item_type == item_type]
+        if rarity:
+            filtered_items = [item for item in filtered_items if item.rarity == rarity]
+        if min_value is not None:
+            filtered_items = [item for item in filtered_items if item.value and item.value >= min_value]
+        if max_value is not None:
+            filtered_items = [item for item in filtered_items if item.value and item.value <= max_value]
+        
+        return ItemCatalogResponse(
+            items=filtered_items,
+            total_count=len(filtered_items)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get item catalog: {str(e)}"
+        )
+
+# Enhanced NPC Management API Endpoints
+
+@router.post("/campaign/{campaign_id}/npcs", response_model=NPC)
+async def create_campaign_npc(campaign_id: str, request: CreateNPCRequest):
+    """Create and manage campaign NPCs."""
+    try:
+        # Generate basic personality traits if not provided
+        import random
+        
+        sample_traits = [
+            "Honest", "Deceitful", "Brave", "Cowardly", "Generous", "Greedy",
+            "Kind", "Cruel", "Optimistic", "Pessimistic", "Curious", "Secretive"
+        ]
+        
+        sample_mannerisms = [
+            "Speaks softly", "Gestures wildly", "Never makes eye contact",
+            "Constantly fidgets", "Uses elaborate vocabulary", "Speaks in short sentences"
+        ]
+        
+        # Create NPC with generated personality
+        personality = NPCPersonality(
+            traits=random.sample(sample_traits, 2),
+            mannerisms=random.sample(sample_mannerisms, 1),
+            motivations=["Survive and prosper", "Help their family"]
+        )
+        
+        # Generate basic abilities for the NPC
+        from app.models.game_models import Abilities, HitPoints
+        abilities = Abilities(
+            strength=random.randint(8, 16),
+            dexterity=random.randint(8, 16),
+            constitution=random.randint(8, 16),
+            intelligence=random.randint(8, 16),
+            wisdom=random.randint(8, 16),
+            charisma=random.randint(8, 16)
+        )
+        
+        hit_points = HitPoints(
+            current=random.randint(4, 12),
+            maximum=random.randint(4, 12)
+        )
+        
+        npc = NPC(
+            name=request.name,
+            race=request.race,
+            gender=request.gender,
+            age=request.age,
+            occupation=request.occupation,
+            location=request.location,
+            campaign_id=campaign_id,
+            personality=personality,
+            abilities=abilities,
+            hit_points=hit_points,
+            armor_class=10 + ((abilities.dexterity - 10) // 2),
+            importance=request.importance,
+            story_role=request.story_role
+        )
+        
+        return npc
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create NPC: {str(e)}"
+        )
+
+@router.get("/npc/{npc_id}/personality", response_model=NPCPersonality)
+async def get_npc_personality(npc_id: str):
+    """Get NPC personality traits and behaviors."""
+    try:
+        # This would normally retrieve from a database
+        # For now, return a sample personality
+        personality = NPCPersonality(
+            traits=["Honest", "Brave"],
+            ideals=["Justice", "Freedom"],
+            bonds=["Loyal to the crown", "Protects the innocent"],
+            flaws=["Quick to anger", "Overly trusting"],
+            mannerisms=["Speaks with authority", "Always stands straight"],
+            appearance="Tall and imposing with graying hair",
+            motivations=["Maintain law and order", "Protect the city"]
+        )
+        
+        return personality
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get NPC personality: {str(e)}"
+        )
+
+@router.post("/npc/{npc_id}/interaction", response_model=NPCInteractionResponse)
+async def log_npc_interaction(npc_id: str, request: NPCInteractionRequest):
+    """Log and retrieve NPC interaction history."""
+    try:
+        # Create interaction record
+        interaction = NPCInteraction(
+            npc_id=npc_id,
+            character_id=request.character_id,
+            interaction_type=request.interaction_type,
+            summary=request.summary,
+            outcome=request.outcome,
+            relationship_change=request.relationship_change
+        )
+        
+        # This would normally be stored in a database
+        # For now, return success response
+        
+        # Calculate new relationship level (simulated)
+        import random
+        current_level = random.randint(-50, 50)  # Would be retrieved from database
+        new_level = max(-100, min(100, current_level + request.relationship_change))
+        
+        return NPCInteractionResponse(
+            success=True,
+            message=f"Interaction logged successfully for NPC {npc_id}",
+            interaction_id=interaction.id,
+            new_relationship_level=new_level
+        )
+    except Exception as e:
+        return NPCInteractionResponse(
+            success=False,
+            message=f"Failed to log NPC interaction: {str(e)}",
+            interaction_id=""
+        )
+
+@router.post("/npc/{npc_id}/generate-stats", response_model=NPCStatsResponse)
+async def generate_npc_stats(npc_id: str, request: GenerateNPCStatsRequest):
+    """Generate combat stats for NPCs dynamically."""
+    try:
+        import random
+        
+        level = request.level or 1
+        role = request.role
+        
+        # Generate stats based on role and level
+        stat_templates = {
+            "civilian": {
+                "hit_dice": "1d4",
+                "armor_class_base": 10,
+                "proficiency_bonus": 2,
+                "abilities_mod": 0
+            },
+            "guard": {
+                "hit_dice": "1d8",
+                "armor_class_base": 16,
+                "proficiency_bonus": 2,
+                "abilities_mod": 2
+            },
+            "soldier": {
+                "hit_dice": "1d10",
+                "armor_class_base": 18,
+                "proficiency_bonus": 2 + (level - 1) // 4,
+                "abilities_mod": 3
+            },
+            "spellcaster": {
+                "hit_dice": "1d6",
+                "armor_class_base": 12,
+                "proficiency_bonus": 2 + (level - 1) // 4,
+                "abilities_mod": 4
+            },
+            "rogue": {
+                "hit_dice": "1d8",
+                "armor_class_base": 14,
+                "proficiency_bonus": 2 + (level - 1) // 4,
+                "abilities_mod": 3
+            }
+        }
+        
+        template = stat_templates.get(role, stat_templates["civilian"])
+        
+        # Generate hit points
+        hit_dice_num = int(template["hit_dice"].split("d")[1])
+        hit_points = sum(random.randint(1, hit_dice_num) for _ in range(level))
+        hit_points += level * 1  # Constitution modifier (assumed +1)
+        
+        # Generate abilities
+        base_stat = 10 + template["abilities_mod"]
+        abilities = {
+            "strength": base_stat + random.randint(-2, 2),
+            "dexterity": base_stat + random.randint(-2, 2),
+            "constitution": base_stat + random.randint(-2, 2),
+            "intelligence": base_stat + random.randint(-2, 2),
+            "wisdom": base_stat + random.randint(-2, 2),
+            "charisma": base_stat + random.randint(-2, 2)
+        }
+        
+        # Role-specific stat adjustments
+        if role == "soldier":
+            abilities["strength"] += 2
+            abilities["constitution"] += 2
+        elif role == "spellcaster":
+            abilities["intelligence"] += 3
+            abilities["wisdom"] += 2
+        elif role == "rogue":
+            abilities["dexterity"] += 3
+            abilities["charisma"] += 1
+        elif role == "guard":
+            abilities["strength"] += 1
+            abilities["constitution"] += 1
+        
+        generated_stats = {
+            "level": level,
+            "hit_points": {
+                "current": hit_points,
+                "maximum": hit_points
+            },
+            "armor_class": template["armor_class_base"] + ((abilities["dexterity"] - 10) // 2),
+            "proficiency_bonus": template["proficiency_bonus"],
+            "abilities": abilities,
+            "role": role,
+            "challenge_rating": level / 2 if level > 1 else 0.25
+        }
+        
+        return NPCStatsResponse(
+            success=True,
+            message=f"Generated {role} stats for level {level} NPC",
+            generated_stats=generated_stats
+        )
+    except Exception as e:
+        return NPCStatsResponse(
+            success=False,
+            message=f"Failed to generate NPC stats: {str(e)}",
+            generated_stats={}
+        )

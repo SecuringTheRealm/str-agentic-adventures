@@ -3,6 +3,7 @@ Dungeon Master Agent - The orchestrator agent that coordinates all other agents.
 """
 
 import logging
+import random
 from typing import Dict, Any, Tuple
 
 # Note: Updated for newer Semantic Kernel version
@@ -76,9 +77,119 @@ class DungeonMasterAgent:
             logger.info("Dungeon Master agent plugins registered successfully")
         except Exception as e:
             logger.error(f"Error registering Dungeon Master agent plugins: {str(e)}")
-            # TODO: Implement proper fallback behavior when plugin registration fails
-            # Consider graceful degradation or core DM functionality without full plugin suite
-            pass
+            # Implement proper fallback behavior when plugin registration fails
+            self._fallback_mode = True
+            logger.warning("Dungeon Master agent entering fallback mode - using core functionality without advanced plugins")
+            
+            # Initialize basic fallback components
+            self._initialize_fallback_components()
+
+    def _initialize_fallback_components(self):
+        """Initialize fallback components when plugin registration fails."""
+        try:
+            # Set fallback mode flag
+            self._fallback_mode = True
+            
+            # Initialize basic dice rolling functionality
+            self._fallback_dice = {
+                "d4": lambda n=1: [random.randint(1, 4) for _ in range(n)],
+                "d6": lambda n=1: [random.randint(1, 6) for _ in range(n)],
+                "d8": lambda n=1: [random.randint(1, 8) for _ in range(n)],
+                "d10": lambda n=1: [random.randint(1, 10) for _ in range(n)],
+                "d12": lambda n=1: [random.randint(1, 12) for _ in range(n)],
+                "d20": lambda n=1: [random.randint(1, 20) for _ in range(n)],
+                "d100": lambda n=1: [random.randint(1, 100) for _ in range(n)]
+            }
+            
+            # Initialize basic narrative responses
+            self._fallback_responses = {
+                "combat": [
+                    "The battle intensifies as your enemies press their attack!",
+                    "Steel clashes against steel in the heat of combat!",
+                    "The tide of battle shifts with each passing moment!"
+                ],
+                "exploration": [
+                    "You venture forth into the unknown, ready for whatever awaits.",
+                    "The path ahead is shrouded in mystery and possibility.",
+                    "Your footsteps echo as you explore this new area."
+                ],
+                "social": [
+                    "The conversation takes an interesting turn...",
+                    "Your words carry weight in this interaction.",
+                    "The NPCs listen carefully to what you have to say."
+                ],
+                "default": [
+                    "The adventure continues as you face new challenges.",
+                    "Your actions have consequences in this unfolding story.",
+                    "The world responds to your choices and decisions."
+                ]
+            }
+            
+            # Initialize basic campaign templates
+            self._fallback_campaign_templates = {
+                "fantasy": {
+                    "setting": "A classic fantasy world of magic and adventure",
+                    "themes": ["heroism", "magic", "ancient evils"],
+                    "locations": ["tavern", "dungeon", "forest", "castle"],
+                    "npcs": ["innkeeper", "guard", "wizard", "merchant"]
+                },
+                "modern": {
+                    "setting": "Contemporary world with hidden supernatural elements",
+                    "themes": ["mystery", "investigation", "urban fantasy"],
+                    "locations": ["city", "office", "warehouse", "apartment"],
+                    "npcs": ["detective", "informant", "scientist", "witness"]
+                },
+                "sci-fi": {
+                    "setting": "Futuristic space-faring civilization",
+                    "themes": ["technology", "exploration", "alien contact"],
+                    "locations": ["space station", "planet", "ship", "laboratory"],
+                    "npcs": ["captain", "engineer", "scientist", "alien"]
+                }
+            }
+            
+            logger.info("Fallback components initialized successfully")
+            
+        except Exception as e:
+            logger.error(f"Error initializing fallback components: {str(e)}")
+            # Even fallback initialization failed - set to minimal mode
+            self._fallback_mode = True
+            self._minimal_mode = True
+
+    def _fallback_dice_roll(self, dice_notation: str) -> Dict[str, Any]:
+        """Fallback dice rolling when plugins aren't available."""
+        import re
+        
+        try:
+            # Parse dice notation (e.g., "2d6+3", "1d20")
+            match = re.match(r"(\d+)?d(\d+)([+-]\d+)?", dice_notation.lower())
+            if not match:
+                return {"error": f"Invalid dice notation: {dice_notation}"}
+            
+            num_dice = int(match.group(1)) if match.group(1) else 1
+            die_size = int(match.group(2))
+            modifier = int(match.group(3)) if match.group(3) else 0
+            
+            # Roll the dice
+            rolls = [random.randint(1, die_size) for _ in range(num_dice)]
+            total = sum(rolls) + modifier
+            
+            return {
+                "notation": dice_notation,
+                "rolls": rolls,
+                "modifier": modifier,
+                "total": total,
+                "details": f"Rolled {rolls} + {modifier} = {total}"
+            }
+            
+        except Exception as e:
+            return {"error": f"Error rolling dice: {str(e)}"}
+
+    def _fallback_generate_response(self, context: str = "default") -> str:
+        """Generate a basic narrative response in fallback mode."""
+        import random
+        
+        responses = self._fallback_responses.get(context, self._fallback_responses["default"])
+        return random.choice(responses)
 
     async def create_campaign(self, campaign_data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -146,6 +257,10 @@ class DungeonMasterAgent:
             context = {}
 
         logger.info(f"Processing player input: {user_input}")
+
+        # Check if we're in fallback mode
+        if getattr(self, '_fallback_mode', False):
+            return await self._process_input_fallback(user_input, context)
 
         try:
             # Analyze the input type to determine which agents to invoke
@@ -252,6 +367,97 @@ class DungeonMasterAgent:
                 "message": "I'm sorry, I encountered an issue processing your request. Please try again.",
                 "error": str(e),
             }
+
+    async def _process_input_fallback(
+        self, user_input: str, context: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Process input in fallback mode with basic functionality."""
+        logger.info("Processing input in fallback mode")
+        
+        try:
+            # Basic input analysis
+            input_lower = user_input.lower()
+            
+            # Check for dice rolls
+            if any(dice in input_lower for dice in ["roll", "d4", "d6", "d8", "d10", "d12", "d20", "d100"]):
+                dice_result = self._handle_fallback_dice_roll(user_input)
+                return {
+                    "message": dice_result.get("details", "Dice rolled"),
+                    "dice_result": dice_result,
+                    "state_updates": {},
+                    "visuals": [],
+                    "combat_updates": None
+                }
+            
+            # Determine basic context
+            if any(word in input_lower for word in ["attack", "fight", "combat", "hit", "damage"]):
+                context_type = "combat"
+            elif any(word in input_lower for word in ["talk", "speak", "ask", "tell", "say"]):
+                context_type = "social"
+            elif any(word in input_lower for word in ["look", "search", "explore", "investigate"]):
+                context_type = "exploration"
+            else:
+                context_type = "default"
+            
+            # Generate basic response
+            message = self._fallback_generate_response(context_type)
+            
+            # Add context-specific details
+            if context_type == "combat":
+                message += f" You attempt to {user_input.lower()}."
+            elif context_type == "social":
+                message += f" You try to communicate your intentions."
+            elif context_type == "exploration":
+                message += f" You carefully examine your surroundings."
+            else:
+                message += f" You take action: {user_input}"
+            
+            return {
+                "message": message,
+                "narration": f"In this moment of adventure, {message.lower()}",
+                "state_updates": {"last_action": user_input},
+                "visuals": [],
+                "combat_updates": None,
+                "fallback_mode": True
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in fallback processing: {str(e)}")
+            return {
+                "message": "The adventure continues, though the path is unclear.",
+                "error": f"Fallback processing failed: {str(e)}",
+                "state_updates": {},
+                "visuals": [],
+                "combat_updates": None,
+                "fallback_mode": True
+            }
+
+    def _handle_fallback_dice_roll(self, user_input: str) -> Dict[str, Any]:
+        """Handle dice rolling in fallback mode."""
+        import re
+        
+        # Extract dice notation from input
+        dice_patterns = [
+            r"(\d*d\d+(?:[+-]\d+)?)",  # Standard notation like 2d6+3
+            r"roll\s+(\d*d\d+)",       # "roll 2d6"
+            r"(\d+)d(\d+)",            # Simple XdY format
+        ]
+        
+        for pattern in dice_patterns:
+            match = re.search(pattern, user_input.lower())
+            if match:
+                if len(match.groups()) == 1:
+                    dice_notation = match.group(1)
+                else:
+                    # Handle XdY format
+                    num_dice = match.group(1) or "1"
+                    die_size = match.group(2)
+                    dice_notation = f"{num_dice}d{die_size}"
+                
+                return self._fallback_dice_roll(dice_notation)
+        
+        # Default to d20 if no specific dice found
+        return self._fallback_dice_roll("1d20")
 
     async def _analyze_input(
         self, user_input: str, context: Dict[str, Any]
