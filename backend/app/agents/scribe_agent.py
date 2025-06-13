@@ -56,14 +56,18 @@ class ScribeAgent:
             Dict[str, Any]: The created character sheet
         """
         try:
-            character_id = character_data.get("id", "character_1")
+            import uuid
+
+            character_id = character_data.get(
+                "id", f"character_{str(uuid.uuid4())[:8]}"
+            )
 
             # Create basic character sheet structure
             character_sheet = {
                 "id": character_id,
                 "name": character_data.get("name", "Unnamed Adventurer"),
                 "race": character_data.get("race", "Human"),
-                "class": character_data.get("class", "Fighter"),
+                "character_class": character_data.get("class", "Fighter"),
                 "level": character_data.get("level", 1),
                 "experience": character_data.get("experience", 0),
                 "abilities": {
@@ -74,7 +78,7 @@ class ScribeAgent:
                     "wisdom": character_data.get("wisdom", 10),
                     "charisma": character_data.get("charisma", 10),
                 },
-                "hitPoints": {
+                "hit_points": {
                     "current": character_data.get("hitPoints", 10),
                     "maximum": character_data.get("hitPoints", 10),
                 },
@@ -99,7 +103,7 @@ class ScribeAgent:
                 "wizard": "1d6",
             }
             character_sheet["hit_dice"] = class_hit_dice.get(
-                character_sheet["class"].lower(), "1d8"
+                character_sheet["character_class"].lower(), "1d8"
             )
 
             # Store character in database
@@ -197,7 +201,7 @@ class ScribeAgent:
     async def level_up_character(
         self,
         character_id: str,
-        ability_improvements: Dict[str, int] = None,
+        ability_improvements: Dict[str, int] | None = None,
         use_average_hp: bool = True,
     ) -> Dict[str, Any]:
         """
@@ -246,7 +250,7 @@ class ScribeAgent:
             constitution_modifier = (constitution - 10) // 2
 
             # Calculate HP gain
-            character_class = character.get("class", "fighter")
+            character_class = character.get("character_class", "fighter")
             hp_result = rules_engine.calculate_level_up_hp(
                 character_class, constitution_modifier, use_average_hp
             )
@@ -392,12 +396,14 @@ class ScribeAgent:
 # Lazy singleton instance
 _scribe = None
 
+
 def get_scribe():
     """Get the scribe instance, creating it if necessary."""
     global _scribe
     if _scribe is None:
         _scribe = ScribeAgent()
     return _scribe
+
 
 # For backward compatibility during import-time checks
 scribe = None

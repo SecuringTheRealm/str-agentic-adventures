@@ -39,7 +39,9 @@ class DungeonMasterAgent:
         except Exception as e:
             # Check if this is a configuration error
             error_msg = str(e)
-            if "validation errors for Settings" in error_msg and ("azure_openai" in error_msg or "openai" in error_msg):
+            if "validation errors for Settings" in error_msg and (
+                "azure_openai" in error_msg or "openai" in error_msg
+            ):
                 raise ValueError(
                     "Azure OpenAI configuration is missing or invalid. "
                     "This agentic demo requires proper Azure OpenAI setup. "
@@ -62,9 +64,9 @@ class DungeonMasterAgent:
             narrative_memory = NarrativeMemoryPlugin()
             rules_engine = RulesEnginePlugin()
 
-            # Register plugins with the kernel
-            self.kernel.import_skill(narrative_memory, "Memory")
-            self.kernel.import_skill(rules_engine, "Rules")
+            # Register plugins with the kernel using the new API
+            self.kernel.add_plugin(narrative_memory, "Memory")
+            self.kernel.add_plugin(rules_engine, "Rules")
 
             # Add tools to the tool manager
             # self.tool_manager.add_tool(narrative_memory.remember_fact)
@@ -127,7 +129,7 @@ class DungeonMasterAgent:
             return {"error": "Failed to create campaign"}
 
     async def process_input(
-        self, user_input: str, context: Dict[str, Any] = None
+        self, user_input: str, context: Dict[str, Any] | None = None
     ) -> Dict[str, Any]:
         """
         Process user input and coordinate responses from specialized agents.
@@ -178,11 +180,15 @@ class DungeonMasterAgent:
             elif input_type == "character":
                 # Handle character-related input with Scribe agent
                 scribe_agent = get_scribe()
-                character_result = await scribe_agent.update_character(
-                    context.get("character_id"), input_details
-                )
-                response["message"] = "Your character has been updated."
-                response["state_updates"] = {"character": character_result}
+                character_id = context.get("character_id")
+                if character_id:
+                    character_result = await scribe_agent.update_character(
+                        character_id, input_details
+                    )
+                    response["message"] = "Your character has been updated."
+                    response["state_updates"] = {"character": character_result}
+                else:
+                    response["message"] = "No character ID provided for update."
 
             elif input_type == "combat":
                 # Combat functionality is temporarily disabled

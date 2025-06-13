@@ -413,3 +413,6 @@ evidence.csv
 
 # Bicep generated files
 infra/main.json
+
+# Local db for testing
+backend/app.db

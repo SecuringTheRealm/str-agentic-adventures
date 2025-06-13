@@ -1,6 +1,7 @@
 """
 Combat MC Agent - Manages combat encounters, tactics, and battle flow.
 """
+
 import logging
 import random
 from typing import Dict, Any, List
@@ -9,6 +10,7 @@ from typing import Dict, Any, List
 from app.kernel_setup import kernel_manager
 
 logger = logging.getLogger(__name__)
+
 
 class CombatMCAgent:
     """
@@ -29,20 +31,22 @@ class CombatMCAgent:
         try:
             # Import plugins
             from app.plugins.rules_engine_plugin import RulesEnginePlugin
-            
+
             # Create plugin instances
             rules_engine = RulesEnginePlugin()
-            
+
             # Register plugins with the kernel
-            self.kernel.import_skill(rules_engine, "Rules")
-            
+            self.kernel.add_plugin(rules_engine, "Rules")
+
             logger.info("Combat MC agent plugins registered successfully")
         except Exception as e:
             logger.error(f"Error registering Combat MC agent plugins: {str(e)}")
             # Continue without failing - we'll have reduced functionality
             pass
 
-    async def create_encounter(self, party_info: Dict[str, Any], narrative_context: Dict[str, Any]) -> Dict[str, Any]:
+    async def create_encounter(
+        self, party_info: Dict[str, Any], narrative_context: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """
         Create a balanced combat encounter based on party level and narrative context.
 
@@ -71,17 +75,21 @@ class CombatMCAgent:
 
             for i in range(num_enemies):
                 enemy_type = random.choice(enemy_types)
-                enemies.append({
-                    "id": f"enemy_{i+1}",
-                    "type": enemy_type,
-                    "level": max(1, int(avg_level * 0.75)),  # Slightly lower than party avg
-                    "hitPoints": {
-                        "current": 10 * max(1, int(avg_level * 0.75)),
-                        "maximum": 10 * max(1, int(avg_level * 0.75))
-                    },
-                    "initiative": 0,  # Will be rolled when combat starts
-                    "actions": self._get_actions_for_enemy_type(enemy_type)
-                })
+                enemies.append(
+                    {
+                        "id": f"enemy_{i + 1}",
+                        "type": enemy_type,
+                        "level": max(
+                            1, int(avg_level * 0.75)
+                        ),  # Slightly lower than party avg
+                        "hitPoints": {
+                            "current": 10 * max(1, int(avg_level * 0.75)),
+                            "maximum": 10 * max(1, int(avg_level * 0.75)),
+                        },
+                        "initiative": 0,  # Will be rolled when combat starts
+                        "actions": self._get_actions_for_enemy_type(enemy_type),
+                    }
+                )
 
             # Create the encounter structure
             encounter = {
@@ -90,7 +98,7 @@ class CombatMCAgent:
                 "enemies": enemies,
                 "round": 0,
                 "turn_order": [],  # Will be populated when initiative is rolled
-                "narrative_context": narrative_context
+                "narrative_context": narrative_context,
             }
 
             # Store the encounter
@@ -102,7 +110,9 @@ class CombatMCAgent:
             logger.error(f"Error creating encounter: {str(e)}")
             return {"error": "Failed to create encounter"}
 
-    async def start_combat(self, encounter_id: str, party_members: List[Dict[str, Any]]) -> Dict[str, Any]:
+    async def start_combat(
+        self, encounter_id: str, party_members: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
         """
         Start a combat encounter by rolling initiative and determining turn order.
 
@@ -126,23 +136,29 @@ class CombatMCAgent:
             for player in party_members:
                 dex_mod = (player.get("abilities", {}).get("dexterity", 10) - 10) // 2
                 initiative = random.randint(1, 20) + dex_mod
-                participants.append({
-                    "id": player.get("id"),
-                    "name": player.get("name", "Unknown Player"),
-                    "initiative": initiative,
-                    "type": "player"
-                })
+                participants.append(
+                    {
+                        "id": player.get("id"),
+                        "name": player.get("name", "Unknown Player"),
+                        "initiative": initiative,
+                        "type": "player",
+                    }
+                )
 
             # Enemies
             for enemy in encounter["enemies"]:
-                initiative = random.randint(1, 20) + random.randint(-2, 2)  # Simple initiative mod
+                initiative = random.randint(1, 20) + random.randint(
+                    -2, 2
+                )  # Simple initiative mod
                 enemy["initiative"] = initiative
-                participants.append({
-                    "id": enemy["id"],
-                    "name": f"{enemy['type']} {enemy['id'].split('_')[1]}",
-                    "initiative": initiative,
-                    "type": "enemy"
-                })
+                participants.append(
+                    {
+                        "id": enemy["id"],
+                        "name": f"{enemy['type']} {enemy['id'].split('_')[1]}",
+                        "initiative": initiative,
+                        "type": "enemy",
+                    }
+                )
 
             # Sort by initiative (highest first)
             participants.sort(key=lambda x: x["initiative"], reverse=True)
@@ -159,7 +175,9 @@ class CombatMCAgent:
             logger.error(f"Error starting combat: {str(e)}")
             return {"error": "Failed to start combat"}
 
-    async def process_combat_action(self, encounter_id: str, action_data: Dict[str, Any]) -> Dict[str, Any]:
+    async def process_combat_action(
+        self, encounter_id: str, action_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """
         Process an action in combat.
 
@@ -202,7 +220,7 @@ class CombatMCAgent:
             "dungeon": ["skeleton", "zombie", "orc"],
             "mountain": ["harpy", "troll", "ogre"],
             "city": ["thug", "cultist", "guard"],
-            "coastal": ["pirate", "sahuagin", "merfolk"]
+            "coastal": ["pirate", "sahuagin", "merfolk"],
         }
 
         return location_enemies.get(location.lower(), ["goblin", "bandit", "cultist"])
@@ -210,26 +228,24 @@ class CombatMCAgent:
     def _get_actions_for_enemy_type(self, enemy_type: str) -> List[Dict[str, Any]]:
         """Get appropriate actions for an enemy type."""
         # Simplified implementation
-        basic_actions = [
-            {
-                "name": "Attack",
-                "damage": "1d6+2",
-                "type": "melee"
-            }
-        ]
+        basic_actions = [{"name": "Attack", "damage": "1d6+2", "type": "melee"}]
 
         # Add special attacks for certain types
         if enemy_type in ["skeleton", "zombie"]:
-            basic_actions.append({
-                "name": "Undead Fortitude",
-                "description": "When reduced to 0 HP, roll a DC 10 CON save to drop to 1 HP instead",
-                "type": "special"
-            })
+            basic_actions.append(
+                {
+                    "name": "Undead Fortitude",
+                    "description": "When reduced to 0 HP, roll a DC 10 CON save to drop to 1 HP instead",
+                    "type": "special",
+                }
+            )
 
         return basic_actions
 
+
 # Lazy singleton instance
 _combat_mc = None
+
 
 def get_combat_mc():
     """Get the combat MC instance, creating it if necessary."""
@@ -237,6 +253,7 @@ def get_combat_mc():
     if _combat_mc is None:
         _combat_mc = CombatMCAgent()
     return _combat_mc
+
 
 # For backward compatibility during import-time checks
 combat_mc = None
