@@ -44,14 +44,14 @@ describe("CampaignCreation", () => {
 	it("shows all tone options", () => {
 		render(<CampaignCreation onCampaignCreated={mockOnCampaignCreated} />);
 
-		expect(screen.getByRole("option", { name: "Heroic" })).toBeInTheDocument();
-		expect(screen.getByRole("option", { name: "Gritty" })).toBeInTheDocument();
+		expect(screen.getByRole("option", { name: "🛡️ Heroic" })).toBeInTheDocument();
+		expect(screen.getByRole("option", { name: "⚔️ Gritty" })).toBeInTheDocument();
 		expect(
-			screen.getByRole("option", { name: "Lighthearted" }),
+			screen.getByRole("option", { name: "🃏 Humorous" }),
 		).toBeInTheDocument();
-		expect(screen.getByRole("option", { name: "Epic" })).toBeInTheDocument();
+		expect(screen.getByRole("option", { name: "💀 Dark" })).toBeInTheDocument();
 		expect(
-			screen.getByRole("option", { name: "Mysterious" }),
+			screen.getByRole("option", { name: "🔍 Mystery" }),
 		).toBeInTheDocument();
 	});
 
@@ -65,12 +65,12 @@ describe("CampaignCreation", () => {
 
 		await userEvent.type(nameInput, "The Lost Kingdom");
 		await userEvent.type(settingInput, "A mystical realm");
-		await userEvent.selectOptions(toneSelect, "epic");
+		await userEvent.selectOptions(toneSelect, "gritty");
 		await userEvent.type(homebrewInput, "Custom rule 1\nCustom rule 2");
 
 		expect(nameInput).toHaveValue("The Lost Kingdom");
 		expect(settingInput).toHaveValue("A mystical realm");
-		expect(toneSelect).toHaveValue("epic");
+		expect(toneSelect).toHaveValue("gritty");
 		expect(homebrewInput).toHaveValue("Custom rule 1\nCustom rule 2");
 	});
 
@@ -257,7 +257,7 @@ describe("CampaignCreation", () => {
 
 		// Should show error message to user
 		await waitFor(() => {
-			expect(screen.getByText(/error/i)).toBeInTheDocument();
+			expect(screen.getByText("Failed to create campaign. Please try again.")).toBeInTheDocument();
 		});
 
 		// Should re-enable the submit button after error
@@ -380,7 +380,7 @@ describe("CampaignCreation", () => {
 
 	it("handles very long input values", async () => {
 		const longName = "A".repeat(1000);
-		const longSetting = "B".repeat(2000);
+		const longSetting = "B".repeat(400); // Reduced to stay under 500 char limit
 
 		render(<CampaignCreation onCampaignCreated={mockOnCampaignCreated} />);
 
@@ -453,7 +453,7 @@ describe("CampaignCreation", () => {
 		});
 
 		await waitFor(() => {
-			expect(screen.getByText(/error/i)).toBeInTheDocument();
+			expect(screen.getByText("Failed to create campaign. Please try again.")).toBeInTheDocument();
 		});
 
 		// Form values should be preserved after error

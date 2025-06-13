@@ -23,6 +23,12 @@
   margin-bottom: 20px;
 }
 
+.form-group.optional {
+  border-left: 3px solid #6c757d;
+  padding-left: 15px;
+  margin-left: 5px;
+}
+
 .form-group label {
   display: block;
   margin-bottom: 8px;
@@ -30,6 +36,59 @@
   color: #E4BB1E; /* Gold for labels */
   font-family: 'Cinzel', serif;
   font-weight: 500;
+}
+
+.label-with-help {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.help-icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  background: #E4BB1E;
+  color: #2a3c47;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: help;
+  transition: background-color 0.3s ease;
+}
+
+.help-icon:hover {
+  background: #F4D03F;
+}
+
+.tooltip {
+  position: absolute;
+  top: -35px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #2a3c47;
+  color: #f4f1e8;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  border: 1px solid #E4BB1E;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+}
+
+.tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #E4BB1E;
 }
 
 .form-group input,
@@ -45,6 +104,12 @@
   transition: border-color 0.3s ease;
 }
 
+.form-group input.error,
+.form-group textarea.error {
+  border-color: #dc3545;
+  box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2);
+}
+
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
@@ -53,9 +118,51 @@
   box-shadow: 0 0 0 2px rgba(228, 187, 30, 0.2);
 }
 
+.optional-field {
+  border-color: #6c757d !important;
+}
+
+.optional-field:focus {
+  border-color: #E4BB1E !important;
+  box-shadow: 0 0 0 2px rgba(228, 187, 30, 0.2) !important;
+}
+
+.textarea-container {
+  position: relative;
+}
+
 .form-group textarea {
   min-height: 100px;
   resize: vertical;
+}
+
+.character-count {
+  position: absolute;
+  bottom: 8px;
+  right: 12px;
+  font-size: 12px;
+  color: #999;
+  background: rgba(42, 60, 71, 0.9);
+  padding: 2px 6px;
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+.custom-select select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E4BB1E' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 40px;
+}
+
+.validation-error {
+  color: #dc3545;
+  font-size: 14px;
+  margin-top: 5px;
+  padding: 5px 0;
+  font-family: 'Cinzel', serif;
 }
 
 .create-button {
@@ -72,12 +179,15 @@
   transition: all 0.3s ease;
   border: 2px solid #E4BB1E; /* Gold border */
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  position: relative;
+  overflow: hidden;
 }
 
-.create-button:hover {
+.create-button:hover:not(:disabled) {
   background: linear-gradient(135deg, #D67C2D, #E4953F); /* Lighter wood on hover */
   box-shadow: 0 4px 8px rgba(228, 187, 30, 0.3);
   transform: translateY(-1px);
+  filter: brightness(1.1);
 }
 
 .create-button:disabled {
@@ -86,6 +196,63 @@
   border-color: #788070;
   transform: none;
   box-shadow: none;
+}
+
+.button-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.create-button.submitting {
+  background: linear-gradient(135deg, #6c757d, #868e96);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(228, 187, 30, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(228, 187, 30, 0.6);
+  }
+}
+
+.button-checkmark {
+  display: none;
+  color: #28a745;
+  font-weight: bold;
+}
+
+.create-button.success .button-checkmark {
+  display: inline;
+  animation: checkmark-appear 0.3s ease-in;
+}
+
+@keyframes checkmark-appear {
+  0% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .error-message {
