@@ -382,10 +382,8 @@ class DungeonMasterAgent:
         logger.info("Processing input in fallback mode")
         
         try:
-            # Basic input analysis
+            # Check for dice rolls first
             input_lower = user_input.lower()
-            
-            # Check for dice rolls
             if any(dice in input_lower for dice in ["roll", "d4", "d6", "d8", "d10", "d12", "d20", "d100"]):
                 dice_result = self._handle_fallback_dice_roll(user_input)
                 return {
@@ -396,28 +394,34 @@ class DungeonMasterAgent:
                     "combat_updates": None
                 }
             
-            # Determine basic context
-            if any(word in input_lower for word in ["attack", "fight", "combat", "hit", "damage"]):
-                context_type = "combat"
-            elif any(word in input_lower for word in ["talk", "speak", "ask", "tell", "say"]):
-                context_type = "social"
-            elif any(word in input_lower for word in ["look", "search", "explore", "investigate"]):
-                context_type = "exploration"
-            else:
-                context_type = "default"
+            # Use the full input analysis even in fallback mode (just without AI)
+            input_type, input_details = await self._analyze_input(user_input, context)
             
-            # Generate basic response
-            message = self._fallback_generate_response(context_type)
-            
-            # Add context-specific details
-            if context_type == "combat":
+            # Generate appropriate response based on input type
+            if input_type == "combat":
+                action_type = input_details.get("action_type", "combat_general")
+                if action_type == "spell_casting":
+                    message = "You focus your magical energy and cast your spell!"
+                elif action_type == "physical_attack":
+                    message = "You strike with precision and force!"
+                else:
+                    message = "The battle intensifies as combat unfolds!"
                 message += f" You attempt to {user_input.lower()}."
-            elif context_type == "social":
-                message += f" You try to communicate your intentions."
-            elif context_type == "exploration":
-                message += f" You carefully examine your surroundings."
+                
+            elif input_type == "character":
+                message = "You manage your character's capabilities and equipment."
+                
+            elif input_type == "narrative":
+                action_type = input_details.get("action_type", "exploration")
+                if action_type == "social_interaction":
+                    message = "The conversation develops as you engage with others. You try to communicate your intentions."
+                elif action_type == "movement":
+                    message = "You move carefully through the environment, taking in your new surroundings."
+                else:
+                    message = "You explore the area around you, alert for anything of interest. You carefully examine your surroundings."
             else:
-                message += f" You take action: {user_input}"
+                # Default response
+                message = f"The adventure continues as you take action: {user_input}"
             
             return {
                 "message": message,
