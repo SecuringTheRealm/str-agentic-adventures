@@ -23,8 +23,8 @@ describe("CharacterSheet", () => {
 			maximum: 50,
 		},
 		inventory: [
-			{ name: "Longsword", quantity: 1 },
-			{ name: "Health Potion", quantity: 3 },
+			{ name: "Longsword", quantity: 1, rarity: "uncommon", value: 1500 },
+			{ name: "Health Potion", quantity: 3, rarity: "common", value: 50 },
 		],
 	};
 
@@ -134,8 +134,40 @@ describe("CharacterSheet", () => {
 		render(<CharacterSheet character={mockCharacter} />);
 
 		expect(screen.getByText("Inventory")).toBeInTheDocument();
-		expect(screen.getByText("Longsword (1)")).toBeInTheDocument();
-		expect(screen.getByText("Health Potion (3)")).toBeInTheDocument();
+		expect(screen.getByText("Longsword")).toBeInTheDocument();
+		expect(screen.getByText("Health Potion")).toBeInTheDocument();
+		expect(screen.getByText("x3")).toBeInTheDocument();
+	});
+
+	it("renders inventory item rarity and value", () => {
+		render(<CharacterSheet character={mockCharacter} />);
+
+		// Check rarity displays
+		expect(screen.getByText("Uncommon")).toBeInTheDocument();
+		expect(screen.getByText("Common")).toBeInTheDocument();
+		
+		// Check value displays  
+		expect(screen.getByText("15 gp")).toBeInTheDocument(); // 1500 cp = 15 gp
+		expect(screen.getByText("50 cp")).toBeInTheDocument();
+	});
+
+	it("handles items without rarity or value", () => {
+		const characterWithBasicItems: Character = {
+			...mockCharacter,
+			inventory: [
+				{ name: "Basic Sword", quantity: 1 },
+				{ name: "Rope", quantity: 2, value: 200 }, // Only value
+				{ name: "Magic Ring", quantity: 1, rarity: "rare" }, // Only rarity
+			],
+		};
+
+		render(<CharacterSheet character={characterWithBasicItems} />);
+
+		expect(screen.getByText("Basic Sword")).toBeInTheDocument();
+		expect(screen.getByText("Rope")).toBeInTheDocument();
+		expect(screen.getByText("Magic Ring")).toBeInTheDocument();
+		expect(screen.getByText("2 gp")).toBeInTheDocument(); // 200 cp = 2 gp
+		expect(screen.getByText("Rare")).toBeInTheDocument();
 	});
 
 	it("handles extreme ability scores correctly", () => {

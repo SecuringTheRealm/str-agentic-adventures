@@ -66,6 +66,7 @@ class Item(BaseModel):
     quantity: int = 1
     weight: Optional[float] = None
     value: Optional[int] = None
+    rarity: Optional[str] = None
     properties: Optional[Dict[str, Any]] = None
 
 class Spell(BaseModel):

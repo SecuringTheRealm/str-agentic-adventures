@@ -19,6 +19,8 @@ export interface InventoryItem {
 	quantity: number;
 	type?: string;
 	description?: string;
+	value?: number;
+	rarity?: string;
 }
 
 export interface CharacterCreateRequest {

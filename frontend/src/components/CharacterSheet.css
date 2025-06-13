@@ -118,16 +118,44 @@
   justify-content: space-between;
   border: 1px solid #B15005; /* Wood border */
   font-family: 'Cinzel', serif;
+  align-items: center;
+}
+
+.item-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 2px;
 }
 
 .item-name {
-  flex: 1;
   color: #f4f1e8; /* Light text */
+  font-weight: 500;
+}
+
+.item-rarity {
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.item-details {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .item-quantity {
   color: #E4BB1E; /* Gold for quantities */
   font-weight: bold;
+  font-family: 'Cinzel', serif;
+}
+
+.item-value {
+  color: #D4AF37; /* Gold color for value */
+  font-size: 0.85rem;
+  font-weight: 500;
   font-family: 'Cinzel', serif;
 }
 

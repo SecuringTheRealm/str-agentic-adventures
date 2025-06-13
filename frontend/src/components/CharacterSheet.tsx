@@ -1,5 +1,10 @@
 import type React from "react";
 import type { Character } from "../services/api";
+import {
+	formatItemValue,
+	getRarityColor,
+	getRarityDisplayName,
+} from "../utils/itemUtils";
 import "./CharacterSheet.css";
 
 interface CharacterSheetProps {
@@ -96,15 +101,31 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
 				{/* TODO: Add equipment slot management (armor, weapons, rings, etc.) */}
 				{/* TODO: Add item weight tracking and encumbrance calculations */}
 				{/* TODO: Add magical item effects display and stat modifications */}
-				{/* TODO: Add item rarity indicators and value displays */}
 				<ul className="inventory-list">
 					{character.inventory && character.inventory.length > 0 ? (
 						character.inventory.map((item, index) => (
 							<li key={`${item.name}-${index}`} className="inventory-item">
-								<span className="item-name">{item.name}</span>
-								{item.quantity > 1 && (
-									<span className="item-quantity">x{item.quantity}</span>
-								)}
+								<div className="item-info">
+									<span className="item-name">{item.name}</span>
+									{item.rarity && (
+										<span
+											className="item-rarity"
+											style={{ color: getRarityColor(item.rarity) }}
+										>
+											{getRarityDisplayName(item.rarity)}
+										</span>
+									)}
+								</div>
+								<div className="item-details">
+									{item.quantity > 1 && (
+										<span className="item-quantity">x{item.quantity}</span>
+									)}
+									{item.value !== undefined && (
+										<span className="item-value">
+											{formatItemValue(item.value)}
+										</span>
+									)}
+								</div>
 							</li>
 						))
 					) : (
