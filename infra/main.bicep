@@ -76,23 +76,8 @@ module storage 'modules/storage.bicep' = {
   }
 }
 
-// Create Backend Container App
-module backend 'modules/backend.bicep' = {
-  name: 'backend'
-  scope: rg
-  params: {
-    name: '${environmentName}-backend-${resourceToken}'
-    location: location
-    tags: tags
-    containerAppsEnvironmentId: containerAppsEnvironment.outputs.id
-    azureOpenAiApiKey: azureOpenAiApiKey
-    azureOpenAiEndpoint: azureOpenAiEndpoint
-    azureOpenAiChatDeployment: azureOpenAiChatDeployment
-    azureOpenAiEmbeddingDeployment: azureOpenAiEmbeddingDeployment
-    azureOpenAiDalleDeployment: azureOpenAiDalleDeployment
-    storageAccountName: storage.outputs.name
-  }
-}
+// Backend Container App will be deployed separately via GitHub Actions workflow
+// This ensures the latest code is always deployed without requiring Bicep updates
 
 // Create Frontend Static Web App
 module frontend 'modules/frontend.bicep' = {
@@ -102,7 +87,7 @@ module frontend 'modules/frontend.bicep' = {
     name: '${environmentName}-frontend-${resourceToken}'
     location: location
     tags: tags
-    backendUrl: '${backend.outputs.uri}/api'
+    backendUrl: 'https://production-backend.${containerAppsEnvironment.outputs.defaultDomain}/api'
   }
 }
 
@@ -111,7 +96,6 @@ output AZURE_LOCATION string = location
 output AZURE_TENANT_ID string = tenant().tenantId
 output AZURE_SUBSCRIPTION_ID string = subscription().subscriptionId
 
-output BACKEND_URI string = backend.outputs.uri
 output FRONTEND_URI string = frontend.outputs.uri
 
 output AZURE_RESOURCE_GROUP string = rg.name

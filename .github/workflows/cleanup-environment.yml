@@ -1,0 +1,272 @@
+---
+name: Cleanup Environment (Reusable)
+# Reusable workflow for cleaning up environments
+# Handles both CLI-deployed container apps and Bicep deployment stacks
+
+on:
+  workflow_call:
+    inputs:
+      environment-name:
+        description: 'Environment name (pr-{number})'
+        required: true
+        type: string
+      resource-group-name:
+        description: 'Resource group name'
+        required: true
+        type: string
+      location:
+        description: 'Azure region'
+        required: true
+        type: string
+      stack-name:
+        description: 'Deployment stack name'
+        required: true
+        type: string
+      container-app-name:
+        description: 'Container app name to cleanup'
+        required: true
+        type: string
+    secrets:
+      AZURE_CLIENT_ID:
+        required: false
+      AZURE_TENANT_ID:
+        required: false
+      AZURE_SUBSCRIPTION_ID:
+        required: true
+      AZURE_CREDENTIALS:
+        required: false
+    outputs:
+      cleanup-status:
+        description: 'Cleanup status'
+        value: ${{ jobs.cleanup.outputs.cleanup-status }}
+      backend-uri:
+        description: 'Backend URI (before cleanup)'
+        value: ${{ jobs.cleanup.outputs.backend-uri }}
+      frontend-uri:
+        description: 'Frontend URI (before cleanup)'
+        value: ${{ jobs.cleanup.outputs.frontend-uri }}
+
+# Required permissions for OIDC authentication with Azure
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    outputs:
+      cleanup-status: ${{ steps.set-cleanup-status.outputs.cleanup-status }}
+      backend-uri: ${{ steps.get-env-info.outputs.backend-uri }}
+      frontend-uri: ${{ steps.get-env-info.outputs.frontend-uri }}
+
+    steps:
+    - name: Check Azure secrets
+      id: check-secrets
+      run: |
+        # Check if we have federated credentials
+        if [ -n "${{ secrets.AZURE_CLIENT_ID }}" ] && [ -n "${{ secrets.AZURE_TENANT_ID }}" ] && [ -n "${{ secrets.AZURE_SUBSCRIPTION_ID }}" ]; then
+          echo "secrets-available=true" >> $GITHUB_OUTPUT
+          echo "use-federated-auth=true" >> $GITHUB_OUTPUT
+          echo "use-service-principal=false" >> $GITHUB_OUTPUT
+        # Check if we have service principal credentials
+        elif [ -n "${{ secrets.AZURE_CREDENTIALS }}" ]; then
+          echo "secrets-available=true" >> $GITHUB_OUTPUT
+          echo "use-federated-auth=false" >> $GITHUB_OUTPUT
+          echo "use-service-principal=true" >> $GITHUB_OUTPUT
+        else
+          echo "::warning::Azure secrets are not configured. Skipping cleanup."
+          echo "secrets-available=false" >> $GITHUB_OUTPUT
+          echo "use-federated-auth=false" >> $GITHUB_OUTPUT
+          echo "use-service-principal=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Checkout code
+      if: steps.check-secrets.outputs.secrets-available == 'true'
+      uses: actions/checkout@v4
+
+    - name: Log in with Azure (Federated Credentials)
+      if: steps.check-secrets.outputs.secrets-available == 'true' && steps.check-secrets.outputs.use-federated-auth == 'true'
+      uses: azure/login@v2
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+    - name: Log in with Azure (Service Principal)
+      if: steps.check-secrets.outputs.secrets-available == 'true' && steps.check-secrets.outputs.use-service-principal == 'true'
+      uses: azure/login@v2
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Get environment information before cleanup
+      id: get-env-info
+      if: steps.check-secrets.outputs.secrets-available == 'true'
+      run: |
+        RESOURCE_GROUP="${{ inputs.resource-group-name }}"
+        CONTAINER_APP_NAME="${{ inputs.container-app-name }}"
+
+        echo "Checking for environment: ${{ inputs.environment-name }}"
+        echo "Resource group: $RESOURCE_GROUP"
+        echo "Container app: $CONTAINER_APP_NAME"
+
+        # Check if resource group exists
+        if az group show --name "$RESOURCE_GROUP" >/dev/null 2>&1; then
+          echo "environment-exists=true" >> $GITHUB_OUTPUT
+          echo "resource-group=$RESOURCE_GROUP" >> $GITHUB_OUTPUT
+
+          # Try to get environment URLs before cleanup
+          # Get backend URL if container app exists
+          if az containerapp show --name "$CONTAINER_APP_NAME" --resource-group "$RESOURCE_GROUP" >/dev/null 2>&1; then
+            BACKEND_FQDN=$(az containerapp show --name "$CONTAINER_APP_NAME" --resource-group "$RESOURCE_GROUP" --query "properties.configuration.ingress.fqdn" --output tsv 2>/dev/null || echo "")
+            if [ -n "$BACKEND_FQDN" ]; then
+              BACKEND_URI="https://$BACKEND_FQDN"
+              echo "backend-uri=$BACKEND_URI" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+          # Get frontend URL if static web app exists (extract from environment name)
+          FRONTEND_APP_NAME="${{ inputs.environment-name }}-frontend-"
+          SWA_LIST=$(az staticwebapp list --resource-group "$RESOURCE_GROUP" --query "[?starts_with(name, '$FRONTEND_APP_NAME')].{name:name,defaultHostname:defaultHostname}" --output tsv 2>/dev/null || echo "")
+          if [ -n "$SWA_LIST" ]; then
+            FRONTEND_HOSTNAME=$(echo "$SWA_LIST" | head -1 | cut -f2)
+            if [ -n "$FRONTEND_HOSTNAME" ]; then
+              FRONTEND_URI="https://$FRONTEND_HOSTNAME"
+              echo "frontend-uri=$FRONTEND_URI" >> $GITHUB_OUTPUT
+            fi
+          fi
+        else
+          echo "environment-exists=false" >> $GITHUB_OUTPUT
+          echo "Resource group $RESOURCE_GROUP not found"
+        fi
+
+    - name: Manual cleanup of CLI-deployed container apps
+      id: manual-cleanup
+      if: steps.check-secrets.outputs.secrets-available == 'true' && steps.get-env-info.outputs.environment-exists == 'true'
+      run: |
+        RESOURCE_GROUP="${{ inputs.resource-group-name }}"
+        CONTAINER_APP_NAME="${{ inputs.container-app-name }}"
+        
+        # For PR environments, add the unique suffix that was used during deployment
+        if [[ "${{ inputs.environment-name }}" == pr-* ]]; then
+          RESOURCE_TOKEN=$(echo "${{ inputs.environment-name }}" | sha256sum | cut -c1-8)
+          CONTAINER_APP_NAME="${{ inputs.container-app-name }}-$RESOURCE_TOKEN"
+        fi
+        
+        echo "Checking for container apps deployed via CLI..."
+        echo "Resource Group: $RESOURCE_GROUP"
+        echo "Container App Name: $CONTAINER_APP_NAME"
+        
+        # Check if container app exists and delete it
+        if az containerapp show --name "$CONTAINER_APP_NAME" --resource-group "$RESOURCE_GROUP" >/dev/null 2>&1; then
+          echo "Found container app $CONTAINER_APP_NAME, deleting..."
+          az containerapp delete --name "$CONTAINER_APP_NAME" --resource-group "$RESOURCE_GROUP" --yes --no-wait
+          echo "Container app deletion initiated"
+          
+          # Wait a bit for deletion to start
+          sleep 10
+          
+          # Wait for deletion to complete (with timeout)
+          TIMEOUT=180  # 3 minutes
+          ELAPSED=0
+          while az containerapp show --name "$CONTAINER_APP_NAME" --resource-group "$RESOURCE_GROUP" >/dev/null 2>&1; do
+            if [ $ELAPSED -ge $TIMEOUT ]; then
+              echo "::warning::Timeout waiting for container app deletion. Proceeding with stack cleanup..."
+              break
+            fi
+            echo "Waiting for container app deletion... ($ELAPSED/$TIMEOUT seconds)"
+            sleep 15
+            ELAPSED=$((ELAPSED + 15))
+          done
+          
+          if ! az containerapp show --name "$CONTAINER_APP_NAME" --resource-group "$RESOURCE_GROUP" >/dev/null 2>&1; then
+            echo "Container app successfully deleted"
+          else
+            echo "::warning::Container app may still exist, but proceeding with stack cleanup"
+          fi
+        else
+          echo "No CLI-deployed container app found"
+        fi
+      timeout-minutes: 5
+
+    - name: Cleanup deployment stack
+      id: cleanup-stack
+      if: steps.check-secrets.outputs.secrets-available == 'true' && steps.manual-cleanup.outcome == 'success'
+      run: |
+        STACK_NAME="${{ inputs.stack-name }}"
+        LOCATION="${{ inputs.location }}"
+        
+        echo "Checking for existing deployment stack: $STACK_NAME"
+        
+        # Check if stack exists
+        if az stack show --name "$STACK_NAME" --location "$LOCATION" --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" >/dev/null 2>&1; then
+          # Get the current provisioning state
+          STACK_STATE=$(az stack show --name "$STACK_NAME" --location "$LOCATION" --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" --query "provisioningState" -o tsv 2>/dev/null || echo "Unknown")
+          echo "Found existing deployment stack $STACK_NAME with state: $STACK_STATE"
+          
+          # If stack is in a non-terminal state, wait for it to complete
+          if [[ "$STACK_STATE" == "Creating" || "$STACK_STATE" == "Updating" || "$STACK_STATE" == "Deleting" ]]; then
+            echo "Stack is in non-terminal state ($STACK_STATE). Waiting for completion..."
+            TIMEOUT=600  # 10 minutes for non-terminal states
+            ELAPSED=0
+            while true; do
+              CURRENT_STATE=$(az stack show --name "$STACK_NAME" --location "$LOCATION" --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" --query "provisioningState" -o tsv 2>/dev/null || echo "NotFound")
+              
+              if [[ "$CURRENT_STATE" == "NotFound" ]]; then
+                echo "Stack no longer exists"
+                break
+              elif [[ "$CURRENT_STATE" == "Succeeded" || "$CURRENT_STATE" == "Failed" ]]; then
+                echo "Stack reached terminal state: $CURRENT_STATE"
+                break
+              elif [ $ELAPSED -ge $TIMEOUT ]; then
+                echo "::warning::Timeout waiting for stack to reach terminal state. Current state: $CURRENT_STATE"
+                echo "::warning::Proceeding with deletion"
+                break
+              fi
+              
+              echo "Stack state: $CURRENT_STATE. Waiting... ($ELAPSED/$TIMEOUT seconds)"
+              sleep 30
+              ELAPSED=$((ELAPSED + 30))
+            done
+          fi
+          
+          # Now attempt deletion if stack still exists and is in terminal state
+          FINAL_STATE=$(az stack show --name "$STACK_NAME" --location "$LOCATION" --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" --query "provisioningState" -o tsv 2>/dev/null || echo "NotFound")
+          if [[ "$FINAL_STATE" != "NotFound" && "$FINAL_STATE" != "Deleting" ]]; then
+            echo "Attempting to delete stack in state: $FINAL_STATE"
+            az stack delete --name "$STACK_NAME" --location "$LOCATION" --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" --yes --no-wait
+            echo "Deletion initiated for stack $STACK_NAME"
+            
+            # Wait for deletion to complete
+            TIMEOUT=300  # 5 minutes
+            ELAPSED=0
+            while az stack show --name "$STACK_NAME" --location "$LOCATION" --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" >/dev/null 2>&1; do
+              if [ $ELAPSED -ge $TIMEOUT ]; then
+                echo "::warning::Timeout waiting for stack deletion."
+                break
+              fi
+              echo "Waiting for stack deletion to complete... ($ELAPSED/$TIMEOUT seconds)"
+              sleep 15
+              ELAPSED=$((ELAPSED + 15))
+            done
+          fi
+          
+          echo "Stack cleanup process completed"
+        else
+          echo "No existing deployment stack found"
+        fi
+      timeout-minutes: 15
+
+    - name: Set cleanup status
+      id: set-cleanup-status
+      if: steps.check-secrets.outputs.secrets-available == 'true'
+      run: |
+        if [ "${{ steps.manual-cleanup.outcome }}" == "success" ] && [ "${{ steps.cleanup-stack.outcome }}" == "success" ]; then
+          echo "cleanup-status=success" >> $GITHUB_OUTPUT
+          echo "Environment cleanup completed successfully"
+        elif [ "${{ steps.check-secrets.outputs.secrets-available }}" == "false" ]; then
+          echo "cleanup-status=skipped" >> $GITHUB_OUTPUT
+          echo "Cleanup skipped due to missing Azure credentials"
+        else
+          echo "cleanup-status=failed" >> $GITHUB_OUTPUT
+          echo "Environment cleanup failed"
+        fi

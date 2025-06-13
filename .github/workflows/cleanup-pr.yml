@@ -1,9 +1,5 @@
 ---
 name: Cleanup PR Environment
-# This workflow cleans up pull request environments using Azure native actions
-# Triggers when PRs are closed/merged against the main branch
-# Deletes the temporary environment "pr-{PR_NUMBER}" for each pull request
-# Uses Azure ARM deployment actions for reliable cleanup
 
 on:
   pull_request:
@@ -18,177 +14,26 @@ permissions:
 
 jobs:
   cleanup-pr:
+    uses: ./.github/workflows/cleanup-environment.yml
+    with:
+      environment-name: "pr-${{ github.event.pull_request.number }}"
+      resource-group-name: "str_agentic_pr_${{ github.event.pull_request.number }}"
+      location: ${{ vars.AZURE_LOCATION || vars.AZURE_REGION || 'eastus2' }}
+      stack-name: "pr-${{ github.event.pull_request.number }}-${{ vars.AZURE_LOCATION || vars.AZURE_REGION || 'eastus2' }}"
+      container-app-name: "pr-${{ github.event.pull_request.number }}-backend"
+    secrets:
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+
+  comment-on-pr:
+    needs: cleanup-pr
     runs-on: ubuntu-latest
-    # Note: No environment specified to generate correct federated identity subject claim:
-    # repo:SecuringTheRealm/str-agentic-adventures:pull_request
-
+    if: always()
     steps:
-    - name: Check Azure secrets
-      id: check-secrets
-      run: |
-        # Check if we have federated credentials
-        if [ -n "${{ secrets.AZURE_CLIENT_ID }}" ] && [ -n "${{ secrets.AZURE_TENANT_ID }}" ] && [ -n "${{ secrets.AZURE_SUBSCRIPTION_ID }}" ]; then
-          echo "secrets-available=true" >> $GITHUB_OUTPUT
-          echo "use-federated-auth=true" >> $GITHUB_OUTPUT
-          echo "use-service-principal=false" >> $GITHUB_OUTPUT
-        # Check if we have service principal credentials
-        elif [ -n "${{ secrets.AZURE_CREDENTIALS }}" ]; then
-          echo "secrets-available=true" >> $GITHUB_OUTPUT
-          echo "use-federated-auth=false" >> $GITHUB_OUTPUT
-          echo "use-service-principal=true" >> $GITHUB_OUTPUT
-        else
-          echo "::warning::Azure secrets are not configured. Skipping PR cleanup."
-          echo "secrets-available=false" >> $GITHUB_OUTPUT
-          echo "use-federated-auth=false" >> $GITHUB_OUTPUT
-          echo "use-service-principal=false" >> $GITHUB_OUTPUT
-        fi
-
-    - name: Checkout code
-      if: steps.check-secrets.outputs.secrets-available == 'true'
-      uses: actions/checkout@v4
-
-    - name: Log in with Azure (Federated Credentials)
-      if: steps.check-secrets.outputs.secrets-available == 'true' && steps.check-secrets.outputs.use-federated-auth == 'true'
-      uses: azure/login@v2
-      with:
-        client-id: ${{ secrets.AZURE_CLIENT_ID }}
-        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-    - name: Log in with Azure (Service Principal)
-      if: steps.check-secrets.outputs.secrets-available == 'true' && steps.check-secrets.outputs.use-service-principal == 'true'
-      uses: azure/login@v2
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-    - name: Get environment information before cleanup
-      id: get-env-info
-      if: steps.check-secrets.outputs.secrets-available == 'true'
-      run: |
-        ENV_NAME="pr-${{ github.event.pull_request.number }}"
-        RESOURCE_GROUP="str_agentic_pr_${{ github.event.pull_request.number }}"
-        LOCATION="${{ vars.AZURE_LOCATION || vars.AZURE_REGION || 'eastus2' }}"
-        STACK_NAME="pr-${{ github.event.pull_request.number }}-${LOCATION}"
-
-        echo "Checking for environment: $ENV_NAME"
-        echo "Resource group: $RESOURCE_GROUP"
-        echo "Deployment stack: $STACK_NAME"
-
-        # Check if resource group exists
-        if az group show --name "$RESOURCE_GROUP" >/dev/null 2>&1; then
-          echo "environment-exists=true" >> $GITHUB_OUTPUT
-          echo "resource-group=$RESOURCE_GROUP" >> $GITHUB_OUTPUT
-          echo "stack-name=$STACK_NAME" >> $GITHUB_OUTPUT
-
-          # Try to get environment URLs before cleanup
-          RESOURCE_TOKEN=$(echo "pr-${{ github.event.pull_request.number }}" | sha256sum | cut -c1-8)
-          BACKEND_APP_NAME="pr-${{ github.event.pull_request.number }}-backend-$RESOURCE_TOKEN"
-          FRONTEND_APP_NAME="pr-${{ github.event.pull_request.number }}-frontend-$RESOURCE_TOKEN"
-
-          # Get backend URL if container app exists
-          if az containerapp show --name "$BACKEND_APP_NAME" --resource-group "$RESOURCE_GROUP" >/dev/null 2>&1; then
-            BACKEND_FQDN=$(az containerapp show --name "$BACKEND_APP_NAME" --resource-group "$RESOURCE_GROUP" --query "properties.configuration.ingress.fqdn" --output tsv 2>/dev/null || echo "")
-            if [ -n "$BACKEND_FQDN" ]; then
-              BACKEND_URI="https://$BACKEND_FQDN"
-              echo "backend-uri=$BACKEND_URI" >> $GITHUB_OUTPUT
-            fi
-          fi
-
-          # Get frontend URL if static web app exists
-          if az staticwebapp show --name "$FRONTEND_APP_NAME" --resource-group "$RESOURCE_GROUP" >/dev/null 2>&1; then
-            FRONTEND_HOSTNAME=$(az staticwebapp show --name "$FRONTEND_APP_NAME" --resource-group "$RESOURCE_GROUP" --query "defaultHostname" --output tsv 2>/dev/null || echo "")
-            if [ -n "$FRONTEND_HOSTNAME" ]; then
-              FRONTEND_URI="https://$FRONTEND_HOSTNAME"
-              echo "frontend-uri=$FRONTEND_URI" >> $GITHUB_OUTPUT
-            fi
-          fi
-        else
-          echo "environment-exists=false" >> $GITHUB_OUTPUT
-          echo "Resource group $RESOURCE_GROUP not found"
-        fi
-
-    - name: Cleanup existing deployment stack (if exists)
-      id: cleanup-stack
-      if: steps.check-secrets.outputs.secrets-available == 'true'
-      run: |
-        STACK_NAME="${{ steps.get-env-info.outputs.stack-name }}"
-        LOCATION="${{ steps.get-env-info.outputs.location }}"
-        
-        echo "Checking for existing deployment stack: $STACK_NAME"
-        
-        # Check if stack exists
-        if az stack show --name "$STACK_NAME" --location "$LOCATION" --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" >/dev/null 2>&1; then
-          # Get the current provisioning state
-          STACK_STATE=$(az stack show --name "$STACK_NAME" --location "$LOCATION" --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" --query "provisioningState" -o tsv 2>/dev/null || echo "Unknown")
-          echo "Found existing deployment stack $STACK_NAME with state: $STACK_STATE"
-          
-          # If stack is in a non-terminal state, wait for it to complete
-          if [[ "$STACK_STATE" == "Creating" || "$STACK_STATE" == "Updating" || "$STACK_STATE" == "Deleting" ]]; then
-            echo "Stack is in non-terminal state ($STACK_STATE). Waiting for completion..."
-            TIMEOUT=600  # 10 minutes for non-terminal states
-            ELAPSED=0
-            while true; do
-              CURRENT_STATE=$(az stack show --name "$STACK_NAME" --location "$LOCATION" --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" --query "provisioningState" -o tsv 2>/dev/null || echo "NotFound")
-              
-              if [[ "$CURRENT_STATE" == "NotFound" ]]; then
-                echo "Stack no longer exists"
-                break
-              elif [[ "$CURRENT_STATE" == "Succeeded" || "$CURRENT_STATE" == "Failed" ]]; then
-                echo "Stack reached terminal state: $CURRENT_STATE"
-                break
-              elif [ $ELAPSED -ge $TIMEOUT ]; then
-                echo "::warning::Timeout waiting for stack to reach terminal state. Current state: $CURRENT_STATE"
-                echo "::warning::Proceeding with createOrUpdate operation which should handle this case"
-                break
-              fi
-              
-              echo "Stack state: $CURRENT_STATE. Waiting... ($ELAPSED/$TIMEOUT seconds)"
-              sleep 30
-              ELAPSED=$((ELAPSED + 30))
-            done
-          fi
-          
-          # Now attempt deletion if stack still exists and is in terminal state
-          FINAL_STATE=$(az stack show --name "$STACK_NAME" --location "$LOCATION" --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" --query "provisioningState" -o tsv 2>/dev/null || echo "NotFound")
-          if [[ "$FINAL_STATE" != "NotFound" && "$FINAL_STATE" != "Deleting" ]]; then
-            echo "Attempting to delete stack in state: $FINAL_STATE"
-            az stack delete --name "$STACK_NAME" --location "$LOCATION" --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" --yes --no-wait
-            echo "Deletion initiated for stack $STACK_NAME"
-            
-            # Wait for deletion to complete (shorter timeout since we use createOrUpdate)
-            TIMEOUT=300  # 5 minutes
-            ELAPSED=0
-            while az stack show --name "$STACK_NAME" --location "$LOCATION" --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" >/dev/null 2>&1; do
-              if [ $ELAPSED -ge $TIMEOUT ]; then
-                echo "::warning::Timeout waiting for stack deletion. Using createOrUpdate to handle existing stack..."
-                break
-              fi
-              echo "Waiting for stack deletion to complete... ($ELAPSED/$TIMEOUT seconds)"
-              sleep 15
-              ELAPSED=$((ELAPSED + 15))
-            done
-          fi
-          
-          echo "Stack cleanup process completed"
-        else
-          echo "No existing deployment stack found"
-        fi
-      timeout-minutes: 15
-
-    - name: Set cleanup status
-      id: set-cleanup-status
-      if: steps.check-secrets.outputs.secrets-available == 'true' && steps.get-env-info.outputs.environment-exists == 'true'
-      run: |
-        if [ "${{ steps.cleanup-stack.outcome }}" == "success" ]; then
-          echo "cleanup-status=success" >> $GITHUB_OUTPUT
-          echo "Environment cleanup completed successfully"
-        else
-          echo "cleanup-status=failed" >> $GITHUB_OUTPUT
-          echo "Environment cleanup failed, but continuing"
-        fi
-
     - name: Comment on PR (Success with URLs)
-      if: steps.check-secrets.outputs.secrets-available == 'true' && steps.get-env-info.outputs.environment-exists == 'true' && (steps.get-env-info.outputs.backend-uri != '' || steps.get-env-info.outputs.frontend-uri != '')
+      if: needs.cleanup-pr.outputs.cleanup-status == 'success' && (needs.cleanup-pr.outputs.backend-uri != '' || needs.cleanup-pr.outputs.frontend-uri != '')
       uses: peter-evans/create-or-update-comment@v4
       with:
         issue-number: ${{ github.event.pull_request.number }}
@@ -198,13 +43,13 @@ jobs:
           The temporary environment for this pull request has been deleted.
 
           ### Environment URLs (now deleted):
-          - **Frontend**: ${{ steps.get-env-info.outputs.frontend-uri || 'Not available' }}
-          - **Backend API**: ${{ steps.get-env-info.outputs.backend-uri || 'Not available' }}
+          - **Frontend**: ${{ needs.cleanup-pr.outputs.frontend-uri || 'Not available' }}
+          - **Backend API**: ${{ needs.cleanup-pr.outputs.backend-uri || 'Not available' }}
 
           ${{ github.event.pull_request.merged && '✅ **Merged**: Changes are now available in the main branch' || '❌ **Closed**: No changes were merged' }}
 
     - name: Comment on PR (Success without URLs)
-      if: steps.check-secrets.outputs.secrets-available == 'true' && (steps.get-env-info.outputs.environment-exists == 'false' || (steps.get-env-info.outputs.backend-uri == '' && steps.get-env-info.outputs.frontend-uri == ''))
+      if: needs.cleanup-pr.outputs.cleanup-status == 'success' && (needs.cleanup-pr.outputs.backend-uri == '' && needs.cleanup-pr.outputs.frontend-uri == '')
       uses: peter-evans/create-or-update-comment@v4
       with:
         issue-number: ${{ github.event.pull_request.number }}
@@ -216,3 +61,17 @@ jobs:
           ${{ github.event.pull_request.merged && '✅ **Merged**: Changes are now available in the main branch' || '❌ **Closed**: No changes were merged' }}
 
           > **Note**: No deployment URLs were found for this PR environment.
+
+    - name: Comment on PR (Skipped)
+      if: needs.cleanup-pr.outputs.cleanup-status == 'skipped'
+      uses: peter-evans/create-or-update-comment@v4
+      with:
+        issue-number: ${{ github.event.pull_request.number }}
+        body: |
+          ## 🧹 PR Environment Cleanup Skipped
+
+          The environment cleanup was skipped (likely due to missing Azure credentials).
+
+          ${{ github.event.pull_request.merged && '✅ **Merged**: Changes are now available in the main branch' || '❌ **Closed**: No changes were merged' }}
+
+          > **Note**: Manual cleanup may be required if resources were deployed.
