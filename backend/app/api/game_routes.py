@@ -12,6 +12,8 @@ from app.models.game_models import (
     GameResponse,
     CharacterSheet,
     LevelUpRequest,
+    ConcentrationRequest,
+    ConcentrationResponse,
 )
 from app.agents.dungeon_master_agent import get_dungeon_master
 from app.agents.scribe_agent import get_scribe
@@ -275,6 +277,42 @@ async def get_progression_info(character_id: str):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get progression info: {str(e)}",
+        )
+
+
+@router.post("/character/{character_id}/concentration", response_model=ConcentrationResponse)
+async def manage_concentration(character_id: str, concentration_data: ConcentrationRequest):
+    """Manage spell concentration tracking for a character."""
+    try:
+        # Validate character exists
+        character = await get_scribe().get_character(character_id)
+        if not character:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Character {character_id} not found",
+            )
+
+        # Perform concentration action
+        result = await get_scribe().manage_concentration(
+            character_id,
+            concentration_data.action,
+            spell_name=concentration_data.spell_name,
+            spell_level=concentration_data.spell_level,
+            damage_taken=concentration_data.damage_taken,
+        )
+
+        if "error" in result:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail=result["error"]
+            )
+
+        return ConcentrationResponse(**result)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to manage concentration: {str(e)}",
         )
 
 
@@ -852,7 +890,6 @@ async def process_general_action(
 # TODO: GET /spells/list - Get available spells by class and level
 # TODO: POST /spells/save-dc - Calculate spell save DC for a character
 # TODO: POST /spells/attack-bonus - Calculate spell attack bonus for a character
-# TODO: POST /character/{character_id}/concentration - Manage spell concentration tracking
 
 # TODO: Add advanced inventory system API endpoints
 # TODO: POST /character/{character_id}/equipment - Equip/unequip items with stat effects

@@ -78,6 +78,13 @@ class Spell(BaseModel):
     components: str
     duration: str
     description: str
+    requires_concentration: bool = False
+
+class ConcentrationInfo(BaseModel):
+    spell_name: Optional[str] = None
+    spell_level: Optional[int] = None
+    duration_remaining: Optional[int] = None  # in rounds, if applicable
+    save_dc: Optional[int] = None  # if concentration check is needed
 
 class CharacterSheet(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -101,6 +108,8 @@ class CharacterSheet(BaseModel):
     # Progression tracking
     ability_score_improvements_used: int = 0
     hit_dice: str = "1d8"  # Class-specific hit dice (e.g., "1d8" for rogues, "1d10" for fighters)
+    # Concentration tracking
+    concentration: Optional[ConcentrationInfo] = None
 
 class CombatParticipant(BaseModel):
     id: str
@@ -166,6 +175,19 @@ class LevelUpResponse(BaseModel):
     ability_improvements: Dict[str, int]
     new_proficiency_bonus: int
     features_gained: List[str]
+    message: str
+
+class ConcentrationRequest(BaseModel):
+    action: str  # "start", "end", "check"
+    spell_name: Optional[str] = None
+    spell_level: Optional[int] = None
+    damage_taken: Optional[int] = None  # for concentration checks due to damage
+
+class ConcentrationResponse(BaseModel):
+    success: bool
+    action_performed: str
+    concentration_status: Optional[ConcentrationInfo] = None
+    check_result: Optional[Dict[str, Any]] = None
     message: str
 
 class PlayerInput(BaseModel):

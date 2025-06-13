@@ -406,6 +406,165 @@ class ScribeAgent:
             logger.error(f"Error awarding experience: {str(e)}")
             return {"error": f"Failed to award experience: {str(e)}"}
 
+    async def manage_concentration(
+        self, character_id: str, action: str, **kwargs
+    ) -> Dict[str, Any]:
+        """
+        Manage spell concentration for a character.
+
+        Args:
+            character_id: The ID of the character
+            action: "start", "end", or "check"
+            **kwargs: Additional parameters based on action
+
+        Returns:
+            Dict[str, Any]: The result of the concentration action
+        """
+        try:
+            with next(get_session()) as db:
+                db_character = db.get(Character, character_id)
+                if not db_character:
+                    return {"error": f"Character {character_id} not found"}
+                character = db_character.data
+
+            if action == "start":
+                return await self._start_concentration(character, character_id, db_character, db, **kwargs)
+            elif action == "end":
+                return await self._end_concentration(character, character_id, db_character, db)
+            elif action == "check":
+                return await self._check_concentration(character, character_id, db_character, db, **kwargs)
+            else:
+                return {"error": f"Unknown concentration action: {action}"}
+
+        except Exception as e:
+            logger.error(f"Error managing concentration: {str(e)}")
+            return {"error": f"Failed to manage concentration: {str(e)}"}
+
+    async def _start_concentration(self, character, character_id, db_character, db, **kwargs):
+        """Start concentrating on a spell."""
+        spell_name = kwargs.get("spell_name")
+        spell_level = kwargs.get("spell_level")
+        
+        if not spell_name:
+            return {"error": "Spell name is required to start concentration"}
+
+        # End any existing concentration
+        if character.get("concentration"):
+            old_spell = character["concentration"]["spell_name"]
+            character["concentration"] = None
+            db_character.data = character
+            db.commit()
+            logger.info(f"Ended concentration on {old_spell} to start new concentration")
+
+        # Start new concentration
+        concentration_info = {
+            "spell_name": spell_name,
+            "spell_level": spell_level,
+            "duration_remaining": None,  # Can be set based on spell duration
+            "save_dc": None
+        }
+        
+        character["concentration"] = concentration_info
+        db_character.data = character
+        db.commit()
+
+        return {
+            "success": True,
+            "action_performed": "start",
+            "concentration_status": concentration_info,
+            "message": f"Started concentrating on {spell_name}"
+        }
+
+    async def _end_concentration(self, character, character_id, db_character, db):
+        """End concentration on current spell."""
+        current_concentration = character.get("concentration")
+        
+        if not current_concentration:
+            return {
+                "success": False,
+                "action_performed": "end",
+                "message": "Character is not currently concentrating on any spell"
+            }
+
+        spell_name = current_concentration.get("spell_name", "unknown spell")
+        character["concentration"] = None
+        db_character.data = character
+        db.commit()
+
+        return {
+            "success": True,
+            "action_performed": "end",
+            "concentration_status": None,
+            "message": f"Ended concentration on {spell_name}"
+        }
+
+    async def _check_concentration(self, character, character_id, db_character, db, **kwargs):
+        """Perform a concentration check."""
+        current_concentration = character.get("concentration")
+        
+        if not current_concentration:
+            return {
+                "success": False,
+                "action_performed": "check",
+                "message": "Character is not currently concentrating on any spell"
+            }
+
+        damage_taken = kwargs.get("damage_taken", 0)
+        
+        # Calculate concentration save DC (minimum 10, or half damage taken, whichever is higher)
+        save_dc = max(10, damage_taken // 2)
+        
+        # Get character's Constitution modifier for the save
+        constitution = character.get("abilities", {}).get("constitution", 10)
+        constitution_modifier = (constitution - 10) // 2
+        proficiency_bonus = character.get("proficiency_bonus", 2)
+        
+        # Roll concentration save (d20 + Con modifier + proficiency bonus)
+        from app.plugins.rules_engine_plugin import RulesEnginePlugin
+        rules_engine = RulesEnginePlugin()
+        roll_result = rules_engine.roll_dice("1d20")
+        
+        if "error" in roll_result:
+            return {"error": f"Failed to roll concentration save: {roll_result['error']}"}
+        
+        total_save = roll_result["total"] + constitution_modifier + proficiency_bonus
+        success = total_save >= save_dc
+        
+        check_result = {
+            "dice_roll": roll_result["total"],
+            "constitution_modifier": constitution_modifier,
+            "proficiency_bonus": proficiency_bonus,
+            "total_save": total_save,
+            "save_dc": save_dc,
+            "success": success,
+            "damage_taken": damage_taken
+        }
+
+        spell_name = current_concentration.get("spell_name", "unknown spell")
+        
+        if not success:
+            # Concentration is broken
+            character["concentration"] = None
+            db_character.data = character
+            db.commit()
+            
+            return {
+                "success": True,
+                "action_performed": "check",
+                "concentration_status": None,
+                "check_result": check_result,
+                "message": f"Concentration check failed! No longer concentrating on {spell_name}."
+            }
+        else:
+            # Concentration maintained
+            return {
+                "success": True,
+                "action_performed": "check",
+                "concentration_status": current_concentration,
+                "check_result": check_result,
+                "message": f"Concentration check succeeded! Still concentrating on {spell_name}."
+            }
+
 
 # Lazy singleton instance
 _scribe = None
