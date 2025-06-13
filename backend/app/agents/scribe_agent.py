@@ -42,15 +42,14 @@ class ScribeAgent:
 
     @property
     def inventory(self) -> Dict[str, Any]:
-        """Return inventory placeholder."""
-        # TODO: Implement inventory management system
-        # TODO: Add item CRUD operations (create, read, update, delete items)
-        # TODO: Add equipment slot management (armor, weapons, accessories)
-        # TODO: Add item weight and encumbrance calculations
-        # TODO: Add magical item properties and effects on character stats
-        # TODO: Add item rarity and value tracking
-        # TODO: Add equipment effects on ability scores and combat modifiers
-        return {}
+        """Return all inventories from all characters."""
+        try:
+            with next(get_session()) as db:
+                characters = db.query(Character).all()
+                return {c.id: c.data.get("inventory", []) for c in characters}
+        except Exception as e:
+            logger.error(f"Error retrieving inventory data: {str(e)}")
+            return {}
 
     def _register_skills(self):
         """Register necessary skills for the Scribe agent."""
@@ -99,6 +98,7 @@ class ScribeAgent:
                 "proficiency_bonus": 2,
                 "ability_score_improvements_used": 0,
                 "inventory": [],
+                "equipment": {},
             }
 
             # Set hit dice based on class
@@ -195,22 +195,468 @@ class ScribeAgent:
             Dict[str, Any]: The updated inventory
         """
         try:
+            import uuid
+            
             with next(get_session()) as db:
                 db_character = db.get(Character, character_id)
                 if not db_character:
                     return {"error": f"Character {character_id} not found"}
+                
                 character = db_character.data
                 inventory = character.get("inventory", [])
-                inventory.append(item)
+                
+                # Ensure item has required structure
+                if "id" not in item:
+                    item["id"] = f"item_{str(uuid.uuid4())[:8]}"
+                
+                # Set default values for item properties
+                item.setdefault("name", "Unknown Item")
+                item.setdefault("type", "misc")
+                item.setdefault("weight", 0)
+                item.setdefault("value", 0)
+                item.setdefault("quantity", 1)
+                item.setdefault("rarity", "common")
+                item.setdefault("description", "")
+                item.setdefault("magical", False)
+                item.setdefault("effects", {})
+                
+                # Check if item already exists in inventory (stack if possible)
+                existing_item = None
+                for inv_item in inventory:
+                    if (inv_item.get("name") == item["name"] and 
+                        inv_item.get("type") == item["type"] and
+                        not item.get("magical", False)):  # Don't stack magical items
+                        existing_item = inv_item
+                        break
+                
+                if existing_item:
+                    # Stack with existing item
+                    existing_item["quantity"] = existing_item.get("quantity", 1) + item.get("quantity", 1)
+                else:
+                    # Add as new item
+                    inventory.append(item)
+                
                 character["inventory"] = inventory
                 db_character.data = character
                 db.commit()
 
-            return {"inventory": inventory}
+            return {"inventory": inventory, "added_item": item}
 
         except Exception as e:
             logger.error(f"Error adding to inventory: {str(e)}")
             return {"error": "Failed to add item to inventory"}
+
+    async def get_inventory(self, character_id: str) -> Dict[str, Any]:
+        """
+        Get a character's inventory.
+
+        Args:
+            character_id: The ID of the character
+
+        Returns:
+            Dict[str, Any]: The character's inventory data
+        """
+        try:
+            with next(get_session()) as db:
+                db_character = db.get(Character, character_id)
+                if not db_character:
+                    return {"error": f"Character {character_id} not found"}
+                
+                character = db_character.data
+                inventory = character.get("inventory", [])
+                
+                # Calculate total weight and count
+                total_weight = sum(item.get("weight", 0) * item.get("quantity", 1) for item in inventory)
+                total_items = sum(item.get("quantity", 1) for item in inventory)
+                
+                return {
+                    "character_id": character_id,
+                    "items": inventory,
+                    "total_items": total_items,
+                    "total_weight": total_weight
+                }
+
+        except Exception as e:
+            logger.error(f"Error getting inventory: {str(e)}")
+            return {"error": "Failed to get inventory"}
+
+    async def remove_from_inventory(
+        self, character_id: str, item_id: str, quantity: int = 1
+    ) -> Dict[str, Any]:
+        """
+        Remove items from a character's inventory.
+
+        Args:
+            character_id: The ID of the character
+            item_id: The ID of the item to remove
+            quantity: The quantity to remove (default: 1)
+
+        Returns:
+            Dict[str, Any]: The result of the removal operation
+        """
+        try:
+            with next(get_session()) as db:
+                db_character = db.get(Character, character_id)
+                if not db_character:
+                    return {"error": f"Character {character_id} not found"}
+                
+                character = db_character.data
+                inventory = character.get("inventory", [])
+                
+                # Find the item
+                item_index = None
+                for i, item in enumerate(inventory):
+                    if item.get("id") == item_id:
+                        item_index = i
+                        break
+                
+                if item_index is None:
+                    return {"error": f"Item {item_id} not found in inventory"}
+                
+                item = inventory[item_index]
+                current_quantity = item.get("quantity", 1)
+                
+                if quantity >= current_quantity:
+                    # Remove the entire item
+                    removed_item = inventory.pop(item_index)
+                    removed_quantity = current_quantity
+                else:
+                    # Reduce the quantity
+                    item["quantity"] = current_quantity - quantity
+                    removed_quantity = quantity
+                    removed_item = item.copy()
+                    removed_item["quantity"] = removed_quantity
+                
+                character["inventory"] = inventory
+                db_character.data = character
+                db.commit()
+
+                return {
+                    "character_id": character_id,
+                    "removed_item": removed_item,
+                    "removed_quantity": removed_quantity,
+                    "inventory": inventory
+                }
+
+        except Exception as e:
+            logger.error(f"Error removing from inventory: {str(e)}")
+            return {"error": "Failed to remove item from inventory"}
+
+    async def update_inventory_item(
+        self, character_id: str, item_id: str, updates: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Update an item in a character's inventory.
+
+        Args:
+            character_id: The ID of the character
+            item_id: The ID of the item to update
+            updates: Dictionary containing fields to update
+
+        Returns:
+            Dict[str, Any]: The result of the update operation
+        """
+        try:
+            with next(get_session()) as db:
+                db_character = db.get(Character, character_id)
+                if not db_character:
+                    return {"error": f"Character {character_id} not found"}
+                
+                character = db_character.data
+                inventory = character.get("inventory", [])
+                
+                # Find and update the item
+                item_found = False
+                for item in inventory:
+                    if item.get("id") == item_id:
+                        # Don't allow changing the ID
+                        update_data = {k: v for k, v in updates.items() if k != "id"}
+                        item.update(update_data)
+                        item_found = True
+                        break
+                
+                if not item_found:
+                    return {"error": f"Item {item_id} not found in inventory"}
+                
+                character["inventory"] = inventory
+                db_character.data = character
+                db.commit()
+
+                return {
+                    "character_id": character_id,
+                    "updated_item": item,
+                    "inventory": inventory
+                }
+
+        except Exception as e:
+            logger.error(f"Error updating inventory item: {str(e)}")
+            return {"error": "Failed to update inventory item"}
+
+    async def equip_item(
+        self, character_id: str, item_id: str, slot: str
+    ) -> Dict[str, Any]:
+        """
+        Equip an item from inventory to an equipment slot.
+
+        Args:
+            character_id: The ID of the character
+            item_id: The ID of the item to equip
+            slot: The equipment slot (e.g., 'main_hand', 'armor', 'ring1')
+
+        Returns:
+            Dict[str, Any]: The result of the equip operation
+        """
+        try:
+            with next(get_session()) as db:
+                db_character = db.get(Character, character_id)
+                if not db_character:
+                    return {"error": f"Character {character_id} not found"}
+                
+                character = db_character.data
+                inventory = character.get("inventory", [])
+                equipment = character.get("equipment", {})
+                
+                # Find the item in inventory
+                item_to_equip = None
+                for item in inventory:
+                    if item.get("id") == item_id:
+                        item_to_equip = item
+                        break
+                
+                if not item_to_equip:
+                    return {"error": f"Item {item_id} not found in inventory"}
+                
+                # Check if item can be equipped in this slot
+                item_type = item_to_equip.get("type", "")
+                valid_slots = self._get_valid_slots_for_item_type(item_type)
+                
+                if slot not in valid_slots:
+                    return {"error": f"Item type {item_type} cannot be equipped in slot {slot}"}
+                
+                # Unequip current item in slot if any
+                previously_equipped = equipment.get(slot)
+                if previously_equipped:
+                    # Move currently equipped item back to inventory
+                    inventory.append(previously_equipped)
+                
+                # Equip the new item
+                equipment[slot] = item_to_equip
+                
+                # Remove item from inventory
+                inventory = [item for item in inventory if item.get("id") != item_id]
+                
+                character["inventory"] = inventory
+                character["equipment"] = equipment
+                db_character.data = character
+                db.commit()
+
+                return {
+                    "character_id": character_id,
+                    "equipped_item": item_to_equip,
+                    "slot": slot,
+                    "previously_equipped": previously_equipped,
+                    "equipment": equipment,
+                    "inventory": inventory
+                }
+
+        except Exception as e:
+            logger.error(f"Error equipping item: {str(e)}")
+            return {"error": "Failed to equip item"}
+
+    def _get_valid_slots_for_item_type(self, item_type: str) -> list[str]:
+        """Get valid equipment slots for an item type."""
+        slot_mapping = {
+            "weapon": ["main_hand", "off_hand"],
+            "sword": ["main_hand", "off_hand"],
+            "dagger": ["main_hand", "off_hand"],
+            "bow": ["main_hand"],
+            "shield": ["off_hand"],
+            "armor": ["armor"],
+            "helmet": ["head"],
+            "boots": ["feet"],
+            "gloves": ["hands"],
+            "ring": ["ring1", "ring2"],
+            "amulet": ["neck"],
+            "cloak": ["back"],
+        }
+        return slot_mapping.get(item_type.lower(), [])
+
+    async def unequip_item(
+        self, character_id: str, slot: str
+    ) -> Dict[str, Any]:
+        """
+        Unequip an item from an equipment slot back to inventory.
+
+        Args:
+            character_id: The ID of the character
+            slot: The equipment slot to unequip from
+
+        Returns:
+            Dict[str, Any]: The result of the unequip operation
+        """
+        try:
+            with next(get_session()) as db:
+                db_character = db.get(Character, character_id)
+                if not db_character:
+                    return {"error": f"Character {character_id} not found"}
+                
+                character = db_character.data
+                inventory = character.get("inventory", [])
+                equipment = character.get("equipment", {})
+                
+                # Check if there's an item in the slot
+                item_to_unequip = equipment.get(slot)
+                if not item_to_unequip:
+                    return {"error": f"No item equipped in slot {slot}"}
+                
+                # Move item back to inventory
+                inventory.append(item_to_unequip)
+                
+                # Remove from equipment
+                del equipment[slot]
+                
+                character["inventory"] = inventory
+                character["equipment"] = equipment
+                db_character.data = character
+                db.commit()
+
+                return {
+                    "character_id": character_id,
+                    "unequipped_item": item_to_unequip,
+                    "slot": slot,
+                    "equipment": equipment,
+                    "inventory": inventory
+                }
+
+        except Exception as e:
+            logger.error(f"Error unequipping item: {str(e)}")
+            return {"error": "Failed to unequip item"}
+
+    async def calculate_encumbrance(self, character_id: str) -> Dict[str, Any]:
+        """
+        Calculate a character's current encumbrance.
+
+        Args:
+            character_id: The ID of the character
+
+        Returns:
+            Dict[str, Any]: Encumbrance data including weight limits and penalties
+        """
+        try:
+            with next(get_session()) as db:
+                db_character = db.get(Character, character_id)
+                if not db_character:
+                    return {"error": f"Character {character_id} not found"}
+                
+                character = db_character.data
+                abilities = character.get("abilities", {})
+                strength = abilities.get("strength", 10)
+                
+                # Calculate carrying capacity based on Strength
+                carrying_capacity = strength * 15  # Standard D&D 5e rule
+                push_drag_lift = carrying_capacity * 2
+                
+                # Calculate current weight
+                inventory = character.get("inventory", [])
+                equipment = character.get("equipment", {})
+                
+                inventory_weight = sum(
+                    item.get("weight", 0) * item.get("quantity", 1) 
+                    for item in inventory
+                )
+                equipment_weight = sum(
+                    item.get("weight", 0) 
+                    for item in equipment.values()
+                )
+                
+                total_weight = inventory_weight + equipment_weight
+                
+                # Determine encumbrance level
+                encumbrance_level = "unencumbered"
+                speed_penalty = 0
+                
+                if total_weight > carrying_capacity:
+                    encumbrance_level = "heavily_encumbered"
+                    speed_penalty = 20  # -20 feet speed
+                elif total_weight > carrying_capacity * 2 / 3:
+                    encumbrance_level = "encumbered"
+                    speed_penalty = 10  # -10 feet speed
+                
+                return {
+                    "character_id": character_id,
+                    "total_weight": total_weight,
+                    "carrying_capacity": carrying_capacity,
+                    "push_drag_lift": push_drag_lift,
+                    "encumbrance_level": encumbrance_level,
+                    "speed_penalty": speed_penalty,
+                    "weight_breakdown": {
+                        "inventory": inventory_weight,
+                        "equipment": equipment_weight
+                    }
+                }
+
+        except Exception as e:
+            logger.error(f"Error calculating encumbrance: {str(e)}")
+            return {"error": "Failed to calculate encumbrance"}
+
+    async def apply_item_effects(self, character_id: str) -> Dict[str, Any]:
+        """
+        Calculate the total effects of all equipped items on character stats.
+
+        Args:
+            character_id: The ID of the character
+
+        Returns:
+            Dict[str, Any]: The total stat modifications from equipped items
+        """
+        try:
+            with next(get_session()) as db:
+                db_character = db.get(Character, character_id)
+                if not db_character:
+                    return {"error": f"Character {character_id} not found"}
+                
+                character = db_character.data
+                equipment = character.get("equipment", {})
+                
+                # Initialize stat modifications
+                stat_modifiers = {
+                    "strength": 0,
+                    "dexterity": 0,
+                    "constitution": 0,
+                    "intelligence": 0,
+                    "wisdom": 0,
+                    "charisma": 0,
+                    "armor_class": 0,
+                    "attack_bonus": 0,
+                    "damage_bonus": 0,
+                    "speed": 0,
+                    "hit_points": 0,
+                    "saving_throws": {}
+                }
+                
+                # Apply effects from each equipped item
+                for slot, item in equipment.items():
+                    effects = item.get("effects", {})
+                    
+                    # Apply stat bonuses
+                    for stat, bonus in effects.items():
+                        if stat in stat_modifiers and isinstance(bonus, (int, float)):
+                            stat_modifiers[stat] += bonus
+                        elif stat == "saving_throws" and isinstance(bonus, dict):
+                            for save_type, save_bonus in bonus.items():
+                                if save_type not in stat_modifiers["saving_throws"]:
+                                    stat_modifiers["saving_throws"][save_type] = 0
+                                stat_modifiers["saving_throws"][save_type] += save_bonus
+                
+                return {
+                    "character_id": character_id,
+                    "stat_modifiers": stat_modifiers,
+                    "equipped_items": list(equipment.keys())
+                }
+
+        except Exception as e:
+            logger.error(f"Error applying item effects: {str(e)}")
+            return {"error": "Failed to apply item effects"}
 
     async def level_up_character(
         self,
