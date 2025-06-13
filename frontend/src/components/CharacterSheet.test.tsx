@@ -46,8 +46,9 @@ describe("CharacterSheet", () => {
 		render(<CharacterSheet character={mockCharacter} />);
 
 		expect(screen.getByText("Armor Class")).toBeInTheDocument();
-		// Look for default armor class value
-		expect(screen.getByText("10")).toBeInTheDocument();
+		// Look for AC value specifically within the armor-class section
+		const armorClassSection = screen.getByText("Armor Class").closest('.armor-class');
+		expect(armorClassSection).toHaveTextContent("10");
 	});
 
 	it("renders all ability scores", () => {
@@ -292,6 +293,8 @@ describe("CharacterSheet", () => {
 
 		// Default armor class should be shown
 		expect(screen.getByText("Armor Class")).toBeInTheDocument();
-		expect(screen.getByText("10")).toBeInTheDocument();
+		// Look for AC value specifically within the armor-class section
+		const armorClassSection = screen.getByText("Armor Class").closest('.armor-class');
+		expect(armorClassSection).toHaveTextContent("10");
 	});
 });
