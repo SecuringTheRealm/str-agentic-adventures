@@ -408,12 +408,64 @@ class BattlePositioningPlugin:
     def _parse_current_positions(self, current_positions: str) -> Dict[str, Any]:
         """Parse current unit positions."""
         # Simplified parsing - would be more sophisticated in practice
-        return {
-            "unit_count": 4,
-            "formation_integrity": "medium",
+        import re
+        
+        result = {
+            "unit_count": 0,
+            "formation_integrity": "unknown",
             "spacing_issues": [],
-            "position_vulnerabilities": []
+            "position_vulnerabilities": [],
+            "parsed_units": []
         }
+        
+        if not current_positions or not current_positions.strip():
+            return result
+            
+        # Extract basic patterns from the position description
+        lines = current_positions.lower().strip().split('\n')
+        unit_patterns = []
+        
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+                
+            # Look for position indicators
+            position_match = re.search(r'(\w+)\s*(?:at|in|on)\s*(\w+)', line)
+            if position_match:
+                unit_name = position_match.group(1)
+                position = position_match.group(2)
+                unit_patterns.append({"unit": unit_name, "position": position})
+            
+            # Look for formation indicators
+            if "formation" in line:
+                if "tight" in line or "close" in line:
+                    result["formation_integrity"] = "high"
+                elif "spread" in line or "scattered" in line:
+                    result["formation_integrity"] = "low"
+                else:
+                    result["formation_integrity"] = "medium"
+                    
+            # Look for spacing issues
+            if "crowded" in line or "clustered" in line:
+                result["spacing_issues"].append("overcrowding")
+            elif "isolated" in line or "alone" in line:
+                result["spacing_issues"].append("isolation")
+                
+            # Look for vulnerability indicators
+            if "exposed" in line or "vulnerable" in line:
+                result["position_vulnerabilities"].append("exposure")
+            elif "surrounded" in line:
+                result["position_vulnerabilities"].append("encirclement")
+        
+        result["unit_count"] = len(unit_patterns)
+        result["parsed_units"] = unit_patterns
+        
+        # Default values if nothing specific was found
+        if result["formation_integrity"] == "unknown":
+            result["formation_integrity"] = "medium"
+            
+        return result
 
     def _analyze_combat_state(self, combat_state: str) -> Dict[str, Any]:
         """Analyze current combat state."""

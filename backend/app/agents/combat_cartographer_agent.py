@@ -133,7 +133,16 @@ class CombatCartographerAgent:
                     "size": size,
                     "terrain": terrain,
                     "features": features,
-                    "image_url": None,
+                    "hazards": hazards,
+                    "image_url": "https://via.placeholder.com/1024x1024/8B4513/FFFFFF?text=Battle+Map",
+                    "placeholder": True,
+                    "environment_context": environment_context,
+                    "combat_context": combat_context,
+                    "generation_details": {
+                        "size": "1024x1024", 
+                        "quality": "standard",
+                        "style": "placeholder",
+                    },
                     "error": image_result.get("error", "Battle map generation failed"),
                 }
 

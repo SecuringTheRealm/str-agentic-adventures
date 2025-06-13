@@ -145,8 +145,53 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
     const currentValue = formData[activeField as keyof typeof formData];
     const isEmpty = !currentValue || currentValue.trim() === '';
     
-    // Disable apply for empty fields as per requirements
-    if (isEmpty) {
+    // Enhanced placeholder content detection
+    const isPlaceholderContent = (() => {
+      if (isEmpty) return true;
+      
+      const lowerValue = currentValue.toLowerCase().trim();
+      
+      // Check for common placeholder patterns
+      const placeholderPatterns = [
+        /^(enter|add|type|write)\s+/,
+        /\.\.\.\s*$/,
+        /^placeholder/,
+        /^example:/,
+        /^sample/,
+        /^todo:/,
+        /^tbd$/,
+        /^to be determined/,
+        /^fill in/,
+        /^coming soon/
+      ];
+      
+      const isCommonPlaceholder = placeholderPatterns.some(pattern => 
+        pattern.test(lowerValue)
+      );
+      
+      // Check for field-specific placeholder content
+      const fieldSpecificPlaceholders: Record<string, string[]> = {
+        name: ['enter campaign name', 'campaign name', 'untitled campaign'],
+        description: ['brief description', 'enter description', 'describe your campaign'],
+        setting: ['describe the world', 'campaign setting', 'world description'],
+        world_description: ['detailed world description', 'world details', 'background lore'],
+        homebrew_rules: ['one rule per line', 'custom rules', 'homebrew modifications']
+      };
+      
+      const fieldPlaceholders = fieldSpecificPlaceholders[activeField] || [];
+      const hasFieldPlaceholder = fieldPlaceholders.some(placeholder =>
+        lowerValue.includes(placeholder.toLowerCase())
+      );
+      
+      // Check for very short content that might be placeholder-like
+      const isTooShort = currentValue.trim().length < 10 && 
+        !/\w+/.test(currentValue); // Contains actual words
+      
+      return isCommonPlaceholder || hasFieldPlaceholder || isTooShort;
+    })();
+    
+    // Disable apply for empty fields or placeholder content
+    if (isPlaceholderContent) {
       return;
     }
     
