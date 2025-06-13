@@ -406,6 +406,77 @@ class ScribeAgent:
             logger.error(f"Error awarding experience: {str(e)}")
             return {"error": f"Failed to award experience: {str(e)}"}
 
+    async def manage_character_spells(
+        self, character_id: str, action: str, spell: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Manage spells for a character - add or remove spells from their known spells list.
+        
+        Args:
+            character_id: ID of the character to manage spells for
+            action: "add" or "remove"
+            spell: Spell data as a dictionary
+            
+        Returns:
+            Dict containing success status and updated spell list
+        """
+        try:
+            character = await self.get_character(character_id)
+            if not character:
+                return {"error": "Character not found"}
+
+            if action not in ["add", "remove"]:
+                return {"error": "Action must be 'add' or 'remove'"}
+
+            # Get current spells list
+            current_spells = character.get("spells", [])
+            
+            if action == "add":
+                # Check if spell already exists (by name to avoid duplicates)
+                for existing_spell in current_spells:
+                    if existing_spell.get("name") == spell.get("name"):
+                        return {"error": f"Character already knows the spell '{spell.get('name')}'"}
+                
+                # Add the spell
+                current_spells.append(spell)
+                message = f"Added spell '{spell.get('name')}' to character"
+                
+            elif action == "remove":
+                # Find and remove the spell by name
+                spell_name = spell.get("name")
+                initial_count = len(current_spells)
+                current_spells = [s for s in current_spells if s.get("name") != spell_name]
+                
+                if len(current_spells) == initial_count:
+                    return {"error": f"Character does not know the spell '{spell_name}'"}
+                
+                message = f"Removed spell '{spell_name}' from character"
+
+            # Update character in database
+            from app.database import get_session
+            from app.models.db_models import Character
+            
+            character["spells"] = current_spells
+            
+            with next(get_session()) as db:
+                db_character = db.get(Character, character_id)
+                if db_character:
+                    db_character.data = character
+                    db.commit()
+
+            return {
+                "success": True,
+                "message": message,
+                "character_id": character_id,
+                "action": action,
+                "spell_count": len(current_spells),
+                "spells": current_spells,
+            }
+
+        except Exception as e:
+            logger.error(f"Error managing character spells: {str(e)}")
+            return {"error": f"Failed to manage spells: {str(e)}"}
+
 
 # Lazy singleton instance
 _scribe = None

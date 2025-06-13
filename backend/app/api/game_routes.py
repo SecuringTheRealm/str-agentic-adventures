@@ -12,6 +12,7 @@ from app.models.game_models import (
     GameResponse,
     CharacterSheet,
     LevelUpRequest,
+    ManageSpellsRequest,
 )
 from app.agents.dungeon_master_agent import get_dungeon_master
 from app.agents.scribe_agent import get_scribe
@@ -275,6 +276,33 @@ async def get_progression_info(character_id: str):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get progression info: {str(e)}",
+        )
+
+
+@router.post("/character/{character_id}/spells", response_model=Dict[str, Any])
+async def manage_character_spells(character_id: str, spell_data: ManageSpellsRequest):
+    """Manage known spells for a character - add or remove spells."""
+    try:
+        # Convert spell to dictionary for the agent
+        spell_dict = spell_data.spell.model_dump()
+        
+        # Manage spells via Scribe agent
+        result = await get_scribe().manage_character_spells(
+            character_id, spell_data.action, spell_dict
+        )
+
+        if "error" in result:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail=result["error"]
+            )
+
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to manage character spells: {str(e)}",
         )
 
 
@@ -846,7 +874,6 @@ async def process_general_action(
 
 
 # TODO: Add spell system API endpoints
-# TODO: POST /character/{character_id}/spells - Manage known spells for character
 # TODO: POST /character/{character_id}/spell-slots - Manage spell slot usage and recovery
 # TODO: POST /combat/{combat_id}/cast-spell - Cast spells during combat with effect resolution
 # TODO: GET /spells/list - Get available spells by class and level

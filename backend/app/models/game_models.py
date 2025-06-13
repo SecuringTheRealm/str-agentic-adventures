@@ -168,6 +168,10 @@ class LevelUpResponse(BaseModel):
     features_gained: List[str]
     message: str
 
+class ManageSpellsRequest(BaseModel):
+    action: str  # "add" or "remove"
+    spell: Spell
+
 class PlayerInput(BaseModel):
     message: str
     character_id: str

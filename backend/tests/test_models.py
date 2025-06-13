@@ -22,6 +22,7 @@ from app.models.game_models import (
     Spell,
     CharacterSheet,
     CreateCharacterRequest,
+    ManageSpellsRequest,
     PlayerInput,
     GameResponse,
     Campaign,
@@ -376,6 +377,50 @@ class TestBattleMapRequest:
         assert request.combat_context is not None
         assert request.combat_context["participants"] == 4
         assert request.combat_context["difficulty"] == "hard"
+
+
+class TestManageSpellsRequest:
+    """Test class for ManageSpellsRequest model."""
+
+    def test_manage_spells_request_add_spell(self):
+        """Test ManageSpellsRequest for adding a spell."""
+        spell = Spell(
+            name="Fireball",
+            level=3,
+            school="Evocation",
+            casting_time="1 action",
+            range="150 feet",
+            components="V, S, M",
+            duration="Instantaneous",
+            description="A bright streak flashes from your pointing finger...",
+        )
+        
+        request = ManageSpellsRequest(action="add", spell=spell)
+        
+        assert request.action == "add"
+        assert request.spell.name == "Fireball"
+        assert request.spell.level == 3
+        assert request.spell.school == "Evocation"
+
+    def test_manage_spells_request_remove_spell(self):
+        """Test ManageSpellsRequest for removing a spell."""
+        spell = Spell(
+            name="Magic Missile",
+            level=1,
+            school="Evocation",
+            casting_time="1 action",
+            range="120 feet",
+            components="V, S",
+            duration="Instantaneous",
+            description="You create three glowing darts of magical force...",
+        )
+        
+        request = ManageSpellsRequest(action="remove", spell=spell)
+        
+        assert request.action == "remove"
+        assert request.spell.name == "Magic Missile"
+        assert request.spell.level == 1
+        assert request.spell.school == "Evocation"
 
 
 class TestValidationEdgeCases:

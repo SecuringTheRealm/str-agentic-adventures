@@ -482,3 +482,198 @@ class TestAPIRouteSecurity:
             # Should handle malicious input safely
             # Either process it as regular text or reject appropriately
             assert response.status_code in [200, 400, 422, 500]
+
+
+class TestSpellManagementAPI:
+    """Test spell management API endpoints."""
+
+    def test_manage_spells_validation(self):
+        """Test spell management endpoint validation."""
+        from app.main import app
+
+        client = TestClient(app)
+
+        # Test missing required fields
+        invalid_requests = [
+            {},  # Empty request
+            {"action": "add"},  # Missing spell
+            {"spell": {"name": "Fireball"}},  # Missing action
+            {"action": "invalid", "spell": {"name": "Fireball"}},  # Invalid action
+        ]
+
+        for invalid_request in invalid_requests:
+            response = client.post("/api/game/character/test-char-id/spells", json=invalid_request)
+            assert response.status_code == 422, (
+                f"Should reject invalid request: {invalid_request}"
+            )
+
+    def test_add_spell_success(self):
+        """Test successfully adding a spell to a character."""
+        with patch("app.agents.scribe_agent.get_scribe") as mock_get_scribe:
+            # Mock successful spell addition
+            mock_scribe = Mock()
+            mock_scribe.manage_character_spells = AsyncMock(
+                return_value={
+                    "success": True,
+                    "message": "Added spell 'Fireball' to character",
+                    "character_id": "char_123",
+                    "action": "add",
+                    "spell_count": 1,
+                    "spells": [
+                        {
+                            "id": "spell_123",
+                            "name": "Fireball",
+                            "level": 3,
+                            "school": "Evocation",
+                            "casting_time": "1 action",
+                            "range": "150 feet",
+                            "components": "V, S, M",
+                            "duration": "Instantaneous",
+                            "description": "A bright streak flashes..."
+                        }
+                    ]
+                }
+            )
+            mock_get_scribe.return_value = mock_scribe
+
+            from app.main import app
+
+            client = TestClient(app)
+
+            request_data = {
+                "action": "add",
+                "spell": {
+                    "name": "Fireball",
+                    "level": 3,
+                    "school": "Evocation",
+                    "casting_time": "1 action",
+                    "range": "150 feet",
+                    "components": "V, S, M",
+                    "duration": "Instantaneous",
+                    "description": "A bright streak flashes..."
+                }
+            }
+
+            response = client.post("/api/game/character/char_123/spells", json=request_data)
+
+            assert response.status_code == 200
+            data = response.json()
+            assert data["success"] is True
+            assert data["action"] == "add"
+            assert data["spell_count"] == 1
+            assert len(data["spells"]) == 1
+            assert data["spells"][0]["name"] == "Fireball"
+
+    def test_remove_spell_success(self):
+        """Test successfully removing a spell from a character."""
+        with patch("app.agents.scribe_agent.get_scribe") as mock_get_scribe:
+            # Mock successful spell removal
+            mock_scribe = Mock()
+            mock_scribe.manage_character_spells = AsyncMock(
+                return_value={
+                    "success": True,
+                    "message": "Removed spell 'Fireball' from character",
+                    "character_id": "char_123",
+                    "action": "remove",
+                    "spell_count": 0,
+                    "spells": []
+                }
+            )
+            mock_get_scribe.return_value = mock_scribe
+
+            from app.main import app
+
+            client = TestClient(app)
+
+            request_data = {
+                "action": "remove",
+                "spell": {
+                    "name": "Fireball",
+                    "level": 3,
+                    "school": "Evocation",
+                    "casting_time": "1 action",
+                    "range": "150 feet",
+                    "components": "V, S, M",
+                    "duration": "Instantaneous",
+                    "description": "A bright streak flashes..."
+                }
+            }
+
+            response = client.post("/api/game/character/char_123/spells", json=request_data)
+
+            assert response.status_code == 200
+            data = response.json()
+            assert data["success"] is True
+            assert data["action"] == "remove"
+            assert data["spell_count"] == 0
+            assert len(data["spells"]) == 0
+
+    def test_spell_management_character_not_found(self):
+        """Test spell management when character is not found."""
+        with patch("app.agents.scribe_agent.get_scribe") as mock_get_scribe:
+            # Mock character not found
+            mock_scribe = Mock()
+            mock_scribe.manage_character_spells = AsyncMock(
+                return_value={"error": "Character not found"}
+            )
+            mock_get_scribe.return_value = mock_scribe
+
+            from app.main import app
+
+            client = TestClient(app)
+
+            request_data = {
+                "action": "add",
+                "spell": {
+                    "name": "Fireball",
+                    "level": 3,
+                    "school": "Evocation",
+                    "casting_time": "1 action",
+                    "range": "150 feet",
+                    "components": "V, S, M",
+                    "duration": "Instantaneous",
+                    "description": "A bright streak flashes..."
+                }
+            }
+
+            response = client.post("/api/game/character/nonexistent/spells", json=request_data)
+
+            assert response.status_code == 400
+            data = response.json()
+            assert "Character not found" in data["detail"]
+
+    def test_spell_management_agent_exception(self):
+        """Test spell management when agent raises exception."""
+        with patch("app.agents.scribe_agent.get_scribe") as mock_get_scribe:
+            # Mock agent raising exception
+            mock_scribe = Mock()
+            mock_scribe.manage_character_spells = AsyncMock(
+                side_effect=Exception("Database connection failed")
+            )
+            mock_get_scribe.return_value = mock_scribe
+
+            from app.main import app
+
+            client = TestClient(app)
+
+            request_data = {
+                "action": "add",
+                "spell": {
+                    "name": "Fireball",
+                    "level": 3,
+                    "school": "Evocation",
+                    "casting_time": "1 action",
+                    "range": "150 feet",
+                    "components": "V, S, M",
+                    "duration": "Instantaneous",
+                    "description": "A bright streak flashes..."
+                }
+            }
+
+            response = client.post("/api/game/character/char_123/spells", json=request_data)
+
+            # Should return 500 error with meaningful message
+            assert response.status_code == 500
+            data = response.json()
+            assert "detail" in data
+            assert "Failed to manage character spells" in data["detail"]
