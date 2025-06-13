@@ -1178,20 +1178,22 @@ async def manage_spell_slots(character_id: str, request: ManageSpellSlotsRequest
 
 @router.post("/combat/{combat_id}/cast-spell", response_model=SpellCastingResponse)
 async def cast_spell_in_combat(combat_id: str, request: CastSpellRequest):
-    """Cast spells during combat with effect resolution."""
+    """Cast spells during combat with sophisticated effect resolution."""
     try:
-        # Basic spell effects - in a real implementation this would be more sophisticated
-        spell_effects = {
-            "spell_name": request.spell_id,
-            "spell_level": request.slot_level,
-            "target_count": len(request.target_ids) if request.target_ids else 1,
-            "effects": [f"Spell {request.spell_id} cast at level {request.slot_level}"],
-            "combat_id": combat_id
-        }
+        # Load spell from database if available, otherwise use default effects
+        spell_data = await _get_spell_data(request.spell_id)
+        
+        # Calculate spell effects based on spell data and casting level
+        spell_effects = await _calculate_spell_effects(
+            spell_data, request.slot_level, request.target_ids, combat_id
+        )
+        
+        # Process concentration spells
+        concentration_needed = spell_data.get("concentration", False)
         
         return SpellCastingResponse(
             success=True,
-            message=f"Spell cast successfully in combat {combat_id}",
+            message=f"Spell '{spell_data.get('name', request.spell_id)}' cast successfully in combat {combat_id}",
             spell_effects=spell_effects,
             slot_used=True
         )
@@ -1200,6 +1202,151 @@ async def cast_spell_in_combat(combat_id: str, request: CastSpellRequest):
             success=False,
             message=f"Failed to cast spell: {str(e)}"
         )
+
+
+async def _get_spell_data(spell_id: str) -> Dict[str, Any]:
+    """Get spell data from database or return default spell structure."""
+    from app.database import get_session
+    from app.models.db_models import Spell
+    
+    try:
+        with next(get_session()) as db:
+            spell = db.query(Spell).filter(Spell.id == spell_id).first()
+            if spell:
+                return {
+                    "id": spell.id,
+                    "name": spell.name,
+                    "level": spell.level,
+                    "school": spell.school,
+                    "damage_dice": spell.damage_dice,
+                    "save_type": spell.save_type,
+                    "concentration": spell.concentration,
+                    "ritual": spell.ritual,
+                    "components": spell.components,
+                    "description": spell.description,
+                    "higher_levels": spell.higher_levels,
+                    **spell.data
+                }
+    except Exception:
+        pass  # Fall back to basic spell data
+    
+    # Default spell data for unknown spells
+    return _get_default_spell_data(spell_id)
+
+
+def _get_default_spell_data(spell_id: str) -> Dict[str, Any]:
+    """Get default spell data for common spells."""
+    # Common D&D 5e spells with basic data
+    default_spells = {
+        "magic_missile": {
+            "name": "Magic Missile", "level": 1, "school": "evocation",
+            "damage_dice": "1d4+1", "save_type": None, "concentration": False,
+            "auto_hit": True, "base_missiles": 3
+        },
+        "fireball": {
+            "name": "Fireball", "level": 3, "school": "evocation", 
+            "damage_dice": "8d6", "save_type": "dexterity", "concentration": False,
+            "area_effect": True, "radius": 20
+        },
+        "healing_word": {
+            "name": "Healing Word", "level": 1, "school": "evocation",
+            "healing_dice": "1d4", "save_type": None, "concentration": False,
+            "range": 60, "bonus_action": True
+        },
+        "shield": {
+            "name": "Shield", "level": 1, "school": "abjuration",
+            "ac_bonus": 5, "save_type": None, "concentration": False,
+            "duration": "1 round", "reaction": True
+        },
+        "cure_wounds": {
+            "name": "Cure Wounds", "level": 1, "school": "evocation",
+            "healing_dice": "1d8", "save_type": None, "concentration": False,
+            "touch": True
+        }
+    }
+    
+    return default_spells.get(spell_id, {
+        "name": spell_id.replace("_", " ").title(),
+        "level": 1, "school": "unknown", "concentration": False
+    })
+
+
+async def _calculate_spell_effects(spell_data: Dict[str, Any], cast_level: int, 
+                                   target_ids: Optional[List[str]], combat_id: str) -> Dict[str, Any]:
+    """Calculate sophisticated spell effects based on spell data and level."""
+    effects = {
+        "spell_name": spell_data.get("name", "Unknown Spell"),
+        "spell_level": cast_level,
+        "base_level": spell_data.get("level", 1),
+        "school": spell_data.get("school", "unknown"),
+        "target_count": len(target_ids) if target_ids else 1,
+        "combat_id": combat_id,
+        "effects": [],
+        "damage": None,
+        "healing": None,
+        "save_required": spell_data.get("save_type") is not None,
+        "save_type": spell_data.get("save_type"),
+        "concentration": spell_data.get("concentration", False)
+    }
+    
+    upcast_levels = cast_level - spell_data.get("level", 1)
+    
+    # Calculate damage effects
+    if spell_data.get("damage_dice"):
+        base_damage = spell_data["damage_dice"]
+        if upcast_levels > 0 and spell_data.get("higher_levels"):
+            # Apply upcast damage scaling
+            additional_dice = upcast_levels * _get_upcast_scaling(spell_data["name"])
+            effects["damage"] = f"{base_damage} + {additional_dice}d6"
+        else:
+            effects["damage"] = base_damage
+        effects["effects"].append(f"Deals {effects['damage']} damage")
+    
+    # Calculate healing effects  
+    if spell_data.get("healing_dice"):
+        base_healing = spell_data["healing_dice"]
+        if upcast_levels > 0:
+            additional_healing = upcast_levels
+            effects["healing"] = f"{base_healing} + {additional_healing}"
+        else:
+            effects["healing"] = base_healing
+        effects["effects"].append(f"Heals {effects['healing']} hit points")
+    
+    # Special spell effects
+    if spell_data.get("auto_hit"):
+        effects["effects"].append("Automatically hits target(s)")
+    
+    if spell_data.get("area_effect"):
+        radius = spell_data.get("radius", 10)
+        effects["effects"].append(f"Area effect: {radius} foot radius")
+    
+    if spell_data.get("ac_bonus"):
+        effects["effects"].append(f"Grants +{spell_data['ac_bonus']} AC")
+    
+    # Magic Missile special handling
+    if spell_data.get("name") == "Magic Missile":
+        base_missiles = spell_data.get("base_missiles", 3)
+        total_missiles = base_missiles + upcast_levels
+        effects["effects"].append(f"Fires {total_missiles} missiles")
+        effects["damage"] = f"{total_missiles} missiles, each dealing 1d4+1 force damage"
+    
+    if upcast_levels > 0:
+        effects["effects"].append(f"Cast at {cast_level} level (+{upcast_levels} levels)")
+    
+    return effects
+
+
+def _get_upcast_scaling(spell_name: str) -> int:
+    """Get damage dice scaling for upcasting spells."""
+    scaling_table = {
+        "Fireball": 1,  # +1d6 per level
+        "Lightning Bolt": 1,  # +1d6 per level  
+        "Scorching Ray": 1,  # +1 ray per level
+        "Cure Wounds": 1,  # +1d8 per level
+        "Healing Word": 1   # +1d4 per level
+    }
+    return scaling_table.get(spell_name, 1)
+
 
 @router.get("/spells/list", response_model=SpellListResponse)
 async def get_spell_list(

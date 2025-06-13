@@ -511,15 +511,112 @@ class NarrativeGenerationPlugin:
         return True
 
     def _check_completion_criteria(self, plot_point: PlotPoint, narrative_state: NarrativeState) -> bool:
-        """Check if a plot point should be marked as completed."""
-        # Simple completion logic - in a real system this would be more sophisticated
-        # For now, we'll use a basic criteria based on narrative flags or events
+        """Check if a plot point should be marked as completed with sophisticated logic."""
         
+        # Check for explicit completion flags
+        if f"complete_{plot_point.id}" in narrative_state.narrative_flags:
+            return True
+        
+        # Check for general completion flag
         if "completion_flag" in narrative_state.narrative_flags:
             return True
         
-        # Check if enough narrative events have occurred for this plot point
+        # Analyze plot point type and requirements
+        plot_type = plot_point.plot_type
+        completion_requirements = self._get_completion_requirements(plot_type)
+        
+        # Check specific completion criteria based on plot type
+        if plot_type == "quest":
+            return self._check_quest_completion(plot_point, narrative_state)
+        elif plot_type == "encounter":
+            return self._check_encounter_completion(plot_point, narrative_state)
+        elif plot_type == "exploration":
+            return self._check_exploration_completion(plot_point, narrative_state)
+        elif plot_type == "social":
+            return self._check_social_completion(plot_point, narrative_state)
+        
+        # Fallback: Check if enough narrative events have occurred for this plot point
         related_events = [e for e in self.narrative_events 
                          if e.plot_point_id == plot_point.id]
         
-        return len(related_events) >= 3  # Simple threshold
+        return len(related_events) >= completion_requirements.get("min_events", 3)
+    
+    def _get_completion_requirements(self, plot_type: str) -> Dict[str, Any]:
+        """Get completion requirements for different plot types."""
+        requirements = {
+            "quest": {
+                "min_events": 5,
+                "requires_objective": True,
+                "requires_resolution": True
+            },
+            "encounter": {
+                "min_events": 2, 
+                "requires_combat_resolution": True
+            },
+            "exploration": {
+                "min_events": 3,
+                "requires_discovery": True
+            },
+            "social": {
+                "min_events": 4,
+                "requires_interaction": True,
+                "requires_relationship_change": True
+            },
+            "mystery": {
+                "min_events": 6,
+                "requires_clues": 3,
+                "requires_revelation": True
+            }
+        }
+        return requirements.get(plot_type, {"min_events": 3})
+    
+    def _check_quest_completion(self, plot_point: PlotPoint, narrative_state: NarrativeState) -> bool:
+        """Check if a quest plot point is completed."""
+        # Check for quest-specific completion flags
+        quest_flags = [f for f in narrative_state.narrative_flags 
+                      if f.startswith(f"quest_{plot_point.id}")]
+        
+        # Quest completion criteria
+        has_objective_met = any("objective_complete" in flag for flag in quest_flags)
+        has_reward_received = any("reward" in flag for flag in quest_flags)
+        has_resolution = any("resolved" in flag or "completed" in flag for flag in quest_flags)
+        
+        return has_objective_met and (has_reward_received or has_resolution)
+    
+    def _check_encounter_completion(self, plot_point: PlotPoint, narrative_state: NarrativeState) -> bool:
+        """Check if an encounter plot point is completed."""
+        encounter_flags = [f for f in narrative_state.narrative_flags 
+                          if f.startswith(f"encounter_{plot_point.id}")]
+        
+        # Encounter completion criteria
+        has_combat_end = any("combat_end" in flag or "victory" in flag or "defeated" in flag 
+                           for flag in encounter_flags)
+        has_outcome = any("outcome" in flag for flag in encounter_flags)
+        
+        return has_combat_end or has_outcome
+    
+    def _check_exploration_completion(self, plot_point: PlotPoint, narrative_state: NarrativeState) -> bool:
+        """Check if an exploration plot point is completed."""
+        exploration_flags = [f for f in narrative_state.narrative_flags 
+                           if f.startswith(f"explore_{plot_point.id}")]
+        
+        # Exploration completion criteria
+        has_discovery = any("discovered" in flag or "found" in flag for flag in exploration_flags)
+        has_location_visited = any("visited" in flag or "entered" in flag for flag in exploration_flags)
+        
+        return has_discovery or has_location_visited
+    
+    def _check_social_completion(self, plot_point: PlotPoint, narrative_state: NarrativeState) -> bool:
+        """Check if a social plot point is completed."""
+        social_flags = [f for f in narrative_state.narrative_flags 
+                       if f.startswith(f"social_{plot_point.id}")]
+        
+        # Social completion criteria  
+        has_interaction = any("conversation" in flag or "negotiation" in flag 
+                            for flag in social_flags)
+        has_relationship_change = any("relationship" in flag or "reputation" in flag 
+                                    for flag in social_flags)
+        has_outcome = any("agreement" in flag or "disagreement" in flag or "resolved" in flag 
+                        for flag in social_flags)
+        
+        return has_interaction and (has_relationship_change or has_outcome)
