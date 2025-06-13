@@ -7,7 +7,7 @@ from typing import Any, Dict, Optional
 
 from app.kernel_setup import kernel_manager
 from app.database import get_session, init_db
-from app.models.db_models import Character
+from app.models.db_models import Character, NPC, NPCInteraction, Spell
 
 logger = logging.getLogger(__name__)
 
@@ -32,46 +32,10 @@ class ScribeAgent:
 
     @property
     def npcs(self) -> Dict[str, Any]:
-        """Return NPCs with full functionality."""
-        # In a real implementation, this would connect to a database
-        # For now, returning a sample NPC structure
-        sample_npcs = {
-            "barthen_merchant": {
-                "id": "barthen_merchant",
-                "name": "Barthen the Merchant",
-                "race": "Human",
-                "occupation": "Merchant",
-                "location": "Phandalin",
-                "personality": {
-                    "traits": ["Honest", "Cautious"],
-                    "ideals": ["Fair trade"],
-                    "bonds": ["Loyal to customers"],
-                    "flaws": ["Overly worried about money"]
-                },
-                "relationships": {},
-                "interaction_history": [],
-                "current_mood": "neutral",
-                "story_role": "merchant"
-            },
-            "sildar_guard": {
-                "id": "sildar_guard", 
-                "name": "Sildar Hallwinter",
-                "race": "Human",
-                "occupation": "Guard Captain",
-                "location": "Phandalin",
-                "personality": {
-                    "traits": ["Brave", "Duty-bound"],
-                    "ideals": ["Justice", "Order"],
-                    "bonds": ["Protects the innocent"],
-                    "flaws": ["Stubborn"]
-                },
-                "relationships": {},
-                "interaction_history": [],
-                "current_mood": "serious",
-                "story_role": "authority_figure"
-            }
-        }
-        return sample_npcs
+        """Return NPCs from the database."""
+        with next(get_session()) as db:
+            npcs = db.query(NPC).all()
+            return {npc.id: npc.data for npc in npcs}
     
     def create_npc(self, npc_data: Dict[str, Any]) -> Dict[str, Any]:
         """Create a new NPC with personality generation."""
@@ -113,34 +77,56 @@ class ScribeAgent:
     
     def update_npc_relationship(self, npc_id: str, character_id: str, change: int) -> Dict[str, Any]:
         """Update relationship between NPC and character."""
-        # In a real implementation, this would update the database
-        current_level = 0  # Would be retrieved from storage
-        new_level = max(-100, min(100, current_level + change))
-        
-        return {
-            "npc_id": npc_id,
-            "character_id": character_id,
-            "old_level": current_level,
-            "new_level": new_level,
-            "change": change
-        }
+        with next(get_session()) as db:
+            # Get current NPC and relationship data
+            npc = db.query(NPC).filter(NPC.id == npc_id).first()
+            if not npc:
+                raise ValueError(f"NPC {npc_id} not found")
+            
+            # Get current relationship level from NPC relationships
+            relationships = npc.data.get("relationships", {})
+            current_level = relationships.get(character_id, 0)
+            new_level = max(-100, min(100, current_level + change))
+            
+            # Update the relationship in NPC data
+            relationships[character_id] = new_level
+            npc.data["relationships"] = relationships
+            
+            # Mark as modified and commit
+            from sqlalchemy.orm.attributes import flag_modified
+            flag_modified(npc, "data")
+            db.commit()
+            
+            return {
+                "npc_id": npc_id,
+                "character_id": character_id,
+                "old_level": current_level,
+                "new_level": new_level,
+                "change": change
+            }
     
     def log_npc_interaction(self, interaction_data: Dict[str, Any]) -> str:
         """Log an interaction with an NPC."""
         import uuid
+        from datetime import datetime
         
         interaction_id = str(uuid.uuid4())
         
-        # In a real implementation, this would be stored in a database
-        interaction_record = {
-            "id": interaction_id,
-            "timestamp": interaction_data.get("timestamp"),
-            "npc_id": interaction_data.get("npc_id"),
-            "character_id": interaction_data.get("character_id"),
-            "interaction_type": interaction_data.get("interaction_type"),
-            "summary": interaction_data.get("summary"),
-            "outcome": interaction_data.get("outcome")
-        }
+        # Store interaction in database
+        with next(get_session()) as db:
+            interaction_record = NPCInteraction(
+                id=interaction_id,
+                npc_id=interaction_data.get("npc_id"),
+                character_id=interaction_data.get("character_id"),
+                interaction_type=interaction_data.get("interaction_type", "conversation"),
+                summary=interaction_data.get("summary", ""),
+                outcome=interaction_data.get("outcome"),
+                relationship_change=interaction_data.get("relationship_change", 0),
+                timestamp=interaction_data.get("timestamp") or datetime.utcnow(),
+                data=interaction_data
+            )
+            db.add(interaction_record)
+            db.commit()
         
         return interaction_id
     
