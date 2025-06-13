@@ -896,7 +896,12 @@ class RulesEnginePlugin:
             level: The character's level (1-20)
 
         Returns:
-            Dict[str, Any]: Spell slots information including max slots per level
+            Dict[str, Any]: Spell slots information including:
+                - character_class: The character's class
+                - level: The character's level
+                - spellcasting_type: Type of spellcaster ("full", "half", "pact", or "none")
+                - spell_slots: List of max spell slots per level [1st, 2nd, ..., 9th]
+                - total_slots: Total number of spell slots across all levels
         """
         try:
             character_class = character_class.lower()

@@ -862,11 +862,12 @@ async def get_character_spell_slots(character_id: str):
 
         character_class = character.get("character_class", "fighter")
         level = character.get("level", 1)
-        max_spell_slots = character.get("max_spell_slots", [0, 0, 0, 0, 0, 0, 0, 0, 0])
         current_spell_slots = character.get("current_spell_slots", [0, 0, 0, 0, 0, 0, 0, 0, 0])
 
-        # Get spellcasting type
-        spellcasting_type = rules_engine.spellcasting_classes.get(character_class, "none")
+        # Calculate spell slots using the rules engine to ensure up-to-date data
+        spell_slot_data = rules_engine.calculate_spell_slots(character_class, level)
+        spellcasting_type = spell_slot_data.get("spellcasting_type", "none")
+        max_spell_slots = spell_slot_data.get("spell_slots", [0, 0, 0, 0, 0, 0, 0, 0, 0])
 
         return {
             "character_id": character_id,
