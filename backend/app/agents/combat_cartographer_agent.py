@@ -28,10 +28,41 @@ class CombatCartographerAgent:
 
     def _register_skills(self):
         """Register necessary skills for the Combat Cartographer agent."""
-        # TODO: Implement Combat Cartographer agent skills registration
-        # Skills needed: map_generation, tactical_analysis, terrain_assessment,
-        # battle_positioning, environmental_hazards
-        pass
+        try:
+            # Import combat cartographer-specific plugins
+            from app.plugins.map_generation_plugin import MapGenerationPlugin
+            from app.plugins.tactical_analysis_plugin import TacticalAnalysisPlugin
+            from app.plugins.terrain_assessment_plugin import TerrainAssessmentPlugin
+            from app.plugins.battle_positioning_plugin import BattlePositioningPlugin
+            from app.plugins.environmental_hazards_plugin import EnvironmentalHazardsPlugin
+
+            # Define plugin configuration: (PluginClass, attribute_name, skill_name)
+            plugins_config = [
+                (MapGenerationPlugin, "map_generation", "MapGeneration"),
+                (TacticalAnalysisPlugin, "tactical_analysis", "TacticalAnalysis"),
+                (TerrainAssessmentPlugin, "terrain_assessment", "TerrainAssessment"),
+                (BattlePositioningPlugin, "battle_positioning", "BattlePositioning"),
+                (EnvironmentalHazardsPlugin, "environmental_hazards", "EnvironmentalHazards"),
+            ]
+
+            # Register plugins using the configuration
+            for plugin_class, attribute_name, skill_name in plugins_config:
+                # Create plugin instance
+                plugin_instance = plugin_class()
+                
+                # Register plugin with the kernel
+                self.kernel.add_plugin(plugin_instance, skill_name)
+                
+                # Store reference for direct access
+                setattr(self, attribute_name, plugin_instance)
+
+            logger.info("Combat Cartographer agent skills registered successfully")
+        except ImportError as e:
+            logger.error(f"Error importing Combat Cartographer agent skills: {str(e)}")
+            raise
+        except (AttributeError, ValueError) as e:
+            logger.error(f"Error registering Combat Cartographer agent skills: {str(e)}")
+            raise
 
     async def generate_battle_map(
         self,
