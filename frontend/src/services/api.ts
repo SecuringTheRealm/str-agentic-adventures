@@ -1,9 +1,9 @@
 // API client for interacting with the backend
 import axios from "axios";
+import { getApiBaseUrl } from "../utils/urls";
 
 // Define the base API URL - would come from environment in production
-const API_BASE_URL =
-	process.env.REACT_APP_API_URL + "/api" || "http://localhost:8000/api";
+const API_BASE_URL = getApiBaseUrl();
 
 // Create axios instance with default config
 export const apiClient = axios.create({

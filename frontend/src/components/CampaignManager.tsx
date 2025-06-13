@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useWebSocket, type WebSocketMessage } from '../hooks/useWebSocket';
+import { getCampaignWebSocketUrl } from '../utils/urls';
 import type { Campaign, Character } from '../services/api';
 import './CampaignManager.css';
 
@@ -36,8 +37,8 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({
 	const [isSessionActive, setIsSessionActive] = useState(false);
 
 	// WebSocket for campaign-wide communication
-	const wsUrl = `${(process.env.REACT_APP_WS_URL || 'ws://localhost:8000').replace('http', 'ws')}/api/ws/${campaign.id}`;
-	
+	const wsUrl = getCampaignWebSocketUrl(campaign.id);
+
 	const handleWebSocketMessage = (message: WebSocketMessage) => {
 		switch (message.type) {
 			case 'player_joined':
@@ -61,9 +62,9 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({
 				break;
 
 			case 'player_left':
-				setConnectedPlayers(prev => 
-					prev.map(p => 
-						p.id === message.player_id 
+				setConnectedPlayers(prev =>
+					prev.map(p =>
+						p.id === message.player_id
 							? { ...p, connected: false, last_seen: new Date().toISOString() }
 							: p
 					)
@@ -142,7 +143,7 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({
 	// Invite player (simulated - would integrate with actual invite system)
 	const handleInvitePlayer = () => {
 		const inviteCode = `${campaign.id}-${Date.now()}`;
-		
+
 		// Copy invite link to clipboard
 		const inviteLink = `${window.location.origin}/join/${inviteCode}`;
 		navigator.clipboard.writeText(inviteLink).then(() => {
@@ -165,7 +166,7 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({
 						</span>
 					</div>
 				</div>
-				
+
 				<div className="campaign-controls">
 					<button
 						onClick={() => setShowPlayerList(!showPlayerList)}
@@ -173,14 +174,14 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({
 					>
 						👥 Players ({connectedPlayers.filter(p => p.connected).length})
 					</button>
-					
+
 					<button
 						onClick={handleInvitePlayer}
 						className="invite-button"
 					>
 						📧 Invite
 					</button>
-					
+
 					<button
 						onClick={handleSessionToggle}
 						className={`session-toggle ${isSessionActive ? 'active' : 'inactive'}`}
@@ -210,8 +211,8 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({
 										</div>
 									</div>
 									<div className="last-seen">
-										{player.connected 
-											? 'Active now' 
+										{player.connected
+											? 'Active now'
 											: `Last seen: ${new Date(player.last_seen).toLocaleTimeString()}`
 										}
 									</div>

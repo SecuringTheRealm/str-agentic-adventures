@@ -7,6 +7,7 @@ import {
 	generateImage,
 	generateBattleMap,
 } from "../services/api";
+import { getCampaignWebSocketUrl } from "../utils/urls";
 import BattleMap from "./BattleMap";
 import CharacterSheet from "./CharacterSheet";
 import ChatBox from "./ChatBox";
@@ -34,8 +35,8 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 	const [combatActive, setCombatActive] = useState<boolean>(false);
 
 	// WebSocket integration for real-time updates
-	const wsUrl = `${(process.env.REACT_APP_WS_URL || 'ws://localhost:8000').replace('http', 'ws')}/api/ws/${campaign.id}`;
-	
+	const wsUrl = getCampaignWebSocketUrl(campaign.id);
+
 	const handleWebSocketMessage = (message: WebSocketMessage) => {
 		switch (message.type) {
 			case 'dice_result':
@@ -43,7 +44,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 				const diceMessage = `${message.player_name} rolled ${message.notation}: ${message.result.total}`;
 				setMessages(prev => [...prev, { text: diceMessage, sender: 'dm' }]);
 				break;
-			
+
 			case 'game_update':
 				// Handle game state updates
 				if (message.update_type === 'combat_start') {
@@ -52,12 +53,12 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 					setCombatActive(false);
 				}
 				break;
-			
+
 			case 'character_update':
 				// Handle character updates (would need character state management)
 				console.log('Character update received:', message);
 				break;
-			
+
 			default:
 				console.log('Unknown WebSocket message:', message);
 		}
@@ -96,16 +97,16 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 
 			if (portraitData && typeof portraitData === 'object' && 'image_url' in portraitData) {
 				setCurrentImage(portraitData.image_url as string);
-				setMessages(prev => [...prev, { 
-					text: `Generated character portrait for ${character.name}`, 
-					sender: "dm" 
+				setMessages(prev => [...prev, {
+					text: `Generated character portrait for ${character.name}`,
+					sender: "dm"
 				}]);
 			}
 		} catch (error) {
 			console.error("Error generating character portrait:", error);
-			setMessages(prev => [...prev, { 
-				text: "Failed to generate character portrait. Please try again.", 
-				sender: "dm" 
+			setMessages(prev => [...prev, {
+				text: "Failed to generate character portrait. Please try again.",
+				sender: "dm"
 			}]);
 		} finally {
 			setImageLoading(false);
@@ -127,16 +128,16 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 
 			if (sceneData && typeof sceneData === 'object' && 'image_url' in sceneData) {
 				setCurrentImage(sceneData.image_url as string);
-				setMessages(prev => [...prev, { 
-					text: "Generated scene illustration", 
-					sender: "dm" 
+				setMessages(prev => [...prev, {
+					text: "Generated scene illustration",
+					sender: "dm"
 				}]);
 			}
 		} catch (error) {
 			console.error("Error generating scene illustration:", error);
-			setMessages(prev => [...prev, { 
-				text: "Failed to generate scene illustration. Please try again.", 
-				sender: "dm" 
+			setMessages(prev => [...prev, {
+				text: "Failed to generate scene illustration. Please try again.",
+				sender: "dm"
 			}]);
 		} finally {
 			setImageLoading(false);
@@ -158,16 +159,16 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 			if (mapData && typeof mapData === 'object' && 'image_url' in mapData) {
 				setBattleMapUrl(mapData.image_url as string);
 				setCombatActive(true);
-				setMessages(prev => [...prev, { 
-					text: "Generated tactical battle map", 
-					sender: "dm" 
+				setMessages(prev => [...prev, {
+					text: "Generated tactical battle map",
+					sender: "dm"
 				}]);
 			}
 		} catch (error) {
 			console.error("Error generating battle map:", error);
-			setMessages(prev => [...prev, { 
-				text: "Failed to generate battle map. Please try again.", 
-				sender: "dm" 
+			setMessages(prev => [...prev, {
+				text: "Failed to generate battle map. Please try again.",
+				sender: "dm"
 			}]);
 		} finally {
 			setImageLoading(false);
@@ -226,7 +227,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 			<div className="game-container">
 				<div className="left-panel">
 					<CharacterSheet character={character} />
-					<DiceRoller 
+					<DiceRoller
 						characterId={character.id}
 						playerName={character.name}
 						websocket={socket}
@@ -252,21 +253,21 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 					<div className="visual-controls">
 						<h4>Generate Visuals</h4>
 						<div className="visual-buttons">
-							<button 
+							<button
 								onClick={handleGenerateCharacterPortrait}
 								disabled={imageLoading}
 								className="visual-button"
 							>
 								{imageLoading ? "Generating..." : "Character Portrait"}
 							</button>
-							<button 
+							<button
 								onClick={handleGenerateSceneIllustration}
 								disabled={imageLoading}
 								className="visual-button"
 							>
 								{imageLoading ? "Generating..." : "Scene Illustration"}
 							</button>
-							<button 
+							<button
 								onClick={handleGenerateBattleMap}
 								disabled={imageLoading}
 								className="visual-button"
