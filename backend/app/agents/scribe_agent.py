@@ -42,15 +42,17 @@ class ScribeAgent:
 
     @property
     def inventory(self) -> Dict[str, Any]:
-        """Return inventory placeholder."""
-        # TODO: Implement inventory management system
-        # TODO: Add item CRUD operations (create, read, update, delete items)
-        # TODO: Add equipment slot management (armor, weapons, accessories)
-        # TODO: Add item weight and encumbrance calculations
-        # TODO: Add magical item properties and effects on character stats
-        # TODO: Add item rarity and value tracking
-        # TODO: Add equipment effects on ability scores and combat modifiers
-        return {}
+        """Return inventory management functions."""
+        return {
+            "get_character_inventory": self.get_character_inventory,
+            "add_item": self.add_to_inventory,
+            "remove_item": self.remove_from_inventory,
+            "update_item_quantity": self.update_item_quantity,
+            "calculate_encumbrance": self.calculate_encumbrance,
+            "get_equipped_items": self.get_equipped_items,
+            "equip_item": self.equip_item,
+            "unequip_item": self.unequip_item,
+        }
 
     def _register_skills(self):
         """Register necessary skills for the Scribe agent."""
@@ -99,6 +101,7 @@ class ScribeAgent:
                 "proficiency_bonus": 2,
                 "ability_score_improvements_used": 0,
                 "inventory": [],
+                "equipment": {},
             }
 
             # Set hit dice based on class
@@ -211,6 +214,339 @@ class ScribeAgent:
         except Exception as e:
             logger.error(f"Error adding to inventory: {str(e)}")
             return {"error": "Failed to add item to inventory"}
+
+    async def get_character_inventory(self, character_id: str) -> Dict[str, Any]:
+        """
+        Get a character's complete inventory.
+
+        Args:
+            character_id: The ID of the character
+
+        Returns:
+            Dict[str, Any]: The character's inventory data
+        """
+        try:
+            with next(get_session()) as db:
+                db_character = db.get(Character, character_id)
+                if not db_character:
+                    return {"error": f"Character {character_id} not found"}
+                character = db_character.data
+                inventory = character.get("inventory", [])
+                
+                # Calculate total weight and encumbrance
+                total_weight = sum(
+                    item.get("weight", 0) * item.get("quantity", 1) 
+                    for item in inventory
+                )
+                
+                # Calculate carrying capacity (Strength score * 15)
+                strength = character.get("abilities", {}).get("strength", 10)
+                carrying_capacity = strength * 15
+                
+                return {
+                    "character_id": character_id,
+                    "items": inventory,
+                    "total_weight": total_weight,
+                    "carrying_capacity": carrying_capacity,
+                    "encumbrance_level": self._calculate_encumbrance_level(total_weight, carrying_capacity),
+                    "equipped_items": character.get("equipment", {}),
+                }
+
+        except Exception as e:
+            logger.error(f"Error getting character inventory: {str(e)}")
+            return {"error": "Failed to get character inventory"}
+
+    async def remove_from_inventory(
+        self, character_id: str, item_id: str, quantity: int = 1
+    ) -> Dict[str, Any]:
+        """
+        Remove an item from a character's inventory.
+
+        Args:
+            character_id: The ID of the character
+            item_id: The ID of the item to remove
+            quantity: The quantity to remove (default 1)
+
+        Returns:
+            Dict[str, Any]: The updated inventory
+        """
+        try:
+            with next(get_session()) as db:
+                db_character = db.get(Character, character_id)
+                if not db_character:
+                    return {"error": f"Character {character_id} not found"}
+                character = db_character.data
+                inventory = character.get("inventory", [])
+                
+                # Find the item
+                item_found = False
+                for i, item in enumerate(inventory):
+                    if item.get("id") == item_id:
+                        current_quantity = item.get("quantity", 1)
+                        if current_quantity <= quantity:
+                            # Remove the item completely
+                            inventory.pop(i)
+                        else:
+                            # Reduce quantity
+                            item["quantity"] = current_quantity - quantity
+                        item_found = True
+                        break
+                
+                if not item_found:
+                    return {"error": f"Item {item_id} not found in inventory"}
+                
+                character["inventory"] = inventory
+                db_character.data = character
+                db.commit()
+
+                return {"inventory": inventory, "message": f"Removed {quantity} of item {item_id}"}
+
+        except Exception as e:
+            logger.error(f"Error removing from inventory: {str(e)}")
+            return {"error": "Failed to remove item from inventory"}
+
+    async def update_item_quantity(
+        self, character_id: str, item_id: str, new_quantity: int
+    ) -> Dict[str, Any]:
+        """
+        Update the quantity of an item in a character's inventory.
+
+        Args:
+            character_id: The ID of the character
+            item_id: The ID of the item to update
+            new_quantity: The new quantity
+
+        Returns:
+            Dict[str, Any]: The updated inventory
+        """
+        try:
+            if new_quantity < 0:
+                return {"error": "Quantity cannot be negative"}
+            
+            with next(get_session()) as db:
+                db_character = db.get(Character, character_id)
+                if not db_character:
+                    return {"error": f"Character {character_id} not found"}
+                character = db_character.data
+                inventory = character.get("inventory", [])
+                
+                # Find the item
+                item_found = False
+                for item in inventory:
+                    if item.get("id") == item_id:
+                        if new_quantity == 0:
+                            # Remove the item if quantity is 0
+                            inventory.remove(item)
+                        else:
+                            item["quantity"] = new_quantity
+                        item_found = True
+                        break
+                
+                if not item_found:
+                    return {"error": f"Item {item_id} not found in inventory"}
+                
+                character["inventory"] = inventory
+                db_character.data = character
+                db.commit()
+
+                return {"inventory": inventory, "message": f"Updated quantity of item {item_id} to {new_quantity}"}
+
+        except Exception as e:
+            logger.error(f"Error updating item quantity: {str(e)}")
+            return {"error": "Failed to update item quantity"}
+
+    async def calculate_encumbrance(self, character_id: str) -> Dict[str, Any]:
+        """
+        Calculate encumbrance and carrying capacity for a character.
+
+        Args:
+            character_id: The ID of the character
+
+        Returns:
+            Dict[str, Any]: Encumbrance calculation results
+        """
+        try:
+            with next(get_session()) as db:
+                db_character = db.get(Character, character_id)
+                if not db_character:
+                    return {"error": f"Character {character_id} not found"}
+                character = db_character.data
+                inventory = character.get("inventory", [])
+                
+                # Calculate total weight
+                total_weight = sum(
+                    item.get("weight", 0) * item.get("quantity", 1) 
+                    for item in inventory
+                )
+                
+                # Calculate carrying capacity (Strength score * 15)
+                strength = character.get("abilities", {}).get("strength", 10)
+                carrying_capacity = strength * 15
+                
+                encumbrance_level = self._calculate_encumbrance_level(total_weight, carrying_capacity)
+                
+                return {
+                    "character_id": character_id,
+                    "total_weight": total_weight,
+                    "carrying_capacity": carrying_capacity,
+                    "encumbrance_level": encumbrance_level,
+                    "weight_percentage": (total_weight / carrying_capacity) * 100 if carrying_capacity > 0 else 0,
+                }
+
+        except Exception as e:
+            logger.error(f"Error calculating encumbrance: {str(e)}")
+            return {"error": "Failed to calculate encumbrance"}
+
+    async def get_equipped_items(self, character_id: str) -> Dict[str, Any]:
+        """
+        Get all equipped items for a character.
+
+        Args:
+            character_id: The ID of the character
+
+        Returns:
+            Dict[str, Any]: The character's equipped items
+        """
+        try:
+            with next(get_session()) as db:
+                db_character = db.get(Character, character_id)
+                if not db_character:
+                    return {"error": f"Character {character_id} not found"}
+                character = db_character.data
+                
+                return {
+                    "character_id": character_id,
+                    "equipment": character.get("equipment", {}),
+                }
+
+        except Exception as e:
+            logger.error(f"Error getting equipped items: {str(e)}")
+            return {"error": "Failed to get equipped items"}
+
+    async def equip_item(
+        self, character_id: str, item_id: str, slot: str
+    ) -> Dict[str, Any]:
+        """
+        Equip an item from inventory to a specific slot.
+
+        Args:
+            character_id: The ID of the character
+            item_id: The ID of the item to equip
+            slot: The equipment slot (e.g., "main_hand", "armor", "accessory")
+
+        Returns:
+            Dict[str, Any]: The updated equipment and inventory
+        """
+        try:
+            with next(get_session()) as db:
+                db_character = db.get(Character, character_id)
+                if not db_character:
+                    return {"error": f"Character {character_id} not found"}
+                character = db_character.data
+                inventory = character.get("inventory", [])
+                equipment = character.get("equipment", {})
+                
+                # Find the item in inventory
+                item_to_equip = None
+                for item in inventory:
+                    if item.get("id") == item_id:
+                        item_to_equip = item
+                        break
+                
+                if not item_to_equip:
+                    return {"error": f"Item {item_id} not found in inventory"}
+                
+                # Check if slot is already occupied
+                if slot in equipment:
+                    # Unequip current item first
+                    current_item = equipment[slot]
+                    inventory.append(current_item)
+                
+                # Equip the new item
+                equipment[slot] = item_to_equip
+                inventory.remove(item_to_equip)
+                
+                character["inventory"] = inventory
+                character["equipment"] = equipment
+                db_character.data = character
+                db.commit()
+
+                return {
+                    "equipment": equipment,
+                    "inventory": inventory,
+                    "message": f"Equipped {item_to_equip.get('name', 'item')} to {slot}",
+                }
+
+        except Exception as e:
+            logger.error(f"Error equipping item: {str(e)}")
+            return {"error": "Failed to equip item"}
+
+    async def unequip_item(self, character_id: str, slot: str) -> Dict[str, Any]:
+        """
+        Unequip an item from a specific slot back to inventory.
+
+        Args:
+            character_id: The ID of the character
+            slot: The equipment slot to unequip from
+
+        Returns:
+            Dict[str, Any]: The updated equipment and inventory
+        """
+        try:
+            with next(get_session()) as db:
+                db_character = db.get(Character, character_id)
+                if not db_character:
+                    return {"error": f"Character {character_id} not found"}
+                character = db_character.data
+                inventory = character.get("inventory", [])
+                equipment = character.get("equipment", {})
+                
+                if slot not in equipment:
+                    return {"error": f"No item equipped in slot {slot}"}
+                
+                # Move item back to inventory
+                unequipped_item = equipment.pop(slot)
+                inventory.append(unequipped_item)
+                
+                character["inventory"] = inventory
+                character["equipment"] = equipment
+                db_character.data = character
+                db.commit()
+
+                return {
+                    "equipment": equipment,
+                    "inventory": inventory,
+                    "message": f"Unequipped {unequipped_item.get('name', 'item')} from {slot}",
+                }
+
+        except Exception as e:
+            logger.error(f"Error unequipping item: {str(e)}")
+            return {"error": "Failed to unequip item"}
+
+    def _calculate_encumbrance_level(self, total_weight: float, carrying_capacity: float) -> str:
+        """
+        Calculate the encumbrance level based on weight and capacity.
+
+        Args:
+            total_weight: Total weight carried
+            carrying_capacity: Maximum carrying capacity
+
+        Returns:
+            str: Encumbrance level ("light", "medium", "heavy", "over_encumbered")
+        """
+        if carrying_capacity <= 0:
+            return "unknown"
+        
+        percentage = (total_weight / carrying_capacity) * 100
+        
+        if percentage <= 33.3:
+            return "light"
+        elif percentage <= 66.6:
+            return "medium"
+        elif percentage <= 100:
+            return "heavy"
+        else:
+            return "over_encumbered"
 
     async def level_up_character(
         self,

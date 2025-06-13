@@ -854,11 +854,200 @@ async def process_general_action(
 # TODO: POST /spells/attack-bonus - Calculate spell attack bonus for a character
 # TODO: POST /character/{character_id}/concentration - Manage spell concentration tracking
 
-# TODO: Add advanced inventory system API endpoints
-# TODO: POST /character/{character_id}/equipment - Equip/unequip items with stat effects
-# TODO: GET /character/{character_id}/encumbrance - Calculate carrying capacity and weight
-# TODO: POST /items/magical-effects - Apply magical item effects to character stats
-# TODO: GET /items/catalog - Browse available items with rarity and value information
+# Inventory management endpoints
+@router.get("/character/{character_id}/inventory", response_model=Dict[str, Any])
+async def get_character_inventory(character_id: str):
+    """Get a character's complete inventory with encumbrance information."""
+    try:
+        inventory_data = await get_scribe().get_character_inventory(character_id)
+        
+        if "error" in inventory_data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, 
+                detail=inventory_data["error"]
+            )
+        
+        return inventory_data
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get character inventory: {str(e)}",
+        )
+
+
+@router.post("/character/{character_id}/inventory/add", response_model=Dict[str, Any])
+async def add_item_to_inventory(character_id: str, item_data: Dict[str, Any]):
+    """Add an item to a character's inventory."""
+    try:
+        result = await get_scribe().add_to_inventory(character_id, item_data)
+        
+        if "error" in result:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, 
+                detail=result["error"]
+            )
+        
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to add item to inventory: {str(e)}",
+        )
+
+
+@router.delete("/character/{character_id}/inventory/{item_id}", response_model=Dict[str, Any])
+async def remove_item_from_inventory(character_id: str, item_id: str, quantity: int = 1):
+    """Remove an item from a character's inventory."""
+    try:
+        result = await get_scribe().remove_from_inventory(character_id, item_id, quantity)
+        
+        if "error" in result:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, 
+                detail=result["error"]
+            )
+        
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to remove item from inventory: {str(e)}",
+        )
+
+
+@router.put("/character/{character_id}/inventory/{item_id}/quantity", response_model=Dict[str, Any])
+async def update_item_quantity(character_id: str, item_id: str, quantity_data: Dict[str, int]):
+    """Update the quantity of an item in a character's inventory."""
+    try:
+        new_quantity = quantity_data.get("quantity", 0)
+        result = await get_scribe().update_item_quantity(character_id, item_id, new_quantity)
+        
+        if "error" in result:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, 
+                detail=result["error"]
+            )
+        
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update item quantity: {str(e)}",
+        )
+
+
+@router.get("/character/{character_id}/encumbrance", response_model=Dict[str, Any])
+async def get_character_encumbrance(character_id: str):
+    """Get encumbrance information for a character."""
+    try:
+        encumbrance_data = await get_scribe().calculate_encumbrance(character_id)
+        
+        if "error" in encumbrance_data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, 
+                detail=encumbrance_data["error"]
+            )
+        
+        return encumbrance_data
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get character encumbrance: {str(e)}",
+        )
+
+
+@router.get("/character/{character_id}/equipment", response_model=Dict[str, Any])
+async def get_character_equipment(character_id: str):
+    """Get a character's equipped items."""
+    try:
+        equipment_data = await get_scribe().get_equipped_items(character_id)
+        
+        if "error" in equipment_data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, 
+                detail=equipment_data["error"]
+            )
+        
+        return equipment_data
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get character equipment: {str(e)}",
+        )
+
+
+@router.post("/character/{character_id}/equipment/equip", response_model=Dict[str, Any])
+async def equip_item(character_id: str, equip_data: Dict[str, str]):
+    """Equip an item from inventory to a specific slot."""
+    try:
+        item_id = equip_data.get("item_id")
+        slot = equip_data.get("slot")
+        
+        if not item_id or not slot:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Both item_id and slot are required",
+            )
+        
+        result = await get_scribe().equip_item(character_id, item_id, slot)
+        
+        if "error" in result:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, 
+                detail=result["error"]
+            )
+        
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to equip item: {str(e)}",
+        )
+
+
+@router.post("/character/{character_id}/equipment/unequip", response_model=Dict[str, Any])
+async def unequip_item(character_id: str, unequip_data: Dict[str, str]):
+    """Unequip an item from a specific slot back to inventory."""
+    try:
+        slot = unequip_data.get("slot")
+        
+        if not slot:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Slot is required",
+            )
+        
+        result = await get_scribe().unequip_item(character_id, slot)
+        
+        if "error" in result:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, 
+                detail=result["error"]
+            )
+        
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to unequip item: {str(e)}",
+        )
+
 
 # TODO: Add enhanced NPC management API endpoints
 # TODO: POST /campaign/{campaign_id}/npcs - Create and manage campaign NPCs
