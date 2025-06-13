@@ -2,7 +2,7 @@
  > AI-powered web app for tabletop RPGs that replaces the human Dungeon Master while maintaining creativity, flexibility, and immersion.
 
 ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/SecuringTheRealm/str-agentic-adventures/ci.yml?branch=main&label=CI)
-![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/SecuringTheRealm/str-agentic-adventures/deploy-production.yml?branch=main&label=Production%20Deploy)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/SecuringTheRealm/str-agentic-adventures/deploy-production.yml?branch=main&label=Production%20Deployment)
 ![GitHub issues](https://img.shields.io/github/issues/SecuringTheRealm/str-agentic-adventures)
 ![GitHub](https://img.shields.io/github/license/SecuringTheRealm/str-agentic-adventures)
 ![GitHub Repo stars](https://img.shields.io/github/stars/SecuringTheRealm/str-agentic-adventures?style=social)
