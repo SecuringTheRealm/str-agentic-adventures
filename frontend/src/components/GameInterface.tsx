@@ -21,6 +21,30 @@ interface GameInterfaceProps {
 	campaign: Campaign;
 }
 
+// Utility function to extract user-friendly error messages from API errors
+const extractErrorMessage = (error: unknown, fallbackMessage: string): string => {
+	if (error && typeof error === 'object') {
+		// Check for axios error response structure
+		if ('response' in error && error.response && typeof error.response === 'object') {
+			const response = error.response as { data?: { detail?: string | Array<{ msg: string }> } };
+			if (response.data?.detail) {
+				if (typeof response.data.detail === 'string') {
+					return response.data.detail;
+				} else if (Array.isArray(response.data.detail)) {
+					// Handle Pydantic validation errors which come as an array
+					const messages = response.data.detail.map((err: { msg: string }) => err.msg);
+					return `Validation error: ${messages.join(', ')}`;
+				}
+			}
+		}
+		// Check for general error message
+		else if ('message' in error && typeof (error as any).message === 'string') {
+			return (error as any).message;
+		}
+	}
+	return fallbackMessage;
+};
+
 const GameInterface: React.FC<GameInterfaceProps> = ({
 	character,
 	campaign,
@@ -83,6 +107,15 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 	}, [character, campaign]);
 
 	const handleGenerateCharacterPortrait = async () => {
+		// Validate character data exists
+		if (!character?.name || !character?.race || !character?.character_class) {
+			setMessages(prev => [...prev, {
+				text: "Character information is incomplete. Cannot generate portrait.",
+				sender: "dm"
+			}]);
+			return;
+		}
+
 		setImageLoading(true);
 		try {
 			const portraitData = await generateImage({
@@ -96,16 +129,24 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 			});
 
 			if (portraitData && typeof portraitData === 'object' && 'image_url' in portraitData) {
-				setCurrentImage(portraitData.image_url as string);
-				setMessages(prev => [...prev, {
-					text: `Generated character portrait for ${character.name}`,
-					sender: "dm"
-				}]);
+				const imageUrl = portraitData.image_url as string;
+				if (imageUrl && typeof imageUrl === 'string') {
+					setCurrentImage(imageUrl);
+					setMessages(prev => [...prev, {
+						text: `Generated character portrait for ${character.name}`,
+						sender: "dm"
+					}]);
+				} else {
+					throw new Error('Invalid image URL received from server');
+				}
+			} else {
+				throw new Error('No image data received from server');
 			}
 		} catch (error) {
 			console.error("Error generating character portrait:", error);
+			const errorMessage = extractErrorMessage(error, "Failed to generate character portrait. Please try again.");
 			setMessages(prev => [...prev, {
-				text: "Failed to generate character portrait. Please try again.",
+				text: errorMessage,
 				sender: "dm"
 			}]);
 		} finally {
@@ -127,16 +168,24 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 			});
 
 			if (sceneData && typeof sceneData === 'object' && 'image_url' in sceneData) {
-				setCurrentImage(sceneData.image_url as string);
-				setMessages(prev => [...prev, {
-					text: "Generated scene illustration",
-					sender: "dm"
-				}]);
+				const imageUrl = sceneData.image_url as string;
+				if (imageUrl && typeof imageUrl === 'string') {
+					setCurrentImage(imageUrl);
+					setMessages(prev => [...prev, {
+						text: "Generated scene illustration",
+						sender: "dm"
+					}]);
+				} else {
+					throw new Error('Invalid image URL received from server');
+				}
+			} else {
+				throw new Error('No image data received from server');
 			}
 		} catch (error) {
 			console.error("Error generating scene illustration:", error);
+			const errorMessage = extractErrorMessage(error, "Failed to generate scene illustration. Please try again.");
 			setMessages(prev => [...prev, {
-				text: "Failed to generate scene illustration. Please try again.",
+				text: errorMessage,
 				sender: "dm"
 			}]);
 		} finally {
@@ -157,17 +206,25 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 			});
 
 			if (mapData && typeof mapData === 'object' && 'image_url' in mapData) {
-				setBattleMapUrl(mapData.image_url as string);
-				setCombatActive(true);
-				setMessages(prev => [...prev, {
-					text: "Generated tactical battle map",
-					sender: "dm"
-				}]);
+				const imageUrl = mapData.image_url as string;
+				if (imageUrl && typeof imageUrl === 'string') {
+					setBattleMapUrl(imageUrl);
+					setCombatActive(true);
+					setMessages(prev => [...prev, {
+						text: "Generated tactical battle map",
+						sender: "dm"
+					}]);
+				} else {
+					throw new Error('Invalid map URL received from server');
+				}
+			} else {
+				throw new Error('No map data received from server');
 			}
 		} catch (error) {
 			console.error("Error generating battle map:", error);
+			const errorMessage = extractErrorMessage(error, "Failed to generate battle map. Please try again.");
 			setMessages(prev => [...prev, {
-				text: "Failed to generate battle map. Please try again.",
+				text: errorMessage,
 				sender: "dm"
 			}]);
 		} finally {
@@ -176,44 +233,85 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 	};
 
 	const handlePlayerInput = async (message: string) => {
+		// Validate input before processing
+		if (!message.trim()) {
+			setMessages((prev) => [...prev, { 
+				text: "Please enter a message before sending.", 
+				sender: "dm" 
+			}]);
+			return;
+		}
+
+		// Validate required data exists
+		if (!character?.id) {
+			setMessages((prev) => [...prev, { 
+				text: "Character data is missing. Please refresh the page and try again.", 
+				sender: "dm" 
+			}]);
+			return;
+		}
+
+		if (!campaign?.id) {
+			setMessages((prev) => [...prev, { 
+				text: "Campaign data is missing. Please refresh the page and try again.", 
+				sender: "dm" 
+			}]);
+			return;
+		}
+
 		// Add player message to chat
 		setMessages((prev) => [...prev, { text: message, sender: "player" }]);
 		setLoading(true);
 
 		try {
-			// Send message to API
+			// Send message to API with validated data
 			const response = await sendPlayerInput({
-				message,
+				message: message.trim(),
 				character_id: character.id,
 				campaign_id: campaign.id,
 			});
 
-			// Add DM response to chat
-			setMessages((prev) => [
-				...prev,
-				{ text: response.message, sender: "dm" },
-			]);
-
-			// Update images if provided
-			if (response.images && response.images.length > 0) {
-				setCurrentImage(response.images[0]);
+			// Validate response structure before processing
+			if (!response || typeof response !== 'object') {
+				throw new Error('Invalid response from server');
 			}
 
-			// Handle combat updates
-			if (response.combat_updates) {
-				setCombatActive(response.combat_updates.status === "active");
+			// Add DM response to chat
+			const responseMessage = response.message || "The DM seems speechless...";
+			setMessages((prev) => [
+				...prev,
+				{ text: responseMessage, sender: "dm" },
+			]);
 
-				// Set battle map if available
-				if (response.combat_updates.map_url) {
+			// Update images if provided and valid
+			if (response.images && Array.isArray(response.images) && response.images.length > 0) {
+				const imageUrl = response.images[0];
+				if (imageUrl && typeof imageUrl === 'string') {
+					setCurrentImage(imageUrl);
+				}
+			}
+
+			// Handle combat updates if provided
+			if (response.combat_updates && typeof response.combat_updates === 'object') {
+				if (response.combat_updates.status) {
+					setCombatActive(response.combat_updates.status === "active");
+				}
+
+				// Set battle map if available and valid
+				if (response.combat_updates.map_url && typeof response.combat_updates.map_url === 'string') {
 					setBattleMapUrl(response.combat_updates.map_url);
 				}
 			}
 		} catch (error) {
 			console.error("Error processing player input:", error);
+			
+			// Extract actual error message from the response
+			const errorMessage = extractErrorMessage(error, "Something went wrong. Please try again.");
+			
 			setMessages((prev) => [
 				...prev,
 				{
-					text: "Something went wrong. Please try again.",
+					text: errorMessage,
 					sender: "dm",
 				},
 			]);
