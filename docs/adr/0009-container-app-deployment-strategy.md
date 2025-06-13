@@ -52,13 +52,13 @@ We will use a **single deployment strategy** where:
 
 ## Implementation Notes
 
-1. **Created Reusable Workflows**: 
+1. **Created Reusable Workflows**:
    - `deploy-environment.yml`: Common deployment logic for both production and PR environments
    - `cleanup-environment.yml`: Common cleanup logic for PR environments
-   
+
 2. **Refactored Existing Workflows**:
    - `deploy-production.yml`: Now calls reusable workflow with production-specific parameters
-   - `deploy-pr.yml`: Now calls reusable workflow with PR-specific parameters  
+   - `deploy-pr.yml`: Now calls reusable workflow with PR-specific parameters
    - `cleanup-pr.yml`: Now calls reusable cleanup workflow
 
 3. **Removed Code Duplication**:
@@ -80,14 +80,14 @@ We will use a **single deployment strategy** where:
 2. **Container App Deployment** (Azure CLI): Deploys application code via `az containerapp up`
 3. **Frontend Deployment** (Static Web Apps): Builds and deploys React application
 
-### Cleanup Process  
+### Cleanup Process
 1. **Manual Container App Deletion**: Removes CLI-deployed container apps
 2. **Deployment Stack Cleanup**: Removes Bicep-managed infrastructure resources
 3. **Timeout & Error Handling**: Graceful handling of cleanup failures
 
 ### Benefits of Reusable Workflows
 - **Maintainability**: Changes to deployment logic only need to be made once
-- **Consistency**: Identical deployment process for production and PR environments  
+- **Consistency**: Identical deployment process for production and PR environments
 - **Testing**: PR environments provide exact replica of production deployment
 - **Reliability**: Centralized error handling and timeout management
 
