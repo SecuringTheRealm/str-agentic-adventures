@@ -79,6 +79,27 @@ class Spell(BaseModel):
     duration: str
     description: str
 
+class SpellSlots(BaseModel):
+    """Tracks current and maximum spell slots by level."""
+    level_1_current: int = 0
+    level_1_max: int = 0
+    level_2_current: int = 0
+    level_2_max: int = 0
+    level_3_current: int = 0
+    level_3_max: int = 0
+    level_4_current: int = 0
+    level_4_max: int = 0
+    level_5_current: int = 0
+    level_5_max: int = 0
+    level_6_current: int = 0
+    level_6_max: int = 0
+    level_7_current: int = 0
+    level_7_max: int = 0
+    level_8_current: int = 0
+    level_8_max: int = 0
+    level_9_current: int = 0
+    level_9_max: int = 0
+
 class CharacterSheet(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str
@@ -96,6 +117,7 @@ class CharacterSheet(BaseModel):
     skills: Dict[str, bool] = {}
     inventory: List[Item] = []
     spells: List[Spell] = []
+    spell_slots: SpellSlots = Field(default_factory=SpellSlots)
     features: List[Dict[str, Any]] = []
     backstory: Optional[str] = None
     # Progression tracking
@@ -184,6 +206,27 @@ class CreateCampaignRequest(BaseModel):
     setting: str 
     tone: Optional[str] = "heroic"
     homebrew_rules: Optional[List[str]] = []
+
+class SpellSlotAction(str, Enum):
+    """Actions that can be performed on spell slots."""
+    USE = "use"
+    RECOVER = "recover"
+    LONG_REST = "long_rest"
+    SHORT_REST = "short_rest"
+
+class SpellSlotRequest(BaseModel):
+    """Request model for spell slot management."""
+    action: SpellSlotAction
+    spell_level: Optional[int] = None  # Required for 'use' and 'recover' actions
+    slot_count: Optional[int] = 1  # Number of slots to use/recover (default 1)
+
+class SpellSlotResponse(BaseModel):
+    """Response model for spell slot management."""
+    success: bool
+    message: str
+    spell_slots: Dict[str, Any]  # Current spell slot status
+    action_performed: str
+    slots_affected: Optional[Dict[str, int]] = None
 
 class GenerateImageRequest(BaseModel):
     image_type: str  # "character_portrait", "scene_illustration", "item_visualization"

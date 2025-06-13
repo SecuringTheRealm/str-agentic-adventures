@@ -77,6 +77,119 @@ class RulesEnginePlugin:
         # TODO: Add spell effect resolution system
         # TODO: Add concentration tracking for ongoing spells
 
+        # D&D 5e spell slot progression tables
+        self.spell_slot_tables = {
+            # Full casters (Wizard, Sorcerer, Cleric, Druid, Bard)
+            "full_caster": {
+                1: [2, 0, 0, 0, 0, 0, 0, 0, 0],
+                2: [3, 0, 0, 0, 0, 0, 0, 0, 0],
+                3: [4, 2, 0, 0, 0, 0, 0, 0, 0],
+                4: [4, 3, 0, 0, 0, 0, 0, 0, 0],
+                5: [4, 3, 2, 0, 0, 0, 0, 0, 0],
+                6: [4, 3, 3, 0, 0, 0, 0, 0, 0],
+                7: [4, 3, 3, 1, 0, 0, 0, 0, 0],
+                8: [4, 3, 3, 2, 0, 0, 0, 0, 0],
+                9: [4, 3, 3, 3, 1, 0, 0, 0, 0],
+                10: [4, 3, 3, 3, 2, 0, 0, 0, 0],
+                11: [4, 3, 3, 3, 2, 1, 0, 0, 0],
+                12: [4, 3, 3, 3, 2, 1, 0, 0, 0],
+                13: [4, 3, 3, 3, 2, 1, 1, 0, 0],
+                14: [4, 3, 3, 3, 2, 1, 1, 0, 0],
+                15: [4, 3, 3, 3, 2, 1, 1, 1, 0],
+                16: [4, 3, 3, 3, 2, 1, 1, 1, 0],
+                17: [4, 3, 3, 3, 2, 1, 1, 1, 1],
+                18: [4, 3, 3, 3, 3, 1, 1, 1, 1],
+                19: [4, 3, 3, 3, 3, 2, 1, 1, 1],
+                20: [4, 3, 3, 3, 3, 2, 2, 1, 1],
+            },
+            # Half casters (Paladin, Ranger)
+            "half_caster": {
+                1: [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                2: [2, 0, 0, 0, 0, 0, 0, 0, 0],
+                3: [3, 0, 0, 0, 0, 0, 0, 0, 0],
+                4: [3, 0, 0, 0, 0, 0, 0, 0, 0],
+                5: [4, 2, 0, 0, 0, 0, 0, 0, 0],
+                6: [4, 2, 0, 0, 0, 0, 0, 0, 0],
+                7: [4, 3, 0, 0, 0, 0, 0, 0, 0],
+                8: [4, 3, 0, 0, 0, 0, 0, 0, 0],
+                9: [4, 3, 2, 0, 0, 0, 0, 0, 0],
+                10: [4, 3, 2, 0, 0, 0, 0, 0, 0],
+                11: [4, 3, 3, 0, 0, 0, 0, 0, 0],
+                12: [4, 3, 3, 0, 0, 0, 0, 0, 0],
+                13: [4, 3, 3, 1, 0, 0, 0, 0, 0],
+                14: [4, 3, 3, 1, 0, 0, 0, 0, 0],
+                15: [4, 3, 3, 2, 0, 0, 0, 0, 0],
+                16: [4, 3, 3, 2, 0, 0, 0, 0, 0],
+                17: [4, 3, 3, 3, 1, 0, 0, 0, 0],
+                18: [4, 3, 3, 3, 1, 0, 0, 0, 0],
+                19: [4, 3, 3, 3, 2, 0, 0, 0, 0],
+                20: [4, 3, 3, 3, 2, 0, 0, 0, 0],
+            },
+            # Third casters (Eldritch Knight Fighter, Arcane Trickster Rogue)
+            "third_caster": {
+                1: [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                2: [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                3: [2, 0, 0, 0, 0, 0, 0, 0, 0],
+                4: [3, 0, 0, 0, 0, 0, 0, 0, 0],
+                5: [3, 0, 0, 0, 0, 0, 0, 0, 0],
+                6: [3, 0, 0, 0, 0, 0, 0, 0, 0],
+                7: [4, 2, 0, 0, 0, 0, 0, 0, 0],
+                8: [4, 2, 0, 0, 0, 0, 0, 0, 0],
+                9: [4, 2, 0, 0, 0, 0, 0, 0, 0],
+                10: [4, 3, 0, 0, 0, 0, 0, 0, 0],
+                11: [4, 3, 0, 0, 0, 0, 0, 0, 0],
+                12: [4, 3, 0, 0, 0, 0, 0, 0, 0],
+                13: [4, 3, 2, 0, 0, 0, 0, 0, 0],
+                14: [4, 3, 2, 0, 0, 0, 0, 0, 0],
+                15: [4, 3, 2, 0, 0, 0, 0, 0, 0],
+                16: [4, 3, 3, 0, 0, 0, 0, 0, 0],
+                17: [4, 3, 3, 0, 0, 0, 0, 0, 0],
+                18: [4, 3, 3, 0, 0, 0, 0, 0, 0],
+                19: [4, 3, 3, 1, 0, 0, 0, 0, 0],
+                20: [4, 3, 3, 1, 0, 0, 0, 0, 0],
+            },
+            # Warlock (unique pact magic system)
+            "warlock": {
+                1: [1, 0, 0, 0, 0, 0, 0, 0, 0],
+                2: [2, 0, 0, 0, 0, 0, 0, 0, 0],
+                3: [0, 2, 0, 0, 0, 0, 0, 0, 0],
+                4: [0, 2, 0, 0, 0, 0, 0, 0, 0],
+                5: [0, 0, 2, 0, 0, 0, 0, 0, 0],
+                6: [0, 0, 2, 0, 0, 0, 0, 0, 0],
+                7: [0, 0, 0, 2, 0, 0, 0, 0, 0],
+                8: [0, 0, 0, 2, 0, 0, 0, 0, 0],
+                9: [0, 0, 0, 0, 2, 0, 0, 0, 0],
+                10: [0, 0, 0, 0, 2, 0, 0, 0, 0],
+                11: [0, 0, 0, 0, 3, 0, 0, 0, 0],
+                12: [0, 0, 0, 0, 3, 0, 0, 0, 0],
+                13: [0, 0, 0, 0, 3, 0, 0, 0, 0],
+                14: [0, 0, 0, 0, 3, 0, 0, 0, 0],
+                15: [0, 0, 0, 0, 3, 0, 0, 0, 0],
+                16: [0, 0, 0, 0, 3, 0, 0, 0, 0],
+                17: [0, 0, 0, 0, 4, 0, 0, 0, 0],
+                18: [0, 0, 0, 0, 4, 0, 0, 0, 0],
+                19: [0, 0, 0, 0, 4, 0, 0, 0, 0],
+                20: [0, 0, 0, 0, 4, 0, 0, 0, 0],
+            },
+        }
+
+        # Map character classes to caster types
+        self.class_caster_types = {
+            "wizard": "full_caster",
+            "sorcerer": "full_caster",
+            "cleric": "full_caster",
+            "druid": "full_caster",
+            "bard": "full_caster",
+            "paladin": "half_caster",
+            "ranger": "half_caster",
+            "warlock": "warlock",
+            "fighter": "third_caster",  # Eldritch Knight subclass
+            "rogue": "third_caster",   # Arcane Trickster subclass
+            # Non-casters return no spell slots
+            "barbarian": None,
+            "monk": None,
+        }
+
     @kernel_function(
         description="Roll dice using standard D&D notation with advanced features (e.g., '1d20', '2d6+3', '4d6dl1', '2d20kh1').",
         name="roll_dice",
@@ -794,3 +907,202 @@ class RulesEnginePlugin:
         # Limit history size
         if len(self.roll_history) > self.max_history:
             self.roll_history = self.roll_history[-self.max_history :]
+
+    @kernel_function(
+        description="Calculate spell slots for a character based on class and level.",
+        name="calculate_spell_slots",
+    )
+    def calculate_spell_slots(self, character_class: str, level: int) -> Dict[str, Any]:
+        """
+        Calculate spell slots for a character based on class and level.
+
+        Args:
+            character_class: The character's class
+            level: The character's level
+
+        Returns:
+            Dict[str, Any]: Spell slot information by level
+        """
+        try:
+            caster_type = self.class_caster_types.get(character_class.lower())
+            
+            if not caster_type:
+                # Non-spellcasting class
+                return {
+                    "caster_type": "non_caster",
+                    "spell_slots": [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    "total_slots": 0,
+                }
+
+            spell_slots = self.spell_slot_tables[caster_type].get(level, [0, 0, 0, 0, 0, 0, 0, 0, 0])
+            
+            return {
+                "caster_type": caster_type,
+                "level": level,
+                "spell_slots": spell_slots,
+                "total_slots": sum(spell_slots),
+                "spell_slots_by_level": {
+                    f"level_{i+1}": slots for i, slots in enumerate(spell_slots)
+                }
+            }
+        except Exception as e:
+            logger.error(f"Error calculating spell slots: {str(e)}")
+            return {"error": f"Error calculating spell slots: {str(e)}"}
+
+    def manage_spell_slots(self, character_data: Dict[str, Any], action: str, spell_level: int = None, slot_count: int = 1) -> Dict[str, Any]:
+        """
+        Manage spell slot usage and recovery for a character.
+
+        Args:
+            character_data: Character data including current spell slots
+            action: Action to perform ('use', 'recover', 'long_rest', 'short_rest')
+            spell_level: Spell level (1-9) for 'use' and 'recover' actions
+            slot_count: Number of slots to use/recover
+
+        Returns:
+            Dict[str, Any]: Result of the spell slot management
+        """
+        try:
+            character_class = character_data.get("character_class") or character_data.get("class", "")
+            level = character_data.get("level", 1)
+            current_spell_slots = character_data.get("spell_slots", {})
+
+            # Calculate maximum spell slots for this character
+            max_slots_info = self.calculate_spell_slots(character_class, level)
+            if "error" in max_slots_info:
+                return max_slots_info
+
+            max_spell_slots = max_slots_info["spell_slots"]
+
+            # Initialize current spell slots if not present
+            if not current_spell_slots:
+                current_spell_slots = {
+                    f"level_{i+1}_current": max_spell_slots[i]
+                    for i in range(9)
+                }
+                current_spell_slots.update({
+                    f"level_{i+1}_max": max_spell_slots[i]
+                    for i in range(9)
+                })
+
+            result = {
+                "success": False,
+                "message": "",
+                "spell_slots": current_spell_slots,
+                "action_performed": action,
+                "slots_affected": {}
+            }
+
+            if action == "use":
+                if spell_level is None or spell_level < 1 or spell_level > 9:
+                    return {
+                        "success": False,
+                        "message": "Invalid spell level. Must be between 1 and 9.",
+                        "spell_slots": current_spell_slots,
+                        "action_performed": action
+                    }
+
+                current_key = f"level_{spell_level}_current"
+                current_slots = current_spell_slots.get(current_key, 0)
+
+                if current_slots < slot_count:
+                    return {
+                        "success": False,
+                        "message": f"Not enough level {spell_level} spell slots. Current: {current_slots}, Requested: {slot_count}",
+                        "spell_slots": current_spell_slots,
+                        "action_performed": action
+                    }
+
+                current_spell_slots[current_key] = current_slots - slot_count
+                result["success"] = True
+                result["message"] = f"Used {slot_count} level {spell_level} spell slot(s)."
+                result["slots_affected"] = {f"level_{spell_level}": -slot_count}
+
+            elif action == "recover":
+                if spell_level is None or spell_level < 1 or spell_level > 9:
+                    return {
+                        "success": False,
+                        "message": "Invalid spell level. Must be between 1 and 9.",
+                        "spell_slots": current_spell_slots,
+                        "action_performed": action
+                    }
+
+                current_key = f"level_{spell_level}_current"
+                max_key = f"level_{spell_level}_max"
+                current_slots = current_spell_slots.get(current_key, 0)
+                max_slots = current_spell_slots.get(max_key, max_spell_slots[spell_level - 1])
+
+                slots_to_recover = min(slot_count, max_slots - current_slots)
+                if slots_to_recover <= 0:
+                    return {
+                        "success": False,
+                        "message": f"Level {spell_level} spell slots are already at maximum ({max_slots}).",
+                        "spell_slots": current_spell_slots,
+                        "action_performed": action
+                    }
+
+                current_spell_slots[current_key] = current_slots + slots_to_recover
+                result["success"] = True
+                result["message"] = f"Recovered {slots_to_recover} level {spell_level} spell slot(s)."
+                result["slots_affected"] = {f"level_{spell_level}": slots_to_recover}
+
+            elif action == "long_rest":
+                # Long rest recovers all spell slots
+                slots_recovered = {}
+                for i in range(9):
+                    current_key = f"level_{i+1}_current"
+                    max_key = f"level_{i+1}_max"
+                    max_slots = max_spell_slots[i]
+                    current_slots = current_spell_slots.get(current_key, 0)
+                    
+                    if max_slots > 0:
+                        slots_recovered_for_level = max_slots - current_slots
+                        current_spell_slots[current_key] = max_slots
+                        current_spell_slots[max_key] = max_slots
+                        if slots_recovered_for_level > 0:
+                            slots_recovered[f"level_{i+1}"] = slots_recovered_for_level
+
+                result["success"] = True
+                result["message"] = "Long rest completed. All spell slots recovered."
+                result["slots_affected"] = slots_recovered
+
+            elif action == "short_rest":
+                # Short rest only affects Warlocks (they recover all spell slots)
+                caster_type = max_slots_info.get("caster_type")
+                if caster_type == "warlock":
+                    slots_recovered = {}
+                    for i in range(9):
+                        current_key = f"level_{i+1}_current"
+                        max_key = f"level_{i+1}_max"
+                        max_slots = max_spell_slots[i]
+                        current_slots = current_spell_slots.get(current_key, 0)
+                        
+                        if max_slots > 0:
+                            slots_recovered_for_level = max_slots - current_slots
+                            current_spell_slots[current_key] = max_slots
+                            current_spell_slots[max_key] = max_slots
+                            if slots_recovered_for_level > 0:
+                                slots_recovered[f"level_{i+1}"] = slots_recovered_for_level
+
+                    result["success"] = True
+                    result["message"] = "Short rest completed. Warlock spell slots recovered."
+                    result["slots_affected"] = slots_recovered
+                else:
+                    result["success"] = True
+                    result["message"] = "Short rest completed. No spell slots recovered (not a Warlock)."
+                    result["slots_affected"] = {}
+
+            else:
+                return {
+                    "success": False,
+                    "message": f"Unknown action: {action}",
+                    "spell_slots": current_spell_slots,
+                    "action_performed": action
+                }
+
+            result["spell_slots"] = current_spell_slots
+            return result
+
+        except Exception as e:
+            logger.error(f"Error managing spell slots: {str(e)}")
+            return {"error": f"Error managing spell slots: {str(e)}"}

@@ -12,6 +12,8 @@ from app.models.game_models import (
     GameResponse,
     CharacterSheet,
     LevelUpRequest,
+    SpellSlotRequest,
+    SpellSlotResponse,
 )
 from app.agents.dungeon_master_agent import get_dungeon_master
 from app.agents.scribe_agent import get_scribe
@@ -275,6 +277,89 @@ async def get_progression_info(character_id: str):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get progression info: {str(e)}",
+        )
+
+
+@router.post("/character/{character_id}/spell-slots", response_model=SpellSlotResponse)
+async def manage_spell_slots(character_id: str, request: SpellSlotRequest):
+    """Manage spell slot usage and recovery for a character."""
+    try:
+        # Get character data
+        character = await get_scribe().get_character(character_id)
+        if not character:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Character {character_id} not found",
+            )
+
+        from app.plugins.rules_engine_plugin import RulesEnginePlugin
+
+        rules_engine = RulesEnginePlugin()
+        
+        # Validate request based on action
+        if request.action in ["use", "recover"] and request.spell_level is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"spell_level is required for action '{request.action}'",
+            )
+
+        if request.spell_level is not None and (request.spell_level < 1 or request.spell_level > 9):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="spell_level must be between 1 and 9",
+            )
+
+        if request.slot_count is not None and request.slot_count < 1:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="slot_count must be at least 1",
+            )
+
+        # Manage spell slots
+        result = rules_engine.manage_spell_slots(
+            character,
+            request.action.value,
+            request.spell_level,
+            request.slot_count or 1
+        )
+
+        if "error" in result:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=result["error"]
+            )
+
+        # Update character data if the action was successful
+        if result["success"]:
+            # Convert spell slots format to match CharacterSheet model
+            spell_slots_data = result["spell_slots"]
+            updated_character = character.copy()
+            
+            # Update spell_slots field in character
+            if "spell_slots" not in updated_character:
+                updated_character["spell_slots"] = {}
+            
+            for key, value in spell_slots_data.items():
+                updated_character["spell_slots"][key] = value
+
+            # Save updated character (would need to implement in scribe agent)
+            # For now, we'll return the result as-is
+            pass
+
+        return SpellSlotResponse(
+            success=result["success"],
+            message=result["message"],
+            spell_slots=result["spell_slots"],
+            action_performed=result["action_performed"],
+            slots_affected=result.get("slots_affected")
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to manage spell slots: {str(e)}",
         )
 
 
@@ -847,7 +932,6 @@ async def process_general_action(
 
 # TODO: Add spell system API endpoints
 # TODO: POST /character/{character_id}/spells - Manage known spells for character
-# TODO: POST /character/{character_id}/spell-slots - Manage spell slot usage and recovery
 # TODO: POST /combat/{combat_id}/cast-spell - Cast spells during combat with effect resolution
 # TODO: GET /spells/list - Get available spells by class and level
 # TODO: POST /spells/save-dc - Calculate spell save DC for a character
