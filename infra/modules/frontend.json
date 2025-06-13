@@ -65,7 +65,7 @@
       "apiVersion": "2022-09-01",
       "name": "[format('{0}/{1}', parameters('name'), 'appsettings')]",
       "properties": {
-        "REACT_APP_API_BASE_URL": "[parameters('backendUrl')]"
+        "REACT_APP_API_URL": "[parameters('backendUrl')]"
       },
       "dependsOn": [
         "[resourceId('Microsoft.Web/staticSites', parameters('name'))]"

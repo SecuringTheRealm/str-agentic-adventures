@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import './DiceRoller.css';
+import { apiClient } from '../services/api';
 
 interface DiceResult {
 	notation: string;
@@ -70,8 +71,8 @@ const DiceRoller: React.FC<DiceRollerProps> = ({ onRoll, characterId, playerName
 			} else {
 				// Fallback to direct API call
 				const endpoint = characterId && skill 
-					? '/api/game/dice/roll-with-character'
-					: '/api/game/dice/roll';
+					? '/game/dice/roll-with-character'
+					: '/game/dice/roll';
 				
 				const requestBody = characterId && skill ? {
 					notation: diceNotation,
@@ -81,19 +82,8 @@ const DiceRoller: React.FC<DiceRollerProps> = ({ onRoll, characterId, playerName
 					notation: diceNotation
 				};
 
-				const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8000'}${endpoint}`, {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					body: JSON.stringify(requestBody),
-				});
-
-				if (!response.ok) {
-					throw new Error(`Failed to roll dice: ${response.statusText}`);
-				}
-
-				result = await response.json();
+				const response = await apiClient.post(endpoint, requestBody);
+				result = response.data;
 			}
 
 			// Add timestamp if not present

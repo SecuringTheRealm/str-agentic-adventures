@@ -102,7 +102,7 @@ module frontend 'modules/frontend.bicep' = {
     name: '${environmentName}-frontend-${resourceToken}'
     location: location
     tags: tags
-    backendUrl: backend.outputs.uri
+    backendUrl: '${backend.outputs.uri}/api'
   }
 }
 
