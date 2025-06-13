@@ -75,7 +75,6 @@ class RulesEnginePlugin:
         # TODO: Add spell save DC calculation
         # TODO: Add spell attack bonus calculation
         # TODO: Add spell effect resolution system
-        # TODO: Add concentration tracking for ongoing spells
 
     @kernel_function(
         description="Roll dice using standard D&D notation with advanced features (e.g., '1d20', '2d6+3', '4d6dl1', '2d20kh1').",
@@ -690,6 +689,93 @@ class RulesEnginePlugin:
         except Exception as e:
             logger.error(f"Error calculating level up HP: {str(e)}")
             return {"error": f"Error calculating level up HP: {str(e)}"}
+
+    @kernel_function(
+        description="Perform a concentration saving throw when a caster takes damage while concentrating on a spell.",
+        name="concentration_check",
+    )
+    def concentration_check(
+        self,
+        damage_taken: int,
+        constitution_score: int,
+        proficient_in_constitution: bool = False,
+        proficiency_bonus: int = 2,
+        war_caster_feat: bool = False,
+        advantage: bool = False,
+        disadvantage: bool = False,
+    ) -> Dict[str, Any]:
+        """
+        Perform a concentration saving throw when a caster takes damage.
+
+        Args:
+            damage_taken: The amount of damage taken
+            constitution_score: The caster's Constitution score
+            proficient_in_constitution: Whether the caster is proficient in Constitution saves
+            proficiency_bonus: The caster's proficiency bonus
+            war_caster_feat: Whether the caster has the War Caster feat (grants advantage)
+            advantage: Whether the caster has advantage on the save
+            disadvantage: Whether the caster has disadvantage on the save
+
+        Returns:
+            Dict[str, Any]: The result of the concentration check
+        """
+        try:
+            # Calculate DC: 10 or half damage taken, whichever is higher
+            dc = max(10, damage_taken // 2)
+
+            # Calculate Constitution modifier
+            constitution_modifier = (constitution_score - 10) // 2
+
+            # Calculate total modifier
+            total_modifier = constitution_modifier
+            if proficient_in_constitution:
+                total_modifier += proficiency_bonus
+
+            # War Caster feat grants advantage on concentration saves
+            final_advantage = advantage or war_caster_feat
+            final_disadvantage = disadvantage and not final_advantage
+
+            # Perform the saving throw
+            if final_advantage and not final_disadvantage:
+                # Roll with advantage
+                roll1 = random.randint(1, 20)
+                roll2 = random.randint(1, 20)
+                roll = max(roll1, roll2)
+                rolls = [roll1, roll2]
+                advantage_type = "advantage"
+            elif final_disadvantage and not final_advantage:
+                # Roll with disadvantage
+                roll1 = random.randint(1, 20)
+                roll2 = random.randint(1, 20)
+                roll = min(roll1, roll2)
+                rolls = [roll1, roll2]
+                advantage_type = "disadvantage"
+            else:
+                # Normal roll
+                roll = random.randint(1, 20)
+                rolls = [roll]
+                advantage_type = "normal"
+
+            # Calculate total and determine success
+            total = roll + total_modifier
+            success = total >= dc
+
+            return {
+                "damage_taken": damage_taken,
+                "dc": dc,
+                "rolls": rolls,
+                "constitution_modifier": constitution_modifier,
+                "proficiency_bonus": proficiency_bonus if proficient_in_constitution else 0,
+                "total_modifier": total_modifier,
+                "war_caster_feat": war_caster_feat,
+                "advantage_type": advantage_type,
+                "total": total,
+                "success": success,
+                "concentration_maintained": success,
+            }
+        except Exception as e:
+            logger.error(f"Error performing concentration check: {str(e)}")
+            return {"error": f"Error performing concentration check: {str(e)}"}
 
     def roll_with_character(
         self, dice_notation: str, character: Dict[str, Any], skill: str = None

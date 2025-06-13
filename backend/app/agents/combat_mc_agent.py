@@ -189,15 +189,103 @@ class CombatMCAgent:
         Returns:
             Dict[str, Any]: The result of the action and updated combat state
         """
+        try:
+            if encounter_id not in self.active_combats:
+                return {"error": f"Encounter {encounter_id} not found"}
+
+            encounter = self.active_combats[encounter_id]
+            
+            # Extract action information
+            action_type = action_data.get("type", "attack")
+            actor_id = action_data.get("actor_id")
+            target_id = action_data.get("target_id")
+            
+            result = {"message": "Combat action processed", "success": True}
+            
+            # Handle damage-dealing actions that might trigger concentration checks
+            if action_type in ["attack", "spell_attack"] and "damage" in action_data:
+                damage_result = await self._process_damage_action(
+                    encounter, actor_id, target_id, action_data
+                )
+                result.update(damage_result)
+            
+            # Store updated encounter
+            self.active_combats[encounter_id] = encounter
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error processing combat action: {str(e)}")
+            return {"error": f"Failed to process combat action: {str(e)}"}
+        
         # TODO: Implement full combat action processing
         # TODO: Add spell effect resolution and area of effect calculations
         # TODO: Add movement tracking and positioning on battle maps
         # TODO: Add complex action types (grapple, shove, dodge, dash, hide)
         # TODO: Add spell save calculations and status effect application
-        # TODO: Add concentration checks for casters when taking damage
         # TODO: Add opportunity attack calculations for movement
         # TODO: Add multi-attack action handling for high-level characters
-        return {"message": "Combat action processed", "success": True}
+
+    async def _process_damage_action(
+        self, encounter: Dict[str, Any], actor_id: str, target_id: str, action_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Process a damage-dealing action and handle concentration checks.
+
+        Args:
+            encounter: The active encounter
+            actor_id: ID of the actor performing the action
+            target_id: ID of the target receiving damage
+            action_data: Action details including damage
+
+        Returns:
+            Dict[str, Any]: Result of the damage action including concentration checks
+        """
+        try:
+            damage = action_data.get("damage", 0)
+            result = {
+                "action_type": action_data.get("type"),
+                "actor_id": actor_id,
+                "target_id": target_id,
+                "damage_dealt": damage
+            }
+            
+            # Check if target is concentrating on a spell
+            target_concentrating = action_data.get("target_concentrating", False)
+            target_constitution = action_data.get("target_constitution", 10)
+            target_proficient_con = action_data.get("target_proficient_constitution", False)
+            target_proficiency_bonus = action_data.get("target_proficiency_bonus", 2)
+            target_war_caster = action_data.get("target_war_caster", False)
+            
+            if target_concentrating and damage > 0:
+                # Use the rules engine to perform concentration check
+                from app.plugins.rules_engine_plugin import RulesEnginePlugin
+                rules_engine = RulesEnginePlugin()
+                
+                concentration_result = rules_engine.concentration_check(
+                    damage_taken=damage,
+                    constitution_score=target_constitution,
+                    proficient_in_constitution=target_proficient_con,
+                    proficiency_bonus=target_proficiency_bonus,
+                    war_caster_feat=target_war_caster
+                )
+                
+                result["concentration_check"] = concentration_result
+                
+                if not concentration_result.get("success", False):
+                    result["concentration_lost"] = True
+                    result["message"] = f"Target takes {damage} damage and loses concentration on their spell!"
+                else:
+                    result["concentration_maintained"] = True
+                    result["message"] = f"Target takes {damage} damage but maintains concentration on their spell."
+            else:
+                result["message"] = f"Target takes {damage} damage."
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error processing damage action: {str(e)}")
+            return {"error": f"Failed to process damage action: {str(e)}"}
 
     def _calculate_average_party_level(self, party_info: Dict[str, Any]) -> float:
         """Calculate the average level of the party."""
