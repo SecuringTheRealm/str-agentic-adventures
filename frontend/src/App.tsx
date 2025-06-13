@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './App.css';
 import CampaignSelection from './components/CampaignSelection';
+import CharacterSelection from './components/CharacterSelection';
 import GameInterface from './components/GameInterface';
 import type { Campaign, Character } from './services/api';
 
@@ -8,32 +9,16 @@ function App() {
   const [currentCampaign, setCurrentCampaign] = useState<Campaign | null>(null);
   const [currentCharacter, setCurrentCharacter] = useState<Character | null>(null);
   const [gameStarted, setGameStarted] = useState(false);
+  const [showCharacterSelection, setShowCharacterSelection] = useState(false);
 
   const handleCampaignCreated = (campaign: Campaign) => {
     setCurrentCampaign(campaign);
-    // For demo purposes, create a sample character
-    // In a real app, this would come from character creation
-    const sampleCharacter: Character = {
-      id: "demo-char-1",
-      name: "Adventurer",
-      race: "Human",
-      character_class: "Fighter",
-      level: 1,
-      abilities: {
-        strength: 16,
-        dexterity: 14,
-        constitution: 15,
-        intelligence: 12,
-        wisdom: 13,
-        charisma: 10
-      },
-      hit_points: {
-        current: 12,
-        maximum: 12
-      },
-      inventory: []
-    };
-    setCurrentCharacter(sampleCharacter);
+    setShowCharacterSelection(true);
+  };
+
+  const handleCharacterSelected = (character: Character) => {
+    setCurrentCharacter(character);
+    setShowCharacterSelection(false);
     setGameStarted(true);
   };
 
@@ -41,6 +26,7 @@ function App() {
     setCurrentCampaign(null);
     setCurrentCharacter(null);
     setGameStarted(false);
+    setShowCharacterSelection(false);
   };
 
   return (
@@ -55,9 +41,17 @@ function App() {
       </header>
       
       <main className="App-main">
-        {!gameStarted ? (
+        {!gameStarted && !showCharacterSelection ? (
           <div className="campaign-setup">
             <CampaignSelection onCampaignCreated={handleCampaignCreated} />
+          </div>
+        ) : showCharacterSelection && currentCampaign ? (
+          <div className="character-setup">
+            <CharacterSelection 
+              campaign={currentCampaign}
+              onCharacterSelected={handleCharacterSelected}
+              onBackToCampaigns={handleBackToCampaigns}
+            />
           </div>
         ) : (
           currentCampaign && currentCharacter && (
