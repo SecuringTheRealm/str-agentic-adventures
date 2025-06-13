@@ -13,11 +13,19 @@ from app.models.game_models import (
     CharacterSheet,
     LevelUpRequest,
     SpellAttackBonusRequest,
+    CreateCampaignRequest,
+    CampaignUpdateRequest,
+    CloneCampaignRequest,
+    CampaignListResponse,
+    AIAssistanceRequest,
+    AIAssistanceResponse,
+    Campaign,
 )
 from app.agents.dungeon_master_agent import get_dungeon_master
 from app.agents.scribe_agent import get_scribe
 from app.agents.combat_cartographer_agent import get_combat_cartographer
 from app.agents.artist_agent import get_artist
+from app.services.campaign_service import campaign_service
 
 router = APIRouter(tags=["game"])
 
@@ -62,17 +70,11 @@ async def get_character(character_id: str):
     return character
 
 
-@router.post("/campaign", response_model=Dict[str, Any])
-async def create_campaign(campaign_data: Dict[str, Any]):
+@router.post("/campaign", response_model=Campaign)
+async def create_campaign(campaign_data: CreateCampaignRequest):
     """Create a new campaign."""
     try:
-        campaign = await get_dungeon_master().create_campaign(campaign_data)
-
-        if "error" in campaign:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail=campaign["error"]
-            )
-
+        campaign = campaign_service.create_campaign(campaign_data)
         return campaign
     except ValueError as e:
         # Handle configuration errors specifically
@@ -87,6 +89,186 @@ async def create_campaign(campaign_data: Dict[str, Any]):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to create campaign: {str(e)}",
+        )
+
+
+@router.get("/campaigns", response_model=CampaignListResponse)
+async def list_campaigns():
+    """List all campaigns including templates and custom campaigns."""
+    try:
+        all_campaigns = campaign_service.list_campaigns()
+        templates = campaign_service.get_templates()
+        
+        return CampaignListResponse(
+            campaigns=all_campaigns,
+            templates=templates
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to list campaigns: {str(e)}",
+        )
+
+
+@router.get("/campaign/{campaign_id}", response_model=Campaign)
+async def get_campaign(campaign_id: str):
+    """Get a specific campaign by ID."""
+    try:
+        campaign = campaign_service.get_campaign(campaign_id)
+        if not campaign:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Campaign {campaign_id} not found"
+            )
+        return campaign
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get campaign: {str(e)}",
+        )
+
+
+@router.put("/campaign/{campaign_id}", response_model=Campaign)
+async def update_campaign(campaign_id: str, updates: CampaignUpdateRequest):
+    """Update an existing campaign."""
+    try:
+        # Convert to dict, excluding None values
+        update_data = {k: v for k, v in updates.model_dump().items() if v is not None}
+        
+        if not update_data:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No valid updates provided"
+            )
+        
+        updated_campaign = campaign_service.update_campaign(campaign_id, update_data)
+        if not updated_campaign:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Campaign {campaign_id} not found"
+            )
+        
+        return updated_campaign
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update campaign: {str(e)}",
+        )
+
+
+@router.post("/campaign/clone", response_model=Campaign)
+async def clone_campaign(clone_data: CloneCampaignRequest):
+    """Clone a template campaign for customization."""
+    try:
+        cloned_campaign = campaign_service.clone_campaign(
+            clone_data.template_id,
+            clone_data.new_name
+        )
+        
+        if not cloned_campaign:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Template campaign {clone_data.template_id} not found"
+            )
+        
+        return cloned_campaign
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to clone campaign: {str(e)}",
+        )
+
+
+@router.delete("/campaign/{campaign_id}")
+async def delete_campaign(campaign_id: str):
+    """Delete a custom campaign (templates cannot be deleted)."""
+    try:
+        success = campaign_service.delete_campaign(campaign_id)
+        if not success:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Campaign {campaign_id} not found or cannot be deleted"
+            )
+        
+        return {"message": "Campaign deleted successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete campaign: {str(e)}",
+        )
+
+
+@router.get("/campaign/templates")
+async def get_campaign_templates():
+    """Get pre-built campaign templates."""
+    try:
+        templates = campaign_service.get_templates()
+        return {"templates": templates}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get templates: {str(e)}",
+        )
+
+
+@router.post("/campaign/ai-assist", response_model=AIAssistanceResponse)
+async def get_ai_assistance(request: AIAssistanceRequest):
+    """Get AI assistance for campaign text enhancement."""
+    try:
+        # For now, provide simple suggestions based on context type
+        # In a full implementation, this would use the AI agents
+        suggestions = []
+        enhanced_text = None
+        
+        if request.context_type == "setting":
+            suggestions = [
+                "Add more sensory details (sights, sounds, smells)",
+                "Include potential conflict sources or tensions",
+                "Describe the political or social climate",
+                "Mention notable landmarks or geographical features"
+            ]
+        elif request.context_type == "description":
+            suggestions = [
+                "Expand on character motivations",
+                "Add more dialogue or character interactions",
+                "Include environmental details that set the mood",
+                "Consider adding a plot twist or complication"
+            ]
+        elif request.context_type == "plot_hook":
+            suggestions = [
+                "Make the stakes more personal for the characters",
+                "Add a time pressure element",
+                "Include moral dilemmas or difficult choices",
+                "Connect to character backstories"
+            ]
+        else:
+            suggestions = [
+                "Consider your target audience and tone",
+                "Add specific details that engage the senses",
+                "Think about cause and effect relationships",
+                "Ensure consistency with your campaign world"
+            ]
+        
+        # Simple text enhancement - in a full implementation this would use AI
+        if request.text:
+            enhanced_text = f"Enhanced: {request.text}"
+        
+        return AIAssistanceResponse(
+            suggestions=suggestions,
+            enhanced_text=enhanced_text
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get AI assistance: {str(e)}",
         )
 
 
