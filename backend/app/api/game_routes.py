@@ -19,6 +19,8 @@ from app.models.game_models import (
     CampaignListResponse,
     AIAssistanceRequest,
     AIAssistanceResponse,
+    AIContentGenerationRequest,
+    AIContentGenerationResponse,
     Campaign,
     Spell,
     CharacterClass,
@@ -302,6 +304,68 @@ async def get_ai_assistance(request: AIAssistanceRequest):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get AI assistance: {str(e)}",
+        )
+
+
+@router.post("/campaign/ai-generate", response_model=AIContentGenerationResponse)
+async def generate_ai_content(request: AIContentGenerationRequest):
+    """Generate AI content based on a specific suggestion and current text."""
+    try:
+        from app.azure_openai_client import AzureOpenAIClient
+        
+        # Initialize the Azure OpenAI client
+        openai_client = AzureOpenAIClient()
+        
+        # Create contextual prompt based on suggestion type and content
+        system_prompt = f"""You are an expert D&D campaign writer helping to enhance campaign content.
+Your task is to generate creative, contextual content based on a specific suggestion.
+Campaign Tone: {request.campaign_tone}
+Context Type: {request.context_type}
+Current Text: {request.current_text or "None"}
+
+The user wants you to: {request.suggestion}
+
+Guidelines:
+- Generate 2-4 sentences of high-quality content that fulfills the suggestion
+- If there's existing text, build upon it naturally and coherently
+- Match the campaign tone ({request.campaign_tone})
+- Be specific and evocative, not generic
+- Focus on details that enhance the game experience
+- Don't repeat the suggestion text itself
+
+Respond with ONLY the generated content, no explanations or meta-text."""
+
+        user_prompt = f"Current field content: {request.current_text or '(empty)'}\n\nSuggestion to implement: {request.suggestion}"
+        
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ]
+        
+        # Generate content using Azure OpenAI
+        generated_content = await openai_client.chat_completion(
+            messages,
+            temperature=0.7,
+            max_tokens=300
+        )
+        
+        if not generated_content or generated_content.strip() == "":
+            return AIContentGenerationResponse(
+                generated_content="",
+                success=False,
+                error="Failed to generate content"
+            )
+        
+        return AIContentGenerationResponse(
+            generated_content=generated_content.strip(),
+            success=True
+        )
+        
+    except Exception as e:
+        return AIContentGenerationResponse(
+            generated_content="",
+            success=False,
+            error=f"Failed to generate AI content: {str(e)}"
         )
 
 
