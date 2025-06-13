@@ -199,6 +199,65 @@ export const sendPlayerInput = async (
 	}
 };
 
+export const sendPlayerInputStream = async function* (
+	input: PlayerInputRequest,
+): AsyncGenerator<any> {
+	try {
+		const response = await fetch(`${API_BASE_URL}/game/input/stream`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(input),
+		});
+
+		if (!response.ok) {
+			throw new Error(`HTTP error! status: ${response.status}`);
+		}
+
+		const reader = response.body?.getReader();
+		if (!reader) {
+			throw new Error("No reader available for response stream");
+		}
+
+		const decoder = new TextDecoder();
+		let buffer = "";
+
+		try {
+			while (true) {
+				const { done, value } = await reader.read();
+				if (done) break;
+
+				buffer += decoder.decode(value, { stream: true });
+				
+				// Split by lines and process each complete line
+				const lines = buffer.split("\n");
+				buffer = lines.pop() || ""; // Keep the incomplete line in buffer
+
+				for (const line of lines) {
+					if (line.trim() === "") continue;
+					
+					// Parse SSE format
+					if (line.startsWith("data: ")) {
+						const jsonStr = line.slice(6); // Remove "data: "
+						try {
+							const data = JSON.parse(jsonStr);
+							yield data;
+						} catch (e) {
+							console.warn("Failed to parse streaming data:", jsonStr);
+						}
+					}
+				}
+			}
+		} finally {
+			reader.releaseLock();
+		}
+	} catch (error) {
+		console.error("Error in streaming player input:", error);
+		throw error;
+	}
+};
+
 export const createCampaign = async (
 	campaignData: CampaignCreateRequest,
 ): Promise<Campaign> => {

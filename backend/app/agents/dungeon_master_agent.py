@@ -31,6 +31,7 @@ class DungeonMasterAgent:
         """Initialize the Dungeon Master agent with its own kernel instance."""
         # Initialize basic attributes first
         self.active_sessions = {}
+        self.conversation_histories = {}  # Store conversation history per campaign/character
         self._fallback_mode = False
         self.kernel = None
         
@@ -247,6 +248,135 @@ class DungeonMasterAgent:
             logger.error(f"Error creating campaign: {str(e)}")
             return {"error": "Failed to create campaign"}
 
+    def _get_conversation_key(self, context: Dict[str, Any]) -> str:
+        """Generate a unique key for conversation history."""
+        campaign_id = context.get("campaign_id", "default")
+        character_id = context.get("character_id", "default")
+        return f"{campaign_id}:{character_id}"
+    
+    def _get_conversation_history(self, context: Dict[str, Any]) -> List[Dict[str, str]]:
+        """Get conversation history for the current character/campaign."""
+        key = self._get_conversation_key(context)
+        return self.conversation_histories.get(key, [])
+    
+    def _add_to_conversation_history(self, context: Dict[str, Any], user_input: str, response: str):
+        """Add user input and response to conversation history."""
+        key = self._get_conversation_key(context)
+        if key not in self.conversation_histories:
+            self.conversation_histories[key] = []
+        
+        self.conversation_histories[key].extend([
+            {"role": "user", "content": user_input},
+            {"role": "assistant", "content": response}
+        ])
+        
+        # Keep only the last 20 messages to avoid context length issues
+        if len(self.conversation_histories[key]) > 20:
+            self.conversation_histories[key] = self.conversation_histories[key][-20:]
+    
+    def _get_system_prompt(self, context: Dict[str, Any]) -> str:
+        """Generate system prompt for the DM based on context."""
+        character_name = context.get("character_name", "the adventurer")
+        character_class = context.get("character_class", "Fighter")
+        character_level = context.get("character_level", "1")
+        
+        return f"""You are an experienced Dungeon Master running a D&D 5e campaign. You are creative, engaging, and provide immersive storytelling while following D&D rules.
+
+Current player: {character_name}, Level {character_level} {character_class}
+
+Guidelines:
+- Respond in character as the DM
+- Be descriptive and engaging
+- Follow D&D 5e rules when applicable
+- Ask for dice rolls when appropriate
+- Keep responses concise but immersive (2-4 sentences usually)
+- Adapt to the player's actions and maintain narrative flow
+- If the player wants to do something, describe the outcome or ask for appropriate rolls
+
+Remember: You're facilitating an exciting adventure story. Be creative and responsive to the player's choices."""
+
+    async def process_input_stream(
+        self, user_input: str, context: Dict[str, Any] | None = None
+    ):
+        """
+        Process user input and yield streaming responses.
+
+        Args:
+            user_input: The player's input text
+            context: Additional context information (game state, etc.)
+
+        Yields:
+            Dict[str, Any]: Streaming chunks of the response
+        """
+        if not context:
+            context = {}
+
+        logger.info(f"Processing streaming player input: {user_input}")
+
+        # Check if we're in fallback mode
+        if getattr(self, '_fallback_mode', False):
+            # For fallback mode, just yield the complete response at once
+            response = await self._process_input_fallback(user_input, context)
+            yield {
+                "type": "message",
+                "content": response.get("message", ""),
+                "final": True,
+                "state_updates": response.get("state_updates", {}),
+                "visuals": response.get("visuals", []),
+                "combat_updates": response.get("combat_updates")
+            }
+            return
+
+        try:
+            # Get conversation history
+            conversation_history = self._get_conversation_history(context)
+            
+            # Build messages for the AI
+            messages = [{"role": "system", "content": self._get_system_prompt(context)}]
+            messages.extend(conversation_history)
+            messages.append({"role": "user", "content": user_input})
+
+            # Initialize response tracking
+            full_response = ""
+            
+            # Get streaming response from Azure OpenAI
+            from app.azure_openai_client import AzureOpenAIClient
+            openai_client = AzureOpenAIClient()
+            
+            # Yield start indicator
+            yield {"type": "start"}
+            
+            async for chunk in openai_client.chat_completion_stream(
+                messages,
+                temperature=0.7,
+                max_tokens=500
+            ):
+                if chunk.strip():
+                    full_response += chunk
+                    yield {
+                        "type": "content",
+                        "content": chunk
+                    }
+            
+            # Add to conversation history
+            self._add_to_conversation_history(context, user_input, full_response)
+            
+            # Yield final response with metadata
+            yield {
+                "type": "end",
+                "final_message": full_response,
+                "state_updates": {"last_action": user_input},
+                "visuals": [],
+                "combat_updates": None
+            }
+
+        except Exception as e:
+            logger.error(f"Error in streaming processing: {str(e)}")
+            yield {
+                "type": "error",
+                "message": f"I'm sorry, I encountered an issue processing your request: {str(e)}"
+            }
+
     async def process_input(
         self, user_input: str, context: Dict[str, Any] | None = None
     ) -> Dict[str, Any]:
@@ -270,101 +400,35 @@ class DungeonMasterAgent:
             return await self._process_input_fallback(user_input, context)
 
         try:
-            # Analyze the input type to determine which agents to invoke
-            input_type, input_details = await self._analyze_input(user_input, context)
+            # Get conversation history
+            conversation_history = self._get_conversation_history(context)
+            
+            # Build messages for the AI
+            messages = [{"role": "system", "content": self._get_system_prompt(context)}]
+            messages.extend(conversation_history)
+            messages.append({"role": "user", "content": user_input})
+
+            # Get response from Azure OpenAI
+            from app.azure_openai_client import AzureOpenAIClient
+            openai_client = AzureOpenAIClient()
+            
+            dm_message = await openai_client.chat_completion(
+                messages,
+                temperature=0.7,
+                max_tokens=500
+            )
+            
+            # Add to conversation history
+            self._add_to_conversation_history(context, user_input, dm_message)
 
             # Prepare response object
             response = {
-                "message": "",
-                "narration": "",
-                "state_updates": {},
+                "message": dm_message,
+                "narration": dm_message,
+                "state_updates": {"last_action": user_input},
                 "visuals": [],
                 "combat_updates": None,
             }
-
-            # Route to appropriate agents based on input type
-            if input_type == "narrative":
-                # Handle narrative input with Narrator agent
-                narrator_agent = get_narrator()
-                narrative_result = await narrator_agent.process_action(
-                    user_input, context
-                )
-                response["message"] = narrative_result.get("description", "")
-                response["state_updates"] = narrative_result.get("state_updates", {})
-
-                # Generate scene illustration if significant
-                if narrative_result.get("significant_moment", False):
-                    artist_agent = get_artist()
-                    scene_art = await artist_agent.illustrate_scene(
-                        narrative_result.get("scene_context", {})
-                    )
-                    response["visuals"].append(scene_art)
-
-            elif input_type == "character":
-                # Handle character-related input with Scribe agent
-                scribe_agent = get_scribe()
-                character_id = context.get("character_id")
-                if character_id:
-                    character_result = await scribe_agent.update_character(
-                        character_id, input_details
-                    )
-                    response["message"] = "Your character has been updated."
-                    response["state_updates"] = {"character": character_result}
-                else:
-                    response["message"] = "No character ID provided for update."
-
-            elif input_type == "combat":
-                # Combat functionality is temporarily disabled
-                response["message"] = "Combat functionality is temporarily disabled."
-
-                # Commented out due to missing combat agent implementation
-                # Handle combat input with Combat MC agent
-                # if context.get("combat_state") == "active":
-                #     combat_mc_agent = get_combat_mc()
-                #     combat_result = await combat_mc_agent.process_combat_action(
-                #         user_input,
-                #         context.get("combat_id"),
-                #         context.get("character_id")
-                #     )
-                #     response["message"] = combat_result.get("description", "")
-                #     response["combat_updates"] = combat_result.get("updates", {})
-                #
-                #     # Update battle map if needed
-                #     if "map_id" in context:
-                #         combat_cartographer_agent = get_combat_cartographer()
-                #         updated_map = await combat_cartographer_agent.update_map_with_combat_state(
-                #             context["map_id"],
-                #             combat_result.get("updates", {})
-                #         )
-                #         response["visuals"].append(updated_map)
-                # else:
-                #     # Initiate combat if needed
-                #     combat_context = {
-                #         "location": context.get("location", "unknown"),
-                #         "encounter_type": input_details.get("encounter_type", "random")
-                #     }
-                #     combat_mc_agent = get_combat_mc()
-                #     encounter = await combat_mc_agent.create_encounter(
-                #         {"members": [{"id": context.get("character_id")}]},
-                #         combat_context
-                #     )
-                #
-                #     # Generate battle map
-                #     combat_cartographer_agent = get_combat_cartographer()
-                #     battle_map = await combat_cartographer_agent.generate_battle_map(
-                #         combat_context,
-                #         encounter
-                #     )
-                #
-                #     response["message"] = "Combat has begun! Roll for initiative!"
-                #     response["combat_updates"] = encounter
-                #     response["visuals"].append(battle_map)
-
-            # If no input type was matched, provide generic response
-            if not response["message"]:
-                response["message"] = (
-                    f"I understand your request '{user_input}'. How would you like to proceed?"
-                )
 
             return response
 
@@ -373,6 +437,9 @@ class DungeonMasterAgent:
             return {
                 "message": "I'm sorry, I encountered an issue processing your request. Please try again.",
                 "error": str(e),
+                "state_updates": {},
+                "visuals": [],
+                "combat_updates": None,
             }
 
     async def _process_input_fallback(

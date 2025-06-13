@@ -47,6 +47,36 @@ class AzureOpenAIClient:
     @retry(
         wait=wait_exponential(multiplier=2, min=2, max=10), stop=stop_after_attempt(3)
     )
+    async def chat_completion_stream(
+        self,
+        messages: List[Dict[str, str]],
+        deployment: str | None = None,
+        **kwargs: Any,
+    ):
+        """Generate a streaming chat completion from Azure OpenAI."""
+        deployment_name = deployment or settings.azure_openai_chat_deployment
+
+        # Convert messages to proper format for new SDK
+        formatted_messages = []
+        for msg in messages:
+            formatted_messages.append({"role": msg["role"], "content": msg["content"]})
+
+        # Force streaming
+        kwargs["stream"] = True
+
+        stream = await self.client.chat.completions.create(
+            model=deployment_name,
+            messages=formatted_messages,
+            **kwargs,
+        )
+        
+        async for chunk in stream:
+            if chunk.choices[0].delta.content is not None:
+                yield chunk.choices[0].delta.content
+
+    @retry(
+        wait=wait_exponential(multiplier=2, min=2, max=10), stop=stop_after_attempt(3)
+    )
     async def generate_image(
         self,
         prompt: str,

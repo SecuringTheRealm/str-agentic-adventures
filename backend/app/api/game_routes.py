@@ -473,6 +473,62 @@ async def process_player_input(player_input: PlayerInput):
         )
 
 
+@router.post("/input/stream")
+async def process_player_input_stream(player_input: PlayerInput):
+    """Process player input and get streaming game response."""
+    from fastapi.responses import StreamingResponse
+    import json
+    
+    async def generate_response():
+        try:
+            # Try to get character and campaign context, but fallback gracefully
+            character = None
+            try:
+                character = await get_scribe().get_character(player_input.character_id)
+            except Exception as e:
+                logger.warning(f"Could not retrieve character {player_input.character_id}: {str(e)}")
+                # Use fallback character info
+                character = {
+                    "id": player_input.character_id,
+                    "name": "Adventurer",
+                    "class": "Fighter", 
+                    "level": 1
+                }
+
+            # Create context for the Dungeon Master agent
+            context = {
+                "character_id": player_input.character_id,
+                "campaign_id": player_input.campaign_id,
+                "character_name": character.get("name", "Adventurer"),
+                "character_class": character.get("class", "Fighter"),
+                "character_level": str(character.get("level", 1)),
+            }
+
+            # Process the input through the Dungeon Master agent with streaming
+            async for chunk in get_dungeon_master().process_input_stream(
+                player_input.message, context
+            ):
+                # Send each chunk as a server-sent event
+                yield f"data: {json.dumps(chunk)}\n\n"
+                
+        except Exception as e:
+            logger.error(f"Failed to process streaming input: {str(e)}")
+            error_chunk = {
+                "type": "error",
+                "message": f"Failed to process input: {str(e)}"
+            }
+            yield f"data: {json.dumps(error_chunk)}\n\n"
+    
+    return StreamingResponse(
+        generate_response(),
+        media_type="text/plain",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+        }
+    )
+
+
 @router.post("/character/{character_id}/level-up", response_model=Dict[str, Any])
 async def level_up_character(character_id: str, level_up_data: LevelUpRequest):
     """Level up a character."""

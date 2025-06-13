@@ -4,6 +4,7 @@ import {
 	type Campaign,
 	type Character,
 	sendPlayerInput,
+	sendPlayerInputStream,
 	generateImage,
 	generateBattleMap,
 } from "../services/api";
@@ -180,43 +181,130 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 		setMessages((prev) => [...prev, { text: message, sender: "player" }]);
 		setLoading(true);
 
+		// Add a placeholder message for the DM response that will be updated
+		const dmMessageIndex = messages.length + 1;
+		setMessages((prev) => [...prev, { text: "", sender: "dm" }]);
+
 		try {
-			// Send message to API
-			const response = await sendPlayerInput({
+			let accumulatedResponse = "";
+			let finalStateUpdates = {};
+			let finalImages: string[] = [];
+			let finalCombatUpdates = null;
+
+			// Use streaming API
+			for await (const chunk of sendPlayerInputStream({
 				message,
 				character_id: character.id,
 				campaign_id: campaign.id,
+			})) {
+				if (chunk.type === "start") {
+					// Response started
+					continue;
+				} else if (chunk.type === "content") {
+					// Accumulate content and update the message in real-time
+					accumulatedResponse += chunk.content;
+					setMessages((prev) => {
+						const newMessages = [...prev];
+						newMessages[dmMessageIndex] = { 
+							text: accumulatedResponse, 
+							sender: "dm" 
+						};
+						return newMessages;
+					});
+				} else if (chunk.type === "end") {
+					// Final chunk with metadata
+					if (chunk.final_message) {
+						accumulatedResponse = chunk.final_message;
+					}
+					finalStateUpdates = chunk.state_updates || {};
+					finalImages = chunk.visuals || [];
+					finalCombatUpdates = chunk.combat_updates;
+					break;
+				} else if (chunk.type === "error") {
+					// Error occurred
+					setMessages((prev) => {
+						const newMessages = [...prev];
+						newMessages[dmMessageIndex] = { 
+							text: chunk.message || "Something went wrong. Please try again.", 
+							sender: "dm" 
+						};
+						return newMessages;
+					});
+					break;
+				}
+			}
+
+			// Final update with complete message
+			setMessages((prev) => {
+				const newMessages = [...prev];
+				newMessages[dmMessageIndex] = { 
+					text: accumulatedResponse || "The adventure continues...", 
+					sender: "dm" 
+				};
+				return newMessages;
 			});
 
-			// Add DM response to chat
-			setMessages((prev) => [
-				...prev,
-				{ text: response.message, sender: "dm" },
-			]);
-
 			// Update images if provided
-			if (response.images && response.images.length > 0) {
-				setCurrentImage(response.images[0]);
+			if (finalImages.length > 0) {
+				setCurrentImage(finalImages[0]);
 			}
 
 			// Handle combat updates
-			if (response.combat_updates) {
-				setCombatActive(response.combat_updates.status === "active");
+			if (finalCombatUpdates) {
+				setCombatActive(finalCombatUpdates.status === "active");
 
 				// Set battle map if available
-				if (response.combat_updates.map_url) {
-					setBattleMapUrl(response.combat_updates.map_url);
+				if (finalCombatUpdates.map_url) {
+					setBattleMapUrl(finalCombatUpdates.map_url);
 				}
 			}
+
 		} catch (error) {
 			console.error("Error processing player input:", error);
-			setMessages((prev) => [
-				...prev,
-				{
-					text: "Something went wrong. Please try again.",
-					sender: "dm",
-				},
-			]);
+			
+			// Fallback to non-streaming API
+			try {
+				const response = await sendPlayerInput({
+					message,
+					character_id: character.id,
+					campaign_id: campaign.id,
+				});
+
+				// Update the DM message
+				setMessages((prev) => {
+					const newMessages = [...prev];
+					newMessages[dmMessageIndex] = { 
+						text: response.message, 
+						sender: "dm" 
+					};
+					return newMessages;
+				});
+
+				// Update images if provided
+				if (response.images && response.images.length > 0) {
+					setCurrentImage(response.images[0]);
+				}
+
+				// Handle combat updates
+				if (response.combat_updates) {
+					setCombatActive(response.combat_updates.status === "active");
+
+					// Set battle map if available
+					if (response.combat_updates.map_url) {
+						setBattleMapUrl(response.combat_updates.map_url);
+					}
+				}
+			} catch (fallbackError) {
+				console.error("Fallback API also failed:", fallbackError);
+				setMessages((prev) => {
+					const newMessages = [...prev];
+					newMessages[dmMessageIndex] = { 
+						text: "Something went wrong. Please try again.", 
+						sender: "dm" 
+					};
+					return newMessages;
+				});
+			}
 		} finally {
 			setLoading(false);
 		}
