@@ -17,6 +17,9 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({ onCampaignCreated
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Cache filtered custom campaigns to avoid repeated filtering
+  const customCampaigns = campaigns.filter(c => c.is_custom || false);
+
   const loadCampaigns = async () => {
     try {
       setLoading(true);
@@ -131,7 +134,7 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({ onCampaignCreated
           </div>
         ) : (
           <div className="campaign-list">
-            {campaigns.filter(c => c.is_custom || false).length === 0 ? (
+            {customCampaigns.length === 0 ? (
               <div className="empty-state">
                 <div className="empty-icon">📚</div>
                 <h3>No Custom Campaigns Yet</h3>
@@ -144,9 +147,7 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({ onCampaignCreated
                 </button>
               </div>
             ) : (
-              campaigns
-                .filter(campaign => campaign.is_custom || false)
-                .map(campaign => (
+              customCampaigns.map(campaign => (
                   <div key={campaign.id} className="campaign-item">
                     <div className="campaign-info">
                       <h3>{campaign.name}</h3>
@@ -211,7 +212,7 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({ onCampaignCreated
             className={`view-toggle ${(viewMode as string) === 'list' ? 'active' : ''}`}
             onClick={() => setViewMode('list')}
           >
-            My Campaigns ({campaigns.filter(c => c.is_custom || false).length})
+            My Campaigns ({customCampaigns.length})
           </button>
         </div>
       </div>
@@ -230,7 +231,7 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({ onCampaignCreated
         />
       ) : (
         <div className="campaign-list">
-          {campaigns.filter(c => c.is_custom || false).length === 0 ? (
+          {customCampaigns.length === 0 ? (
             <div className="empty-state">
               <div className="empty-icon">📚</div>
               <h3>No Custom Campaigns Yet</h3>
@@ -243,9 +244,7 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({ onCampaignCreated
               </button>
             </div>
           ) : (
-            campaigns
-              .filter(campaign => campaign.is_custom || false)
-              .map(campaign => (
+            customCampaigns.map(campaign => (
                 <div key={campaign.id} className="campaign-item">
                   <div className="campaign-info">
                     <h3>{campaign.name}</h3>

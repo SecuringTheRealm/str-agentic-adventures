@@ -169,12 +169,19 @@ class CampaignService:
             # Update campaign data
             campaign_data = dict_to_campaign(db_campaign.data)
             
-            # Apply updates to the campaign object
-            for key, value in updates.items():
-                if hasattr(campaign_data, key):
-                    setattr(campaign_data, key, value)
+            # Create a clean update dict from the campaign_data model
+            campaign_dict = campaign_data.model_dump()
             
-            # Update database record
+            # Apply updates to the campaign dict, only for valid fields
+            valid_fields = set(campaign_dict.keys())
+            for key, value in updates.items():
+                if key in valid_fields:
+                    campaign_dict[key] = value
+            
+            # Create updated campaign object from the merged dict
+            updated_campaign = Campaign.model_validate(campaign_dict)
+            
+            # Update database record with explicit field mappings
             if 'name' in updates:
                 db_campaign.name = updates['name']
             if 'description' in updates:
@@ -190,7 +197,7 @@ class CampaignService:
             if 'world_art' in updates:
                 db_campaign.world_art = updates['world_art']
             
-            db_campaign.data = campaign_to_dict(campaign_data)
+            db_campaign.data = campaign_to_dict(updated_campaign)
             db_campaign.updated_at = datetime.utcnow()
             
             db.commit()
