@@ -218,6 +218,67 @@ class CombatEncounter(BaseModel):
     turn_order: List[CombatParticipant] = []
     narrative_context: Dict[str, Any] = {}
 
+# NPC System Models
+class NPCPersonality(BaseModel):
+    traits: List[str] = []  # Personality traits
+    ideals: List[str] = []  # Core beliefs
+    bonds: List[str] = []   # Important connections
+    flaws: List[str] = []   # Character flaws
+    mannerisms: List[str] = []  # Speech patterns, habits
+    appearance: Optional[str] = None
+    motivations: List[str] = []
+
+class NPCRelationship(BaseModel):
+    character_id: str
+    relationship_type: str  # "friend", "enemy", "neutral", "ally", "rival"
+    trust_level: int = 0  # -100 to 100
+    notes: Optional[str] = None
+
+class NPCInteraction(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    npc_id: str
+    character_id: Optional[str] = None  # None for party interactions
+    interaction_type: str  # "conversation", "combat", "trade", "quest"
+    timestamp: datetime = Field(default_factory=datetime.now)
+    summary: str
+    outcome: Optional[str] = None
+    relationship_change: int = 0  # Change in trust/reputation
+
+class NPC(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    race: Optional[str] = None
+    gender: Optional[str] = None
+    age: Optional[int] = None
+    occupation: Optional[str] = None
+    location: Optional[str] = None
+    campaign_id: str
+    
+    # Personality and behavior
+    personality: NPCPersonality = NPCPersonality()
+    voice_description: Optional[str] = None
+    
+    # Game mechanics
+    level: int = 1
+    abilities: Optional[Abilities] = None
+    hit_points: Optional[HitPoints] = None
+    armor_class: Optional[int] = None
+    skills: Dict[str, int] = {}  # Skill bonuses
+    
+    # Relationships and interactions
+    relationships: List[NPCRelationship] = []
+    interaction_history: List[str] = []  # List of interaction IDs
+    
+    # Story relevance
+    importance: str = "minor"  # "minor", "major", "critical"
+    story_role: Optional[str] = None  # "merchant", "quest_giver", "antagonist", etc.
+    quest_involvement: List[str] = []  # Quest IDs
+    
+    # Status
+    is_alive: bool = True
+    current_mood: str = "neutral"  # "friendly", "hostile", "neutral", "suspicious"
+    notes: Optional[str] = None
+
 class Campaign(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str
@@ -471,3 +532,53 @@ class MagicalEffectsResponse(BaseModel):
     message: str
     active_effects: List[str]
     stat_modifiers: Dict[str, int]
+
+# NPC-related request and response models
+class CreateNPCRequest(BaseModel):
+    campaign_id: str
+    name: str
+    race: Optional[str] = None
+    gender: Optional[str] = None
+    age: Optional[int] = None
+    occupation: Optional[str] = None
+    location: Optional[str] = None
+    importance: str = "minor"
+    story_role: Optional[str] = None
+
+class UpdateNPCRequest(BaseModel):
+    name: Optional[str] = None
+    occupation: Optional[str] = None
+    location: Optional[str] = None
+    current_mood: Optional[str] = None
+    notes: Optional[str] = None
+
+class NPCInteractionRequest(BaseModel):
+    npc_id: str
+    character_id: Optional[str] = None
+    interaction_type: str
+    summary: str
+    outcome: Optional[str] = None
+    relationship_change: int = 0
+
+class GenerateNPCStatsRequest(BaseModel):
+    npc_id: str
+    level: Optional[int] = None
+    role: str = "civilian"  # "civilian", "guard", "soldier", "spellcaster", "rogue"
+
+class NPCPersonalityRequest(BaseModel):
+    npc_id: str
+
+class NPCListResponse(BaseModel):
+    npcs: List[NPC]
+    total_count: int
+
+class NPCInteractionResponse(BaseModel):
+    success: bool
+    message: str
+    interaction_id: str
+    new_relationship_level: Optional[int] = None
+
+class NPCStatsResponse(BaseModel):
+    success: bool
+    message: str
+    generated_stats: Dict[str, Any]
