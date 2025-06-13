@@ -72,10 +72,217 @@ class RulesEnginePlugin:
 
         # TODO: Implement spell system components
         # TODO: Add spell slot tracking by level and class
-        # TODO: Add spell save DC calculation
-        # TODO: Add spell attack bonus calculation
-        # TODO: Add spell effect resolution system
         # TODO: Add concentration tracking for ongoing spells
+
+    @kernel_function(
+        description="Calculate spell save DC for a character.",
+        name="calculate_spell_save_dc",
+    )
+    def calculate_spell_save_dc(
+        self, 
+        spellcasting_ability_modifier: int,
+        proficiency_bonus: int,
+        character_level: int = None
+    ) -> Dict[str, Any]:
+        """
+        Calculate spell save DC using D&D 5e rules.
+        
+        Formula: 8 + proficiency bonus + spellcasting ability modifier
+        
+        Args:
+            spellcasting_ability_modifier: The modifier for the character's spellcasting ability
+            proficiency_bonus: The character's proficiency bonus
+            character_level: Optional character level (for information)
+            
+        Returns:
+            Dict[str, Any]: Spell save DC information
+        """
+        try:
+            save_dc = 8 + proficiency_bonus + spellcasting_ability_modifier
+            
+            return {
+                "save_dc": save_dc,
+                "spellcasting_modifier": spellcasting_ability_modifier,
+                "proficiency_bonus": proficiency_bonus,
+                "character_level": character_level,
+                "formula": "8 + proficiency_bonus + spellcasting_ability_modifier"
+            }
+        except Exception as e:
+            logger.error(f"Error calculating spell save DC: {str(e)}")
+            return {"error": f"Error calculating spell save DC: {str(e)}"}
+
+    @kernel_function(
+        description="Calculate spell attack bonus for a character.",
+        name="calculate_spell_attack_bonus",
+    )
+    def calculate_spell_attack_bonus(
+        self,
+        spellcasting_ability_modifier: int,
+        proficiency_bonus: int
+    ) -> Dict[str, Any]:
+        """
+        Calculate spell attack bonus using D&D 5e rules.
+        
+        Formula: proficiency bonus + spellcasting ability modifier
+        
+        Args:
+            spellcasting_ability_modifier: The modifier for the character's spellcasting ability
+            proficiency_bonus: The character's proficiency bonus
+            
+        Returns:
+            Dict[str, Any]: Spell attack bonus information
+        """
+        try:
+            attack_bonus = proficiency_bonus + spellcasting_ability_modifier
+            
+            return {
+                "attack_bonus": attack_bonus,
+                "spellcasting_modifier": spellcasting_ability_modifier,
+                "proficiency_bonus": proficiency_bonus,
+                "formula": "proficiency_bonus + spellcasting_ability_modifier"
+            }
+        except Exception as e:
+            logger.error(f"Error calculating spell attack bonus: {str(e)}")
+            return {"error": f"Error calculating spell attack bonus: {str(e)}"}
+
+    @kernel_function(
+        description="Resolve spell damage effects.",
+        name="resolve_spell_damage",
+    )
+    def resolve_spell_damage(
+        self,
+        dice_notation: str,
+        damage_type: str,
+        target_count: int = 1
+    ) -> Dict[str, Any]:
+        """
+        Resolve spell damage using dice rolls.
+        
+        Args:
+            dice_notation: Damage dice notation (e.g., "3d6", "1d4+3")
+            damage_type: Type of damage (e.g., "fire", "force", "cold")
+            target_count: Number of targets (for information)
+            
+        Returns:
+            Dict[str, Any]: Damage resolution results
+        """
+        try:
+            # Use existing dice rolling system
+            roll_result = self.roll_dice(dice_notation)
+            
+            if "error" in roll_result:
+                return roll_result
+                
+            return {
+                "total_damage": roll_result["total"],
+                "damage_type": damage_type,
+                "dice_notation": dice_notation,
+                "dice_rolls": roll_result.get("rolls", []),
+                "modifier": roll_result.get("modifier", 0),
+                "target_count": target_count,
+                "roll_details": roll_result
+            }
+        except Exception as e:
+            logger.error(f"Error resolving spell damage: {str(e)}")
+            return {"error": f"Error resolving spell damage: {str(e)}"}
+
+    @kernel_function(
+        description="Resolve spell healing effects.",
+        name="resolve_spell_healing",
+    )
+    def resolve_spell_healing(
+        self,
+        dice_notation: str,
+        spellcasting_modifier: int = None
+    ) -> Dict[str, Any]:
+        """
+        Resolve spell healing using dice rolls.
+        
+        Args:
+            dice_notation: Healing dice notation (e.g., "1d8+3", "2d4+2")
+            spellcasting_modifier: Optional additional modifier (if not in dice notation)
+            
+        Returns:
+            Dict[str, Any]: Healing resolution results
+        """
+        try:
+            # Use existing dice rolling system
+            roll_result = self.roll_dice(dice_notation)
+            
+            if "error" in roll_result:
+                return roll_result
+                
+            healing_amount = roll_result["total"]
+            
+            # Add additional modifier if provided and not already in dice notation
+            if spellcasting_modifier is not None and roll_result.get("modifier", 0) == 0:
+                healing_amount += spellcasting_modifier
+                
+            return {
+                "healing_amount": healing_amount,
+                "dice_notation": dice_notation,
+                "dice_rolls": roll_result.get("rolls", []),
+                "base_modifier": roll_result.get("modifier", 0),
+                "spellcasting_modifier": spellcasting_modifier,
+                "roll_details": roll_result
+            }
+        except Exception as e:
+            logger.error(f"Error resolving spell healing: {str(e)}")
+            return {"error": f"Error resolving spell healing: {str(e)}"}
+
+    @kernel_function(
+        description="Resolve saving throw against spell effects.",
+        name="resolve_saving_throw",
+    )
+    def resolve_saving_throw(
+        self,
+        save_dc: int,
+        ability_modifier: int,
+        proficiency_bonus: int = 0,
+        is_proficient: bool = False,
+        roll_result: int = None
+    ) -> Dict[str, Any]:
+        """
+        Resolve a saving throw against a spell effect.
+        
+        Args:
+            save_dc: The DC to beat
+            ability_modifier: The relevant ability modifier
+            proficiency_bonus: Character's proficiency bonus
+            is_proficient: Whether the character is proficient in this save
+            roll_result: Optional manual roll result (if not provided, will roll d20)
+            
+        Returns:
+            Dict[str, Any]: Saving throw results
+        """
+        try:
+            # Roll d20 if no manual result provided
+            if roll_result is None:
+                roll_data = self.roll_dice("1d20")
+                if "error" in roll_data:
+                    return roll_data
+                roll_result = roll_data["total"]
+                
+            # Calculate total roll
+            total_roll = roll_result + ability_modifier
+            if is_proficient:
+                total_roll += proficiency_bonus
+                
+            save_successful = total_roll >= save_dc
+            
+            return {
+                "save_successful": save_successful,
+                "total_roll": total_roll,
+                "d20_roll": roll_result,
+                "ability_modifier": ability_modifier,
+                "proficiency_bonus": proficiency_bonus if is_proficient else 0,
+                "is_proficient": is_proficient,
+                "save_dc": save_dc,
+                "margin": total_roll - save_dc
+            }
+        except Exception as e:
+            logger.error(f"Error resolving saving throw: {str(e)}")
+            return {"error": f"Error resolving saving throw: {str(e)}"}
 
     @kernel_function(
         description="Roll dice using standard D&D notation with advanced features (e.g., '1d20', '2d6+3', '4d6dl1', '2d20kh1').",
