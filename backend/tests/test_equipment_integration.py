@@ -2,6 +2,7 @@
 Integration tests for the equipment system.
 """
 import pytest
+import pytest_asyncio
 import asyncio
 from app.agents.scribe_agent import ScribeAgent
 from app.models.game_models import Item
@@ -10,12 +11,12 @@ from app.models.game_models import Item
 class TestEquipmentIntegration:
     """Test equipment system integration."""
     
-    @pytest.fixture
+    @pytest_asyncio.fixture
     async def scribe_agent(self):
         """Create a test ScribeAgent instance."""
         return ScribeAgent()
     
-    @pytest.fixture
+    @pytest_asyncio.fixture
     async def test_character(self, scribe_agent):
         """Create a test character."""
         character_data = {
@@ -33,7 +34,7 @@ class TestEquipmentIntegration:
         character = await scribe_agent.create_character(character_data)
         return character
 
-    @pytest.fixture
+    @pytest_asyncio.fixture
     async def magic_sword(self, scribe_agent, test_character):
         """Add a magic sword to character inventory."""
         sword = {

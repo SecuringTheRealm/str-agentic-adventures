@@ -172,9 +172,9 @@ class LevelUpResponse(BaseModel):
     message: str
 
 class EquipmentRequest(BaseModel):
-    item_id: str
-    action: str  # "equip" or "unequip"
-    equipment_slot: Optional[str] = None  # "armor", "main_hand", "off_hand", "shield", etc.
+    item_id: str = Field(min_length=1, description="ID of the item to equip/unequip")
+    action: str = Field(pattern="^(equip|unequip)$", description="Action to perform: 'equip' or 'unequip'")
+    equipment_slot: Optional[str] = Field(None, description="Equipment slot (auto-detected if not provided)")  # "armor", "main_hand", "off_hand", "shield", etc.
 
 class PlayerInput(BaseModel):
     message: str
