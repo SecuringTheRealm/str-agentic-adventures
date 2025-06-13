@@ -70,6 +70,44 @@ export interface Campaign {
 	};
 }
 
+export interface CampaignTemplate {
+	id: string;
+	name: string;
+	summary: string;
+	description: string;
+	setting: string;
+	tone: string;
+	themes: string[];
+	suggested_level_range: string;
+	estimated_sessions: number;
+	homebrew_rules: string[];
+	key_npcs: Array<{
+		name: string;
+		role: string;
+		description: string;
+	}>;
+	major_locations: Array<{
+		name: string;
+		type: string;
+		description: string;
+	}>;
+	plot_hooks: string[];
+	is_official: boolean;
+	created_by?: string;
+	created_at: string;
+}
+
+export interface SavedCampaign {
+	id: string;
+	name: string;
+	content: string;
+	is_custom: boolean;
+	template_id?: string;
+	user_id?: string;
+	created_at: string;
+	updated_at: string;
+}
+
 export interface CampaignCreateRequest {
 	name: string;
 	setting: string;

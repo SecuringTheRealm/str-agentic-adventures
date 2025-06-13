@@ -185,6 +185,34 @@ class CreateCampaignRequest(BaseModel):
     tone: Optional[str] = "heroic"
     homebrew_rules: Optional[List[str]] = []
 
+class CampaignTemplate(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    summary: str
+    description: str
+    setting: str
+    tone: str = "heroic"
+    themes: List[str] = []
+    suggested_level_range: str = "1-5"
+    estimated_sessions: int = 10
+    homebrew_rules: List[str] = []
+    key_npcs: List[Dict[str, Any]] = []
+    major_locations: List[Dict[str, Any]] = []
+    plot_hooks: List[str] = []
+    is_official: bool = True
+    created_by: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.now)
+
+class SavedCampaign(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    content: str  # Rich text content
+    is_custom: bool = True
+    template_id: Optional[str] = None  # If cloned from a template
+    user_id: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
+
 class GenerateImageRequest(BaseModel):
     image_type: str  # "character_portrait", "scene_illustration", "item_visualization"
     details: Dict[str, Any]

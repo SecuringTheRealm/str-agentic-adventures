@@ -12,6 +12,8 @@ from app.models.game_models import (
     GameResponse,
     CharacterSheet,
     LevelUpRequest,
+    CampaignTemplate,
+    SavedCampaign,
 )
 from app.agents.dungeon_master_agent import get_dungeon_master
 from app.agents.scribe_agent import get_scribe
@@ -86,6 +88,109 @@ async def create_campaign(campaign_data: Dict[str, Any]):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to create campaign: {str(e)}",
+        )
+
+
+@router.get("/campaign-templates", response_model=List[CampaignTemplate])
+async def get_campaign_templates():
+    """Get all available campaign templates."""
+    try:
+        # For now, return hardcoded templates. In production, this would come from a database
+        templates = get_default_campaign_templates()
+        return templates
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to fetch campaign templates: {str(e)}",
+        )
+
+
+@router.get("/campaign-templates/{template_id}", response_model=CampaignTemplate)
+async def get_campaign_template(template_id: str):
+    """Get a specific campaign template by ID."""
+    try:
+        templates = get_default_campaign_templates()
+        template = next((t for t in templates if t.id == template_id), None)
+        if not template:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Campaign template {template_id} not found"
+            )
+        return template
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to fetch campaign template: {str(e)}",
+        )
+
+
+@router.post("/campaign-templates/{template_id}/clone", response_model=Dict[str, Any])
+async def clone_campaign_template(template_id: str, clone_data: Dict[str, Any]):
+    """Clone a campaign template with optional modifications."""
+    try:
+        templates = get_default_campaign_templates()
+        template = next((t for t in templates if t.id == template_id), None)
+        if not template:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Campaign template {template_id} not found"
+            )
+        
+        # Create campaign from template
+        campaign_data = {
+            "name": clone_data.get("name", template.name),
+            "setting": clone_data.get("setting", template.setting),
+            "tone": clone_data.get("tone", template.tone),
+            "homebrew_rules": clone_data.get("homebrew_rules", template.homebrew_rules)
+        }
+        
+        campaign = await get_dungeon_master().create_campaign(campaign_data)
+        if "error" in campaign:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail=campaign["error"]
+            )
+        
+        return campaign
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to clone campaign template: {str(e)}",
+        )
+
+
+@router.post("/saved-campaigns", response_model=Dict[str, Any])
+async def save_campaign_draft(campaign_data: Dict[str, Any]):
+    """Save a custom campaign draft."""
+    try:
+        # For now, just return success. In production, this would save to database
+        saved_campaign = SavedCampaign(
+            name=campaign_data.get("name", "Untitled Campaign"),
+            content=campaign_data.get("content", ""),
+            is_custom=True,
+            template_id=campaign_data.get("template_id")
+        )
+        return {"success": True, "id": saved_campaign.id, "message": "Campaign saved successfully"}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to save campaign: {str(e)}",
+        )
+
+
+@router.get("/saved-campaigns", response_model=List[Dict[str, Any]])
+async def get_saved_campaigns():
+    """Get all saved campaign drafts for the user."""
+    try:
+        # For now, return empty list. In production, this would fetch from database
+        return []
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to fetch saved campaigns: {str(e)}",
         )
 
 
@@ -735,6 +840,147 @@ def generate_plot_hooks(setting: str, tone: str) -> List[str]:
         "A powerful ally has gone missing, and their last known location was a dangerous territory.",
     ]
     return hooks
+
+
+def get_default_campaign_templates() -> List[CampaignTemplate]:
+    """Get the default pre-built campaign templates."""
+    return [
+        CampaignTemplate(
+            id="lost-mines-of-phandelver",
+            name="The Lost Mines of Phandelver",
+            summary="A classic beginner adventure in the town of Phandalin",
+            description="The adventurers are hired to escort a wagon to the rough-and-tumble settlement of Phandalin, but kobolds ambush them along the way. The heroes discover that the goblins who waylaid them are part of the Cragmaw tribe, which has captured their patron, Gundren Rockseeker, along with an important map.",
+            setting="The Sword Coast, in and around the town of Phandalin",
+            tone="heroic",
+            themes=["exploration", "mystery", "classic fantasy"],
+            suggested_level_range="1-5",
+            estimated_sessions=12,
+            plot_hooks=[
+                "Escort Gundren Rockseeker's wagon to Phandalin",
+                "Discover the fate of the missing dwarf",
+                "Investigate the mysterious Cragmaw tribe",
+                "Uncover the location of the lost mine"
+            ],
+            major_locations=[
+                {"name": "Phandalin", "type": "settlement", "description": "A frontier town"},
+                {"name": "Cragmaw Hideout", "type": "dungeon", "description": "Goblin stronghold"},
+                {"name": "Wave Echo Cave", "type": "dungeon", "description": "The lost mine itself"}
+            ],
+            key_npcs=[
+                {"name": "Gundren Rockseeker", "role": "patron", "description": "Dwarf merchant"},
+                {"name": "Sildar Hallwinter", "role": "ally", "description": "Lord's Alliance agent"},
+                {"name": "Klarg", "role": "antagonist", "description": "Bugbear leader"}
+            ]
+        ),
+        CampaignTemplate(
+            id="curse-of-strahd-intro",
+            name="Curse of Strahd: Introduction",
+            summary="A gothic horror adventure in the mist-shrouded land of Barovia",
+            description="Drawn by mysterious letter or dire circumstances, the heroes find themselves trapped in the demiplane of Barovia, ruled by the vampire lord Strahd von Zarovich. Dark mists surround the land, and escape seems impossible.",
+            setting="Barovia, a gothic horror demiplane trapped in perpetual gloom",
+            tone="dark",
+            themes=["horror", "supernatural", "redemption", "curse"],
+            suggested_level_range="1-10",
+            estimated_sessions=25,
+            plot_hooks=[
+                "Receive a mysterious letter pleading for help",
+                "Become trapped by the Mists of Ravenloft",
+                "Meet the mysterious fortune teller Madam Eva",
+                "Confront the ancient evil of Castle Ravenloft"
+            ],
+            major_locations=[
+                {"name": "Village of Barovia", "type": "settlement", "description": "Oppressed village under Strahd's shadow"},
+                {"name": "Castle Ravenloft", "type": "castle", "description": "Strahd's imposing fortress"},
+                {"name": "Vallaki", "type": "settlement", "description": "Town struggling against despair"}
+            ],
+            key_npcs=[
+                {"name": "Strahd von Zarovich", "role": "primary antagonist", "description": "Ancient vampire lord"},
+                {"name": "Madam Eva", "role": "oracle", "description": "Vistani fortune teller"},
+                {"name": "Ireena Kolyana", "role": "ally", "description": "Burgomaster's daughter"}
+            ]
+        ),
+        CampaignTemplate(
+            id="dragons-of-autumn-twilight",
+            name="Dragons of Autumn Twilight",
+            summary="Epic fantasy adventure in the world of Krynn during the War of the Lance",
+            description="The age of legends is at hand, and heroes are needed to stand against the growing darkness. Ancient evil stirs, dragons return to the world, and the fate of Krynn hangs in the balance.",
+            setting="The continent of Ansalon in the world of Krynn",
+            tone="heroic",
+            themes=["epic fantasy", "dragonlance", "war", "friendship", "destiny"],
+            suggested_level_range="1-15",
+            estimated_sessions=30,
+            plot_hooks=[
+                "Reunite with old friends at the Inn of the Last Home",
+                "Discover the blue crystal staff and its power",
+                "Learn of the return of the true gods",
+                "Join the fight against the Dragonarmies"
+            ],
+            major_locations=[
+                {"name": "Solace", "type": "settlement", "description": "Tree-city and the heroes' hometown"},
+                {"name": "Xak Tsaroth", "type": "ruins", "description": "Ancient ruined city"},
+                {"name": "Pax Tharkas", "type": "fortress", "description": "Dwarven fortress under siege"}
+            ],
+            key_npcs=[
+                {"name": "Goldmoon", "role": "ally", "description": "Que-Shu chieftain's daughter"},
+                {"name": "Lord Verminaard", "role": "antagonist", "description": "Dragon Highlord"},
+                {"name": "Fizban", "role": "mentor", "description": "Eccentric old wizard"}
+            ]
+        ),
+        CampaignTemplate(
+            id="pirates-of-the-caribbean",
+            name="Pirates of the Sapphire Seas",
+            summary="Swashbuckling adventure on the high seas with pirates, treasure, and naval combat",
+            description="Set sail for adventure in a world of pirates, privateers, and merchant princes. Navigate treacherous waters, discover hidden treasures, and build your reputation as the most feared or respected captain on the Sapphire Seas.",
+            setting="A collection of tropical islands, port cities, and endless ocean",
+            tone="lighthearted",
+            themes=["piracy", "naval adventure", "treasure hunting", "swashbuckling"],
+            suggested_level_range="1-12",
+            estimated_sessions=20,
+            plot_hooks=[
+                "Inherit a ship and crew from a deceased relative",
+                "Search for the legendary Treasure of Captain Bloodbeard",
+                "Navigate the politics of the Pirate Council",
+                "Defend against the Imperial Navy's crackdown on piracy"
+            ],
+            major_locations=[
+                {"name": "Port Royale", "type": "port city", "description": "Major trading hub and naval base"},
+                {"name": "Tortuga", "type": "pirate haven", "description": "Lawless island refuge for pirates"},
+                {"name": "Dead Man's Cove", "type": "hidden base", "description": "Secret pirate stronghold"}
+            ],
+            key_npcs=[
+                {"name": "Captain Scarlett", "role": "rival", "description": "Notorious pirate captain"},
+                {"name": "Admiral Blackwood", "role": "antagonist", "description": "Imperial Navy commander"},
+                {"name": "Old Pete", "role": "mentor", "description": "Retired pirate with many stories"}
+            ]
+        ),
+        CampaignTemplate(
+            id="cyberpunk-neon-nights",
+            name="Cyberpunk: Neon Nights",
+            summary="High-tech, low-life adventures in a dystopian cyberpunk future",
+            description="In the sprawling megacity of Neo-Tokyo 2080, corporations rule with iron fists while hackers, street samurai, and netrunners fight for survival in the digital underground. Every job could be your last, but the data must flow.",
+            setting="Neo-Tokyo 2080, a massive cyberpunk megacity dominated by corporations",
+            tone="gritty",
+            themes=["cyberpunk", "corporate conspiracy", "technology vs humanity", "rebellion"],
+            suggested_level_range="1-10",
+            estimated_sessions=15,
+            plot_hooks=[
+                "Take on a 'simple' data extraction job",
+                "Uncover a conspiracy reaching the highest corporate levels",
+                "Navigate the dangerous politics of the street gangs",
+                "Decide whether to burn down the system or profit from it"
+            ],
+            major_locations=[
+                {"name": "The Sprawl", "type": "urban zone", "description": "Massive city stretching for miles"},
+                {"name": "Corporate Plaza", "type": "business district", "description": "Gleaming towers of corporate power"},
+                {"name": "The Underground", "type": "hidden network", "description": "Hidden tunnels and forgotten spaces"}
+            ],
+            key_npcs=[
+                {"name": "Mr. Johnson", "role": "fixer", "description": "Corporate handler with dubious motives"},
+                {"name": "Chrome Sally", "role": "ally", "description": "Street samurai with extensive cybernetic modifications"},
+                {"name": "The Ghost", "role": "mystery", "description": "Legendary hacker who may not even exist"}
+            ]
+        )
+    ]
 
 
 def generate_world_lore(setting: str) -> List[str]:
