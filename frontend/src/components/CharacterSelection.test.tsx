@@ -13,11 +13,11 @@ describe('CharacterSelection', () => {
     characters: []
   };
 
-  const mockOnCharacterSelected = jest.fn();
-  const mockOnBackToCampaigns = jest.fn();
+  const mockOnCharacterSelected = vi.fn();
+  const mockOnBackToCampaigns = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('renders campaign name and character options', () => {

@@ -3,11 +3,11 @@ import React from 'react';
 import PredefinedCharacters from './PredefinedCharacters';
 
 describe('PredefinedCharacters', () => {
-  const mockOnCharacterSelected = jest.fn();
-  const mockOnBack = jest.fn();
+  const mockOnCharacterSelected = vi.fn();
+  const mockOnBack = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('renders predefined characters list', () => {
