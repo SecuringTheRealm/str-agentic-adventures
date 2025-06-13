@@ -1,0 +1,1 @@
+"""Data package for game-related data and repositories."""

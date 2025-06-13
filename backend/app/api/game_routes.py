@@ -2,8 +2,8 @@
 API routes for the AI Dungeon Master application.
 """
 
-from fastapi import APIRouter, HTTPException, status
-from typing import Dict, Any, List
+from fastapi import APIRouter, HTTPException, status, Query
+from typing import Dict, Any, List, Optional
 from datetime import datetime
 
 from app.models.game_models import (
@@ -12,6 +12,7 @@ from app.models.game_models import (
     GameResponse,
     CharacterSheet,
     LevelUpRequest,
+    CharacterClass,
 )
 from app.agents.dungeon_master_agent import get_dungeon_master
 from app.agents.scribe_agent import get_scribe
@@ -275,6 +276,34 @@ async def get_progression_info(character_id: str):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get progression info: {str(e)}",
+        )
+
+
+# Spell system endpoints
+@router.get("/spells/list", response_model=Dict[str, Any])
+async def get_spells_list(
+    character_class: CharacterClass = Query(..., description="Character class to filter spells for"),
+    character_level: int = Query(..., ge=1, le=20, description="Character level (1-20)"),
+    spell_level: Optional[int] = Query(None, ge=0, le=9, description="Optional filter for specific spell level (0-9)")
+):
+    """Get available spells by class and level."""
+    try:
+        from app.data.spells_data import get_available_spells
+        
+        # Get spells available to this character class and level
+        spells = get_available_spells(character_class, character_level, spell_level)
+        
+        return {
+            "character_class": character_class,
+            "character_level": character_level,
+            "spell_level": spell_level,
+            "spells": spells,
+            "total_spells": len(spells)
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get spells list: {str(e)}",
         )
 
 
@@ -849,7 +878,6 @@ async def process_general_action(
 # TODO: POST /character/{character_id}/spells - Manage known spells for character
 # TODO: POST /character/{character_id}/spell-slots - Manage spell slot usage and recovery
 # TODO: POST /combat/{combat_id}/cast-spell - Cast spells during combat with effect resolution
-# TODO: GET /spells/list - Get available spells by class and level
 # TODO: POST /spells/save-dc - Calculate spell save DC for a character
 # TODO: POST /spells/attack-bonus - Calculate spell attack bonus for a character
 # TODO: POST /character/{character_id}/concentration - Manage spell concentration tracking
