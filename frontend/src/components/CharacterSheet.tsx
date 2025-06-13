@@ -1,5 +1,5 @@
 import type React from "react";
-import type { Character } from "../services/api";
+import type { Character, Spell } from "../services/api";
 import "./CharacterSheet.css";
 
 interface CharacterSheetProps {
@@ -12,6 +12,34 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
 		const modifier = Math.floor((score - 10) / 2);
 		return modifier >= 0 ? `+${modifier}` : modifier.toString();
 	};
+
+	// Helper function to check if character class can cast spells
+	const isSpellcaster = (characterClass: string): boolean => {
+		const spellcastingClasses = ['wizard', 'cleric', 'bard', 'druid', 'warlock', 'sorcerer', 'paladin', 'ranger'];
+		return spellcastingClasses.includes(characterClass.toLowerCase());
+	};
+
+	// Helper function to get spellcasting ability modifier
+	const getSpellcastingModifier = (characterClass: string): number => {
+		const classAbilityMap: { [key: string]: keyof typeof character.abilities } = {
+			'wizard': 'intelligence',
+			'warlock': 'charisma',
+			'sorcerer': 'charisma',
+			'bard': 'charisma',
+			'cleric': 'wisdom',
+			'druid': 'wisdom',
+			'paladin': 'charisma',
+			'ranger': 'wisdom'
+		};
+		const ability = classAbilityMap[characterClass.toLowerCase()];
+		return ability ? Math.floor((character.abilities[ability] - 10) / 2) : 0;
+	};
+
+	// Calculate spell save DC and attack bonus
+	const proficiencyBonus = character.proficiency_bonus ?? Math.ceil(character.level / 4) + 1; // Default calculation
+	const spellcastingModifier = getSpellcastingModifier(character.character_class);
+	const spellSaveDC = 8 + proficiencyBonus + spellcastingModifier;
+	const spellAttackBonus = proficiencyBonus + spellcastingModifier;
 
 	return (
 		<div className="character-sheet">
@@ -113,10 +141,73 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
 				</ul>
 			</div>
 
-			{/* TODO: Add spell management section for spellcasting classes */}
-			{/* TODO: Include spell slot tracking and spell save DC display */}
-			{/* TODO: Add prepared spells list with casting options */}
-			{/* TODO: Add cantrip management and spell attack bonus display */}
+			{/* Spell Management Section for spellcasting classes */}
+			{isSpellcaster(character.character_class) && (
+				<div className="spells">
+					<h3>Spells</h3>
+					
+					{/* Spell save DC and attack bonus */}
+					<div className="spell-stats">
+						<div className="spell-stat">
+							<div className="stat-label">Spell Save DC</div>
+							<div className="stat-value">{spellSaveDC}</div>
+						</div>
+						<div className="spell-stat">
+							<div className="stat-label">Spell Attack Bonus</div>
+							<div className="stat-value">{spellAttackBonus >= 0 ? `+${spellAttackBonus}` : spellAttackBonus}</div>
+						</div>
+					</div>
+
+					{/* Prepared spells list */}
+					<div className="prepared-spells">
+						<h4>Prepared Spells</h4>
+						{character.spells && character.spells.length > 0 ? (
+							<div className="spells-by-level">
+								{/* Group spells by level */}
+								{[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+									.filter(level => character.spells?.some(spell => spell.level === level))
+									.map(level => (
+										<div key={level} className="spell-level-group">
+											<h5 className="spell-level-header">
+												{level === 0 ? 'Cantrips' : `Level ${level}`}
+											</h5>
+											<ul className="spell-list">
+												{character.spells
+													?.filter(spell => spell.level === level)
+													.map((spell, index) => (
+														<li key={`${spell.id}-${index}`} className="spell-item">
+															<div className="spell-info">
+																<span className="spell-name">{spell.name}</span>
+																<span className="spell-school">{spell.school}</span>
+															</div>
+															<div className="spell-details">
+																<span className="spell-casting-time">{spell.casting_time}</span>
+																<span className="spell-range">{spell.range}</span>
+															</div>
+															<div className="spell-actions">
+																<button 
+																	className="cast-spell-btn"
+																	title={`Cast ${spell.name}`}
+																	onClick={() => {
+																		// TODO: Implement spell casting logic
+																		console.log(`Casting ${spell.name}`);
+																	}}
+																>
+																	Cast
+																</button>
+															</div>
+														</li>
+													))}
+											</ul>
+										</div>
+									))}
+							</div>
+						) : (
+							<div className="no-spells">No spells prepared</div>
+						)}
+					</div>
+				</div>
+			)}
 		</div>
 	);
 };

@@ -21,6 +21,18 @@ export interface InventoryItem {
 	description?: string;
 }
 
+export interface Spell {
+	id: string;
+	name: string;
+	level: number;
+	school: string;
+	casting_time: string;
+	range: string;
+	components: string;
+	duration: string;
+	description: string;
+}
+
 export interface CharacterCreateRequest {
 	name: string;
 	race: string;
@@ -42,6 +54,7 @@ export interface Character {
 	race: string;
 	character_class: string;
 	level: number;
+	proficiency_bonus?: number;
 	abilities: {
 		strength: number;
 		dexterity: number;
@@ -55,6 +68,7 @@ export interface Character {
 		maximum: number;
 	};
 	inventory: InventoryItem[];
+	spells?: Spell[];
 }
 
 export interface Campaign {

@@ -137,3 +137,138 @@
   padding: 10px;
   font-family: 'Cinzel', serif;
 }
+
+/* Spell section styles */
+.spells h3 {
+  margin: 15px 0 10px 0;
+  color: #E4BB1E; /* Gold for section headers */
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+}
+
+.spell-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  background: rgba(120, 128, 112, 0.3); /* Steel color background */
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #788070; /* Steel border */
+}
+
+.spell-stat {
+  text-align: center;
+}
+
+.prepared-spells h4 {
+  margin: 10px 0;
+  color: #E4BB1E; /* Gold for subsection headers */
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: 'Cinzel', serif;
+  font-weight: 500;
+}
+
+.spell-level-group {
+  margin-bottom: 15px;
+}
+
+.spell-level-header {
+  margin: 10px 0 5px 0;
+  color: #d0c8b8; /* Light fantasy text */
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: 'Cinzel', serif;
+  font-weight: 500;
+  border-bottom: 1px solid #908C6B;
+  padding-bottom: 2px;
+}
+
+.spell-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.spell-item {
+  background: rgba(88, 24, 69, 0.3); /* Magical purple background */
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border-radius: 5px;
+  border: 1px solid #581845; /* Purple border */
+  font-family: 'Cinzel', serif;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.spell-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.spell-name {
+  font-weight: bold;
+  color: #f4f1e8; /* Light text */
+  font-size: 0.9rem;
+}
+
+.spell-school {
+  color: #C70039; /* Magical red accent */
+  font-size: 0.7rem;
+  font-style: italic;
+}
+
+.spell-details {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: #d0c8b8; /* Light fantasy text */
+}
+
+.spell-casting-time, .spell-range {
+  color: #908C6B; /* Stone color */
+}
+
+.spell-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.cast-spell-btn {
+  background: linear-gradient(135deg, #C70039, #581845); /* Magical gradient */
+  color: #f4f1e8;
+  border: 1px solid #E4BB1E; /* Gold border */
+  padding: 4px 12px;
+  border-radius: 3px;
+  font-family: 'Cinzel', serif;
+  font-size: 0.7rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cast-spell-btn:hover {
+  background: linear-gradient(135deg, #E4BB1E, #C70039); /* Gold to red gradient */
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.cast-spell-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.no-spells {
+  color: #908C6B; /* Stone color for empty state */
+  font-style: italic;
+  padding: 10px;
+  font-family: 'Cinzel', serif;
+  text-align: center;
+}
