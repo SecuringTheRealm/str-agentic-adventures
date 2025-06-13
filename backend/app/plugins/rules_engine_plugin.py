@@ -70,10 +70,20 @@ class RulesEnginePlugin:
             "wizard": "1d6",
         }
 
+        # Class spellcasting abilities (D&D 5e SRD)
+        self.class_spellcasting_abilities = {
+            "cleric": "wisdom",
+            "druid": "wisdom", 
+            "ranger": "wisdom",
+            "warlock": "charisma",
+            "paladin": "charisma",
+            "sorcerer": "charisma",
+            "bard": "charisma",
+            "wizard": "intelligence",
+        }
+
         # TODO: Implement spell system components
         # TODO: Add spell slot tracking by level and class
-        # TODO: Add spell save DC calculation
-        # TODO: Add spell attack bonus calculation
         # TODO: Add spell effect resolution system
         # TODO: Add concentration tracking for ongoing spells
 
@@ -690,6 +700,128 @@ class RulesEnginePlugin:
         except Exception as e:
             logger.error(f"Error calculating level up HP: {str(e)}")
             return {"error": f"Error calculating level up HP: {str(e)}"}
+
+    @kernel_function(
+        description="Calculate spell save DC for a spellcasting character.",
+        name="calculate_spell_save_dc",
+    )
+    def calculate_spell_save_dc(
+        self, character_class: str, spellcasting_ability_score: int, level: int
+    ) -> Dict[str, Any]:
+        """
+        Calculate spell save DC for a spellcasting character.
+
+        D&D 5e Formula: Spell save DC = 8 + spellcasting ability modifier + proficiency bonus
+
+        Args:
+            character_class: The character's class
+            spellcasting_ability_score: The relevant ability score for spellcasting
+            level: The character's level
+
+        Returns:
+            Dict[str, Any]: Spell save DC calculation result
+        """
+        try:
+            character_class_lower = character_class.lower()
+            
+            # Check if the class can cast spells
+            if character_class_lower not in self.class_spellcasting_abilities:
+                return {
+                    "character_class": character_class,
+                    "can_cast_spells": False,
+                    "error": f"Class '{character_class}' is not a spellcasting class or spellcasting ability not defined",
+                }
+
+            # Get spellcasting ability
+            spellcasting_ability = self.class_spellcasting_abilities[character_class_lower]
+
+            # Calculate ability modifier
+            ability_modifier = (spellcasting_ability_score - 10) // 2
+
+            # Get proficiency bonus
+            proficiency_result = self.calculate_proficiency_bonus(level)
+            if "error" in proficiency_result:
+                return proficiency_result
+
+            proficiency_bonus = proficiency_result["proficiency_bonus"]
+
+            # Calculate spell save DC: 8 + ability modifier + proficiency bonus
+            spell_save_dc = 8 + ability_modifier + proficiency_bonus
+
+            return {
+                "character_class": character_class,
+                "level": level,
+                "spellcasting_ability": spellcasting_ability,
+                "spellcasting_ability_score": spellcasting_ability_score,
+                "ability_modifier": ability_modifier,
+                "proficiency_bonus": proficiency_bonus,
+                "spell_save_dc": spell_save_dc,
+                "can_cast_spells": True,
+            }
+        except Exception as e:
+            logger.error(f"Error calculating spell save DC: {str(e)}")
+            return {"error": f"Error calculating spell save DC: {str(e)}"}
+
+    @kernel_function(
+        description="Calculate spell attack bonus for a spellcasting character.",
+        name="calculate_spell_attack_bonus",
+    )
+    def calculate_spell_attack_bonus(
+        self, character_class: str, spellcasting_ability_score: int, level: int
+    ) -> Dict[str, Any]:
+        """
+        Calculate spell attack bonus for a spellcasting character.
+
+        D&D 5e Formula: Spell attack bonus = spellcasting ability modifier + proficiency bonus
+
+        Args:
+            character_class: The character's class
+            spellcasting_ability_score: The relevant ability score for spellcasting
+            level: The character's level
+
+        Returns:
+            Dict[str, Any]: Spell attack bonus calculation result
+        """
+        try:
+            character_class_lower = character_class.lower()
+            
+            # Check if the class can cast spells
+            if character_class_lower not in self.class_spellcasting_abilities:
+                return {
+                    "character_class": character_class,
+                    "can_cast_spells": False,
+                    "error": f"Class '{character_class}' is not a spellcasting class or spellcasting ability not defined",
+                }
+
+            # Get spellcasting ability
+            spellcasting_ability = self.class_spellcasting_abilities[character_class_lower]
+
+            # Calculate ability modifier
+            ability_modifier = (spellcasting_ability_score - 10) // 2
+
+            # Get proficiency bonus
+            proficiency_result = self.calculate_proficiency_bonus(level)
+            if "error" in proficiency_result:
+                return proficiency_result
+
+            proficiency_bonus = proficiency_result["proficiency_bonus"]
+
+            # Calculate spell attack bonus: ability modifier + proficiency bonus
+            spell_attack_bonus = ability_modifier + proficiency_bonus
+
+            return {
+                "character_class": character_class,
+                "level": level,
+                "spellcasting_ability": spellcasting_ability,
+                "spellcasting_ability_score": spellcasting_ability_score,
+                "ability_modifier": ability_modifier,
+                "proficiency_bonus": proficiency_bonus,
+                "spell_attack_bonus": spell_attack_bonus,
+                "can_cast_spells": True,
+            }
+        except Exception as e:
+            logger.error(f"Error calculating spell attack bonus: {str(e)}")
+            return {"error": f"Error calculating spell attack bonus: {str(e)}"}
 
     def roll_with_character(
         self, dice_notation: str, character: Dict[str, Any], skill: str = None
