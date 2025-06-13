@@ -372,6 +372,9 @@ class DungeonMasterAgent:
             logger.error(f"Error processing input: {str(e)}")
             return {
                 "message": "I'm sorry, I encountered an issue processing your request. Please try again.",
+                "visuals": [],
+                "state_updates": {},
+                "combat_updates": None,
                 "error": str(e),
             }
 
@@ -489,7 +492,14 @@ class DungeonMasterAgent:
                 # Enhanced input analysis using Azure OpenAI for better intent recognition
                 from app.azure_openai_client import AzureOpenAIClient
 
-                openai_client = AzureOpenAIClient()
+                try:
+                    openai_client = AzureOpenAIClient()
+                except Exception as client_error:
+                    # If client creation fails, fall back to keyword analysis
+                    logger.warning(
+                        f"Azure OpenAI client creation failed: {str(client_error)}, using keyword-based approach"
+                    )
+                    raise ValueError("Azure OpenAI not available") from client_error
 
                 # Prepare analysis prompt for the AI
                 analysis_prompt = f"""

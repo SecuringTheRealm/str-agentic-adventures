@@ -21,9 +21,39 @@ class NarratorAgent:
 
     def __init__(self):
         """Initialize the Narrator agent with its own kernel instance."""
-        self.kernel = kernel_manager.create_kernel()
-        self.openai_client = AzureOpenAIClient()
-        self._register_skills()
+        # Initialize basic attributes first
+        self._fallback_mode = False
+        self.kernel = None
+        self.openai_client = None
+        
+        try:
+            # Try to create kernel and OpenAI client
+            self.kernel = kernel_manager.create_kernel()
+            self.openai_client = AzureOpenAIClient()
+            self._register_skills()
+            
+        except Exception as e:
+            # Check if this is a configuration error
+            error_msg = str(e)
+            if (("validation errors for Settings" in error_msg and (
+                "azure_openai" in error_msg or "openai" in error_msg
+            )) or "Azure OpenAI configuration is missing or invalid" in error_msg):
+                logger.warning(
+                    "Azure OpenAI configuration is missing or invalid. "
+                    "Narrator agent operating in fallback mode with basic functionality."
+                )
+                # Initialize in fallback mode
+                self._fallback_mode = True
+                self._initialize_fallback_components()
+            else:
+                # Re-raise other errors as-is
+                raise
+                
+    def _initialize_fallback_components(self):
+        """Initialize fallback components when Azure OpenAI is not available."""
+        self._fallback_mode = True
+        # Basic fallback - no advanced narrative generation
+        logger.info("Narrator agent initialized in fallback mode")
 
     def _register_skills(self):
         """Register necessary skills for the Narrator agent."""
@@ -52,7 +82,9 @@ class NarratorAgent:
             logger.info("Narrator agent plugins registered successfully")
         except Exception as e:
             logger.error(f"Error registering Narrator agent plugins: {str(e)}")
-            raise
+            # Don't raise - enter fallback mode instead
+            self._fallback_mode = True
+            logger.warning("Narrator agent entering fallback mode - using basic functionality without advanced plugins")
 
     async def describe_scene(self, scene_context: Dict[str, Any]) -> str:
         """
@@ -137,19 +169,23 @@ class NarratorAgent:
                     3,
                 )
 
-            # Enhance description with Azure OpenAI
-            messages = [
-                {"role": "system", "content": "You are a world class game narrator."},
-                {"role": "user", "content": full_description},
-            ]
-            try:
-                enhanced = await self.openai_client.chat_completion(
-                    messages,
-                    temperature=0.7,
-                )
-                return enhanced
-            except Exception as error:  # pragma: no cover - fallback path
-                logger.error("OpenAI enhancement failed: %s", error)
+            # Enhance description with Azure OpenAI if available
+            if not getattr(self, '_fallback_mode', False) and self.openai_client:
+                messages = [
+                    {"role": "system", "content": "You are a world class game narrator."},
+                    {"role": "user", "content": full_description},
+                ]
+                try:
+                    enhanced = await self.openai_client.chat_completion(
+                        messages,
+                        temperature=0.7,
+                    )
+                    return enhanced
+                except Exception as error:  # pragma: no cover - fallback path
+                    logger.error("OpenAI enhancement failed: %s", error)
+                    return full_description
+            else:
+                # Fallback mode - return basic description
                 return full_description
 
         except Exception as e:

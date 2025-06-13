@@ -1,0 +1,276 @@
+[1mdiff --git a/backend/app.db b/backend/app.db[m
+[1mindex c75f5b4..9461c3a 100644[m
+Binary files a/backend/app.db and b/backend/app.db differ
+[1mdiff --git a/backend/app/agents/dungeon_master_agent.py b/backend/app/agents/dungeon_master_agent.py[m
+[1mindex c3c6005..3e45a88 100644[m
+[1m--- a/backend/app/agents/dungeon_master_agent.py[m
+[1m+++ b/backend/app/agents/dungeon_master_agent.py[m
+[36m@@ -372,6 +372,9 @@[m [mclass DungeonMasterAgent:[m
+             logger.error(f"Error processing input: {str(e)}")[m
+             return {[m
+                 "message": "I'm sorry, I encountered an issue processing your request. Please try again.",[m
+[32m+[m[32m                "visuals": [],[m
+[32m+[m[32m                "state_updates": {},[m
+[32m+[m[32m                "combat_updates": None,[m
+                 "error": str(e),[m
+             }[m
+ [m
+[36m@@ -489,7 +492,14 @@[m [mclass DungeonMasterAgent:[m
+                 # Enhanced input analysis using Azure OpenAI for better intent recognition[m
+                 from app.azure_openai_client import AzureOpenAIClient[m
+ [m
+[31m-                openai_client = AzureOpenAIClient()[m
+[32m+[m[32m                try:[m
+[32m+[m[32m                    openai_client = AzureOpenAIClient()[m
+[32m+[m[32m                except Exception as client_error:[m
+[32m+[m[32m                    # If client creation fails, fall back to keyword analysis[m
+[32m+[m[32m                    logger.warning([m
+[32m+[m[32m                        f"Azure OpenAI client creation failed: {str(client_error)}, using keyword-based approach"[m
+[32m+[m[32m                    )[m
+[32m+[m[32m                    raise ValueError("Azure OpenAI not available") from client_error[m
+ [m
+                 # Prepare analysis prompt for the AI[m
+                 analysis_prompt = f"""[m
+[1mdiff --git a/backend/app/agents/narrator_agent.py b/backend/app/agents/narrator_agent.py[m
+[1mindex 6974a19..29d0b6e 100644[m
+[1m--- a/backend/app/agents/narrator_agent.py[m
+[1m+++ b/backend/app/agents/narrator_agent.py[m
+[36m@@ -21,9 +21,39 @@[m [mclass NarratorAgent:[m
+ [m
+     def __init__(self):[m
+         """Initialize the Narrator agent with its own kernel instance."""[m
+[31m-        self.kernel = kernel_manager.create_kernel()[m
+[31m-        self.openai_client = AzureOpenAIClient()[m
+[31m-        self._register_skills()[m
+[32m+[m[32m        # Initialize basic attributes first[m
+[32m+[m[32m        self._fallback_mode = False[m
+[32m+[m[32m        self.kernel = None[m
+[32m+[m[32m        self.openai_client = None[m
+[32m+[m[41m        [m
+[32m+[m[32m        try:[m
+[32m+[m[32m            # Try to create kernel and OpenAI client[m
+[32m+[m[32m            self.kernel = kernel_manager.create_kernel()[m
+[32m+[m[32m            self.openai_client = AzureOpenAIClient()[m
+[32m+[m[32m            self._register_skills()[m
+[32m+[m[41m            [m
+[32m+[m[32m        except Exception as e:[m
+[32m+[m[32m            # Check if this is a configuration error[m
+[32m+[m[32m            error_msg = str(e)[m
+[32m+[m[32m            if (("validation errors for Settings" in error_msg and ([m
+[32m+[m[32m                "azure_openai" in error_msg or "openai" in error_msg[m
+[32m+[m[32m            )) or "Azure OpenAI configuration is missing or invalid" in error_msg):[m
+[32m+[m[32m                logger.warning([m
+[32m+[m[32m                    "Azure OpenAI configuration is missing or invalid. "[m
+[32m+[m[32m                    "Narrator agent operating in fallback mode with basic functionality."[m
+[32m+[m[32m                )[m
+[32m+[m[32m                # Initialize in fallback mode[m
+[32m+[m[32m                self._fallback_mode = True[m
+[32m+[m[32m                self._initialize_fallback_components()[m
+[32m+[m[32m            else:[m
+[32m+[m[32m                # Re-raise other errors as-is[m
+[32m+[m[32m                raise[m
+[32m+[m[41m                [m
+[32m+[m[32m    def _initialize_fallback_components(self):[m
+[32m+[m[32m        """Initialize fallback components when Azure OpenAI is not available."""[m
+[32m+[m[32m        self._fallback_mode = True[m
+[32m+[m[32m        # Basic fallback - no advanced narrative generation[m
+[32m+[m[32m        logger.info("Narrator agent initialized in fallback mode")[m
+ [m
+     def _register_skills(self):[m
+         """Register necessary skills for the Narrator agent."""[m
+[36m@@ -52,7 +82,9 @@[m [mclass NarratorAgent:[m
+             logger.info("Narrator agent plugins registered successfully")[m
+         except Exception as e:[m
+             logger.error(f"Error registering Narrator agent plugins: {str(e)}")[m
+[31m-            raise[m
+[32m+[m[32m            # Don't raise - enter fallback mode instead[m
+[32m+[m[32m            self._fallback_mode = True[m
+[32m+[m[32m            logger.warning("Narrator agent entering fallback mode - using basic functionality without advanced plugins")[m
+ [m
+     async def describe_scene(self, scene_context: Dict[str, Any]) -> str:[m
+         """[m
+[36m@@ -137,19 +169,23 @@[m [mclass NarratorAgent:[m
+                     3,[m
+                 )[m
+ [m
+[31m-            # Enhance description with Azure OpenAI[m
+[31m-            messages = [[m
+[31m-                {"role": "system", "content": "You are a world class game narrator."},[m
+[31m-                {"role": "user", "content": full_description},[m
+[31m-            ][m
+[31m-            try:[m
+[31m-                enhanced = await self.openai_client.chat_completion([m
+[31m-                    messages,[m
+[31m-                    temperature=0.7,[m
+[31m-                )[m
+[31m-                return enhanced[m
+[31m-            except Exception as error:  # pragma: no cover - fallback path[m
+[31m-                logger.error("OpenAI enhancement failed: %s", error)[m
+[32m+[m[32m            # Enhance description with Azure OpenAI if available[m
+[32m+[m[32m            if not getattr(self, '_fallback_mode', False) and self.openai_client:[m
+[32m+[m[32m                messages = [[m
+[32m+[m[32m                    {"role": "system", "content": "You are a world class game narrator."},[m
+[32m+[m[32m                    {"role": "user", "content": full_description},[m
+[32m+[m[32m                ][m
+[32m+[m[32m                try:[m
+[32m+[m[32m                    enhanced = await self.openai_client.chat_completion([m
+[32m+[m[32m                        messages,[m
+[32m+[m[32m                        temperature=0.7,[m
+[32m+[m[32m                    )[m
+[32m+[m[32m                    return enhanced[m
+[32m+[m[32m                except Exception as error:  # pragma: no cover - fallback path[m
+[32m+[m[32m                    logger.error("OpenAI enhancement failed: %s", error)[m
+[32m+[m[32m                    return full_description[m
+[32m+[m[32m            else:[m
+[32m+[m[32m                # Fallback mode - return basic description[m
+                 return full_description[m
+ [m
+         except Exception as e:[m
+[1mdiff --git a/backend/test_issue_283_fix.py b/backend/test_issue_283_fix.py[m
+[1mnew file mode 100644[m
+[1mindex 0000000..f6a9dcf[m
+[1m--- /dev/null[m
+[1m+++ b/backend/test_issue_283_fix.py[m
+[36m@@ -0,0 +1,141 @@[m
+[32m+[m[32m#!/usr/bin/env python3[m
+[32m+[m[32m"""[m
+[32m+[m[32mTest script to verify the fix for GitHub issue #283:[m
+[32m+[m[32m"Unexpected behaviour (error) occuring when trying to chat with dungeon master agent"[m
+[32m+[m
+[32m+[m[32mThis script tests that the DM agent properly handles input and returns responses[m
+[32m+[m[32meven when Azure OpenAI is not configured.[m
+[32m+[m[32m"""[m
+[32m+[m
+[32m+[m[32mimport asyncio[m
+[32m+[m[32mimport sys[m
+[32m+[m[32mimport logging[m
+[32m+[m
+[32m+[m[32m# Set up logging to see any warnings[m
+[32m+[m[32mlogging.basicConfig(level=logging.INFO)[m
+[32m+[m
+[32m+[m[32masync def test_dm_agent_responses():[m
+[32m+[m[32m    """Test that the DM agent returns proper responses for various inputs."""[m
+[32m+[m[41m    [m
+[32m+[m[32m    print("🧪 Testing DM Agent Response Generation (Issue #283)")[m
+[32m+[m[32m    print("=" * 60)[m
+[32m+[m[41m    [m
+[32m+[m[32m    try:[m
+[32m+[m[32m        from app.agents.dungeon_master_agent import get_dungeon_master[m
+[32m+[m[41m        [m
+[32m+[m[32m        # Get DM agent (should initialize in fallback mode)[m
+[32m+[m[32m        dm = get_dungeon_master()[m
+[32m+[m[32m        print(f"✅ DM Agent initialized (fallback_mode: {getattr(dm, '_fallback_mode', 'not set')})")[m
+[32m+[m[41m        [m
+[32m+[m[32m        # Test various input types that users might send[m
+[32m+[m[32m        test_cases = [[m
+[32m+[m[32m            ("Hello, I want to explore the area", "narrative"),[m
+[32m+[m[32m            ("I attack the goblin with my sword", "combat"),[m
+[32m+[m[32m            ("I check my inventory", "character"),[m[41m [m
+[32m+[m[32m            ("I want to talk to the NPC", "social"),[m
+[32m+[m[32m            ("I roll a d20", "dice"),[m
+[32m+[m[32m            ("", "empty input"),[m
+[32m+[m[32m            ("What should I do?", "general question"),[m
+[32m+[m[32m        ][m
+[32m+[m[41m        [m
+[32m+[m[32m        all_passed = True[m
+[32m+[m[41m        [m
+[32m+[m[32m        for user_input, expected_type in test_cases:[m
+[32m+[m[32m            try:[m
+[32m+[m[32m                context = {[m
+[32m+[m[32m                    'character_id': 'test-character',[m
+[32m+[m[32m                    'campaign_id': 'test-campaign'[m
+[32m+[m[32m                }[m
+[32m+[m[41m                [m
+[32m+[m[32m                result = await dm.process_input(user_input, context)[m
+[32m+[m[41m                [m
+[32m+[m[32m                # Check that result has required fields[m
+[32m+[m[32m                required_fields = ['message', 'visuals', 'state_updates', 'combat_updates'][m
+[32m+[m[32m                missing_fields = [field for field in required_fields if field not in result][m
+[32m+[m[41m                [m
+[32m+[m[32m                if missing_fields:[m
+[32m+[m[32m                    print(f"❌ {expected_type}: Missing fields {missing_fields}")[m
+[32m+[m[32m                    all_passed = False[m
+[32m+[m[32m                elif not result.get('message'):[m
+[32m+[m[32m                    print(f"❌ {expected_type}: Empty message field")[m
+[32m+[m[32m                    all_passed = False[m
+[32m+[m[32m                else:[m
+[32m+[m[32m                    print(f"✅ {expected_type}: '{result['message'][:50]}{'...' if len(result['message']) > 50 else ''}'")[m
+[32m+[m[41m                    [m
+[32m+[m[32m            except Exception as e:[m
+[32m+[m[32m                print(f"❌ {expected_type}: Exception occurred: {e}")[m
+[32m+[m[32m                all_passed = False[m
+[32m+[m[41m        [m
+[32m+[m[32m        return all_passed[m
+[32m+[m[41m        [m
+[32m+[m[32m    except Exception as e:[m
+[32m+[m[32m        print(f"❌ Failed to initialize DM agent: {e}")[m
+[32m+[m[32m        return False[m
+[32m+[m
+[32m+[m[32masync def test_api_endpoint():[m
+[32m+[m[32m    """Test the API endpoint to ensure it works end-to-end."""[m
+[32m+[m[41m    [m
+[32m+[m[32m    print(f"\n🌐 Testing API Endpoint")[m
+[32m+[m[32m    print("=" * 30)[m
+[32m+[m[41m    [m
+[32m+[m[32m    try:[m
+[32m+[m[32m        import httpx[m
+[32m+[m[41m        [m
+[32m+[m[32m        # Test the API endpoint[m
+[32m+[m[32m        async with httpx.AsyncClient() as client:[m
+[32m+[m[32m            response = await client.post([m
+[32m+[m[32m                "http://localhost:8000/api/game/input",[m
+[32m+[m[32m                json={[m
+[32m+[m[32m                    "message": "Hello, I want to explore the mysterious cave",[m
+[32m+[m[32m                    "character_id": "test-character",[m
+[32m+[m[32m                    "campaign_id": "test-campaign"[m
+[32m+[m[32m                },[m
+[32m+[m[32m                timeout=10.0[m
+[32m+[m[32m            )[m
+[32m+[m[41m            [m
+[32m+[m[32m            if response.status_code == 200:[m
+[32m+[m[32m                data = response.json()[m
+[32m+[m[32m                if 'message' in data and data['message']:[m
+[32m+[m[32m                    print(f"✅ API Response: {data['message'][:50]}{'...' if len(data['message']) > 50 else ''}")[m
+[32m+[m[32m                    return True[m
+[32m+[m[32m                else:[m
+[32m+[m[32m                    print(f"❌ API returned empty message: {data}")[m
+[32m+[m[32m                    return False[m
+[32m+[m[32m            else:[m
+[32m+[m[32m                print(f"❌ API returned status {response.status_code}: {response.text}")[m
+[32m+[m[32m                return False[m
+[32m+[m[41m                [m
+[32m+[m[32m    except Exception as e:[m
+[32m+[m[32m        print(f"❌ API test failed: {e}")[m
+[32m+[m[32m        return False[m
+[32m+[m
+[32m+[m[32masync def main():[m
+[32m+[m[32m    """Run all tests and report results."""[m
+[32m+[m[41m    [m
+[32m+[m[32m    print("🔍 Testing GitHub Issue #283 Fix")[m
+[32m+[m[32m    print("Issue: 'Unexpected behaviour (error) occuring when trying to chat with dungeon master agent'")[m
+[32m+[m[32m    print()[m
+[32m+[m[41m    [m
+[32m+[m[32m    # Test 1: DM Agent Direct Testing[m
+[32m+[m[32m    dm_test_passed = await test_dm_agent_responses()[m
+[32m+[m[41m    [m
+[32m+[m[32m    # Test 2: API Endpoint Testing[m
+[32m+[m[32m    api_test_passed = await test_api_endpoint()[m
+[32m+[m[41m    [m
+[32m+[m[32m    # Summary[m
+[32m+[m[32m    print(f"\n📊 Test Results Summary")[m
+[32m+[m[32m    print("=" * 30)[m
+[32m+[m[32m    print(f"DM Agent Direct Tests: {'✅ PASSED' if dm_test_passed else '❌ FAILED'}")[m
+[32m+[m[32m    print(f"API Endpoint Tests: {'✅ PASSED' if api_test_passed else '❌ FAILED'}")[m
+[32m+[m[41m    [m
+[32m+[m[32m    if dm_test_passed and api_test_passed:[m
+[32m+[m[32m        print(f"\n🎉 Issue #283 FIX VERIFIED: All tests passed!")[m
+[32m+[m[32m        print("Users should now be able to chat with the dungeon master agent successfully.")[m
+[32m+[m[32m        return 0[m
+[32m+[m[32m    else:[m
+[32m+[m[32m        print(f"\n⚠️  Issue #283 FIX INCOMPLETE: Some tests failed!")[m
+[32m+[m[32m        return 1[m
+[32m+[m
+[32m+[m[32mif __name__ == "__main__":[m
+[32m+[m[32m    exit_code = asyncio.run(main())[m
+[32m+[m[32m    sys.exit(exit_code)[m
+\ No newline at end of file[m
