@@ -28,13 +28,28 @@ class DungeonMasterAgent:
 
     def __init__(self):
         """Initialize the Dungeon Master agent with its own kernel instance."""
-        self.kernel = kernel_manager.create_kernel()
-        # ToolManager initialization commented out as it's causing issues
-        # self.tool_manager = ToolManager(self.kernel)
-        self._register_plugins()
+        try:
+            self.kernel = kernel_manager.create_kernel()
+            # ToolManager initialization commented out as it's causing issues
+            # self.tool_manager = ToolManager(self.kernel)
+            self._register_plugins()
 
-        # Game session tracking
-        self.active_sessions = {}
+            # Game session tracking
+            self.active_sessions = {}
+        except Exception as e:
+            # Check if this is a configuration error
+            error_msg = str(e)
+            if "validation errors for Settings" in error_msg and ("azure_openai" in error_msg or "openai" in error_msg):
+                raise ValueError(
+                    "Azure OpenAI configuration is missing or invalid. "
+                    "This agentic demo requires proper Azure OpenAI setup. "
+                    "Please ensure the following environment variables are set: "
+                    "AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_API_KEY, "
+                    "AZURE_OPENAI_CHAT_DEPLOYMENT, AZURE_OPENAI_EMBEDDING_DEPLOYMENT"
+                ) from e
+            else:
+                # Re-raise other errors as-is
+                raise
 
     def _register_plugins(self):
         """Register necessary plugins for the Dungeon Master agent."""
