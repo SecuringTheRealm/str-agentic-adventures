@@ -46,6 +46,15 @@ class CombatState(str, Enum):
     ACTIVE = "active"
     COMPLETED = "completed"
 
+class NPCRole(str, Enum):
+    ALLY = "ally"
+    NEUTRAL = "neutral"
+    ANTAGONIST = "antagonist"
+    MERCHANT = "merchant"
+    QUEST_GIVER = "quest_giver"
+    MENTOR = "mentor"
+    COMIC_RELIEF = "comic_relief"
+
 # Base models
 class Abilities(BaseModel):
     strength: int = 10
@@ -271,7 +280,7 @@ class NPC(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str
     race: Optional[Race] = None
-    role: str  # "ally", "neutral", "antagonist", "merchant", "quest_giver", etc.
+    role: NPCRole = NPCRole.NEUTRAL  # Use enum with default
     description: str
     personality: Optional[NPCPersonality] = None
     location: Optional[str] = None
@@ -285,7 +294,7 @@ class NPC(BaseModel):
 class CreateNPCRequest(BaseModel):
     name: str
     race: Optional[Race] = None
-    role: str = "neutral"
+    role: NPCRole = NPCRole.NEUTRAL
     description: str
     personality: Optional[NPCPersonality] = None
     location: Optional[str] = None
@@ -295,7 +304,7 @@ class CreateNPCRequest(BaseModel):
 class UpdateNPCRequest(BaseModel):
     name: Optional[str] = None
     race: Optional[Race] = None
-    role: Optional[str] = None
+    role: Optional[NPCRole] = None
     description: Optional[str] = None
     personality: Optional[NPCPersonality] = None
     location: Optional[str] = None

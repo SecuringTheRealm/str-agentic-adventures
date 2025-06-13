@@ -14,6 +14,7 @@ from app.kernel_setup import kernel_manager
 from app.agents.narrator_agent import get_narrator
 from app.agents.artist_agent import get_artist
 from app.agents.scribe_agent import get_scribe
+from app.models.game_models import NPCRole
 # Temporarily commenting out other agent imports to fix SK compatibility
 # from app.agents.combat_mc_agent import combat_mc
 # from app.agents.combat_cartographer_agent import combat_cartographer
@@ -290,9 +291,9 @@ class DungeonMasterAgent:
             Dict[str, Any]: Generated stats
         """
         # Simple stat generation based on role
-        role = npc_data.get("role", "neutral")
+        role = npc_data.get("role", NPCRole.NEUTRAL)
         
-        if role == "antagonist":
+        if role == NPCRole.ANTAGONIST:
             level = 5
             hp = {"current": 65, "maximum": 65}
             ac = 16
@@ -304,7 +305,7 @@ class DungeonMasterAgent:
                 "wisdom": 13,
                 "charisma": 14
             }
-        elif role == "ally":
+        elif role == NPCRole.ALLY:
             level = 3
             hp = {"current": 27, "maximum": 27}
             ac = 14

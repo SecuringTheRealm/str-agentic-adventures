@@ -722,7 +722,7 @@ def generate_notable_npcs(setting: str, tone: str) -> List[Dict[str, str]]:
         npcs.append(
             {
                 "name": "Bumblethorne the Accident-Prone",
-                "role": "comic relief",
+                "role": "comic_relief",
                 "description": "A well-meaning wizard whose spells rarely work as intended.",
             }
         )

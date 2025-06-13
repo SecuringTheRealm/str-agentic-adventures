@@ -5,7 +5,6 @@ Test NPC management endpoints.
 import pytest
 from unittest.mock import AsyncMock, patch
 from app.agents.dungeon_master_agent import DungeonMasterAgent
-from app.models.game_models import CreateNPCRequest, UpdateNPCRequest, NPCPersonality
 
 
 class TestNPCEndpoints:
