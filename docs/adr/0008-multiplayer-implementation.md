@@ -120,7 +120,6 @@ Justification:
 * Built-in reliability features reduce development overhead
 
 ### Negative
-* Additional Azure service cost for SignalR connections
 * Increased complexity in frontend state management for real-time updates
 * Need to implement conflict resolution for simultaneous player actions
 * Additional testing complexity for real-time scenarios
@@ -130,32 +129,32 @@ Justification:
   * Mitigation: Implement optimistic UI updates and rollback mechanisms
 * Risk: Session state conflicts when multiple players act simultaneously
   * Mitigation: Implement server-side action queuing and validation with turn-based locks
-* Risk: SignalR connection drops during critical gameplay moments
+* Risk: WebSocket connection drops during critical gameplay moments
   * Mitigation: Implement automatic reconnection with state resynchronization
-* Risk: Increased infrastructure costs with concurrent player sessions
-  * Mitigation: Implement connection pooling and efficient group management
+* Risk: Scaling limitations with single-server WebSocket connections
+  * Mitigation: Implement Redis pub/sub for multi-server WebSocket scaling when needed
 
 ## Implementation Details
 
 ### Real-Time Communication Flow
-1. Players join campaign sessions via authenticated SignalR connections
-2. Session-specific groups manage message routing to participants
-3. Player actions trigger SignalR broadcasts to session group members
-4. AI agent responses distributed in real-time to all session participants
+1. Players join campaign sessions via authenticated WebSocket connections
+2. Campaign-specific connection groups manage message routing to participants  
+3. Player actions trigger WebSocket broadcasts to campaign group members
+4. AI agent responses distributed in real-time to all campaign participants
 
 ### State Synchronization Strategy
 * Authoritative server maintains canonical game state in SQLAlchemy database
-* Real-time state deltas broadcast via SignalR for UI updates
+* Real-time state deltas broadcast via WebSocket for UI updates
 * Client-side optimistic updates with server reconciliation
 * Turn-based action queuing prevents state conflicts
 
 ### Integration Points
 * **Multi-Agent Architecture** (ADR 0002): AI agents respond to aggregated player inputs
 * **Data Storage** (ADR 0003): Session state persisted with multiplayer participant tracking
-* **Frontend Architecture** (ADR 0004): React components subscribe to SignalR events for real-time updates
-* **Azure Integration** (ADR 0005): SignalR service deployed alongside existing Azure resources
+* **Frontend Architecture** (ADR 0004): React components subscribe to WebSocket events for real-time updates
+* **Azure Integration** (ADR 0005): WebSocket infrastructure deployed with existing Azure Container Apps
 
 ## Links
 
 * Related ADRs: [ADR 0002](0002-specialized-multi-agent-architecture.md), [ADR 0003](0003-data-storage-strategy.md), [ADR 0004](0004-react-typescript-frontend.md), [ADR 0005](0005-azure-openai-integration.md)
-* References: [Azure SignalR Service Documentation](https://docs.microsoft.com/en-us/azure/azure-signalr/), [Real-time ASP.NET with SignalR](https://dotnet.microsoft.com/en-us/apps/aspnet/signalr)
+* References: [FastAPI WebSocket Documentation](https://fastapi.tiangolo.com/advanced/websockets/), [MDN WebSocket API](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)

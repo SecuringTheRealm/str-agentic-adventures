@@ -16,7 +16,7 @@ This is the React TypeScript frontend for the AI Dungeon Master application. It 
 - **React 18** with TypeScript for type safety
 - **CSS Modules** for component styling
 - **REST API Integration** with Python backend
-- **WebSocket Support** for real-time features (TODO: SignalR integration pending)
+- **WebSocket Support** for real-time multiplayer communication
 
 ## Available Scripts
 
@@ -46,7 +46,6 @@ Your app is ready to be deployed!
 ## Development Notes
 
 ### TODO Items
-- Implement real-time WebSocket/SignalR integration for multiplayer
 - Complete dice rolling visualization system
 - Add character progression UI components
 - Implement campaign sharing interface
