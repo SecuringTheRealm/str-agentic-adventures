@@ -6,6 +6,7 @@ This plugin provides D&D 5e SRD ruleset functionality to the agents.
 import logging
 from typing import Dict, Any, List
 import random
+from datetime import datetime
 
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
@@ -70,9 +71,15 @@ class RulesEnginePlugin:
             "wizard": "1d6",
         }
 
+        # Concentration tracking for ongoing spells
+        # Maps character_id to spell information for concentration spells
+        self.concentration_spells = {}  # {character_id: {"spell": spell_dict, "duration_remaining": int, "started_at": timestamp}}
+
         # TODO: Implement spell system components
         # TODO: Add spell slot tracking by level and class
-        # TODO: Add concentration tracking for ongoing spells
+        # TODO: Add spell save DC calculation
+        # TODO: Add spell attack bonus calculation
+        # TODO: Add spell effect resolution system
 
     @kernel_function(
         description="Calculate spell save DC for a character.",
@@ -1001,3 +1008,241 @@ class RulesEnginePlugin:
         # Limit history size
         if len(self.roll_history) > self.max_history:
             self.roll_history = self.roll_history[-self.max_history :]
+
+    @kernel_function(
+        description="Start concentration on a spell for a character.",
+        name="start_concentration",
+    )
+    def start_concentration(
+        self, character_id: str, spell_data: Dict[str, Any], duration_rounds: int = 10
+    ) -> Dict[str, Any]:
+        """
+        Start concentration on a spell for a character.
+        
+        Args:
+            character_id: The character's unique identifier
+            spell_data: Dictionary containing spell information (name, level, etc.)
+            duration_rounds: Duration of the spell in combat rounds (default 10 for 1 minute)
+            
+        Returns:
+            Dict[str, Any]: Result of starting concentration
+        """
+        try:
+            # Check if spell requires concentration
+            if not spell_data.get("requires_concentration", False):
+                return {
+                    "success": False,
+                    "error": "Spell does not require concentration",
+                    "spell": spell_data.get("name", "Unknown")
+                }
+            
+            # End any existing concentration
+            if character_id in self.concentration_spells:
+                old_spell = self.concentration_spells[character_id]["spell"]
+                logger.info(f"Character {character_id} lost concentration on {old_spell.get('name', 'Unknown')}")
+            
+            # Start new concentration
+            self.concentration_spells[character_id] = {
+                "spell": spell_data,
+                "duration_remaining": duration_rounds,
+                "started_at": datetime.now().isoformat()
+            }
+            
+            return {
+                "success": True,
+                "character_id": character_id,
+                "spell": spell_data.get("name", "Unknown"),
+                "duration_rounds": duration_rounds,
+                "message": f"Concentration started on {spell_data.get('name', 'Unknown')}"
+            }
+            
+        except Exception as e:
+            logger.error(f"Error starting concentration: {str(e)}")
+            return {"success": False, "error": f"Error starting concentration: {str(e)}"}
+
+    @kernel_function(
+        description="End concentration on a spell for a character.",
+        name="end_concentration",
+    )
+    def end_concentration(self, character_id: str) -> Dict[str, Any]:
+        """
+        End concentration on a spell for a character.
+        
+        Args:
+            character_id: The character's unique identifier
+            
+        Returns:
+            Dict[str, Any]: Result of ending concentration
+        """
+        try:
+            if character_id not in self.concentration_spells:
+                return {
+                    "success": False,
+                    "error": "Character is not concentrating on any spell",
+                    "character_id": character_id
+                }
+            
+            spell_data = self.concentration_spells[character_id]["spell"]
+            spell_name = spell_data.get("name", "Unknown")
+            
+            # Remove concentration
+            del self.concentration_spells[character_id]
+            
+            return {
+                "success": True,
+                "character_id": character_id,
+                "spell": spell_name,
+                "message": f"Concentration ended on {spell_name}"
+            }
+            
+        except Exception as e:
+            logger.error(f"Error ending concentration: {str(e)}")
+            return {"success": False, "error": f"Error ending concentration: {str(e)}"}
+
+    @kernel_function(
+        description="Check current concentration status for a character.",
+        name="check_concentration",
+    )
+    def check_concentration(self, character_id: str) -> Dict[str, Any]:
+        """
+        Check current concentration status for a character.
+        
+        Args:
+            character_id: The character's unique identifier
+            
+        Returns:
+            Dict[str, Any]: Current concentration status
+        """
+        try:
+            if character_id not in self.concentration_spells:
+                return {
+                    "is_concentrating": False,
+                    "character_id": character_id,
+                    "spell": None,
+                    "duration_remaining": 0
+                }
+            
+            concentration_data = self.concentration_spells[character_id]
+            
+            return {
+                "is_concentrating": True,
+                "character_id": character_id,
+                "spell": concentration_data["spell"],
+                "duration_remaining": concentration_data["duration_remaining"],
+                "started_at": concentration_data["started_at"]
+            }
+            
+        except Exception as e:
+            logger.error(f"Error checking concentration: {str(e)}")
+            return {"error": f"Error checking concentration: {str(e)}"}
+
+    @kernel_function(
+        description="Perform a concentration saving throw when character takes damage.",
+        name="concentration_saving_throw",
+    )
+    def concentration_saving_throw(
+        self, character_id: str, damage_taken: int, constitution_modifier: int = 0
+    ) -> Dict[str, Any]:
+        """
+        Perform a concentration saving throw when character takes damage.
+        
+        Args:
+            character_id: The character's unique identifier
+            damage_taken: Amount of damage taken
+            constitution_modifier: Character's Constitution modifier
+            
+        Returns:
+            Dict[str, Any]: Result of the concentration save
+        """
+        try:
+            if character_id not in self.concentration_spells:
+                return {
+                    "success": False,
+                    "error": "Character is not concentrating on any spell",
+                    "character_id": character_id
+                }
+            
+            # Calculate DC: 10 or half the damage taken, whichever is higher
+            dc = max(10, damage_taken // 2)
+            
+            # Roll d20 + Constitution modifier
+            roll_result = self.roll_dice("1d20")
+            if "error" in roll_result:
+                return roll_result
+            
+            total = roll_result["total"] + constitution_modifier
+            success = total >= dc
+            
+            concentration_data = self.concentration_spells[character_id]
+            spell_name = concentration_data["spell"].get("name", "Unknown")
+            
+            result = {
+                "character_id": character_id,
+                "spell": spell_name,
+                "damage_taken": damage_taken,
+                "dc": dc,
+                "roll": roll_result["total"],
+                "constitution_modifier": constitution_modifier,
+                "total": total,
+                "success": success,
+                "concentration_maintained": success
+            }
+            
+            if not success:
+                # Concentration is lost
+                del self.concentration_spells[character_id]
+                result["message"] = f"Concentration lost on {spell_name}! (Rolled {total} vs DC {dc})"
+            else:
+                result["message"] = f"Concentration maintained on {spell_name}! (Rolled {total} vs DC {dc})"
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error with concentration saving throw: {str(e)}")
+            return {"success": False, "error": f"Error with concentration saving throw: {str(e)}"}
+
+    @kernel_function(
+        description="Reduce spell duration for all concentrating characters (call each round).",
+        name="advance_concentration_round",
+    )
+    def advance_concentration_round(self) -> Dict[str, Any]:
+        """
+        Reduce spell duration for all concentrating characters by one round.
+        Should be called at the end of each combat round.
+        
+        Returns:
+            Dict[str, Any]: Summary of concentration changes
+        """
+        try:
+            expired_spells = []
+            continuing_spells = []
+            
+            for character_id, concentration_data in list(self.concentration_spells.items()):
+                concentration_data["duration_remaining"] -= 1
+                
+                if concentration_data["duration_remaining"] <= 0:
+                    # Spell duration expired
+                    spell_name = concentration_data["spell"].get("name", "Unknown")
+                    expired_spells.append({
+                        "character_id": character_id,
+                        "spell": spell_name
+                    })
+                    del self.concentration_spells[character_id]
+                else:
+                    # Spell continues
+                    continuing_spells.append({
+                        "character_id": character_id,
+                        "spell": concentration_data["spell"].get("name", "Unknown"),
+                        "duration_remaining": concentration_data["duration_remaining"]
+                    })
+            
+            return {
+                "success": True,
+                "expired_spells": expired_spells,
+                "continuing_spells": continuing_spells,
+                "total_concentrating": len(self.concentration_spells)
+            }
+            
+        except Exception as e:
+            logger.error(f"Error advancing concentration round: {str(e)}")
+            return {"success": False, "error": f"Error advancing concentration round: {str(e)}"}
