@@ -252,3 +252,8 @@ class NarrativeEvent(BaseModel):
     consequences: Dict[str, Any] = {}
     story_arc_id: Optional[str] = None
     plot_point_id: Optional[str] = None
+
+class SpellAttackBonusRequest(BaseModel):
+    character_class: CharacterClass
+    level: int
+    spellcasting_ability_score: int

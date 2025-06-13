@@ -12,6 +12,7 @@ from app.models.game_models import (
     GameResponse,
     CharacterSheet,
     LevelUpRequest,
+    SpellAttackBonusRequest,
 )
 from app.agents.dungeon_master_agent import get_dungeon_master
 from app.agents.scribe_agent import get_scribe
@@ -851,8 +852,69 @@ async def process_general_action(
 # TODO: POST /combat/{combat_id}/cast-spell - Cast spells during combat with effect resolution
 # TODO: GET /spells/list - Get available spells by class and level
 # TODO: POST /spells/save-dc - Calculate spell save DC for a character
-# TODO: POST /spells/attack-bonus - Calculate spell attack bonus for a character
 # TODO: POST /character/{character_id}/concentration - Manage spell concentration tracking
+
+
+@router.post("/spells/attack-bonus", response_model=Dict[str, Any])
+async def calculate_spell_attack_bonus(request: SpellAttackBonusRequest):
+    """Calculate spell attack bonus for a character."""
+    try:
+        # Map character classes to their spellcasting abilities
+        spellcasting_abilities = {
+            "wizard": "intelligence",
+            "artificer": "intelligence", 
+            "cleric": "wisdom",
+            "druid": "wisdom",
+            "ranger": "wisdom",
+            "bard": "charisma",
+            "paladin": "charisma", 
+            "sorcerer": "charisma",
+            "warlock": "charisma"
+        }
+        
+        # Get spellcasting ability for the class
+        spellcasting_ability = spellcasting_abilities.get(request.character_class)
+        if not spellcasting_ability:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Class {request.character_class.value} is not a spellcasting class"
+            )
+        
+        # Calculate ability modifier: (ability_score - 10) // 2
+        ability_modifier = (request.spellcasting_ability_score - 10) // 2
+        
+        # Calculate proficiency bonus based on level
+        proficiency_bonus = 2
+        if request.level >= 17:
+            proficiency_bonus = 6
+        elif request.level >= 13:
+            proficiency_bonus = 5
+        elif request.level >= 9:
+            proficiency_bonus = 4
+        elif request.level >= 5:
+            proficiency_bonus = 3
+        
+        # Spell attack bonus = proficiency bonus + ability modifier
+        spell_attack_bonus = proficiency_bonus + ability_modifier
+        
+        return {
+            "character_class": request.character_class,
+            "level": request.level,
+            "spellcasting_ability": spellcasting_ability,
+            "spellcasting_ability_score": request.spellcasting_ability_score,
+            "ability_modifier": ability_modifier,
+            "proficiency_bonus": proficiency_bonus,
+            "spell_attack_bonus": spell_attack_bonus
+        }
+        
+    except HTTPException:
+        # Re-raise HTTPExceptions to maintain proper status codes
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to calculate spell attack bonus: {str(e)}"
+        )
 
 # TODO: Add advanced inventory system API endpoints
 # TODO: POST /character/{character_id}/equipment - Equip/unequip items with stat effects
