@@ -161,3 +161,151 @@ class TestRollHistory:
         history = self.plugin.get_roll_history()
         # Should be limited to 100 entries
         assert len(history) <= 100
+
+
+class TestSpellEffectResolution:
+    """Test spell effect resolution system."""
+    
+    def setup_method(self):
+        """Set up test fixtures."""
+        self.plugin = RulesEnginePlugin()
+    
+    def test_calculate_spell_save_dc(self):
+        """Test spell save DC calculation."""
+        # Test with standard spellcaster stats
+        result = self.plugin.calculate_spell_save_dc(
+            spellcasting_ability_modifier=3,  # 16 ability score
+            proficiency_bonus=2,  # Level 1-4
+            character_level=3
+        )
+        assert result["save_dc"] == 13  # 8 + 3 + 2 = 13
+        assert result["spellcasting_modifier"] == 3
+        assert result["proficiency_bonus"] == 2
+        
+        # Test with higher level character
+        result = self.plugin.calculate_spell_save_dc(
+            spellcasting_ability_modifier=4,  # 18 ability score  
+            proficiency_bonus=3,  # Level 5-8
+            character_level=6
+        )
+        assert result["save_dc"] == 15  # 8 + 4 + 3 = 15
+    
+    def test_calculate_spell_attack_bonus(self):
+        """Test spell attack bonus calculation."""
+        result = self.plugin.calculate_spell_attack_bonus(
+            spellcasting_ability_modifier=3,
+            proficiency_bonus=2
+        )
+        assert result["attack_bonus"] == 5  # 3 + 2 = 5
+        assert result["spellcasting_modifier"] == 3
+        assert result["proficiency_bonus"] == 2
+    
+    def test_resolve_spell_damage(self):
+        """Test spell damage resolution."""
+        # Test basic damage spell
+        result = self.plugin.resolve_spell_damage(
+            dice_notation="3d6",  # Fireball at 3rd level
+            damage_type="fire"
+        )
+        assert "total_damage" in result
+        assert result["damage_type"] == "fire"
+        assert "dice_rolls" in result
+        assert 3 <= result["total_damage"] <= 18  # 3d6 range
+        
+        # Test damage with modifier
+        result = self.plugin.resolve_spell_damage(
+            dice_notation="1d4+3",  # Magic Missile
+            damage_type="force"
+        )
+        assert result["damage_type"] == "force"
+        assert 4 <= result["total_damage"] <= 7  # 1d4+3 range
+    
+    def test_resolve_spell_healing(self):
+        """Test spell healing resolution."""
+        result = self.plugin.resolve_spell_healing(
+            dice_notation="1d8+3",  # Cure Wounds
+            spellcasting_modifier=3
+        )
+        assert "healing_amount" in result
+        assert result["spellcasting_modifier"] == 3
+        assert 4 <= result["healing_amount"] <= 11  # 1d8+3 range
+        
+        # Test healing without explicit modifier (should use the one from dice notation)
+        result = self.plugin.resolve_spell_healing(
+            dice_notation="2d4+2"  # Healing Word
+        )
+        assert "healing_amount" in result
+        assert 4 <= result["healing_amount"] <= 10  # 2d4+2 range
+    
+    def test_resolve_saving_throw(self):
+        """Test saving throw resolution."""
+        # Test successful save
+        result = self.plugin.resolve_saving_throw(
+            save_dc=13,
+            ability_modifier=2,  # Dex modifier
+            proficiency_bonus=2,  # Proficient in save
+            is_proficient=True,
+            roll_result=15  # Manual roll for consistency
+        )
+        assert result["save_successful"] is True
+        assert result["total_roll"] == 19  # 15 + 2 + 2
+        assert result["save_dc"] == 13
+        
+        # Test failed save
+        result = self.plugin.resolve_saving_throw(
+            save_dc=15,
+            ability_modifier=1,
+            proficiency_bonus=2,
+            is_proficient=False,
+            roll_result=8
+        )
+        assert result["save_successful"] is False
+        assert result["total_roll"] == 9  # 8 + 1 (no proficiency)
+        assert result["save_dc"] == 15
+    
+    def test_spell_effect_integration(self):
+        """Test integration between different spell effect methods."""
+        # Create a scenario: Level 5 wizard casting fireball
+        wizard_int_mod = 4  # 18 Intelligence
+        proficiency = 3     # Level 5
+        
+        # Calculate save DC
+        save_dc_result = self.plugin.calculate_spell_save_dc(
+            spellcasting_ability_modifier=wizard_int_mod,
+            proficiency_bonus=proficiency,
+            character_level=5
+        )
+        save_dc = save_dc_result["save_dc"]
+        assert save_dc == 15  # 8 + 4 + 3
+        
+        # Resolve damage (5th level fireball)
+        damage_result = self.plugin.resolve_spell_damage(
+            dice_notation="8d6",  # 5th level fireball
+            damage_type="fire"
+        )
+        assert "total_damage" in damage_result
+        assert 8 <= damage_result["total_damage"] <= 48  # 8d6 range
+        
+        # Test saving throw against this DC
+        save_result = self.plugin.resolve_saving_throw(
+            save_dc=save_dc,
+            ability_modifier=2,  # Dex save
+            proficiency_bonus=proficiency,
+            is_proficient=True,
+            roll_result=10  # Manual roll
+        )
+        # 10 + 2 + 3 = 15, exactly meets DC
+        assert save_result["save_successful"] is True
+        assert save_result["total_roll"] == 15
+    
+    def test_spell_attack_integration(self):
+        """Test spell attack integration."""
+        # Test spell attack calculation
+        attack_result = self.plugin.calculate_spell_attack_bonus(
+            spellcasting_ability_modifier=3,
+            proficiency_bonus=2
+        )
+        assert attack_result["attack_bonus"] == 5
+        
+        # Could simulate spell attack by rolling d20 + attack bonus
+        # This would be done by calling roll_dice("1d20+5") in practice
