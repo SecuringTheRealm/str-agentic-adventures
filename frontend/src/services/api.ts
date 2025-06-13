@@ -114,6 +114,19 @@ export interface AIAssistanceResponse {
 	enhanced_text?: string;
 }
 
+export interface AIContentGenerationRequest {
+	suggestion: string;
+	current_text: string;
+	context_type: string;
+	campaign_tone?: string;
+}
+
+export interface AIContentGenerationResponse {
+	generated_content: string;
+	success: boolean;
+	error?: string;
+}
+
 export interface PlayerInputRequest {
 	message: string;
 	character_id: string;
@@ -270,6 +283,18 @@ export const getAIAssistance = async (
 		return response.data;
 	} catch (error) {
 		console.error("Error getting AI assistance:", error);
+		throw error;
+	}
+};
+
+export const generateAIContent = async (
+	request: AIContentGenerationRequest,
+): Promise<AIContentGenerationResponse> => {
+	try {
+		const response = await apiClient.post("/game/campaign/ai-generate", request);
+		return response.data;
+	} catch (error) {
+		console.error("Error generating AI content:", error);
 		throw error;
 	}
 };

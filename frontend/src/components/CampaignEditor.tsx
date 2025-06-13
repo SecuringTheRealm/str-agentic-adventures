@@ -6,7 +6,9 @@ import {
   createCampaign, 
   updateCampaign,
   getAIAssistance,
-  AIAssistanceRequest
+  generateAIContent,
+  AIAssistanceRequest,
+  AIContentGenerationRequest
 } from '../services/api';
 import './CampaignEditor.css';
 
@@ -37,6 +39,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
   const [aiSuggestions, setAISuggestions] = useState<string[]>([]);
   const [activeField, setActiveField] = useState<string | null>(null);
   const [aiLoading, setAILoading] = useState(false);
+  const [aiGenerating, setAIGenerating] = useState(false);
   const [autoSave, setAutoSave] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
@@ -135,13 +138,64 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
     }
   };
 
-  const applySuggestion = (suggestion: string) => {
-    if (activeField) {
-      const currentValue = formData[activeField as keyof typeof formData];
+  const applySuggestion = async (suggestion: string) => {
+    if (!activeField) return;
+    
+    // Check if field is empty or has only placeholder content
+    const currentValue = formData[activeField as keyof typeof formData];
+    const isEmpty = !currentValue || currentValue.trim() === '';
+    
+    // Disable apply for empty fields as per requirements
+    if (isEmpty) {
+      return;
+    }
+    
+    setAIGenerating(true);
+    
+    try {
+      const request: AIContentGenerationRequest = {
+        suggestion: suggestion,
+        current_text: currentValue,
+        context_type: getContextTypeForField(activeField),
+        campaign_tone: formData.tone,
+      };
+      
+      const response = await generateAIContent(request);
+      
+      if (response.success && response.generated_content) {
+        // Insert the generated content, respecting existing text
+        const enhancedValue = currentValue ? 
+          `${currentValue}\n\n${response.generated_content}` : 
+          response.generated_content;
+        handleInputChange(activeField, enhancedValue);
+      } else {
+        console.error('AI content generation failed:', response.error);
+        // Fallback to the old behavior if generation fails
+        const enhancedValue = currentValue ? `${currentValue}\n\n${suggestion}` : suggestion;
+        handleInputChange(activeField, enhancedValue);
+      }
+    } catch (error) {
+      console.error('Error generating AI content:', error);
+      // Fallback to the old behavior if request fails
       const enhancedValue = currentValue ? `${currentValue}\n\n${suggestion}` : suggestion;
       handleInputChange(activeField, enhancedValue);
+    } finally {
+      setAIGenerating(false);
+      setShowAIAssistant(false);
     }
-    setShowAIAssistant(false);
+  };
+  
+  const getContextTypeForField = (field: string): string => {
+    switch (field) {
+      case 'setting':
+        return 'setting';
+      case 'description':
+        return 'description';
+      case 'world_description':
+        return 'description';
+      default:
+        return 'description';
+    }
   };
 
   const validateForm = () => {
@@ -486,17 +540,31 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
                 <div className="suggestions">
                   <h4>Suggestions:</h4>
                   <ul>
-                    {aiSuggestions.map((suggestion, index) => (
-                      <li key={index}>
-                        <span>{suggestion}</span>
-                        <button
-                          onClick={() => applySuggestion(suggestion)}
-                          className="apply-suggestion"
-                        >
-                          Apply
-                        </button>
-                      </li>
-                    ))}
+                    {aiSuggestions.map((suggestion, index) => {
+                      const currentValue = activeField ? formData[activeField as keyof typeof formData] : '';
+                      const isEmpty = !currentValue || currentValue.trim() === '';
+                      
+                      return (
+                        <li key={index}>
+                          <span>{suggestion}</span>
+                          <button
+                            onClick={() => applySuggestion(suggestion)}
+                            className="apply-suggestion"
+                            disabled={aiGenerating || isEmpty}
+                            title={isEmpty ? "Cannot apply to empty field" : "Generate AI content based on this suggestion"}
+                          >
+                            {aiGenerating ? (
+                              <>
+                                <span className="loading-spinner small"></span>
+                                Generating...
+                              </>
+                            ) : (
+                              'Apply'
+                            )}
+                          </button>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               )}

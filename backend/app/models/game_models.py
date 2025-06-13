@@ -368,6 +368,17 @@ class AIAssistanceResponse(BaseModel):
     suggestions: List[str]
     enhanced_text: Optional[str] = None
 
+class AIContentGenerationRequest(BaseModel):
+    suggestion: str  # The specific suggestion to generate content for
+    current_text: str  # Current text in the field
+    context_type: str  # "setting", "description", "plot_hook", etc.
+    campaign_tone: Optional[str] = "heroic"
+
+class AIContentGenerationResponse(BaseModel):
+    generated_content: str
+    success: bool
+    error: Optional[str] = None
+
 class GenerateImageRequest(BaseModel):
     image_type: str  # "character_portrait", "scene_illustration", "item_visualization"
     details: Dict[str, Any]
