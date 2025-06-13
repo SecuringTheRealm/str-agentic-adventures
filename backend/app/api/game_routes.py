@@ -1147,7 +1147,7 @@ async def get_spell_list(
                 components="V, S",
                 duration="Instantaneous",
                 description="Three darts of magical force hit their targets.",
-                classes=["wizard", "sorcerer"]
+                available_classes=["wizard", "sorcerer"]
             ),
             Spell(
                 name="Fireball",
@@ -1158,7 +1158,7 @@ async def get_spell_list(
                 components="V, S, M",
                 duration="Instantaneous",
                 description="A bright flash of energy streaks toward a point within range.",
-                classes=["wizard", "sorcerer"]
+                available_classes=["wizard", "sorcerer"]
             ),
             Spell(
                 name="Cure Wounds",
@@ -1169,14 +1169,14 @@ async def get_spell_list(
                 components="V, S",
                 duration="Instantaneous",
                 description="Restores hit points to a creature you touch.",
-                classes=["cleric", "druid", "paladin", "ranger"]
+                available_classes=["cleric", "druid", "paladin", "ranger"]
             )
         ]
         
         # Filter spells based on parameters
         filtered_spells = sample_spells
         if character_class:
-            filtered_spells = [s for s in filtered_spells if character_class.value in s.classes]
+            filtered_spells = [s for s in filtered_spells if character_class.value in s.available_classes]
         if spell_level is not None:
             filtered_spells = [s for s in filtered_spells if s.level == spell_level]
         if school:
@@ -1412,9 +1412,9 @@ async def manage_equipment(character_id: str, request: ManageEquipmentRequest):
             stat_changes = {k: -v for k, v in stat_changes.items()}
             armor_class_change = stat_changes.get("armor_class", 0)
         else:
-            return EquipmentResponse(
-                success=False,
-                message=f"Invalid action: {request.action}"
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid action: {request.action}"
             )
         
         return EquipmentResponse(
@@ -1423,6 +1423,8 @@ async def manage_equipment(character_id: str, request: ManageEquipmentRequest):
             stat_changes=stat_changes,
             armor_class_change=armor_class_change
         )
+    except HTTPException:
+        raise
     except Exception as e:
         return EquipmentResponse(
             success=False,
@@ -1496,11 +1498,9 @@ async def manage_magical_effects(request: MagicalEffectsRequest):
             active_effects = []
             stat_modifiers = {}
         else:
-            return MagicalEffectsResponse(
-                success=False,
-                message=f"Invalid action: {request.action}",
-                active_effects=[],
-                stat_modifiers={}
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid action: {request.action}"
             )
         
         return MagicalEffectsResponse(
@@ -1509,6 +1509,8 @@ async def manage_magical_effects(request: MagicalEffectsRequest):
             active_effects=active_effects,
             stat_modifiers=stat_modifiers
         )
+    except HTTPException:
+        raise
     except Exception as e:
         return MagicalEffectsResponse(
             success=False,

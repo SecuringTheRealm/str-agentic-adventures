@@ -64,11 +64,10 @@ class TestInventorySystemEndpoints:
         }
         
         response = client.post(f"/api/game/character/{character_id}/equipment", json=request_data)
-        assert response.status_code == 200
+        assert response.status_code == 400
         
         data = response.json()
-        assert data["success"] is False
-        assert "Invalid action" in data["message"]
+        assert "Invalid action" in data["detail"]
 
     def test_get_encumbrance(self, client):
         """Test getting character encumbrance."""
@@ -129,11 +128,10 @@ class TestInventorySystemEndpoints:
         }
         
         response = client.post("/api/game/items/magical-effects", json=request_data)
-        assert response.status_code == 200
+        assert response.status_code == 400
         
         data = response.json()
-        assert data["success"] is False
-        assert "Invalid action" in data["message"]
+        assert "Invalid action" in data["detail"]
 
     def test_get_item_catalog_no_filters(self, client):
         """Test getting item catalog without filters."""

@@ -93,7 +93,7 @@ class TestSpellSystemEndpoints:
         
         # Check that all returned spells are available to wizards
         for spell in data["spells"]:
-            assert "wizard" in spell["classes"]
+            assert "wizard" in spell["available_classes"]
 
     def test_get_spell_list_filtered_by_level(self, client):
         """Test getting spell list filtered by spell level."""

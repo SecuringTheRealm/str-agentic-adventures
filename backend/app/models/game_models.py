@@ -139,7 +139,7 @@ class Spell(BaseModel):
     duration: str
     description: str
     requires_concentration: bool = False
-    classes: List[str] = []  # Classes that can learn this spell
+    available_classes: List[str] = []  # Classes that can learn this spell
 
 class SpellSlot(BaseModel):
     level: int
