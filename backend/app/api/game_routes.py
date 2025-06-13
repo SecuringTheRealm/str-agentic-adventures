@@ -143,6 +143,19 @@ async def list_campaigns():
         )
 
 
+@router.get("/campaign/templates")
+async def get_campaign_templates():
+    """Get pre-built campaign templates."""
+    try:
+        templates = campaign_service.get_templates()
+        return {"templates": templates}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get templates: {str(e)}",
+        )
+
+
 @router.get("/campaign/{campaign_id}", response_model=Campaign)
 async def get_campaign(campaign_id: str):
     """Get a specific campaign by ID."""
@@ -236,19 +249,6 @@ async def delete_campaign(campaign_id: str):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to delete campaign: {str(e)}",
-        )
-
-
-@router.get("/campaign/templates")
-async def get_campaign_templates():
-    """Get pre-built campaign templates."""
-    try:
-        templates = campaign_service.get_templates()
-        return {"templates": templates}
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get templates: {str(e)}",
         )
 
 
