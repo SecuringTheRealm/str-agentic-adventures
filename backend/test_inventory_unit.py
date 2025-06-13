@@ -3,12 +3,11 @@
 Unit tests for the inventory management system functionality.
 """
 
-import pytest
 import asyncio
 import sys
 import os
 import tempfile
-from unittest.mock import Mock, patch, AsyncMock
+from unittest.mock import Mock, patch
 
 # Add the backend directory to Python path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -200,11 +199,11 @@ async def test_inventory_system():
     
     equipment = equipment_result["equipment"]
     if "main_hand" not in equipment:
-        print(f"❌ Sword not found in main_hand slot")
+        print("❌ Sword not found in main_hand slot")
         return False
     
     if equipment["main_hand"]["id"] != "sword_001":
-        print(f"❌ Wrong item in main_hand slot")
+        print("❌ Wrong item in main_hand slot")
         return False
     
     print("✅ Equipment system working correctly")
@@ -270,7 +269,7 @@ async def test_inventory_system():
     items = inventory_result["items"]
     sword_in_inventory = any(item["id"] == "sword_001" for item in items)
     if not sword_in_inventory:
-        print(f"❌ Sword not found in inventory after unequipping")
+        print("❌ Sword not found in inventory after unequipping")
         return False
     
     print("✅ Unequipping working correctly")
@@ -313,7 +312,7 @@ if __name__ == "__main__":
     # Clean up test database
     try:
         os.unlink(test_db_file.name)
-    except:
+    except OSError:
         pass
     
     if not success:

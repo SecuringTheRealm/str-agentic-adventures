@@ -46,7 +46,7 @@ async def test_artist_agent():
         if "error" in portrait_result:
             print(f"   ❌ Portrait generation handled gracefully: {portrait_result.get('error', 'Unknown error')}")
         else:
-            print(f"   ✅ Portrait generation successful!")
+            print("   ✅ Portrait generation successful!")
             print(f"      ID: {portrait_result.get('id')}")
             print(f"      Type: {portrait_result.get('type')}")
             print(f"      Character: {portrait_result.get('character_name')}")
@@ -67,7 +67,7 @@ async def test_artist_agent():
         if "error" in scene_result:
             print(f"   ❌ Scene generation handled gracefully: {scene_result.get('error', 'Unknown error')}")
         else:
-            print(f"   ✅ Scene generation successful!")
+            print("   ✅ Scene generation successful!")
             print(f"      ID: {scene_result.get('id')}")
             print(f"      Type: {scene_result.get('type')}")
             print(f"      Location: {scene_result.get('location')}")
@@ -88,7 +88,7 @@ async def test_artist_agent():
         if "error" in item_result:
             print(f"   ❌ Item generation handled gracefully: {item_result.get('error', 'Unknown error')}")
         else:
-            print(f"   ✅ Item generation successful!")
+            print("   ✅ Item generation successful!")
             print(f"      ID: {item_result.get('id')}")
             print(f"      Type: {item_result.get('type')}")
             print(f"      Item: {item_result.get('item_name')}")
@@ -129,7 +129,7 @@ async def test_combat_cartographer():
         if "error" in map_result:
             print(f"   ❌ Map generation handled gracefully: {map_result.get('error', 'Unknown error')}")
         else:
-            print(f"   ✅ Map generation successful!")
+            print("   ✅ Map generation successful!")
             print(f"      ID: {map_result.get('id')}")
             print(f"      Name: {map_result.get('name')}")
             print(f"      Terrain: {map_result.get('terrain')}")

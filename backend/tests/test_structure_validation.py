@@ -3,7 +3,6 @@ Structure validation tests that can run without external dependencies.
 """
 import ast
 import os
-import json
 
 
 class TestProjectStructure:
@@ -194,7 +193,7 @@ class TestFrontendBackendAPIMapping:
             elif not frontend_found and backend_found:
                 print(f"⚠️ Backend has {backend_endpoint} but frontend doesn't call {frontend_call}")
             else:
-                print(f"⚠️ Neither frontend nor backend has this mapping")
+                print("⚠️ Neither frontend nor backend has this mapping")
         
         assert len(missing_mappings) == 0, f"Missing API mappings: {missing_mappings}"
     

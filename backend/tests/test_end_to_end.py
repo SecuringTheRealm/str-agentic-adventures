@@ -3,7 +3,6 @@ End-to-end integration tests to verify complete functionality.
 """
 import sys
 import os
-import json
 
 # Add the backend directory to Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
