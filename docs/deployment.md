@@ -26,7 +26,7 @@ This document explains how to deploy the STR Agentic Adventures application to A
 1. **Install the Azure Developer CLI**:
    ```bash
    # Download and install azd
-   # See: https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/install-azd
+   # See: https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/install-azd?WT.mc_id=AI-MVP-5004204
    ```
 
 2. **Clone this repository**:
@@ -92,7 +92,7 @@ You can create a service principal using either the Azure CLI or Azure Portal.
 
 1. **Install Azure CLI** if you haven't already:
    ```bash
-   # Install Azure CLI (see: https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
+   # Install Azure CLI (see: https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?WT.mc_id=AI-MVP-5004204)
    curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
    ```
 
@@ -206,7 +206,7 @@ Configure these in your GitHub repository (Settings > Secrets and variables > Ac
 
 **For Federated Credentials:**
 - `AZURE_CLIENT_ID`: Application (client) ID from service principal
-- `AZURE_TENANT_ID`: Directory (tenant) ID from service principal  
+- `AZURE_TENANT_ID`: Directory (tenant) ID from service principal
 - `AZURE_SUBSCRIPTION_ID`: Your Azure subscription ID
 - `AZURE_OPENAI_ENDPOINT`: Azure AI Foundry endpoint URL (from Project settings)
 - `AZURE_OPENAI_API_KEY`: Azure AI Foundry API key (from Project settings)
@@ -275,7 +275,7 @@ Before running GitHub Actions, verify your service principal works:
    ```bash
    # List resource groups (should work if permissions are correct)
    az group list --query "[].name" --output tsv
-   
+
    # Test creating a resource group (then delete it)
    az group create --name "test-permissions-rg" --location "eastus"
    az group delete --name "test-permissions-rg" --yes --no-wait
@@ -375,7 +375,7 @@ The deployment creates the following Azure resources:
 ### Common Issues
 
 #### Authentication Issues
-1. **"Failed to authenticate"**: 
+1. **"Failed to authenticate"**:
    - Verify your service principal credentials are correct
    - Check that federated credentials are configured for the correct GitHub repository and branch
    - Ensure the service principal has not expired (client secrets expire)
@@ -391,13 +391,13 @@ The deployment creates the following Azure resources:
    - Check there are no extra spaces or characters in the secret
 
 #### Resource and Access Issues
-4. **Azure AI Foundry / Azure OpenAI Access**: 
+4. **Azure AI Foundry / Azure OpenAI Access**:
    - Ensure your subscription has access to Azure OpenAI service through Azure AI Foundry
    - Verify your Azure AI Foundry project is in the same subscription as your deployment
    - Check that the Azure AI Foundry endpoint URL and API key are correct
    - Confirm your model deployments are active in Azure AI Foundry
 
-5. **Resource Limits**: 
+5. **Resource Limits**:
    - Check subscription limits for Container Apps and Static Web Apps
    - Verify quota availability in your chosen Azure region
    - Consider using a different region if capacity is limited

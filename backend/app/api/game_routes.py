@@ -843,3 +843,25 @@ async def process_general_action(
         "effects": ["The situation changes", "New opportunities arise"],
         "next_actions": ["Continue the adventure", "Try something else"],
     }
+
+
+# TODO: Add spell system API endpoints
+# TODO: POST /character/{character_id}/spells - Manage known spells for character
+# TODO: POST /character/{character_id}/spell-slots - Manage spell slot usage and recovery
+# TODO: POST /combat/{combat_id}/cast-spell - Cast spells during combat with effect resolution
+# TODO: GET /spells/list - Get available spells by class and level
+# TODO: POST /spells/save-dc - Calculate spell save DC for a character
+# TODO: POST /spells/attack-bonus - Calculate spell attack bonus for a character
+# TODO: POST /character/{character_id}/concentration - Manage spell concentration tracking
+
+# TODO: Add advanced inventory system API endpoints
+# TODO: POST /character/{character_id}/equipment - Equip/unequip items with stat effects
+# TODO: GET /character/{character_id}/encumbrance - Calculate carrying capacity and weight
+# TODO: POST /items/magical-effects - Apply magical item effects to character stats
+# TODO: GET /items/catalog - Browse available items with rarity and value information
+
+# TODO: Add enhanced NPC management API endpoints
+# TODO: POST /campaign/{campaign_id}/npcs - Create and manage campaign NPCs
+# TODO: GET /npc/{npc_id}/personality - Get NPC personality traits and behaviors
+# TODO: POST /npc/{npc_id}/interaction - Log and retrieve NPC interaction history
+# TODO: POST /npc/{npc_id}/generate-stats - Generate combat stats for NPCs dynamically

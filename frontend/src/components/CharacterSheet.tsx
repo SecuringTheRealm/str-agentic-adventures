@@ -93,6 +93,10 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
 
 			<div className="inventory">
 				<h3>Inventory</h3>
+				{/* TODO: Add equipment slot management (armor, weapons, rings, etc.) */}
+				{/* TODO: Add item weight tracking and encumbrance calculations */}
+				{/* TODO: Add magical item effects display and stat modifications */}
+				{/* TODO: Add item rarity indicators and value displays */}
 				<ul className="inventory-list">
 					{character.inventory && character.inventory.length > 0 ? (
 						character.inventory.map((item, index) => (
@@ -108,6 +112,11 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
 					)}
 				</ul>
 			</div>
+
+			{/* TODO: Add spell management section for spellcasting classes */}
+			{/* TODO: Include spell slot tracking and spell save DC display */}
+			{/* TODO: Add prepared spells list with casting options */}
+			{/* TODO: Add cantrip management and spell attack bonus display */}
 		</div>
 	);
 };

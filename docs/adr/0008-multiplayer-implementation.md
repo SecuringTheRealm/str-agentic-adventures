@@ -138,7 +138,7 @@ Justification:
 
 ### Real-Time Communication Flow
 1. Players join campaign sessions via authenticated WebSocket connections
-2. Campaign-specific connection groups manage message routing to participants  
+2. Campaign-specific connection groups manage message routing to participants
 3. Player actions trigger WebSocket broadcasts to campaign group members
 4. AI agent responses distributed in real-time to all campaign participants
 

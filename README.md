@@ -14,6 +14,8 @@
 
 Secure the Realm democratizes access to high-quality tabletop roleplaying experiences. The platform removes the need for a human Dungeon Master while preserving the creativity, flexibility, and immersion of traditional games. Anyone can instantly jump into an adventure tailored to their preferences and available time. Specialized AI agents work together to deliver a seamless and visually rich experience that adapts to player choices.
 
+📋 **Project Status**: [View the comprehensive project status report](docs/project_status_report.md) for detailed implementation progress, feature completion status, and development roadmap.
+
 ## Background and Problem Statement
 
 Tabletop roleplaying games (TTRPGs) like Dungeons & Dragons have been a popular form of collaborative storytelling and gaming for decades. However, traditional TTRPGs require a Dungeon Master to orchestrate the game, create narratives, manage rules, and control non-player characters. This creates a significant barrier to entry for new players and those who cannot find a consistent group to play with. Additionally, the complex rules system can be intimidating for beginners and time-consuming even for experienced players.
@@ -89,7 +91,7 @@ For setup instructions, see [Deployment Guide](docs/deployment.md).
 
 - **Azure AI Foundry project** with deployed OpenAI models (GPT-4o-mini, text-embedding-ada-002, DALL-E 3)
 - **Azure Container Apps** for backend hosting
-- **Azure Static Web Apps** for frontend hosting  
+- **Azure Static Web Apps** for frontend hosting
 - **Azure Storage Account** for file and image storage
 
 > **Note**: Azure AI Foundry provides the unified platform for accessing Azure OpenAI models. Create your project at [ai.azure.com](https://ai.azure.com) to get started.
@@ -99,7 +101,7 @@ For setup instructions, see [Deployment Guide](docs/deployment.md).
 ### Prerequisites
 
 1. **Python 3.11 or higher** for the backend
-2. **Node.js 18 or higher** for the frontend  
+2. **Node.js 18 or higher** for the frontend
 3. **Azure AI Foundry access** for OpenAI models (see setup below)
 
 ### Azure AI Foundry Setup

@@ -46,6 +46,12 @@ Your app is ready to be deployed!
 ## Development Notes
 
 ### TODO Items
+- **Spell Management UI**: Add spell slot tracking, prepared spells, and casting interface for spellcasters
+- **Advanced Inventory System**: Equipment slot management, magical item effects, weight/encumbrance tracking
+- **Enhanced Character Sheet**: Spell save DC display, spell attack bonus, concentration tracking
+- **Player Management Controls**: DM interface for managing multi-player sessions and player access
+- **NPC Interaction Interface**: Advanced NPC personality display and interaction history
+- **Combat Enhancement UI**: Spell effect visualization, area of effect displays, status effect tracking
 - Complete dice rolling visualization system
 - Add character progression UI components
 - Implement campaign sharing interface
@@ -56,7 +62,7 @@ The frontend expects the backend to be running on `http://localhost:8000` for lo
 
 ## Related Documentation
 - [Backend README](../backend/README.md)
-- [API Documentation](../docs/api_compatibility_review.md)
+- [Project Status Report](../docs/project_status_report.md)
 - [Deployment Guide](../docs/deployment.md)
 
 ## Legacy Notes

@@ -189,10 +189,14 @@ class CombatMCAgent:
         Returns:
             Dict[str, Any]: The result of the action and updated combat state
         """
-        # Implementation would include attack resolution, damage calculation, etc.
         # TODO: Implement full combat action processing
-        # Should handle: attack rolls, damage calculation, spell effects,
-        # movement, special abilities, and state changes
+        # TODO: Add spell effect resolution and area of effect calculations
+        # TODO: Add movement tracking and positioning on battle maps
+        # TODO: Add complex action types (grapple, shove, dodge, dash, hide)
+        # TODO: Add spell save calculations and status effect application
+        # TODO: Add concentration checks for casters when taking damage
+        # TODO: Add opportunity attack calculations for movement
+        # TODO: Add multi-attack action handling for high-level characters
         return {"message": "Combat action processed", "success": True}
 
     def _calculate_average_party_level(self, party_info: Dict[str, Any]) -> float:

@@ -34,14 +34,22 @@ class ScribeAgent:
     def npcs(self) -> Dict[str, Any]:
         """Return NPCs placeholder."""
         # TODO: Implement NPC storage and retrieval system
-        # Should store NPC data, relationships, and interaction history
+        # TODO: Add NPC personality traits and behavior patterns
+        # TODO: Add NPC relationship tracking with player characters
+        # TODO: Add NPC conversation history and interaction logs
+        # TODO: Add dynamic NPC stat generation and combat capabilities
         return {}
 
     @property
     def inventory(self) -> Dict[str, Any]:
         """Return inventory placeholder."""
         # TODO: Implement inventory management system
-        # Should track items, quantities, weight, and magical properties
+        # TODO: Add item CRUD operations (create, read, update, delete items)
+        # TODO: Add equipment slot management (armor, weapons, accessories)
+        # TODO: Add item weight and encumbrance calculations
+        # TODO: Add magical item properties and effects on character stats
+        # TODO: Add item rarity and value tracking
+        # TODO: Add equipment effects on ability scores and combat modifiers
         return {}
 
     def _register_skills(self):
