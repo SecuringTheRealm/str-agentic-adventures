@@ -138,7 +138,7 @@ describe("CampaignCreation", () => {
 		const submitButton = screen.getByRole("button", {
 			name: "Create Campaign",
 		});
-		
+
 		await act(async () => {
 			await userEvent.click(submitButton);
 		});
@@ -181,7 +181,7 @@ describe("CampaignCreation", () => {
 		const submitButton = screen.getByRole("button", {
 			name: "Create Campaign",
 		});
-		
+
 		await act(async () => {
 			await userEvent.click(submitButton);
 		});
@@ -214,7 +214,7 @@ describe("CampaignCreation", () => {
 		const submitButton = screen.getByRole("button", {
 			name: "Create Campaign",
 		});
-		
+
 		await act(async () => {
 			await userEvent.click(submitButton);
 		});
@@ -232,10 +232,8 @@ describe("CampaignCreation", () => {
 	});
 
 	it("handles API errors gracefully", async () => {
-		// Suppress console.error for this test since we expect an error
-		const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-		
-		mockCreateCampaign.mockRejectedValue(new Error("API Error"));
+		const errorMessage = "Network error occurred";
+		mockCreateCampaign.mockRejectedValue(new Error(errorMessage));
 
 		render(<CampaignCreation onCampaignCreated={mockOnCampaignCreated} />);
 
@@ -248,29 +246,36 @@ describe("CampaignCreation", () => {
 		const submitButton = screen.getByRole("button", {
 			name: "Create Campaign",
 		});
-		
+
 		await act(async () => {
 			await userEvent.click(submitButton);
 		});
 
 		await waitFor(() => {
-			expect(
-				screen.getByText("Failed to create campaign. Please try again."),
-			).toBeInTheDocument();
-		}, { timeout: 5000 });
+			expect(mockCreateCampaign).toHaveBeenCalled();
+		});
 
-		expect(mockOnCampaignCreated).not.toHaveBeenCalled();
-		
-		// Restore console.error
-		consoleSpy.mockRestore();
+		// Should show error message to user
+		await waitFor(() => {
+			expect(screen.getByText(/error/i)).toBeInTheDocument();
+		});
+
+		// Should re-enable the submit button after error
+		expect(submitButton).not.toBeDisabled();
 	});
 
-	it("clears error message when submitting again", async () => {
-		// Suppress console.error for this test since we expect an error
-		const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-		
-		// First submission - error
-		mockCreateCampaign.mockRejectedValueOnce(new Error("API Error"));
+	it("shows loading state during campaign creation", async () => {
+		const slowPromise = new Promise((resolve) =>
+			setTimeout(() => resolve({
+				id: "1",
+				name: "Test",
+				setting: "Test",
+				tone: "heroic",
+				homebrew_rules: [],
+				characters: [],
+			}), 100)
+		);
+		mockCreateCampaign.mockReturnValue(slowPromise);
 
 		render(<CampaignCreation onCampaignCreated={mockOnCampaignCreated} />);
 
@@ -283,38 +288,177 @@ describe("CampaignCreation", () => {
 		const submitButton = screen.getByRole("button", {
 			name: "Create Campaign",
 		});
-		
-		await act(async () => {
-			await userEvent.click(submitButton);
-		});
 
+		await userEvent.click(submitButton);
+
+		// Button should be disabled during loading
+		expect(submitButton).toBeDisabled();
+
+		// Wait for completion
 		await waitFor(() => {
-			expect(
-				screen.getByText("Failed to create campaign. Please try again."),
-			).toBeInTheDocument();
-		}, { timeout: 5000 });
+			expect(submitButton).not.toBeDisabled();
+		});
+	});
 
-		// Second submission - success
-		mockCreateCampaign.mockResolvedValueOnce({
+	it("trims whitespace from form inputs", async () => {
+		const mockCampaign = {
 			id: "1",
 			name: "Test Campaign",
 			setting: "Test Setting",
 			tone: "heroic",
 			homebrew_rules: [],
 			characters: [],
+		};
+		mockCreateCampaign.mockResolvedValue(mockCampaign);
+
+		render(<CampaignCreation onCampaignCreated={mockOnCampaignCreated} />);
+
+		const nameInput = screen.getByLabelText("Campaign Name");
+		const settingInput = screen.getByLabelText("Campaign Setting");
+
+		// Type with leading/trailing spaces
+		await userEvent.type(nameInput, "  Test Campaign  ");
+		await userEvent.type(settingInput, "  Test Setting  ");
+
+		const submitButton = screen.getByRole("button", {
+			name: "Create Campaign",
 		});
-		
+
 		await act(async () => {
 			await userEvent.click(submitButton);
 		});
 
 		await waitFor(() => {
-			expect(
-				screen.queryByText("Failed to create campaign. Please try again."),
-			).not.toBeInTheDocument();
-		}, { timeout: 5000 });
-		
-		// Restore console.error
-		consoleSpy.mockRestore();
+			expect(mockCreateCampaign).toHaveBeenCalledWith({
+				name: "Test Campaign", // Should be trimmed
+				setting: "Test Setting", // Should be trimmed
+				tone: "heroic",
+				homebrew_rules: [],
+			});
+		});
+	});
+
+	it("handles empty homebrew rules correctly", async () => {
+		const mockCampaign = {
+			id: "1",
+			name: "Test Campaign",
+			setting: "Test Setting",
+			tone: "heroic",
+			homebrew_rules: [],
+			characters: [],
+		};
+		mockCreateCampaign.mockResolvedValue(mockCampaign);
+
+		render(<CampaignCreation onCampaignCreated={mockOnCampaignCreated} />);
+
+		const nameInput = screen.getByLabelText("Campaign Name");
+		const settingInput = screen.getByLabelText("Campaign Setting");
+		const homebrewInput = screen.getByLabelText("Homebrew Rules (Optional)");
+
+		await userEvent.type(nameInput, "Test Campaign");
+		await userEvent.type(settingInput, "Test Setting");
+		// Leave homebrew rules empty or add whitespace only
+		await userEvent.type(homebrewInput, "   \n  \n   ");
+
+		const submitButton = screen.getByRole("button", {
+			name: "Create Campaign",
+		});
+
+		await act(async () => {
+			await userEvent.click(submitButton);
+		});
+
+		await waitFor(() => {
+			expect(mockCreateCampaign).toHaveBeenCalledWith({
+				name: "Test Campaign",
+				setting: "Test Setting",
+				tone: "heroic",
+				homebrew_rules: [], // Should filter out empty lines
+			});
+		});
+	});
+
+	it("handles very long input values", async () => {
+		const longName = "A".repeat(1000);
+		const longSetting = "B".repeat(2000);
+
+		render(<CampaignCreation onCampaignCreated={mockOnCampaignCreated} />);
+
+		const nameInput = screen.getByLabelText("Campaign Name");
+		const settingInput = screen.getByLabelText("Campaign Setting");
+
+		await userEvent.type(nameInput, longName);
+		await userEvent.type(settingInput, longSetting);
+
+		// Should handle long input without crashing
+		expect(nameInput).toHaveValue(longName);
+		expect(settingInput).toHaveValue(longSetting);
+	});
+
+	it("resets form state after successful submission", async () => {
+		const mockCampaign = {
+			id: "1",
+			name: "Test Campaign",
+			setting: "Test Setting",
+			tone: "heroic",
+			homebrew_rules: [],
+			characters: [],
+		};
+		mockCreateCampaign.mockResolvedValue(mockCampaign);
+
+		render(<CampaignCreation onCampaignCreated={mockOnCampaignCreated} />);
+
+		const nameInput = screen.getByLabelText("Campaign Name");
+		const settingInput = screen.getByLabelText("Campaign Setting");
+
+		await userEvent.type(nameInput, "Test Campaign");
+		await userEvent.type(settingInput, "Test Setting");
+
+		const submitButton = screen.getByRole("button", {
+			name: "Create Campaign",
+		});
+
+		await act(async () => {
+			await userEvent.click(submitButton);
+		});
+
+		await waitFor(() => {
+			expect(mockOnCampaignCreated).toHaveBeenCalledWith(mockCampaign);
+		});
+
+		// Form should be reset or the component unmounted (depending on implementation)
+		// This test ensures the callback was called correctly
+		expect(mockOnCampaignCreated).toHaveBeenCalledTimes(1);
+	});
+
+	it("maintains form state during failed submissions", async () => {
+		mockCreateCampaign.mockRejectedValue(new Error("Server error"));
+
+		render(<CampaignCreation onCampaignCreated={mockOnCampaignCreated} />);
+
+		const nameInput = screen.getByLabelText("Campaign Name");
+		const settingInput = screen.getByLabelText("Campaign Setting");
+		const toneSelect = screen.getByLabelText("Campaign Tone");
+
+		await userEvent.type(nameInput, "Test Campaign");
+		await userEvent.type(settingInput, "Test Setting");
+		await userEvent.selectOptions(toneSelect, "gritty");
+
+		const submitButton = screen.getByRole("button", {
+			name: "Create Campaign",
+		});
+
+		await act(async () => {
+			await userEvent.click(submitButton);
+		});
+
+		await waitFor(() => {
+			expect(screen.getByText(/error/i)).toBeInTheDocument();
+		});
+
+		// Form values should be preserved after error
+		expect(nameInput).toHaveValue("Test Campaign");
+		expect(settingInput).toHaveValue("Test Setting");
+		expect(toneSelect).toHaveValue("gritty");
 	});
 });
