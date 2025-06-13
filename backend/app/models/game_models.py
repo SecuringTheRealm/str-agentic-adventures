@@ -65,8 +65,68 @@ class Item(BaseModel):
     description: Optional[str] = None
     quantity: int = 1
     weight: Optional[float] = None
-    value: Optional[int] = None
+    value: Optional[int] = None  # Value in gold pieces
     properties: Optional[Dict[str, Any]] = None
+
+class ItemRarity(str, Enum):
+    COMMON = "common"
+    UNCOMMON = "uncommon"
+    RARE = "rare"
+    VERY_RARE = "very_rare"
+    LEGENDARY = "legendary"
+    ARTIFACT = "artifact"
+
+class ItemType(str, Enum):
+    WEAPON = "weapon"
+    ARMOR = "armor"
+    SHIELD = "shield"
+    TOOL = "tool"
+    CONSUMABLE = "consumable"
+    TREASURE = "treasure"
+    RING = "ring"
+    AMULET = "amulet"
+    WONDROUS = "wondrous"
+
+class Equipment(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    description: Optional[str] = None
+    item_type: ItemType
+    rarity: ItemRarity = ItemRarity.COMMON
+    weight: Optional[float] = None
+    value: Optional[int] = None
+    requires_attunement: bool = False
+    is_magical: bool = False
+    stat_modifiers: Dict[str, int] = {}  # e.g., {"strength": 2, "armor_class": 1}
+    special_abilities: List[str] = []
+    damage_dice: Optional[str] = None  # For weapons, e.g., "1d8"
+    damage_type: Optional[str] = None  # For weapons, e.g., "slashing"
+    armor_class: Optional[int] = None  # For armor/shields
+    properties: List[str] = []  # e.g., ["finesse", "light", "versatile"]
+
+class EquipmentSlot(str, Enum):
+    MAIN_HAND = "main_hand"
+    OFF_HAND = "off_hand"
+    TWO_HANDS = "two_hands"
+    HEAD = "head"
+    CHEST = "chest"
+    LEGS = "legs"
+    FEET = "feet"
+    HANDS = "hands"
+    RING_1 = "ring_1"
+    RING_2 = "ring_2"
+    NECK = "neck"
+    CLOAK = "cloak"
+
+class EquippedItem(BaseModel):
+    equipment_id: str
+    slot: EquipmentSlot
+    attuned: bool = False
+
+class InventorySlot(BaseModel):
+    item_id: str
+    quantity: int
+    equipped_slots: List[EquipmentSlot] = []  # Which slots this item is equipped in
 
 class Spell(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -122,7 +182,9 @@ class CharacterSheet(BaseModel):
     speed: int = 30
     proficiency_bonus: int = 2
     skills: Dict[str, bool] = {}
-    inventory: List[Item] = []
+    inventory: List[InventorySlot] = []
+    equipped_items: List[EquippedItem] = []
+    carrying_capacity: Optional[float] = None
     spells: List[Spell] = []
     spellcasting: Optional[SpellCasting] = None
     features: List[Dict[str, Any]] = []
@@ -365,3 +427,47 @@ class ConcentrationCheckResponse(BaseModel):
     dc: int
     roll_result: Optional[int] = None
     spell_ended: bool = False
+
+# Inventory-related request and response models
+class ManageEquipmentRequest(BaseModel):
+    character_id: str
+    action: str  # "equip", "unequip"
+    equipment_id: str
+    slot: Optional[EquipmentSlot] = None
+
+class EncumbranceRequest(BaseModel):
+    character_id: str
+
+class MagicalEffectsRequest(BaseModel):
+    character_id: str
+    item_id: str
+    action: str  # "apply", "remove"
+
+class ItemCatalogRequest(BaseModel):
+    item_type: Optional[ItemType] = None
+    rarity: Optional[ItemRarity] = None
+    min_value: Optional[int] = None
+    max_value: Optional[int] = None
+
+class EquipmentResponse(BaseModel):
+    success: bool
+    message: str
+    stat_changes: Dict[str, int] = {}
+    armor_class_change: Optional[int] = None
+
+class EncumbranceResponse(BaseModel):
+    character_id: str
+    current_weight: float
+    carrying_capacity: float
+    encumbrance_level: str  # "unencumbered", "encumbered", "heavily_encumbered"
+    speed_penalty: int = 0
+
+class ItemCatalogResponse(BaseModel):
+    items: List[Equipment]
+    total_count: int
+
+class MagicalEffectsResponse(BaseModel):
+    success: bool
+    message: str
+    active_effects: List[str]
+    stat_modifiers: Dict[str, int]

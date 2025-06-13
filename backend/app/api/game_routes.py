@@ -30,6 +30,18 @@ from app.models.game_models import (
     SpellListResponse,
     SpellCastingResponse,
     ConcentrationCheckResponse,
+    Equipment,
+    ItemType,
+    ItemRarity,
+    EquipmentSlot,
+    ManageEquipmentRequest,
+    EncumbranceRequest,
+    MagicalEffectsRequest,
+    ItemCatalogRequest,
+    EquipmentResponse,
+    EncumbranceResponse,
+    ItemCatalogResponse,
+    MagicalEffectsResponse,
 )
 from app.agents.dungeon_master_agent import get_dungeon_master
 from app.agents.scribe_agent import get_scribe
@@ -1362,11 +1374,220 @@ async def calculate_spell_attack_bonus(request: SpellAttackBonusRequest):
             detail=f"Failed to calculate spell attack bonus: {str(e)}"
         )
 
-# TODO: Add advanced inventory system API endpoints
-# TODO: POST /character/{character_id}/equipment - Equip/unequip items with stat effects
-# TODO: GET /character/{character_id}/encumbrance - Calculate carrying capacity and weight
-# TODO: POST /items/magical-effects - Apply magical item effects to character stats
-# TODO: GET /items/catalog - Browse available items with rarity and value information
+# Enhanced Inventory System API Endpoints
+
+@router.post("/character/{character_id}/equipment", response_model=EquipmentResponse)
+async def manage_equipment(character_id: str, request: ManageEquipmentRequest):
+    """Equip/unequip items with stat effects."""
+    try:
+        # This would integrate with a character storage system
+        # For now, simulate equipment management with basic stat effects
+        
+        sample_stat_effects = {
+            "plate_armor": {"armor_class": 8, "stealth": -1},
+            "magic_sword": {"attack_bonus": 1, "damage_bonus": 1},
+            "ring_of_protection": {"armor_class": 1, "saving_throws": 1}
+        }
+        
+        equipment_name = request.equipment_id.lower()
+        stat_changes = sample_stat_effects.get(equipment_name, {})
+        
+        if request.action == "equip":
+            message = f"Successfully equipped {request.equipment_id}"
+            armor_class_change = stat_changes.get("armor_class", 0)
+        elif request.action == "unequip":
+            message = f"Successfully unequipped {request.equipment_id}"
+            # Reverse the stat changes for unequipping
+            stat_changes = {k: -v for k, v in stat_changes.items()}
+            armor_class_change = stat_changes.get("armor_class", 0)
+        else:
+            return EquipmentResponse(
+                success=False,
+                message=f"Invalid action: {request.action}"
+            )
+        
+        return EquipmentResponse(
+            success=True,
+            message=message,
+            stat_changes=stat_changes,
+            armor_class_change=armor_class_change
+        )
+    except Exception as e:
+        return EquipmentResponse(
+            success=False,
+            message=f"Failed to manage equipment: {str(e)}"
+        )
+
+@router.get("/character/{character_id}/encumbrance", response_model=EncumbranceResponse)
+async def get_encumbrance(character_id: str):
+    """Calculate carrying capacity and weight."""
+    try:
+        # This would normally calculate from actual character data
+        # For now, returning sample encumbrance data
+        
+        # Simulate character strength-based carrying capacity
+        strength_score = 15  # Would be retrieved from character data
+        carrying_capacity = strength_score * 15  # 15 lbs per point of Strength
+        current_weight = 85.5  # Would be calculated from actual inventory
+        
+        # Determine encumbrance level
+        if current_weight <= carrying_capacity:
+            encumbrance_level = "unencumbered"
+            speed_penalty = 0
+        elif current_weight <= carrying_capacity * 2:
+            encumbrance_level = "encumbered"
+            speed_penalty = 10
+        else:
+            encumbrance_level = "heavily_encumbered"
+            speed_penalty = 20
+        
+        return EncumbranceResponse(
+            character_id=character_id,
+            current_weight=current_weight,
+            carrying_capacity=carrying_capacity,
+            encumbrance_level=encumbrance_level,
+            speed_penalty=speed_penalty
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to calculate encumbrance: {str(e)}"
+        )
+
+@router.post("/items/magical-effects", response_model=MagicalEffectsResponse)
+async def manage_magical_effects(request: MagicalEffectsRequest):
+    """Apply magical item effects to character stats."""
+    try:
+        # Sample magical item effects
+        magical_effects = {
+            "cloak_of_elvenkind": {
+                "stealth": 2,
+                "perception": 2,
+                "effects": ["Advantage on Dexterity (Stealth) checks", "Disadvantage on Perception checks against you"]
+            },
+            "gauntlets_of_ogre_power": {
+                "strength": 19,  # Sets Strength to 19 if it's lower
+                "effects": ["Strength becomes 19", "Advantage on Strength checks"]
+            },
+            "ring_of_mind_shielding": {
+                "effects": ["Immune to charm", "Mind cannot be read", "Soul protected"]
+            }
+        }
+        
+        item_effects = magical_effects.get(request.item_id.lower(), {})
+        
+        if request.action == "apply":
+            message = f"Applied magical effects of {request.item_id}"
+            active_effects = item_effects.get("effects", [])
+            stat_modifiers = {k: v for k, v in item_effects.items() if k != "effects"}
+        elif request.action == "remove":
+            message = f"Removed magical effects of {request.item_id}"
+            active_effects = []
+            stat_modifiers = {}
+        else:
+            return MagicalEffectsResponse(
+                success=False,
+                message=f"Invalid action: {request.action}",
+                active_effects=[],
+                stat_modifiers={}
+            )
+        
+        return MagicalEffectsResponse(
+            success=True,
+            message=message,
+            active_effects=active_effects,
+            stat_modifiers=stat_modifiers
+        )
+    except Exception as e:
+        return MagicalEffectsResponse(
+            success=False,
+            message=f"Failed to manage magical effects: {str(e)}",
+            active_effects=[],
+            stat_modifiers={}
+        )
+
+@router.get("/items/catalog", response_model=ItemCatalogResponse)
+async def get_item_catalog(
+    item_type: Optional[ItemType] = None,
+    rarity: Optional[ItemRarity] = None,
+    min_value: Optional[int] = None,
+    max_value: Optional[int] = None
+):
+    """Browse available items with rarity and value information."""
+    try:
+        # Sample equipment catalog
+        sample_items = [
+            Equipment(
+                name="Longsword",
+                item_type=ItemType.WEAPON,
+                rarity=ItemRarity.COMMON,
+                weight=3.0,
+                value=15,
+                damage_dice="1d8",
+                damage_type="slashing",
+                properties=["versatile"]
+            ),
+            Equipment(
+                name="Plate Armor",
+                item_type=ItemType.ARMOR,
+                rarity=ItemRarity.COMMON,
+                weight=65.0,
+                value=1500,
+                armor_class=18,
+                stat_modifiers={"stealth": -1}
+            ),
+            Equipment(
+                name="Ring of Protection",
+                item_type=ItemType.RING,
+                rarity=ItemRarity.RARE,
+                weight=0.1,
+                value=3500,
+                requires_attunement=True,
+                is_magical=True,
+                stat_modifiers={"armor_class": 1, "saving_throws": 1}
+            ),
+            Equipment(
+                name="Flame Tongue",
+                item_type=ItemType.WEAPON,
+                rarity=ItemRarity.RARE,
+                weight=3.0,
+                value=5000,
+                requires_attunement=True,
+                is_magical=True,
+                damage_dice="1d8",
+                damage_type="slashing",
+                special_abilities=["Fire damage", "Light source"],
+                properties=["versatile"]
+            ),
+            Equipment(
+                name="Thieves' Tools",
+                item_type=ItemType.TOOL,
+                rarity=ItemRarity.COMMON,
+                weight=1.0,
+                value=25
+            )
+        ]
+        
+        # Filter items based on parameters
+        filtered_items = sample_items
+        if item_type:
+            filtered_items = [item for item in filtered_items if item.item_type == item_type]
+        if rarity:
+            filtered_items = [item for item in filtered_items if item.rarity == rarity]
+        if min_value is not None:
+            filtered_items = [item for item in filtered_items if item.value and item.value >= min_value]
+        if max_value is not None:
+            filtered_items = [item for item in filtered_items if item.value and item.value <= max_value]
+        
+        return ItemCatalogResponse(
+            items=filtered_items,
+            total_count=len(filtered_items)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get item catalog: {str(e)}"
+        )
 
 # TODO: Add enhanced NPC management API endpoints
 # TODO: POST /campaign/{campaign_id}/npcs - Create and manage campaign NPCs
