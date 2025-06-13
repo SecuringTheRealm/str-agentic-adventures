@@ -4,6 +4,7 @@ Comprehensive API route tests with proper error handling and edge cases.
 
 import sys
 import os
+import httpx
 from fastapi.testclient import TestClient
 from unittest.mock import patch, Mock, AsyncMock
 
@@ -397,9 +398,12 @@ class TestAPIRoutePerformance:
                 response = client.post("/api/game/character", json=request_data)
                 # If it completes, verify it handles the delay
                 assert response.status_code in [200, 500, 503, 504]
-            except Exception:
-                # Timeout is expected behavior
+            except (httpx.TimeoutException, httpx.ConnectTimeout, httpx.ReadTimeout):
+                # Timeout is expected behavior for this test
                 pass
+            except Exception:
+                # Re-raise any non-timeout-related exceptions to avoid masking errors
+                raise
 
 
 class TestAPIRouteSecurity:

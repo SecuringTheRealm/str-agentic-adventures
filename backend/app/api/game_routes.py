@@ -28,7 +28,6 @@ from app.models.game_models import (
     ManageSpellsRequest,
     ManageSpellSlotsRequest,
     CastSpellRequest,
-    SpellListRequest,
     ConcentrationRequest,
     SpellListResponse,
     SpellCastingResponse,
@@ -36,11 +35,8 @@ from app.models.game_models import (
     Equipment,
     ItemType,
     ItemRarity,
-    EquipmentSlot,
     ManageEquipmentRequest,
-    EncumbranceRequest,
     MagicalEffectsRequest,
-    ItemCatalogRequest,
     EquipmentResponse,
     EncumbranceResponse,
     ItemCatalogResponse,
@@ -49,11 +45,8 @@ from app.models.game_models import (
     NPCPersonality,
     NPCInteraction,
     CreateNPCRequest,
-    UpdateNPCRequest,
     NPCInteractionRequest,
     GenerateNPCStatsRequest,
-    NPCPersonalityRequest,
-    NPCListResponse,
     NPCInteractionResponse,
     NPCStatsResponse,
 )
@@ -297,8 +290,23 @@ async def get_ai_assistance(request: AIAssistanceRequest):
             ]
         
         # Simple text enhancement - in a full implementation this would use AI
+        enhanced_text = None
         if request.text:
-            enhanced_text = f"Enhanced: {request.text}"
+            # Basic text enhancement with context-aware improvements
+            text = request.text.strip()
+            
+            if request.context_type == "setting":
+                # Add atmospheric details for settings
+                enhanced_text = f"{text}\n\nThe air carries subtle hints of the environment's character, while distant sounds suggest the life and activity that defines this place."
+            elif request.context_type == "description":
+                # Add depth to descriptions
+                enhanced_text = f"{text}\n\nBeneath the surface details lies a sense of deeper significance, as if each element serves a purpose in the larger tapestry of the story."
+            elif request.context_type == "plot_hook":
+                # Add urgency to plot hooks
+                enhanced_text = f"{text}\n\nTime seems to be of the essence, and the consequences of action—or inaction—weigh heavily on the minds of those involved."
+            else:
+                # General enhancement
+                enhanced_text = f"{text}\n\nThis element resonates with potential, offering opportunities for creative development and meaningful narrative engagement."
         
         return AIAssistanceResponse(
             suggestions=suggestions,
@@ -1188,8 +1196,9 @@ async def cast_spell_in_combat(combat_id: str, request: CastSpellRequest):
             spell_data, request.slot_level, request.target_ids, combat_id
         )
         
-        # Process concentration spells
-        concentration_needed = spell_data.get("concentration", False)
+        # Process concentration spells (future enhancement)
+        # TODO: Implement logic to handle concentration spells based on spell data.
+        # concentration_needed = spell_data.get("concentration", False)
         
         return SpellCastingResponse(
             success=True,
@@ -1536,7 +1545,7 @@ async def manage_concentration(character_id: str, request: ConcentrationRequest)
     
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception:
         return ConcentrationCheckResponse(
             success=False,
             concentration_maintained=False,

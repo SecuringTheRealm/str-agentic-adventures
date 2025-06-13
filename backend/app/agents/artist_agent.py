@@ -123,7 +123,13 @@ class ArtistAgent:
                     "type": "character_portrait",
                     "character_name": name,
                     "description": prompt,
-                    "image_url": None,
+                    "image_url": "https://via.placeholder.com/512x512/8B4513/FFFFFF?text=Character+Portrait",
+                    "placeholder": True,
+                    "generation_details": {
+                        "size": "512x512",
+                        "quality": "standard",
+                        "style": "placeholder",
+                    },
                     "error": image_result.get("error", "Image generation failed"),
                 }
 
@@ -199,7 +205,19 @@ class ArtistAgent:
                     "type": "scene_illustration",
                     "location": location,
                     "description": prompt,
-                    "image_url": None,
+                    "image_url": "https://via.placeholder.com/1024x1024/228B22/FFFFFF?text=Scene+Illustration",
+                    "placeholder": True,
+                    "scene_context": {
+                        "location": location,
+                        "time": time,
+                        "notable_elements": notable_elements,
+                        "weather": weather,
+                    },
+                    "generation_details": {
+                        "size": "1024x1024",
+                        "quality": "standard",
+                        "style": "placeholder",
+                    },
                     "error": image_result.get("error", "Image generation failed"),
                 }
 
@@ -277,7 +295,19 @@ class ArtistAgent:
                     "type": "item_visualization",
                     "item_name": name,
                     "description": prompt,
-                    "image_url": None,
+                    "image_url": "https://via.placeholder.com/512x512/4169E1/FFFFFF?text=Item+Visualization",
+                    "placeholder": True,
+                    "item_context": {
+                        "name": name,
+                        "type": item_type,
+                        "rarity": rarity,
+                        "description": description,
+                    },
+                    "generation_details": {
+                        "size": "512x512",
+                        "quality": "standard",
+                        "style": "placeholder",
+                    },
                     "error": image_result.get("error", "Image generation failed"),
                 }
 
