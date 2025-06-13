@@ -1,6 +1,7 @@
 // API client for interacting with the backend
 import axios from "axios";
 import { getApiBaseUrl } from "../utils/urls";
+import { ItemRarity } from "../utils/itemUtils";
 
 // Define the base API URL - would come from environment in production
 const API_BASE_URL = getApiBaseUrl();
@@ -15,12 +16,13 @@ export const apiClient = axios.create({
 
 // Define API interface types
 export interface InventoryItem {
+	id?: string;
 	name: string;
 	quantity: number;
 	type?: string;
 	description?: string;
 	value?: number;
-	rarity?: string;
+	rarity?: ItemRarity;
 }
 
 export interface CharacterCreateRequest {

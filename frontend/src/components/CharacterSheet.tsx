@@ -104,7 +104,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
 				<ul className="inventory-list">
 					{character.inventory && character.inventory.length > 0 ? (
 						character.inventory.map((item, index) => (
-							<li key={`${item.name}-${index}`} className="inventory-item">
+							<li key={item.id || `${item.name}-${index}`} className="inventory-item">
 								<div className="item-info">
 									<span className="item-name">{item.name}</span>
 									{item.rarity && (
