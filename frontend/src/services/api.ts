@@ -36,6 +36,18 @@ export interface CharacterCreateRequest {
 	backstory?: string;
 }
 
+export interface Spell {
+	id: string;
+	name: string;
+	level: number;
+	school: string;
+	casting_time: string;
+	range: string;
+	components: string;
+	duration: string;
+	description: string;
+}
+
 export interface Character {
 	id: string;
 	name: string;
@@ -55,6 +67,7 @@ export interface Character {
 		maximum: number;
 	};
 	inventory: InventoryItem[];
+	spells?: Spell[];
 }
 
 export interface Campaign {

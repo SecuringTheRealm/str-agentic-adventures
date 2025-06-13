@@ -13,6 +13,53 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
 		return modifier >= 0 ? `+${modifier}` : modifier.toString();
 	};
 
+	// Helper function to get the primary spellcasting ability for a class
+	const getSpellcastingAbility = (characterClass: string): keyof typeof character.abilities | null => {
+		const spellcastingClasses = {
+			wizard: 'intelligence',
+			artificer: 'intelligence',
+			cleric: 'wisdom',
+			druid: 'wisdom',
+			ranger: 'wisdom',
+			bard: 'charisma',
+			paladin: 'charisma',
+			sorcerer: 'charisma',
+			warlock: 'charisma'
+		} as const;
+
+		const className = characterClass.toLowerCase() as keyof typeof spellcastingClasses;
+		return spellcastingClasses[className] || null;
+	};
+
+	// Helper function to calculate spell attack bonus
+	const getSpellAttackBonus = (): string | null => {
+		const spellcastingAbility = getSpellcastingAbility(character.character_class);
+		if (!spellcastingAbility) return null;
+
+		const abilityModifier = Math.floor((character.abilities[spellcastingAbility] - 10) / 2);
+		const proficiencyBonus = Math.ceil(character.level / 4) + 1; // D&D 5e proficiency bonus formula
+		const spellAttackBonus = abilityModifier + proficiencyBonus;
+		
+		return spellAttackBonus >= 0 ? `+${spellAttackBonus}` : spellAttackBonus.toString();
+	};
+
+	// Helper function to calculate spell save DC
+	const getSpellSaveDC = (): number | null => {
+		const spellcastingAbility = getSpellcastingAbility(character.character_class);
+		if (!spellcastingAbility) return null;
+
+		const abilityModifier = Math.floor((character.abilities[spellcastingAbility] - 10) / 2);
+		const proficiencyBonus = Math.ceil(character.level / 4) + 1;
+		
+		return 8 + abilityModifier + proficiencyBonus;
+	};
+
+	// Filter cantrips (level 0 spells) from the character's spells
+	const cantrips = character.spells?.filter(spell => spell.level === 0) || [];
+
+	// Check if character is a spellcasting class
+	const isSpellcaster = getSpellcastingAbility(character.character_class) !== null;
+
 	return (
 		<div className="character-sheet">
 			<div className="character-header">
@@ -113,10 +160,41 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
 				</ul>
 			</div>
 
-			{/* TODO: Add spell management section for spellcasting classes */}
-			{/* TODO: Include spell slot tracking and spell save DC display */}
-			{/* TODO: Add prepared spells list with casting options */}
-			{/* TODO: Add cantrip management and spell attack bonus display */}
+			{/* Spell Management Section for Spellcasting Classes */}
+			{isSpellcaster && (
+				<div className="spells">
+					<h3>Spellcasting</h3>
+					
+					{/* Spell Attack Bonus and Save DC */}
+					<div className="spell-stats">
+						<div className="spell-attack">
+							<div className="stat-label">Spell Attack</div>
+							<div className="stat-value">{getSpellAttackBonus()}</div>
+						</div>
+						<div className="spell-save-dc">
+							<div className="stat-label">Spell Save DC</div>
+							<div className="stat-value">{getSpellSaveDC()}</div>
+						</div>
+					</div>
+
+					{/* Cantrips */}
+					<div className="cantrips">
+						<h4>Cantrips</h4>
+						<ul className="cantrips-list">
+							{cantrips.length > 0 ? (
+								cantrips.map((cantrip) => (
+									<li key={cantrip.id} className="cantrip-item">
+										<span className="cantrip-name">{cantrip.name}</span>
+										<span className="cantrip-school">({cantrip.school})</span>
+									</li>
+								))
+							) : (
+								<li className="empty-cantrips">No cantrips known</li>
+							)}
+						</ul>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 };

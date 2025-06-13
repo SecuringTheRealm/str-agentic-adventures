@@ -58,7 +58,7 @@
   font-family: 'Cinzel', serif;
 }
 
-.abilities h3, .inventory h3 {
+.abilities h3, .inventory h3, .spells h3 {
   margin: 10px 0;
   color: #E4BB1E; /* Gold for section headers */
   font-size: 1rem;
@@ -66,6 +66,16 @@
   letter-spacing: 1px;
   font-family: 'Cinzel', serif;
   font-weight: 600;
+}
+
+.spells h4 {
+  margin: 8px 0 5px 0;
+  color: #d0c8b8; /* Lighter fantasy text for subsection headers */
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: 'Cinzel', serif;
+  font-weight: 500;
 }
 
 .abilities-grid {
@@ -132,6 +142,65 @@
 }
 
 .empty-inventory {
+  color: #908C6B; /* Stone color for empty state */
+  font-style: italic;
+  padding: 10px;
+  font-family: 'Cinzel', serif;
+}
+
+/* Spell Management Styles */
+.spells {
+  margin-top: 15px;
+}
+
+.spell-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  background: rgba(75, 0, 130, 0.3); /* Mystical purple background */
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #4B0082; /* Purple border */
+}
+
+.spell-attack, .spell-save-dc {
+  text-align: center;
+}
+
+.cantrips {
+  margin-bottom: 10px;
+}
+
+.cantrips-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.cantrip-item {
+  background: rgba(138, 43, 226, 0.3); /* Violet color background for cantrips */
+  padding: 8px 12px;
+  margin-bottom: 5px;
+  border-radius: 3px;
+  display: flex;
+  justify-content: space-between;
+  border: 1px solid #8A2BE2; /* Violet border */
+  font-family: 'Cinzel', serif;
+}
+
+.cantrip-name {
+  flex: 1;
+  color: #f4f1e8; /* Light text */
+  font-weight: 500;
+}
+
+.cantrip-school {
+  color: #E4BB1E; /* Gold for spell school */
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+.empty-cantrips {
   color: #908C6B; /* Stone color for empty state */
   font-style: italic;
   padding: 10px;

@@ -1,9 +1,34 @@
 import { render, screen } from "@testing-library/react";
 import React from "react";
-import type { Character } from "../services/api";
+import type { Character, Spell } from "../services/api";
 import CharacterSheet from "./CharacterSheet";
 
 describe("CharacterSheet", () => {
+	const mockCantrips: Spell[] = [
+		{
+			id: "1",
+			name: "Fire Bolt",
+			level: 0,
+			school: "Evocation",
+			casting_time: "1 action",
+			range: "120 feet",
+			components: "V, S",
+			duration: "Instantaneous",
+			description: "A mote of fire shoots from your fingertip."
+		},
+		{
+			id: "2", 
+			name: "Prestidigitation",
+			level: 0,
+			school: "Transmutation",
+			casting_time: "1 action",
+			range: "10 feet",
+			components: "V, S",
+			duration: "Up to 1 hour",
+			description: "A minor magical trick."
+		}
+	];
+
 	const mockCharacter: Character = {
 		id: "1",
 		name: "Aragorn",
@@ -46,8 +71,9 @@ describe("CharacterSheet", () => {
 		render(<CharacterSheet character={mockCharacter} />);
 
 		expect(screen.getByText("Armor Class")).toBeInTheDocument();
-		// Look for default armor class value
-		expect(screen.getByText("10")).toBeInTheDocument();
+		// Look for default armor class value in the appropriate section
+		const armorClassSection = screen.getByText("Armor Class").closest('.armor-class');
+		expect(armorClassSection).toHaveTextContent("10");
 	});
 
 	it("renders all ability scores", () => {
@@ -114,6 +140,7 @@ describe("CharacterSheet", () => {
 		render(<CharacterSheet character={emptyInventoryCharacter} />);
 
 		expect(screen.getByText("Inventory")).toBeInTheDocument();
+		expect(screen.getByText("No items in inventory")).toBeInTheDocument();
 		// Should handle empty inventory gracefully without errors
 		expect(screen.getByText("Aragorn")).toBeInTheDocument();
 	});
@@ -134,8 +161,9 @@ describe("CharacterSheet", () => {
 		render(<CharacterSheet character={mockCharacter} />);
 
 		expect(screen.getByText("Inventory")).toBeInTheDocument();
-		expect(screen.getByText("Longsword (1)")).toBeInTheDocument();
-		expect(screen.getByText("Health Potion (3)")).toBeInTheDocument();
+		expect(screen.getByText("Longsword")).toBeInTheDocument();
+		expect(screen.getByText("Health Potion")).toBeInTheDocument();
+		expect(screen.getByText("x3")).toBeInTheDocument(); // quantity for Health Potion
 	});
 
 	it("handles extreme ability scores correctly", () => {
@@ -260,6 +288,176 @@ describe("CharacterSheet", () => {
 
 		// Default armor class should be shown
 		expect(screen.getByText("Armor Class")).toBeInTheDocument();
-		expect(screen.getByText("10")).toBeInTheDocument();
+		// Look for the specific armor class value in the stat section
+		const armorClassSection = screen.getByText("Armor Class").closest('.armor-class');
+		expect(armorClassSection).toHaveTextContent("10");
+	});
+
+	// Spell Management Tests
+	describe("Spell Management", () => {
+		it("displays spellcasting section for spellcasting classes", () => {
+			const wizardCharacter: Character = {
+				...mockCharacter,
+				character_class: "Wizard",
+				spells: mockCantrips,
+			};
+
+			render(<CharacterSheet character={wizardCharacter} />);
+
+			expect(screen.getByText("Spellcasting")).toBeInTheDocument();
+			expect(screen.getByText("Spell Attack")).toBeInTheDocument();
+			expect(screen.getByText("Spell Save DC")).toBeInTheDocument();
+			expect(screen.getByText("Cantrips")).toBeInTheDocument();
+		});
+
+		it("does not display spellcasting section for non-spellcasting classes", () => {
+			const fighterCharacter: Character = {
+				...mockCharacter,
+				character_class: "Fighter",
+			};
+
+			render(<CharacterSheet character={fighterCharacter} />);
+
+			expect(screen.queryByText("Spellcasting")).not.toBeInTheDocument();
+			expect(screen.queryByText("Spell Attack")).not.toBeInTheDocument();
+			expect(screen.queryByText("Cantrips")).not.toBeInTheDocument();
+		});
+
+		it("calculates spell attack bonus correctly for Wizard (Intelligence-based)", () => {
+			const wizardCharacter: Character = {
+				...mockCharacter,
+				character_class: "Wizard",
+				level: 5,
+				abilities: {
+					...mockCharacter.abilities,
+					intelligence: 16, // +3 modifier
+				},
+			};
+
+			render(<CharacterSheet character={wizardCharacter} />);
+
+			// Level 5 = +3 proficiency, Intelligence 16 = +3 modifier, total = +6
+			expect(screen.getByText("+6")).toBeInTheDocument();
+		});
+
+		it("calculates spell save DC correctly for Cleric (Wisdom-based)", () => {
+			const clericCharacter: Character = {
+				...mockCharacter,
+				character_class: "Cleric",
+				level: 3,
+				abilities: {
+					...mockCharacter.abilities,
+					wisdom: 16, // +3 modifier
+				},
+			};
+
+			render(<CharacterSheet character={clericCharacter} />);
+
+			// 8 + proficiency (+2 at level 3) + wisdom modifier (+3) = 13
+			expect(screen.getByText("13")).toBeInTheDocument();
+		});
+
+		it("calculates spell attack bonus correctly for Sorcerer (Charisma-based)", () => {
+			const sorcererCharacter: Character = {
+				...mockCharacter,
+				character_class: "Sorcerer",
+				level: 1,
+				abilities: {
+					...mockCharacter.abilities,
+					charisma: 17, // +3 modifier
+				},
+			};
+
+			render(<CharacterSheet character={sorcererCharacter} />);
+
+			// Level 1 = +2 proficiency, Charisma 17 = +3 modifier, total = +5
+			expect(screen.getByText("+5")).toBeInTheDocument();
+		});
+
+		it("displays cantrips correctly", () => {
+			const wizardCharacter: Character = {
+				...mockCharacter,
+				character_class: "Wizard",
+				spells: mockCantrips,
+			};
+
+			render(<CharacterSheet character={wizardCharacter} />);
+
+			expect(screen.getByText("Fire Bolt")).toBeInTheDocument();
+			expect(screen.getByText("(Evocation)")).toBeInTheDocument();
+			expect(screen.getByText("Prestidigitation")).toBeInTheDocument();
+			expect(screen.getByText("(Transmutation)")).toBeInTheDocument();
+		});
+
+		it("handles spellcaster with no cantrips", () => {
+			const wizardCharacter: Character = {
+				...mockCharacter,
+				character_class: "Wizard",
+				spells: [],
+			};
+
+			render(<CharacterSheet character={wizardCharacter} />);
+
+			expect(screen.getByText("Spellcasting")).toBeInTheDocument();
+			expect(screen.getByText("No cantrips known")).toBeInTheDocument();
+		});
+
+		it("filters out non-cantrip spells from cantrip display", () => {
+			const spellsWithLeveled: Spell[] = [
+				...mockCantrips,
+				{
+					id: "3",
+					name: "Magic Missile",
+					level: 1,
+					school: "Evocation",
+					casting_time: "1 action",
+					range: "120 feet",
+					components: "V, S",
+					duration: "Instantaneous",
+					description: "Three darts of magical force."
+				}
+			];
+
+			const wizardCharacter: Character = {
+				...mockCharacter,
+				character_class: "Wizard",
+				spells: spellsWithLeveled,
+			};
+
+			render(<CharacterSheet character={wizardCharacter} />);
+
+			// Should show cantrips but not leveled spells in the cantrips section
+			expect(screen.getByText("Fire Bolt")).toBeInTheDocument();
+			expect(screen.getByText("Prestidigitation")).toBeInTheDocument();
+			expect(screen.queryByText("Magic Missile")).not.toBeInTheDocument();
+		});
+
+		it("handles different spellcasting classes correctly", () => {
+			// Test different combinations of classes and their primary casting abilities
+			const testCases = [
+				{ class: "Wizard", ability: "intelligence", score: 16 },
+				{ class: "Cleric", ability: "wisdom", score: 18 },
+				{ class: "Bard", ability: "charisma", score: 14 },
+				{ class: "Druid", ability: "wisdom", score: 15 },
+			];
+
+			testCases.forEach(({ class: characterClass, ability, score }) => {
+				const character: Character = {
+					...mockCharacter,
+					character_class: characterClass,
+					abilities: {
+						...mockCharacter.abilities,
+						[ability]: score,
+					},
+				};
+
+				const { unmount } = render(<CharacterSheet character={character} />);
+				
+				expect(screen.getByText("Spellcasting")).toBeInTheDocument();
+				expect(screen.getByText("Spell Attack")).toBeInTheDocument();
+				
+				unmount();
+			});
+		});
 	});
 });
