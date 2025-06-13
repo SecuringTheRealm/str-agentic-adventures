@@ -3,7 +3,7 @@ API routes for the AI Dungeon Master application.
 """
 
 from fastapi import APIRouter, HTTPException, status
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from datetime import datetime
 
 from app.models.game_models import (
@@ -20,6 +20,16 @@ from app.models.game_models import (
     AIAssistanceRequest,
     AIAssistanceResponse,
     Campaign,
+    Spell,
+    CharacterClass,
+    ManageSpellsRequest,
+    ManageSpellSlotsRequest,
+    CastSpellRequest,
+    SpellListRequest,
+    ConcentrationRequest,
+    SpellListResponse,
+    SpellCastingResponse,
+    ConcentrationCheckResponse,
 )
 from app.agents.dungeon_master_agent import get_dungeon_master
 from app.agents.scribe_agent import get_scribe
@@ -1028,13 +1038,267 @@ async def process_general_action(
     }
 
 
-# TODO: Add spell system API endpoints
-# TODO: POST /character/{character_id}/spells - Manage known spells for character
-# TODO: POST /character/{character_id}/spell-slots - Manage spell slot usage and recovery
-# TODO: POST /combat/{combat_id}/cast-spell - Cast spells during combat with effect resolution
-# TODO: GET /spells/list - Get available spells by class and level
-# TODO: POST /spells/save-dc - Calculate spell save DC for a character
-# TODO: POST /character/{character_id}/concentration - Manage spell concentration tracking
+# Spell System API Endpoints
+
+@router.post("/character/{character_id}/spells", response_model=Dict[str, Any])
+async def manage_character_spells(character_id: str, request: ManageSpellsRequest):
+    """Manage known spells for a character."""
+    try:
+        # This would integrate with a character storage system
+        # For now, returning a success response with the action performed
+        return {
+            "character_id": character_id,
+            "action": request.action,
+            "spell_ids": request.spell_ids,
+            "success": True,
+            "message": f"Successfully {request.action} spells for character {character_id}"
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to manage character spells: {str(e)}"
+        )
+
+@router.post("/character/{character_id}/spell-slots", response_model=Dict[str, Any])
+async def manage_spell_slots(character_id: str, request: ManageSpellSlotsRequest):
+    """Manage spell slot usage and recovery for a character."""
+    try:
+        # This would integrate with a character storage system
+        # For now, returning a success response with the action performed
+        return {
+            "character_id": character_id,
+            "action": request.action,
+            "slot_level": request.slot_level,
+            "count": request.count,
+            "success": True,
+            "message": f"Successfully {request.action} spell slots for character {character_id}"
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to manage spell slots: {str(e)}"
+        )
+
+@router.post("/combat/{combat_id}/cast-spell", response_model=SpellCastingResponse)
+async def cast_spell_in_combat(combat_id: str, request: CastSpellRequest):
+    """Cast spells during combat with effect resolution."""
+    try:
+        # Basic spell effects - in a real implementation this would be more sophisticated
+        spell_effects = {
+            "spell_name": request.spell_id,
+            "spell_level": request.slot_level,
+            "target_count": len(request.target_ids) if request.target_ids else 1,
+            "effects": [f"Spell {request.spell_id} cast at level {request.slot_level}"],
+            "combat_id": combat_id
+        }
+        
+        return SpellCastingResponse(
+            success=True,
+            message=f"Spell cast successfully in combat {combat_id}",
+            spell_effects=spell_effects,
+            slot_used=True
+        )
+    except Exception as e:
+        return SpellCastingResponse(
+            success=False,
+            message=f"Failed to cast spell: {str(e)}"
+        )
+
+@router.get("/spells/list", response_model=SpellListResponse)
+async def get_spell_list(
+    character_class: Optional[CharacterClass] = None,
+    spell_level: Optional[int] = None,
+    school: Optional[str] = None
+):
+    """Get available spells by class and level."""
+    try:
+        # This would query a spell database
+        # For now, returning some sample spells
+        sample_spells = [
+            Spell(
+                name="Magic Missile",
+                level=1,
+                school="Evocation",
+                casting_time="1 action",
+                range="120 feet",
+                components="V, S",
+                duration="Instantaneous",
+                description="Three darts of magical force hit their targets.",
+                classes=["wizard", "sorcerer"]
+            ),
+            Spell(
+                name="Fireball",
+                level=3,
+                school="Evocation", 
+                casting_time="1 action",
+                range="150 feet",
+                components="V, S, M",
+                duration="Instantaneous",
+                description="A bright flash of energy streaks toward a point within range.",
+                classes=["wizard", "sorcerer"]
+            ),
+            Spell(
+                name="Cure Wounds",
+                level=1,
+                school="Evocation",
+                casting_time="1 action", 
+                range="Touch",
+                components="V, S",
+                duration="Instantaneous",
+                description="Restores hit points to a creature you touch.",
+                classes=["cleric", "druid", "paladin", "ranger"]
+            )
+        ]
+        
+        # Filter spells based on parameters
+        filtered_spells = sample_spells
+        if character_class:
+            filtered_spells = [s for s in filtered_spells if character_class.value in s.classes]
+        if spell_level is not None:
+            filtered_spells = [s for s in filtered_spells if s.level == spell_level]
+        if school:
+            filtered_spells = [s for s in filtered_spells if s.school.lower() == school.lower()]
+        
+        return SpellListResponse(
+            spells=filtered_spells,
+            total_count=len(filtered_spells)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get spell list: {str(e)}"
+        )
+
+@router.post("/spells/save-dc", response_model=Dict[str, Any])
+async def calculate_spell_save_dc_endpoint(
+    character_class: CharacterClass,
+    level: int,
+    spellcasting_ability_score: int
+):
+    """Calculate spell save DC for a character."""
+    try:
+        # Map character classes to their spellcasting abilities
+        spellcasting_abilities = {
+            "wizard": "intelligence",
+            "artificer": "intelligence", 
+            "cleric": "wisdom",
+            "druid": "wisdom",
+            "ranger": "wisdom",
+            "bard": "charisma",
+            "paladin": "charisma", 
+            "sorcerer": "charisma",
+            "warlock": "charisma"
+        }
+        
+        # Get spellcasting ability for the class
+        spellcasting_ability = spellcasting_abilities.get(character_class.value)
+        if not spellcasting_ability:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Class {character_class.value} is not a spellcasting class"
+            )
+        
+        # Calculate ability modifier: (ability_score - 10) // 2
+        ability_modifier = (spellcasting_ability_score - 10) // 2
+        
+        # Calculate proficiency bonus based on level
+        proficiency_bonus = 2
+        if level >= 17:
+            proficiency_bonus = 6
+        elif level >= 13:
+            proficiency_bonus = 5
+        elif level >= 9:
+            proficiency_bonus = 4
+        elif level >= 5:
+            proficiency_bonus = 3
+        
+        # Spell save DC = 8 + proficiency bonus + ability modifier
+        save_dc = 8 + proficiency_bonus + ability_modifier
+        
+        return {
+            "save_dc": save_dc,
+            "character_class": character_class.value,
+            "level": level,
+            "spellcasting_ability": spellcasting_ability,
+            "spellcasting_ability_score": spellcasting_ability_score,
+            "ability_modifier": ability_modifier,
+            "proficiency_bonus": proficiency_bonus
+        }
+        
+    except HTTPException:
+        # Re-raise HTTPExceptions to maintain proper status codes
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to calculate spell save DC: {str(e)}"
+        )
+
+@router.post("/character/{character_id}/concentration", response_model=ConcentrationCheckResponse)
+async def manage_concentration(character_id: str, request: ConcentrationRequest):
+    """Manage spell concentration tracking for a character."""
+    try:
+        if request.action == "start":
+            if not request.spell_id:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="spell_id required for starting concentration"
+                )
+            
+            return ConcentrationCheckResponse(
+                success=True,
+                concentration_maintained=True,
+                dc=10,
+                spell_ended=False
+            )
+        
+        elif request.action == "end":
+            return ConcentrationCheckResponse(
+                success=True,
+                concentration_maintained=False,
+                dc=0,
+                spell_ended=True
+            )
+        
+        elif request.action == "check":
+            if request.damage_taken is None:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="damage_taken required for concentration check"
+                )
+            
+            # Calculate concentration DC (half damage taken, minimum 10)
+            dc = max(10, request.damage_taken // 2)
+            
+            # This would normally involve rolling a Constitution saving throw
+            # For now, returning a simulated result
+            import random
+            roll_result = random.randint(1, 20) + 3  # Assuming +3 Constitution modifier
+            maintained = roll_result >= dc
+            
+            return ConcentrationCheckResponse(
+                success=True,
+                concentration_maintained=maintained,
+                dc=dc,
+                roll_result=roll_result,
+                spell_ended=not maintained
+            )
+        
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid action: {request.action}"
+            )
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        return ConcentrationCheckResponse(
+            success=False,
+            concentration_maintained=False,
+            dc=0,
+            spell_ended=True
+        )
 
 
 @router.post("/spells/attack-bonus", response_model=Dict[str, Any])

@@ -75,11 +75,201 @@ class RulesEnginePlugin:
         # Maps character_id to spell information for concentration spells
         self.concentration_spells = {}  # {character_id: {"spell": spell_dict, "duration_remaining": int, "started_at": timestamp}}
 
-        # TODO: Implement spell system components
-        # TODO: Add spell slot tracking by level and class
-        # TODO: Add spell save DC calculation
-        # TODO: Add spell attack bonus calculation
-        # TODO: Add spell effect resolution system
+        # Spell slot tracking by character level and class
+        self.spell_slots_by_class_level = self._initialize_spell_slots()
+
+    def _initialize_spell_slots(self):
+        """Initialize spell slot progression tables for each spellcasting class."""
+        return {
+            "wizard": {
+                1: [2], 2: [3], 3: [4, 2], 4: [4, 3], 5: [4, 3, 2],
+                6: [4, 3, 3], 7: [4, 3, 3, 1], 8: [4, 3, 3, 2], 9: [4, 3, 3, 3, 1],
+                10: [4, 3, 3, 3, 2], 11: [4, 3, 3, 3, 2, 1], 12: [4, 3, 3, 3, 2, 1],
+                13: [4, 3, 3, 3, 2, 1, 1], 14: [4, 3, 3, 3, 2, 1, 1], 15: [4, 3, 3, 3, 2, 1, 1, 1],
+                16: [4, 3, 3, 3, 2, 1, 1, 1], 17: [4, 3, 3, 3, 2, 1, 1, 1, 1], 18: [4, 3, 3, 3, 3, 1, 1, 1, 1],
+                19: [4, 3, 3, 3, 3, 2, 1, 1, 1], 20: [4, 3, 3, 3, 3, 2, 2, 1, 1]
+            },
+            "sorcerer": {
+                1: [2], 2: [3], 3: [4, 2], 4: [4, 3], 5: [4, 3, 2],
+                6: [4, 3, 3], 7: [4, 3, 3, 1], 8: [4, 3, 3, 2], 9: [4, 3, 3, 3, 1],
+                10: [4, 3, 3, 3, 2], 11: [4, 3, 3, 3, 2, 1], 12: [4, 3, 3, 3, 2, 1],
+                13: [4, 3, 3, 3, 2, 1, 1], 14: [4, 3, 3, 3, 2, 1, 1], 15: [4, 3, 3, 3, 2, 1, 1, 1],
+                16: [4, 3, 3, 3, 2, 1, 1, 1], 17: [4, 3, 3, 3, 2, 1, 1, 1, 1], 18: [4, 3, 3, 3, 3, 1, 1, 1, 1],
+                19: [4, 3, 3, 3, 3, 2, 1, 1, 1], 20: [4, 3, 3, 3, 3, 2, 2, 1, 1]
+            },
+            "cleric": {
+                1: [2], 2: [3], 3: [4, 2], 4: [4, 3], 5: [4, 3, 2],
+                6: [4, 3, 3], 7: [4, 3, 3, 1], 8: [4, 3, 3, 2], 9: [4, 3, 3, 3, 1],
+                10: [4, 3, 3, 3, 2], 11: [4, 3, 3, 3, 2, 1], 12: [4, 3, 3, 3, 2, 1],
+                13: [4, 3, 3, 3, 2, 1, 1], 14: [4, 3, 3, 3, 2, 1, 1], 15: [4, 3, 3, 3, 2, 1, 1, 1],
+                16: [4, 3, 3, 3, 2, 1, 1, 1], 17: [4, 3, 3, 3, 2, 1, 1, 1, 1], 18: [4, 3, 3, 3, 3, 1, 1, 1, 1],
+                19: [4, 3, 3, 3, 3, 2, 1, 1, 1], 20: [4, 3, 3, 3, 3, 2, 2, 1, 1]
+            },
+            "druid": {
+                1: [2], 2: [3], 3: [4, 2], 4: [4, 3], 5: [4, 3, 2],
+                6: [4, 3, 3], 7: [4, 3, 3, 1], 8: [4, 3, 3, 2], 9: [4, 3, 3, 3, 1],
+                10: [4, 3, 3, 3, 2], 11: [4, 3, 3, 3, 2, 1], 12: [4, 3, 3, 3, 2, 1],
+                13: [4, 3, 3, 3, 2, 1, 1], 14: [4, 3, 3, 3, 2, 1, 1], 15: [4, 3, 3, 3, 2, 1, 1, 1],
+                16: [4, 3, 3, 3, 2, 1, 1, 1], 17: [4, 3, 3, 3, 2, 1, 1, 1, 1], 18: [4, 3, 3, 3, 3, 1, 1, 1, 1],
+                19: [4, 3, 3, 3, 3, 2, 1, 1, 1], 20: [4, 3, 3, 3, 3, 2, 2, 1, 1]
+            },
+            "bard": {
+                1: [2], 2: [3], 3: [4, 2], 4: [4, 3], 5: [4, 3, 2],
+                6: [4, 3, 3], 7: [4, 3, 3, 1], 8: [4, 3, 3, 2], 9: [4, 3, 3, 3, 1],
+                10: [4, 3, 3, 3, 2], 11: [4, 3, 3, 3, 2, 1], 12: [4, 3, 3, 3, 2, 1],
+                13: [4, 3, 3, 3, 2, 1, 1], 14: [4, 3, 3, 3, 2, 1, 1], 15: [4, 3, 3, 3, 2, 1, 1, 1],
+                16: [4, 3, 3, 3, 2, 1, 1, 1], 17: [4, 3, 3, 3, 2, 1, 1, 1, 1], 18: [4, 3, 3, 3, 3, 1, 1, 1, 1],
+                19: [4, 3, 3, 3, 3, 2, 1, 1, 1], 20: [4, 3, 3, 3, 3, 2, 2, 1, 1]
+            },
+            "warlock": {
+                1: [1], 2: [2], 3: [2], 4: [2], 5: [2], 6: [2], 7: [2], 8: [2], 9: [2], 10: [2],
+                11: [3], 12: [3], 13: [3], 14: [3], 15: [3], 16: [3], 17: [4], 18: [4], 19: [4], 20: [4]
+            },
+            "paladin": {
+                2: [2], 3: [3], 4: [3], 5: [4, 2], 6: [4, 2], 7: [4, 3], 8: [4, 3], 9: [4, 3, 2],
+                10: [4, 3, 2], 11: [4, 3, 3], 12: [4, 3, 3], 13: [4, 3, 3, 1], 14: [4, 3, 3, 1],
+                15: [4, 3, 3, 2], 16: [4, 3, 3, 2], 17: [4, 3, 3, 3, 1], 18: [4, 3, 3, 3, 1],
+                19: [4, 3, 3, 3, 2], 20: [4, 3, 3, 3, 2]
+            },
+            "ranger": {
+                2: [2], 3: [3], 4: [3], 5: [4, 2], 6: [4, 2], 7: [4, 3], 8: [4, 3], 9: [4, 3, 2],
+                10: [4, 3, 2], 11: [4, 3, 3], 12: [4, 3, 3], 13: [4, 3, 3, 1], 14: [4, 3, 3, 1],
+                15: [4, 3, 3, 2], 16: [4, 3, 3, 2], 17: [4, 3, 3, 3, 1], 18: [4, 3, 3, 3, 1],
+                19: [4, 3, 3, 3, 2], 20: [4, 3, 3, 3, 2]
+            }
+        }
+
+    @kernel_function(
+        description="Get spell slots for a character by class and level.",
+        name="get_spell_slots_for_level",
+    )
+    def get_spell_slots_for_level(
+        self, 
+        character_class: str,
+        level: int
+    ) -> Dict[str, Any]:
+        """
+        Get the spell slots available for a character at a given level.
+        
+        Args:
+            character_class: The character's class
+            level: The character's level
+            
+        Returns:
+            Dict[str, Any]: Spell slot information by level
+        """
+        try:
+            class_lower = character_class.lower()
+            if class_lower not in self.spell_slots_by_class_level:
+                return {"error": f"Class {character_class} is not a spellcasting class"}
+            
+            if level not in self.spell_slots_by_class_level[class_lower]:
+                return {"error": f"Level {level} not found for class {character_class}"}
+            
+            slots = self.spell_slots_by_class_level[class_lower][level]
+            
+            # Convert to dictionary format
+            spell_slots = {}
+            for slot_level, count in enumerate(slots, 1):
+                spell_slots[str(slot_level)] = count
+            
+            return {
+                "character_class": character_class,
+                "level": level,
+                "spell_slots": spell_slots,
+                "total_slots": sum(slots)
+            }
+        except Exception as e:
+            logger.error(f"Error getting spell slots: {str(e)}")
+            return {"error": f"Error getting spell slots: {str(e)}"}
+
+    @kernel_function(
+        description="Calculate spell attack bonus for a character.",
+        name="calculate_spell_attack_bonus",
+    )
+    def calculate_spell_attack_bonus(
+        self, 
+        spellcasting_ability_modifier: int,
+        proficiency_bonus: int,
+        character_level: int = None
+    ) -> Dict[str, Any]:
+        """
+        Calculate spell attack bonus using D&D 5e rules.
+        
+        Formula: proficiency bonus + spellcasting ability modifier
+        
+        Args:
+            spellcasting_ability_modifier: The modifier for the character's spellcasting ability
+            proficiency_bonus: The character's proficiency bonus
+            character_level: Optional character level (for information)
+            
+        Returns:
+            Dict[str, Any]: Spell attack bonus information
+        """
+        try:
+            attack_bonus = proficiency_bonus + spellcasting_ability_modifier
+            
+            return {
+                "spell_attack_bonus": attack_bonus,
+                "spellcasting_modifier": spellcasting_ability_modifier,
+                "proficiency_bonus": proficiency_bonus,
+                "character_level": character_level,
+                "formula": "proficiency_bonus + spellcasting_ability_modifier"
+            }
+        except Exception as e:
+            logger.error(f"Error calculating spell attack bonus: {str(e)}")
+            return {"error": f"Error calculating spell attack bonus: {str(e)}"}
+
+    @kernel_function(
+        description="Process spell effect resolution.",
+        name="resolve_spell_effect",
+    )
+    def resolve_spell_effect(
+        self, 
+        spell_name: str,
+        spell_level: int,
+        target_count: int = 1,
+        slot_level: int = None
+    ) -> Dict[str, Any]:
+        """
+        Resolve the effects of a spell being cast.
+        
+        Args:
+            spell_name: Name of the spell being cast
+            spell_level: Base level of the spell
+            target_count: Number of targets
+            slot_level: Level of spell slot used (for upcast effects)
+            
+        Returns:
+            Dict[str, Any]: Spell effect information
+        """
+        try:
+            slot_level = slot_level or spell_level
+            upcast_levels = max(0, slot_level - spell_level)
+            
+            # Basic spell effect template
+            effect = {
+                "spell_name": spell_name,
+                "spell_level": spell_level,
+                "slot_level": slot_level,
+                "upcast_levels": upcast_levels,
+                "target_count": target_count,
+                "effects": [],
+                "damage": None,
+                "healing": None,
+                "duration": None,
+                "save_required": False,
+                "attack_required": False
+            }
+            
+            # Add basic effect processing - this would be expanded with actual spell data
+            if upcast_levels > 0:
+                effect["effects"].append(f"Spell cast at {slot_level} level (+{upcast_levels} levels)")
+            
+            return effect
+        except Exception as e:
+            logger.error(f"Error resolving spell effect: {str(e)}")
+            return {"error": f"Error resolving spell effect: {str(e)}"}
 
     @kernel_function(
         description="Calculate spell save DC for a character.",

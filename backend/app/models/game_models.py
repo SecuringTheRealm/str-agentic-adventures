@@ -79,6 +79,33 @@ class Spell(BaseModel):
     duration: str
     description: str
     requires_concentration: bool = False
+    classes: List[str] = []  # Classes that can learn this spell
+
+class SpellSlot(BaseModel):
+    level: int
+    total: int
+    used: int = 0
+    
+    @property
+    def remaining(self) -> int:
+        return max(0, self.total - self.used)
+
+class SpellCasting(BaseModel):
+    spellcasting_ability: str  # The ability used for spellcasting (e.g., "intelligence", "wisdom", "charisma")
+    spell_attack_bonus: int = 0
+    spell_save_dc: int = 8
+    spell_slots: List[SpellSlot] = []
+    known_spells: List[str] = []  # Spell IDs
+    prepared_spells: List[str] = []  # Subset of known spells that are prepared
+    cantrips_known: List[str] = []  # Cantrip IDs
+    concentration_spell: Optional[str] = None  # Currently concentrating spell ID
+    
+class ConcentrationSpell(BaseModel):
+    spell_id: str
+    character_id: str
+    started_at: datetime = Field(default_factory=datetime.now)
+    duration_rounds: Optional[int] = None
+    save_dc: int = 10  # Base concentration DC
 
 class CharacterSheet(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -97,6 +124,7 @@ class CharacterSheet(BaseModel):
     skills: Dict[str, bool] = {}
     inventory: List[Item] = []
     spells: List[Spell] = []
+    spellcasting: Optional[SpellCasting] = None
     features: List[Dict[str, Any]] = []
     backstory: Optional[str] = None
     # Progression tracking
@@ -288,3 +316,52 @@ class SpellAttackBonusRequest(BaseModel):
     character_class: CharacterClass
     level: int
     spellcasting_ability_score: int
+
+# Spell-related request and response models
+class ManageSpellsRequest(BaseModel):
+    character_id: str
+    action: str  # "learn", "forget", "prepare", "unprepare"
+    spell_ids: List[str]
+
+class ManageSpellSlotsRequest(BaseModel):
+    character_id: str
+    action: str  # "use", "recover", "set"
+    slot_level: int
+    count: Optional[int] = 1
+
+class CastSpellRequest(BaseModel):
+    combat_id: str
+    character_id: str
+    spell_id: str
+    slot_level: int
+    target_ids: Optional[List[str]] = []
+    spell_attack_roll: Optional[int] = None
+
+class SpellListRequest(BaseModel):
+    character_class: Optional[CharacterClass] = None
+    spell_level: Optional[int] = None
+    school: Optional[str] = None
+
+class ConcentrationRequest(BaseModel):
+    character_id: str
+    action: str  # "start", "end", "check"
+    spell_id: Optional[str] = None
+    damage_taken: Optional[int] = None
+
+class SpellListResponse(BaseModel):
+    spells: List[Spell]
+    total_count: int
+
+class SpellCastingResponse(BaseModel):
+    success: bool
+    message: str
+    spell_effects: Dict[str, Any] = {}
+    concentration_broken: bool = False
+    slot_used: bool = False
+
+class ConcentrationCheckResponse(BaseModel):
+    success: bool
+    concentration_maintained: bool
+    dc: int
+    roll_result: Optional[int] = None
+    spell_ended: bool = False
