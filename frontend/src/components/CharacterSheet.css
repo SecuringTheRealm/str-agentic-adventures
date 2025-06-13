@@ -116,6 +116,7 @@
   border-radius: 3px;
   display: flex;
   justify-content: space-between;
+  align-items: center;
   border: 1px solid #B15005; /* Wood border */
   font-family: 'Cinzel', serif;
 }
@@ -135,5 +136,60 @@
   color: #908C6B; /* Stone color for empty state */
   font-style: italic;
   padding: 10px;
+  font-family: 'Cinzel', serif;
+}
+
+/* Encumbrance Information */
+.encumbrance-info {
+  background: rgba(212, 175, 55, 0.1); /* Gold background */
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 5px;
+  border: 1px solid #D4AF37; /* Gold border */
+}
+
+.encumbrance-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-family: 'Cinzel', serif;
+}
+
+.weight-display {
+  color: #f4f1e8; /* Light text */
+  font-size: 0.9rem;
+}
+
+.encumbrance-status {
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.weight-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(144, 140, 107, 0.3); /* Stone color background */
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.weight-progress {
+  height: 100%;
+  transition: width 0.3s ease, background-color 0.3s ease;
+  border-radius: 3px;
+}
+
+/* Item Details */
+.item-details {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.item-weight {
+  color: #D4AF37; /* Gold for weight */
+  font-weight: bold;
+  font-size: 0.8rem;
   font-family: 'Cinzel', serif;
 }

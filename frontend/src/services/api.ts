@@ -17,6 +17,7 @@ export const apiClient = axios.create({
 export interface InventoryItem {
 	name: string;
 	quantity: number;
+	weight?: number;
 	type?: string;
 	description?: string;
 }
