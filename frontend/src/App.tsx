@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './App.css';
-import CampaignCreation from './components/CampaignCreation';
+import CampaignSelection from './components/CampaignSelection';
 import GameInterface from './components/GameInterface';
 import type { Campaign, Character } from './services/api';
 
@@ -57,7 +57,7 @@ function App() {
       <main className="App-main">
         {!gameStarted ? (
           <div className="campaign-setup">
-            <CampaignCreation onCampaignCreated={handleCampaignCreated} />
+            <CampaignSelection onCampaignCreated={handleCampaignCreated} />
           </div>
         ) : (
           currentCampaign && currentCharacter && (

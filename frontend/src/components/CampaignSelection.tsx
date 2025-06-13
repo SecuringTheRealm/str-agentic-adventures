@@ -1,0 +1,295 @@
+import React, { useState, useEffect } from 'react';
+import { Campaign, getCampaigns, deleteCampaign } from '../services/api';
+import CampaignGallery from './CampaignGallery';
+import CampaignEditor from './CampaignEditor';
+import './CampaignSelection.css';
+
+interface CampaignSelectionProps {
+  onCampaignCreated: (campaign: Campaign) => void;
+}
+
+type ViewMode = 'gallery' | 'editor' | 'list';
+
+const CampaignSelection: React.FC<CampaignSelectionProps> = ({ onCampaignCreated }) => {
+  const [viewMode, setViewMode] = useState<ViewMode>('gallery');
+  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadCampaigns = async () => {
+    try {
+      setLoading(true);
+      const data = await getCampaigns();
+      setCampaigns(data.campaigns);
+    } catch (err) {
+      setError('Failed to load campaigns');
+      console.error('Error loading campaigns:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadCampaigns();
+  }, []);
+
+  const handleCampaignSelected = (campaign: Campaign) => {
+    onCampaignCreated(campaign);
+  };
+
+  const handleCreateCustom = () => {
+    setSelectedCampaign(null);
+    setViewMode('editor');
+  };
+
+  const handleEditCampaign = (campaign: Campaign) => {
+    setSelectedCampaign(campaign);
+    setViewMode('editor');
+  };
+
+  const handleCampaignSaved = async (campaign: Campaign) => {
+    // Refresh campaigns list
+    await loadCampaigns();
+    
+    // If this was a new campaign creation, pass it up
+    if (!selectedCampaign) {
+      onCampaignCreated(campaign);
+    } else {
+      // If editing, go back to list view
+      setViewMode('list');
+      setSelectedCampaign(null);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setSelectedCampaign(null);
+    setViewMode('gallery');
+  };
+
+  const handleDeleteCampaign = async (campaignId: string) => {
+    if (!window.confirm('Are you sure you want to delete this campaign?')) {
+      return;
+    }
+
+    try {
+      await deleteCampaign(campaignId);
+      await loadCampaigns();
+    } catch (err) {
+      setError('Failed to delete campaign');
+      console.error('Error deleting campaign:', err);
+    }
+  };
+
+  const handleBackToGallery = () => {
+    setViewMode('gallery');
+    setSelectedCampaign(null);
+  };
+
+  if (viewMode === 'editor') {
+    return (
+      <CampaignEditor
+        campaign={selectedCampaign || undefined}
+        onCampaignSaved={handleCampaignSaved}
+        onCancel={handleCancelEdit}
+      />
+    );
+  }
+
+  if (viewMode === 'list') {
+    return (
+      <div className="campaign-manager">
+        <div className="manager-header">
+          <h2>My Campaigns</h2>
+          <div className="header-actions">
+            <button 
+              className="action-button secondary"
+              onClick={handleBackToGallery}
+            >
+              ← Browse Templates
+            </button>
+            <button 
+              className="action-button primary"
+              onClick={handleCreateCustom}
+            >
+              + Create New
+            </button>
+          </div>
+        </div>
+
+        {error && (
+          <div className="error-message">
+            {error}
+            <button onClick={() => setError(null)}>×</button>
+          </div>
+        )}
+
+        {loading ? (
+          <div className="loading-state">
+            <div className="loading-spinner"></div>
+            <p>Loading campaigns...</p>
+          </div>
+        ) : (
+          <div className="campaign-list">
+            {campaigns.filter(c => c.is_custom || false).length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-icon">📚</div>
+                <h3>No Custom Campaigns Yet</h3>
+                <p>Create your first custom campaign or select a template to get started!</p>
+                <button 
+                  className="action-button primary"
+                  onClick={handleBackToGallery}
+                >
+                  Browse Templates
+                </button>
+              </div>
+            ) : (
+              campaigns
+                .filter(campaign => campaign.is_custom || false)
+                .map(campaign => (
+                  <div key={campaign.id} className="campaign-item">
+                    <div className="campaign-info">
+                      <h3>{campaign.name}</h3>
+                      <p className="campaign-description">
+                        {campaign.description || campaign.setting}
+                      </p>
+                      <div className="campaign-meta">
+                        <span className={`tone-badge ${campaign.tone}`}>
+                          {campaign.tone}
+                        </span>
+                        {campaign.template_id && (
+                          <span className="clone-badge">
+                            Cloned from template
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="campaign-actions">
+                      <button
+                        className="action-button primary small"
+                        onClick={() => handleCampaignSelected(campaign)}
+                      >
+                        Play
+                      </button>
+                      <button
+                        className="action-button secondary small"
+                        onClick={() => handleEditCampaign(campaign)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="action-button danger small"
+                        onClick={() => handleDeleteCampaign(campaign.id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="campaign-manager">
+      <div className="manager-header">
+        <div className="header-content">
+          <h1>Campaign Hub</h1>
+          <p>Choose from our curated templates or manage your custom campaigns</p>
+        </div>
+        <div className="header-actions">
+          <button 
+            className={`view-toggle ${viewMode === 'gallery' ? 'active' : ''}`}
+            onClick={() => setViewMode('gallery')}
+          >
+            Gallery
+          </button>
+          <button 
+            className={`view-toggle ${(viewMode as string) === 'list' ? 'active' : ''}`}
+            onClick={() => setViewMode('list')}
+          >
+            My Campaigns ({campaigns.filter(c => c.is_custom || false).length})
+          </button>
+        </div>
+      </div>
+
+      {error && (
+        <div className="error-message">
+          {error}
+          <button onClick={() => setError(null)}>×</button>
+        </div>
+      )}
+
+      {viewMode === 'gallery' ? (
+        <CampaignGallery
+          onCampaignSelected={handleCampaignSelected}
+          onCreateCustom={handleCreateCustom}
+        />
+      ) : (
+        <div className="campaign-list">
+          {campaigns.filter(c => c.is_custom || false).length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-icon">📚</div>
+              <h3>No Custom Campaigns Yet</h3>
+              <p>Create your first custom campaign or select a template to get started!</p>
+              <button 
+                className="action-button primary"
+                onClick={handleBackToGallery}
+              >
+                Browse Templates
+              </button>
+            </div>
+          ) : (
+            campaigns
+              .filter(campaign => campaign.is_custom || false)
+              .map(campaign => (
+                <div key={campaign.id} className="campaign-item">
+                  <div className="campaign-info">
+                    <h3>{campaign.name}</h3>
+                    <p className="campaign-description">
+                      {campaign.description || campaign.setting}
+                    </p>
+                    <div className="campaign-meta">
+                      <span className={`tone-badge ${campaign.tone}`}>
+                        {campaign.tone}
+                      </span>
+                      {campaign.template_id && (
+                        <span className="clone-badge">
+                          Cloned from template
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="campaign-actions">
+                    <button
+                      className="action-button primary small"
+                      onClick={() => handleCampaignSelected(campaign)}
+                    >
+                      Play
+                    </button>
+                    <button
+                      className="action-button secondary small"
+                      onClick={() => handleEditCampaign(campaign)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="action-button danger small"
+                      onClick={() => handleDeleteCampaign(campaign.id)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default CampaignSelection;

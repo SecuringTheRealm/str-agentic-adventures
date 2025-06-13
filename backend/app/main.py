@@ -11,6 +11,8 @@ from dotenv import load_dotenv
 # Local imports
 from app.api import game_routes
 from app.api import websocket_routes
+from app.database import init_db
+from app.services.campaign_service import campaign_service
 
 # Load environment variables
 load_dotenv()
@@ -37,6 +39,18 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Initialize database and create templates on startup
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database and create default templates."""
+    logger.info("Initializing database...")
+    init_db()
+    
+    logger.info("Creating default campaign templates...")
+    campaign_service.create_template_campaigns()
+    
+    logger.info("Application startup complete.")
 
 # Include routers
 app.include_router(game_routes.router, prefix="/api/game")

@@ -146,6 +146,11 @@ class Campaign(BaseModel):
     state: str = "created"
     world_description: Optional[str] = None
     world_art: Optional[Dict[str, Any]] = None
+    is_template: bool = False
+    is_custom: bool = True
+    template_id: Optional[str] = None  # For cloned campaigns
+    plot_hooks: List[str] = []
+    key_npcs: List[str] = []
 
 # Request/Response models
 class CreateCharacterRequest(BaseModel):
@@ -185,6 +190,32 @@ class CreateCampaignRequest(BaseModel):
     setting: str 
     tone: Optional[str] = "heroic"
     homebrew_rules: Optional[List[str]] = []
+    description: Optional[str] = None
+
+class CampaignUpdateRequest(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    setting: Optional[str] = None
+    tone: Optional[str] = None
+    homebrew_rules: Optional[List[str]] = None
+    world_description: Optional[str] = None
+
+class CloneCampaignRequest(BaseModel):
+    template_id: str
+    new_name: Optional[str] = None
+
+class CampaignListResponse(BaseModel):
+    campaigns: List[Campaign]
+    templates: List[Campaign]
+
+class AIAssistanceRequest(BaseModel):
+    text: str
+    context_type: str  # "setting", "description", "plot_hook", etc.
+    campaign_tone: Optional[str] = "heroic"
+
+class AIAssistanceResponse(BaseModel):
+    suggestions: List[str]
+    enhanced_text: Optional[str] = None
 
 class GenerateImageRequest(BaseModel):
     image_type: str  # "character_portrait", "scene_illustration", "item_visualization"

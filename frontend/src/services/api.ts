@@ -64,10 +64,16 @@ export interface Campaign {
 	tone: string;
 	homebrew_rules: string[];
 	characters: string[];
+	description?: string;
 	world_description?: string;
 	world_art?: {
 		image_url: string;
 	};
+	is_template?: boolean;
+	is_custom?: boolean;
+	template_id?: string;
+	plot_hooks?: string[];
+	key_npcs?: string[];
 }
 
 export interface CampaignCreateRequest {
@@ -75,6 +81,37 @@ export interface CampaignCreateRequest {
 	setting: string;
 	tone?: string;
 	homebrew_rules?: string[];
+	description?: string;
+}
+
+export interface CampaignUpdateRequest {
+	name?: string;
+	description?: string;
+	setting?: string;
+	tone?: string;
+	homebrew_rules?: string[];
+	world_description?: string;
+}
+
+export interface CloneCampaignRequest {
+	template_id: string;
+	new_name?: string;
+}
+
+export interface CampaignListResponse {
+	campaigns: Campaign[];
+	templates: Campaign[];
+}
+
+export interface AIAssistanceRequest {
+	text: string;
+	context_type: string;
+	campaign_tone?: string;
+}
+
+export interface AIAssistanceResponse {
+	suggestions: string[];
+	enhanced_text?: string;
 }
 
 export interface PlayerInputRequest {
@@ -157,6 +194,82 @@ export const createCampaign = async (
 		return response.data;
 	} catch (error) {
 		console.error("Error creating campaign:", error);
+		throw error;
+	}
+};
+
+export const getCampaigns = async (): Promise<CampaignListResponse> => {
+	try {
+		const response = await apiClient.get("/game/campaigns");
+		return response.data;
+	} catch (error) {
+		console.error("Error fetching campaigns:", error);
+		throw error;
+	}
+};
+
+export const getCampaign = async (campaignId: string): Promise<Campaign> => {
+	try {
+		const response = await apiClient.get(`/game/campaign/${campaignId}`);
+		return response.data;
+	} catch (error) {
+		console.error(`Error fetching campaign ${campaignId}:`, error);
+		throw error;
+	}
+};
+
+export const updateCampaign = async (
+	campaignId: string,
+	updates: CampaignUpdateRequest,
+): Promise<Campaign> => {
+	try {
+		const response = await apiClient.put(`/game/campaign/${campaignId}`, updates);
+		return response.data;
+	} catch (error) {
+		console.error(`Error updating campaign ${campaignId}:`, error);
+		throw error;
+	}
+};
+
+export const cloneCampaign = async (
+	cloneData: CloneCampaignRequest,
+): Promise<Campaign> => {
+	try {
+		const response = await apiClient.post("/game/campaign/clone", cloneData);
+		return response.data;
+	} catch (error) {
+		console.error("Error cloning campaign:", error);
+		throw error;
+	}
+};
+
+export const deleteCampaign = async (campaignId: string): Promise<void> => {
+	try {
+		await apiClient.delete(`/game/campaign/${campaignId}`);
+	} catch (error) {
+		console.error(`Error deleting campaign ${campaignId}:`, error);
+		throw error;
+	}
+};
+
+export const getCampaignTemplates = async (): Promise<Campaign[]> => {
+	try {
+		const response = await apiClient.get("/game/campaign/templates");
+		return response.data.templates;
+	} catch (error) {
+		console.error("Error fetching campaign templates:", error);
+		throw error;
+	}
+};
+
+export const getAIAssistance = async (
+	request: AIAssistanceRequest,
+): Promise<AIAssistanceResponse> => {
+	try {
+		const response = await apiClient.post("/game/campaign/ai-assist", request);
+		return response.data;
+	} catch (error) {
+		console.error("Error getting AI assistance:", error);
 		throw error;
 	}
 };
