@@ -4,6 +4,7 @@ Combat MC Agent - Manages combat encounters, tactics, and battle flow.
 
 import logging
 import random
+import re
 from typing import Dict, Any, List
 
 
@@ -63,7 +64,6 @@ class CombatMCAgent:
 
     def _fallback_roll_d20(self, modifier: int = 0, advantage: bool = False, disadvantage: bool = False) -> Dict[str, Any]:
         """Built-in d20 roll for fallback mode."""
-        import random
         
         if advantage and not disadvantage:
             roll1 = random.randint(1, 20)
@@ -93,8 +93,6 @@ class CombatMCAgent:
 
     def _fallback_roll_damage(self, dice_notation: str) -> Dict[str, Any]:
         """Built-in damage roll for fallback mode."""
-        import random
-        import re
         
         # Simple dice parser for basic notation like "1d6+2" or "2d8"
         pattern = r"(\d*)d(\d+)(?:\+(\d+))?(?:\-(\d+))?"
@@ -286,8 +284,6 @@ class CombatMCAgent:
             
             if encounter["status"] != "active":
                 return {"error": "Combat is not currently active"}
-
-            action_type = action_data.get("type", "attack")
             
             if self.fallback_mode:
                 # Use fallback combat processing
