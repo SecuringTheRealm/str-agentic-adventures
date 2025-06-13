@@ -28,6 +28,8 @@ from app.models.game_models import (
     CreateCampaignRequest,
     GenerateImageRequest,
     BattleMapRequest,
+    CastSpellRequest,
+    CastSpellResponse,
 )
 
 
@@ -558,3 +560,124 @@ class TestValidationEdgeCases:
         )
         assert char_request.race == Race.HUMAN
         assert char_request.character_class == CharacterClass.FIGHTER
+
+
+class TestCastSpellRequest:
+    """Test class for CastSpellRequest model."""
+
+    def test_cast_spell_request_minimal(self):
+        """Test CastSpellRequest with minimal required fields."""
+        request = CastSpellRequest(
+            character_id="char_123",
+            spell_id="spell_456",
+            spell_level=1
+        )
+        
+        assert request.character_id == "char_123"
+        assert request.spell_id == "spell_456"
+        assert request.spell_level == 1
+        assert request.target_ids == []
+        assert request.spell_attack_roll is None
+        assert request.save_dc is None
+
+    def test_cast_spell_request_with_targets(self):
+        """Test CastSpellRequest with targets and optional fields."""
+        request = CastSpellRequest(
+            character_id="char_123",
+            spell_id="spell_456",
+            spell_level=3,
+            target_ids=["enemy_1", "enemy_2"],
+            spell_attack_roll=18,
+            save_dc=15
+        )
+        
+        assert request.character_id == "char_123"
+        assert request.spell_id == "spell_456"
+        assert request.spell_level == 3
+        assert len(request.target_ids) == 2
+        assert "enemy_1" in request.target_ids
+        assert "enemy_2" in request.target_ids
+        assert request.spell_attack_roll == 18
+        assert request.save_dc == 15
+
+
+class TestCastSpellResponse:
+    """Test class for CastSpellResponse model."""
+
+    def test_cast_spell_response_minimal(self):
+        """Test CastSpellResponse with minimal required fields."""
+        response = CastSpellResponse(
+            success=True,
+            spell_name="Magic Missile",
+            caster_name="Gandalf"
+        )
+        
+        assert response.success is True
+        assert response.spell_name == "Magic Missile"
+        assert response.caster_name == "Gandalf"
+        assert response.target_names == []
+        assert response.effects == []
+        assert response.damage_dealt == {}
+        assert response.healing_done == {}
+        assert response.saving_throws == {}
+        assert response.spell_slot_used is False
+        assert response.concentration_required is False
+        assert response.ongoing_effects == []
+        assert response.combat_updates == {}
+
+    def test_cast_spell_response_with_damage(self):
+        """Test CastSpellResponse with damage and effects."""
+        response = CastSpellResponse(
+            success=True,
+            spell_name="Fireball",
+            caster_name="Merlin",
+            target_names=["Orc", "Goblin"],
+            effects=["Explosion damages enemies"],
+            damage_dealt={"orc_1": 18, "goblin_1": 15},
+            spell_slot_used=True,
+            combat_updates={"area_effect": True}
+        )
+        
+        assert response.success is True
+        assert response.spell_name == "Fireball"
+        assert response.caster_name == "Merlin"
+        assert len(response.target_names) == 2
+        assert "Orc" in response.target_names
+        assert "Goblin" in response.target_names
+        assert len(response.effects) == 1
+        assert "Explosion damages enemies" in response.effects
+        assert response.damage_dealt["orc_1"] == 18
+        assert response.damage_dealt["goblin_1"] == 15
+        assert response.spell_slot_used is True
+        assert response.combat_updates["area_effect"] is True
+
+    def test_cast_spell_response_with_saving_throws(self):
+        """Test CastSpellResponse with saving throw data."""
+        response = CastSpellResponse(
+            success=True,
+            spell_name="Hold Person",
+            caster_name="Cleric",
+            target_names=["Bandit"],
+            saving_throws={
+                "bandit_1": {
+                    "roll": 12,
+                    "success": False,
+                    "ability": "wisdom",
+                    "dc": 15
+                }
+            },
+            concentration_required=True,
+            ongoing_effects=[{
+                "effect": "paralyzed",
+                "duration": "1 minute",
+                "target_id": "bandit_1"
+            }]
+        )
+        
+        assert response.saving_throws["bandit_1"]["roll"] == 12
+        assert response.saving_throws["bandit_1"]["success"] is False
+        assert response.saving_throws["bandit_1"]["ability"] == "wisdom"
+        assert response.saving_throws["bandit_1"]["dc"] == 15
+        assert response.concentration_required is True
+        assert len(response.ongoing_effects) == 1
+        assert response.ongoing_effects[0]["effect"] == "paralyzed"

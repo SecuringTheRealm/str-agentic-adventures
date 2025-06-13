@@ -12,6 +12,8 @@ from app.models.game_models import (
     GameResponse,
     CharacterSheet,
     LevelUpRequest,
+    CastSpellRequest,
+    CastSpellResponse,
 )
 from app.agents.dungeon_master_agent import get_dungeon_master
 from app.agents.scribe_agent import get_scribe
@@ -609,6 +611,151 @@ async def process_combat_turn(combat_id: str, turn_data: Dict[str, Any]):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to process combat turn: {str(e)}",
         )
+
+
+@router.post("/combat/{combat_id}/cast-spell", response_model=CastSpellResponse)
+async def cast_spell_in_combat(combat_id: str, spell_request: CastSpellRequest):
+    """Cast a spell during combat with effect resolution."""
+    try:
+        # Get character data to validate spell casting
+        character = await get_scribe().get_character(spell_request.character_id)
+        if "error" in character:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Character {spell_request.character_id} not found",
+            )
+
+        # Find the spell in character's spell list
+        spell = None
+        for char_spell in character.get("spells", []):
+            if char_spell["id"] == spell_request.spell_id:
+                spell = char_spell
+                break
+
+        if not spell:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Spell {spell_request.spell_id} not found in character's spell list",
+            )
+
+        # Validate spell level
+        if spell_request.spell_level < spell["level"]:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Cannot cast level {spell['level']} spell at level {spell_request.spell_level}",
+            )
+
+        # Initialize response
+        response = CastSpellResponse(
+            success=True,
+            spell_name=spell["name"],
+            caster_name=character.get("name", "Unknown"),
+            target_names=[],
+            effects=[],
+            spell_slot_used=True,  # Assume spell slot is used unless it's a cantrip
+            concentration_required=spell.get("duration", "").startswith("Concentration"),
+        )
+
+        # Handle cantrips (no spell slot usage)
+        if spell["level"] == 0:
+            response.spell_slot_used = False
+
+        # Process spell effects based on school and level
+        await process_spell_effects(spell, spell_request, character, response)
+
+        # Add basic effect description
+        response.effects.append(f"{character.get('name', 'Caster')} casts {spell['name']}")
+
+        return response
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to cast spell: {str(e)}",
+        )
+
+
+async def process_spell_effects(
+    spell: Dict[str, Any], 
+    request: CastSpellRequest, 
+    character: Dict[str, Any], 
+    response: CastSpellResponse
+) -> None:
+    """Process the effects of a spell based on its properties."""
+    from app.plugins.rules_engine_plugin import RulesEnginePlugin
+    
+    rules_engine = RulesEnginePlugin()
+    spell_level = request.spell_level
+    
+    # Get caster's spellcasting ability modifier based on class
+    char_class = character.get("class", "fighter").lower()
+    spellcasting_ability = get_spellcasting_ability(char_class)
+    ability_modifier = (character["abilities"][spellcasting_ability] - 10) // 2
+    
+    # Calculate spell save DC and spell attack bonus
+    proficiency_bonus = character.get("proficiency_bonus", 2)
+    spell_save_dc = 8 + proficiency_bonus + ability_modifier
+    spell_attack_bonus = proficiency_bonus + ability_modifier
+    
+    # Handle different spell schools with basic effects
+    school = spell.get("school", "").lower()
+    spell_name = spell.get("name", "").lower()
+    
+    if school == "evocation" or "damage" in spell.get("description", "").lower():
+        # Damage spell - calculate damage based on level
+        base_damage = f"{spell_level}d6" if spell_level > 0 else "1d4"
+        damage_result = rules_engine.roll_dice(base_damage)
+        
+        for target_id in request.target_ids:
+            response.damage_dealt[target_id] = damage_result["total"]
+            response.effects.append(f"Deals {damage_result['total']} damage to target")
+    
+    elif school == "abjuration" or "heal" in spell_name:
+        # Healing spell
+        healing_amount = spell_level * 4 + ability_modifier if spell_level > 0 else 4
+        for target_id in request.target_ids:
+            response.healing_done[target_id] = healing_amount
+            response.effects.append(f"Heals {healing_amount} hit points")
+    
+    elif school == "enchantment" or school == "illusion":
+        # Save-based spell
+        for target_id in request.target_ids:
+            save_roll = rules_engine.roll_dice("1d20")
+            save_success = save_roll["total"] >= spell_save_dc
+            response.saving_throws[target_id] = {
+                "roll": save_roll["total"],
+                "success": save_success,
+                "ability": "wisdom",  # Default to wisdom save
+                "dc": spell_save_dc
+            }
+            if save_success:
+                response.effects.append(f"Target saves against {spell['name']}")
+            else:
+                response.effects.append(f"Target fails save against {spell['name']}")
+    
+    else:
+        # Generic spell effect
+        response.effects.append(f"{spell['name']} takes effect")
+
+
+def get_spellcasting_ability(character_class: str) -> str:
+    """Get the primary spellcasting ability for a character class."""
+    spellcasting_abilities = {
+        "wizard": "intelligence",
+        "sorcerer": "charisma",
+        "warlock": "charisma",
+        "bard": "charisma",
+        "cleric": "wisdom",
+        "druid": "wisdom",
+        "paladin": "charisma",
+        "ranger": "wisdom",
+        "artificer": "intelligence",
+        "eldritch knight": "intelligence",
+        "arcane trickster": "intelligence",
+    }
+    return spellcasting_abilities.get(character_class, "intelligence")
 
 
 # Helper functions for campaign generation

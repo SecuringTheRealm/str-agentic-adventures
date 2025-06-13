@@ -251,3 +251,26 @@ class NarrativeEvent(BaseModel):
     consequences: Dict[str, Any] = {}
     story_arc_id: Optional[str] = None
     plot_point_id: Optional[str] = None
+
+# Spell casting models
+class CastSpellRequest(BaseModel):
+    character_id: str
+    spell_id: str
+    spell_level: int  # Level at which the spell is cast (for upcasting)
+    target_ids: List[str] = []  # IDs of targets (other characters/enemies)
+    spell_attack_roll: Optional[int] = None  # If already rolled by player
+    save_dc: Optional[int] = None  # Override default save DC calculation
+
+class CastSpellResponse(BaseModel):
+    success: bool
+    spell_name: str
+    caster_name: str
+    target_names: List[str] = []
+    effects: List[str] = []  # Description of what happened
+    damage_dealt: Dict[str, int] = {}  # target_id -> damage amount
+    healing_done: Dict[str, int] = {}  # target_id -> healing amount
+    saving_throws: Dict[str, Dict[str, Any]] = {}  # target_id -> {roll: int, success: bool, ability: str}
+    spell_slot_used: bool = False
+    concentration_required: bool = False
+    ongoing_effects: List[Dict[str, Any]] = []  # Status effects, durations, etc.
+    combat_updates: Dict[str, Any] = {}  # Any updates to combat state
