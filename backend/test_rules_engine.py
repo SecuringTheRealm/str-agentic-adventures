@@ -271,8 +271,7 @@ class TestConcentrationTracking:
         
         # Mock a high roll by testing multiple times (probabilistic)
         # We'll test the mechanics directly
-        damage = 10  # 
-        should be max(10, 10//2) = 10
+        damage = 10  # should be max(10, 10//2) = 10
         constitution_mod = 3
         
         result = self.plugin.concentration_saving_throw("char1", damage, constitution_mod)
