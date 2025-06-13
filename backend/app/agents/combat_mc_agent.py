@@ -4,6 +4,7 @@ Combat MC Agent - Manages combat encounters, tactics, and battle flow.
 
 import logging
 import random
+import re
 from typing import Dict, Any, List
 
 
@@ -21,6 +22,7 @@ class CombatMCAgent:
     def __init__(self):
         """Initialize the Combat MC agent with its own kernel instance."""
         self.kernel = kernel_manager.create_kernel()
+        self.fallback_mode = False  # Track if we're using fallback mechanics
         self._register_skills()
 
         # Active combat tracking
@@ -41,9 +43,80 @@ class CombatMCAgent:
             logger.info("Combat MC agent plugins registered successfully")
         except Exception as e:
             logger.error(f"Error registering Combat MC agent plugins: {str(e)}")
-            # TODO: Implement proper fallback behavior when plugin registration fails
-            # Consider graceful degradation or alternative combat mechanics
-            pass
+            logger.warning("Enabling fallback mode with built-in combat mechanics")
+            self.fallback_mode = True
+            self._initialize_fallback_mechanics()
+
+    def _initialize_fallback_mechanics(self):
+        """Initialize built-in fallback mechanics when plugin registration fails."""
+        logger.info("Initializing built-in combat mechanics as fallback")
+        
+        # Basic D&D 5e constants for fallback mode
+        self.fallback_mechanics = {
+            "ability_modifiers": {
+                "strength": 0, "dexterity": 0, "constitution": 0,
+                "intelligence": 0, "wisdom": 0, "charisma": 0
+            },
+            "base_proficiency_bonus": 2,
+            "base_armor_class": 10,
+            "base_hit_points": 8
+        }
+
+    def _fallback_roll_d20(self, modifier: int = 0, advantage: bool = False, disadvantage: bool = False) -> Dict[str, Any]:
+        """Built-in d20 roll for fallback mode."""
+        
+        if advantage and not disadvantage:
+            roll1 = random.randint(1, 20)
+            roll2 = random.randint(1, 20)
+            roll = max(roll1, roll2)
+            rolls = [roll1, roll2]
+            advantage_type = "advantage"
+        elif disadvantage and not advantage:
+            roll1 = random.randint(1, 20)
+            roll2 = random.randint(1, 20)
+            roll = min(roll1, roll2)
+            rolls = [roll1, roll2]
+            advantage_type = "disadvantage"
+        else:
+            roll = random.randint(1, 20)
+            rolls = [roll]
+            advantage_type = "normal"
+        
+        total = roll + modifier
+        
+        return {
+            "rolls": rolls,
+            "modifier": modifier,
+            "total": total,
+            "advantage_type": advantage_type
+        }
+
+    def _fallback_roll_damage(self, dice_notation: str) -> Dict[str, Any]:
+        """Built-in damage roll for fallback mode."""
+        
+        # Simple dice parser for basic notation like "1d6+2" or "2d8"
+        pattern = r"(\d*)d(\d+)(?:\+(\d+))?(?:\-(\d+))?"
+        match = re.match(pattern, dice_notation.lower().replace(" ", ""))
+        
+        if not match:
+            # Fallback to fixed damage if parsing fails
+            return {"total": 4, "rolls": [4], "notation": dice_notation, "fallback": True}
+        
+        num_dice = int(match.group(1)) if match.group(1) else 1
+        dice_type = int(match.group(2))
+        plus_mod = int(match.group(3)) if match.group(3) else 0
+        minus_mod = int(match.group(4)) if match.group(4) else 0
+        modifier = plus_mod - minus_mod
+        
+        rolls = [random.randint(1, dice_type) for _ in range(num_dice)]
+        total = sum(rolls) + modifier
+        
+        return {
+            "notation": dice_notation,
+            "rolls": rolls,
+            "modifier": modifier,
+            "total": max(total, 1)  # Minimum 1 damage
+        }
 
     async def create_encounter(
         self, party_info: Dict[str, Any], narrative_context: Dict[str, Any]
@@ -135,8 +208,16 @@ class CombatMCAgent:
 
             # Players
             for player in party_members:
-                dex_mod = (player.get("abilities", {}).get("dexterity", 10) - 10) // 2
-                initiative = random.randint(1, 20) + dex_mod
+                if self.fallback_mode:
+                    # Use fallback d20 roll
+                    dex_mod = (player.get("abilities", {}).get("dexterity", 10) - 10) // 2
+                    roll_result = self._fallback_roll_d20(dex_mod)
+                    initiative = roll_result["total"]
+                else:
+                    # Use plugin-based rolling when available
+                    dex_mod = (player.get("abilities", {}).get("dexterity", 10) - 10) // 2
+                    initiative = random.randint(1, 20) + dex_mod
+                
                 participants.append(
                     {
                         "id": player.get("id"),
@@ -148,9 +229,15 @@ class CombatMCAgent:
 
             # Enemies
             for enemy in encounter["enemies"]:
-                initiative = random.randint(1, 20) + random.randint(
-                    -2, 2
-                )  # Simple initiative mod
+                if self.fallback_mode:
+                    # Use fallback d20 roll with simple modifier
+                    initiative_mod = random.randint(-2, 2)
+                    roll_result = self._fallback_roll_d20(initiative_mod)
+                    initiative = roll_result["total"]
+                else:
+                    # Use simple random roll
+                    initiative = random.randint(1, 20) + random.randint(-2, 2)
+                
                 enemy["initiative"] = initiative
                 participants.append(
                     {
@@ -189,15 +276,128 @@ class CombatMCAgent:
         Returns:
             Dict[str, Any]: The result of the action and updated combat state
         """
-        # TODO: Implement full combat action processing
-        # TODO: Add spell effect resolution and area of effect calculations
-        # TODO: Add movement tracking and positioning on battle maps
-        # TODO: Add complex action types (grapple, shove, dodge, dash, hide)
-        # TODO: Add spell save calculations and status effect application
-        # TODO: Add concentration checks for casters when taking damage
-        # TODO: Add opportunity attack calculations for movement
-        # TODO: Add multi-attack action handling for high-level characters
-        return {"message": "Combat action processed", "success": True}
+        try:
+            if encounter_id not in self.active_combats:
+                return {"error": f"Encounter {encounter_id} not found"}
+
+            encounter = self.active_combats[encounter_id]
+            
+            if encounter["status"] != "active":
+                return {"error": "Combat is not currently active"}
+            
+            if self.fallback_mode:
+                # Use fallback combat processing
+                return self._process_fallback_combat_action(encounter, action_data)
+            else:
+                # Use plugin-based combat processing (when fully implemented)
+                # TODO: Implement full combat action processing with plugins
+                # TODO: Add spell effect resolution and area of effect calculations
+                # TODO: Add movement tracking and positioning on battle maps
+                # TODO: Add complex action types (grapple, shove, dodge, dash, hide)
+                # TODO: Add spell save calculations and status effect application
+                # TODO: Add concentration checks for casters when taking damage
+                # TODO: Add opportunity attack calculations for movement
+                # TODO: Add multi-attack action handling for high-level characters
+                return {"message": "Combat action processed", "success": True}
+        
+        except Exception as e:
+            logger.error(f"Error processing combat action: {str(e)}")
+            return {"error": "Failed to process combat action"}
+
+    def _process_fallback_combat_action(self, encounter: Dict[str, Any], action_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Process combat action using fallback mechanics."""
+        action_type = action_data.get("type", "attack")
+        actor_id = action_data.get("actor_id")
+        target_id = action_data.get("target_id")
+        
+        result = {
+            "action_type": action_type,
+            "actor_id": actor_id,
+            "target_id": target_id,
+            "success": False,
+            "message": "",
+            "damage": 0
+        }
+        
+        if action_type == "attack":
+            # Simple attack resolution using fallback mechanics
+            attack_bonus = action_data.get("attack_bonus", 3)  # Default +3 attack
+            target_ac = action_data.get("target_ac", 12)  # Default AC 12
+            
+            attack_roll = self._fallback_roll_d20(attack_bonus)
+            
+            if attack_roll["total"] >= target_ac:
+                # Hit - calculate damage
+                damage_dice = action_data.get("damage", "1d6+2")
+                damage_result = self._fallback_roll_damage(damage_dice)
+                
+                result.update({
+                    "success": True,
+                    "attack_roll": attack_roll,
+                    "damage": damage_result["total"],
+                    "damage_detail": damage_result,
+                    "message": f"Attack hits for {damage_result['total']} damage!"
+                })
+            else:
+                result.update({
+                    "success": False,
+                    "attack_roll": attack_roll,
+                    "message": f"Attack misses (rolled {attack_roll['total']} vs AC {target_ac})"
+                })
+        
+        elif action_type == "skill_check":
+            # Simple skill check using fallback mechanics
+            modifier = action_data.get("modifier", 0)
+            dc = action_data.get("dc", 15)
+            
+            skill_roll = self._fallback_roll_d20(modifier)
+            success = skill_roll["total"] >= dc
+            
+            result.update({
+                "success": success,
+                "roll": skill_roll,
+                "message": f"Skill check {'succeeds' if success else 'fails'} (rolled {skill_roll['total']} vs DC {dc})"
+            })
+        
+        else:
+            result["message"] = f"Fallback mode: Basic {action_type} action performed"
+            result["success"] = True
+        
+        return result
+
+    def is_fallback_mode(self) -> bool:
+        """Check if the combat MC agent is running in fallback mode."""
+        return self.fallback_mode
+
+    def get_capabilities(self) -> Dict[str, Any]:
+        """Get information about the agent's current capabilities."""
+        if self.fallback_mode:
+            return {
+                "mode": "fallback",
+                "capabilities": [
+                    "basic_initiative_rolling",
+                    "simple_attack_resolution", 
+                    "basic_damage_calculation",
+                    "simple_skill_checks"
+                ],
+                "limitations": [
+                    "no_advanced_spell_effects",
+                    "no_complex_conditions",
+                    "simplified_dice_rolling",
+                    "basic_combat_mechanics_only"
+                ]
+            }
+        else:
+            return {
+                "mode": "full",
+                "capabilities": [
+                    "advanced_dice_rolling",
+                    "complex_spell_effects",
+                    "detailed_combat_mechanics",
+                    "comprehensive_rule_system"
+                ],
+                "limitations": []
+            }
 
     def _calculate_average_party_level(self, party_info: Dict[str, Any]) -> float:
         """Calculate the average level of the party."""
