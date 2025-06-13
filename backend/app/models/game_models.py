@@ -101,6 +101,9 @@ class CharacterSheet(BaseModel):
     # Progression tracking
     ability_score_improvements_used: int = 0
     hit_dice: str = "1d8"  # Class-specific hit dice (e.g., "1d8" for rogues, "1d10" for fighters)
+    # Spell slot tracking (list represents slots of levels 1-9)
+    max_spell_slots: List[int] = Field(default_factory=lambda: [0, 0, 0, 0, 0, 0, 0, 0, 0])
+    current_spell_slots: List[int] = Field(default_factory=lambda: [0, 0, 0, 0, 0, 0, 0, 0, 0])
 
 class CombatParticipant(BaseModel):
     id: str

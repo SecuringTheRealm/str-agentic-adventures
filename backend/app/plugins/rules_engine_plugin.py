@@ -70,8 +70,96 @@ class RulesEnginePlugin:
             "wizard": "1d6",
         }
 
-        # TODO: Implement spell system components
-        # TODO: Add spell slot tracking by level and class
+        # D&D 5e spell slot tables by class and level
+        # Full casters: Bard, Cleric, Druid, Sorcerer, Wizard
+        self.full_caster_spell_slots = {
+            1: [2, 0, 0, 0, 0, 0, 0, 0, 0],
+            2: [3, 0, 0, 0, 0, 0, 0, 0, 0],
+            3: [4, 2, 0, 0, 0, 0, 0, 0, 0],
+            4: [4, 3, 0, 0, 0, 0, 0, 0, 0],
+            5: [4, 3, 2, 0, 0, 0, 0, 0, 0],
+            6: [4, 3, 3, 0, 0, 0, 0, 0, 0],
+            7: [4, 3, 3, 1, 0, 0, 0, 0, 0],
+            8: [4, 3, 3, 2, 0, 0, 0, 0, 0],
+            9: [4, 3, 3, 3, 1, 0, 0, 0, 0],
+            10: [4, 3, 3, 3, 2, 0, 0, 0, 0],
+            11: [4, 3, 3, 3, 2, 1, 0, 0, 0],
+            12: [4, 3, 3, 3, 2, 1, 0, 0, 0],
+            13: [4, 3, 3, 3, 2, 1, 1, 0, 0],
+            14: [4, 3, 3, 3, 2, 1, 1, 0, 0],
+            15: [4, 3, 3, 3, 2, 1, 1, 1, 0],
+            16: [4, 3, 3, 3, 2, 1, 1, 1, 0],
+            17: [4, 3, 3, 3, 2, 1, 1, 1, 1],
+            18: [4, 3, 3, 3, 3, 1, 1, 1, 1],
+            19: [4, 3, 3, 3, 3, 2, 1, 1, 1],
+            20: [4, 3, 3, 3, 3, 2, 2, 1, 1],
+        }
+
+        # Half casters: Paladin, Ranger (start casting at level 2)
+        self.half_caster_spell_slots = {
+            1: [0, 0, 0, 0, 0],
+            2: [2, 0, 0, 0, 0],
+            3: [3, 0, 0, 0, 0],
+            4: [3, 0, 0, 0, 0],
+            5: [4, 2, 0, 0, 0],
+            6: [4, 2, 0, 0, 0],
+            7: [4, 3, 0, 0, 0],
+            8: [4, 3, 0, 0, 0],
+            9: [4, 3, 2, 0, 0],
+            10: [4, 3, 2, 0, 0],
+            11: [4, 3, 3, 0, 0],
+            12: [4, 3, 3, 0, 0],
+            13: [4, 3, 3, 1, 0],
+            14: [4, 3, 3, 1, 0],
+            15: [4, 3, 3, 2, 0],
+            16: [4, 3, 3, 2, 0],
+            17: [4, 3, 3, 3, 1],
+            18: [4, 3, 3, 3, 1],
+            19: [4, 3, 3, 3, 2],
+            20: [4, 3, 3, 3, 2],
+        }
+
+        # Warlock uses Pact Magic (different system)
+        self.warlock_spell_slots = {
+            1: [1, 0, 0, 0, 0],  # 1st level slots
+            2: [2, 0, 0, 0, 0],  # 1st level slots
+            3: [0, 2, 0, 0, 0],  # 2nd level slots
+            4: [0, 2, 0, 0, 0],  # 2nd level slots
+            5: [0, 0, 2, 0, 0],  # 3rd level slots
+            6: [0, 0, 2, 0, 0],  # 3rd level slots
+            7: [0, 0, 0, 2, 0],  # 4th level slots
+            8: [0, 0, 0, 2, 0],  # 4th level slots
+            9: [0, 0, 0, 0, 2],  # 5th level slots
+            10: [0, 0, 0, 0, 2], # 5th level slots
+            11: [0, 0, 0, 0, 3], # 5th level slots
+            12: [0, 0, 0, 0, 3], # 5th level slots
+            13: [0, 0, 0, 0, 3], # 5th level slots
+            14: [0, 0, 0, 0, 3], # 5th level slots
+            15: [0, 0, 0, 0, 3], # 5th level slots
+            16: [0, 0, 0, 0, 3], # 5th level slots
+            17: [0, 0, 0, 0, 4], # 5th level slots
+            18: [0, 0, 0, 0, 4], # 5th level slots
+            19: [0, 0, 0, 0, 4], # 5th level slots
+            20: [0, 0, 0, 0, 4], # 5th level slots
+        }
+
+        # Class spellcasting types
+        self.spellcasting_classes = {
+            "bard": "full",
+            "cleric": "full", 
+            "druid": "full",
+            "sorcerer": "full",
+            "wizard": "full",
+            "paladin": "half",
+            "ranger": "half",
+            "warlock": "pact",
+            # Non-spellcasting classes
+            "barbarian": "none",
+            "fighter": "none",
+            "monk": "none",
+            "rogue": "none",
+        }
+
         # TODO: Add spell save DC calculation
         # TODO: Add spell attack bonus calculation
         # TODO: Add spell effect resolution system
@@ -794,3 +882,167 @@ class RulesEnginePlugin:
         # Limit history size
         if len(self.roll_history) > self.max_history:
             self.roll_history = self.roll_history[-self.max_history :]
+
+    @kernel_function(
+        description="Calculate maximum spell slots for a character based on class and level.",
+        name="calculate_spell_slots",
+    )
+    def calculate_spell_slots(self, character_class: str, level: int) -> Dict[str, Any]:
+        """
+        Calculate the maximum spell slots for a character based on their class and level.
+
+        Args:
+            character_class: The character's class (e.g., "wizard", "cleric", "paladin")
+            level: The character's level (1-20)
+
+        Returns:
+            Dict[str, Any]: Spell slots information including max slots per level
+        """
+        try:
+            character_class = character_class.lower()
+            
+            if character_class not in self.spellcasting_classes:
+                return {
+                    "error": f"Unknown character class: {character_class}",
+                    "spell_slots": [0, 0, 0, 0, 0, 0, 0, 0, 0]
+                }
+
+            spellcasting_type = self.spellcasting_classes[character_class]
+            
+            if spellcasting_type == "none":
+                return {
+                    "character_class": character_class,
+                    "level": level,
+                    "spellcasting_type": "none",
+                    "spell_slots": [0, 0, 0, 0, 0, 0, 0, 0, 0]
+                }
+
+            if level < 1 or level > 20:
+                return {
+                    "error": f"Invalid level: {level}. Must be between 1-20.",
+                    "spell_slots": [0, 0, 0, 0, 0, 0, 0, 0, 0]
+                }
+
+            # Get appropriate spell slot table
+            if spellcasting_type == "full":
+                spell_slots = self.full_caster_spell_slots.get(level, [0, 0, 0, 0, 0, 0, 0, 0, 0])
+            elif spellcasting_type == "half":
+                spell_slots = self.half_caster_spell_slots.get(level, [0, 0, 0, 0, 0])
+                # Pad to 9 elements for consistency
+                spell_slots = spell_slots + [0] * (9 - len(spell_slots))
+            elif spellcasting_type == "pact":
+                spell_slots = self.warlock_spell_slots.get(level, [0, 0, 0, 0, 0])
+                # Pad to 9 elements for consistency
+                spell_slots = spell_slots + [0] * (9 - len(spell_slots))
+            else:
+                spell_slots = [0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+            return {
+                "character_class": character_class,
+                "level": level,
+                "spellcasting_type": spellcasting_type,
+                "spell_slots": spell_slots,
+                "total_slots": sum(spell_slots)
+            }
+
+        except Exception as e:
+            logger.error(f"Error calculating spell slots: {str(e)}")
+            return {
+                "error": f"Error calculating spell slots: {str(e)}",
+                "spell_slots": [0, 0, 0, 0, 0, 0, 0, 0, 0]
+            }
+
+    @kernel_function(
+        description="Expend a spell slot of the specified level.",
+        name="expend_spell_slot",
+    )
+    def expend_spell_slot(self, current_slots: list, slot_level: int) -> Dict[str, Any]:
+        """
+        Expend a spell slot of the specified level.
+
+        Args:
+            current_slots: List of current spell slots [1st, 2nd, 3rd, ..., 9th]
+            slot_level: The level of spell slot to expend (1-9)
+
+        Returns:
+            Dict[str, Any]: Updated spell slots and success status
+        """
+        try:
+            if slot_level < 1 or slot_level > 9:
+                return {
+                    "success": False,
+                    "error": f"Invalid slot level: {slot_level}. Must be 1-9.",
+                    "current_slots": current_slots
+                }
+
+            # Copy the current slots to avoid modifying the original
+            new_slots = current_slots.copy()
+            
+            # Ensure we have enough elements
+            while len(new_slots) < 9:
+                new_slots.append(0)
+
+            # Check if we have a slot available
+            slot_index = slot_level - 1
+            if new_slots[slot_index] <= 0:
+                return {
+                    "success": False,
+                    "error": f"No {slot_level}{'st' if slot_level == 1 else 'nd' if slot_level == 2 else 'rd' if slot_level == 3 else 'th'} level spell slots remaining.",
+                    "current_slots": new_slots
+                }
+
+            # Expend the slot
+            new_slots[slot_index] -= 1
+
+            return {
+                "success": True,
+                "slot_level": slot_level,
+                "current_slots": new_slots,
+                "slots_remaining": new_slots[slot_index]
+            }
+
+        except Exception as e:
+            logger.error(f"Error expending spell slot: {str(e)}")
+            return {
+                "success": False,
+                "error": f"Error expending spell slot: {str(e)}",
+                "current_slots": current_slots
+            }
+
+    @kernel_function(
+        description="Restore spell slots after a long rest.",
+        name="restore_spell_slots",
+    )
+    def restore_spell_slots(self, max_slots: list) -> Dict[str, Any]:
+        """
+        Restore all spell slots to maximum after a long rest.
+
+        Args:
+            max_slots: List of maximum spell slots [1st, 2nd, 3rd, ..., 9th]
+
+        Returns:
+            Dict[str, Any]: Restored spell slots information
+        """
+        try:
+            # Copy max slots to current slots
+            restored_slots = max_slots.copy()
+            
+            # Ensure we have 9 elements
+            while len(restored_slots) < 9:
+                restored_slots.append(0)
+
+            total_restored = sum(restored_slots)
+
+            return {
+                "success": True,
+                "current_slots": restored_slots,
+                "total_slots_restored": total_restored
+            }
+
+        except Exception as e:
+            logger.error(f"Error restoring spell slots: {str(e)}")
+            return {
+                "success": False,
+                "error": f"Error restoring spell slots: {str(e)}",
+                "current_slots": max_slots
+            }
