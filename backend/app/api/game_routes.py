@@ -12,6 +12,9 @@ from app.models.game_models import (
     GameResponse,
     CharacterSheet,
     LevelUpRequest,
+    CreateNPCRequest,
+    UpdateNPCRequest,
+    NPC,
 )
 from app.agents.dungeon_master_agent import get_dungeon_master
 from app.agents.scribe_agent import get_scribe
@@ -860,8 +863,91 @@ async def process_general_action(
 # TODO: POST /items/magical-effects - Apply magical item effects to character stats
 # TODO: GET /items/catalog - Browse available items with rarity and value information
 
-# TODO: Add enhanced NPC management API endpoints
-# TODO: POST /campaign/{campaign_id}/npcs - Create and manage campaign NPCs
+# Enhanced NPC management API endpoints
+@router.post("/campaign/{campaign_id}/npcs", response_model=Dict[str, Any])
+async def create_campaign_npc(campaign_id: str, npc_data: CreateNPCRequest):
+    """Create a new NPC for a campaign."""
+    try:
+        # Convert Pydantic model to dictionary for the agent
+        npc_dict = npc_data.model_dump()
+        
+        # Create NPC via Dungeon Master agent
+        npc = await get_dungeon_master().create_campaign_npc(campaign_id, npc_dict)
+        
+        if "error" in npc:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail=npc["error"]
+            )
+        
+        return npc
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create NPC: {str(e)}",
+        )
+
+
+@router.get("/campaign/{campaign_id}/npcs", response_model=Dict[str, Any])
+async def get_campaign_npcs(campaign_id: str):
+    """Get all NPCs for a campaign."""
+    try:
+        npcs = await get_dungeon_master().get_campaign_npcs(campaign_id)
+        
+        if "error" in npcs:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=npcs["error"]
+            )
+        
+        return npcs
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get NPCs: {str(e)}",
+        )
+
+
+@router.put("/campaign/{campaign_id}/npcs/{npc_id}", response_model=Dict[str, Any])
+async def update_campaign_npc(campaign_id: str, npc_id: str, update_data: UpdateNPCRequest):
+    """Update an existing NPC in a campaign."""
+    try:
+        # Convert Pydantic model to dictionary, excluding None values
+        update_dict = {k: v for k, v in update_data.model_dump().items() if v is not None}
+        
+        # Update NPC via Dungeon Master agent
+        npc = await get_dungeon_master().update_campaign_npc(campaign_id, npc_id, update_dict)
+        
+        if "error" in npc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=npc["error"]
+            )
+        
+        return npc
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update NPC: {str(e)}",
+        )
+
+
+@router.delete("/campaign/{campaign_id}/npcs/{npc_id}", response_model=Dict[str, Any])
+async def delete_campaign_npc(campaign_id: str, npc_id: str):
+    """Delete an NPC from a campaign."""
+    try:
+        result = await get_dungeon_master().delete_campaign_npc(campaign_id, npc_id)
+        
+        if "error" in result:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=result["error"]
+            )
+        
+        return result
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete NPC: {str(e)}",
+        )
+
+
 # TODO: GET /npc/{npc_id}/personality - Get NPC personality traits and behaviors
 # TODO: POST /npc/{npc_id}/interaction - Log and retrieve NPC interaction history
 # TODO: POST /npc/{npc_id}/generate-stats - Generate combat stats for NPCs dynamically

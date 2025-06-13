@@ -251,3 +251,55 @@ class NarrativeEvent(BaseModel):
     consequences: Dict[str, Any] = {}
     story_arc_id: Optional[str] = None
     plot_point_id: Optional[str] = None
+
+# NPC Management Models
+class NPCPersonality(BaseModel):
+    traits: List[str] = []
+    ideals: List[str] = []
+    bonds: List[str] = []
+    flaws: List[str] = []
+
+class NPCStats(BaseModel):
+    """Optional combat stats for NPCs"""
+    level: Optional[int] = None
+    hit_points: Optional[HitPoints] = None
+    armor_class: Optional[int] = None
+    abilities: Optional[Abilities] = None
+    challenge_rating: Optional[str] = None
+
+class NPC(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    race: Optional[Race] = None
+    role: str  # "ally", "neutral", "antagonist", "merchant", "quest_giver", etc.
+    description: str
+    personality: Optional[NPCPersonality] = None
+    location: Optional[str] = None
+    status: str = "alive"  # "alive", "dead", "missing", "unknown"
+    stats: Optional[NPCStats] = None
+    relationships: Dict[str, str] = {}  # character_id -> relationship_type
+    notes: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.now)
+    last_interaction: Optional[datetime] = None
+
+class CreateNPCRequest(BaseModel):
+    name: str
+    race: Optional[Race] = None
+    role: str = "neutral"
+    description: str
+    personality: Optional[NPCPersonality] = None
+    location: Optional[str] = None
+    generate_stats: bool = False  # Whether to generate combat stats
+    notes: Optional[str] = None
+
+class UpdateNPCRequest(BaseModel):
+    name: Optional[str] = None
+    race: Optional[Race] = None
+    role: Optional[str] = None
+    description: Optional[str] = None
+    personality: Optional[NPCPersonality] = None
+    location: Optional[str] = None
+    status: Optional[str] = None
+    stats: Optional[NPCStats] = None
+    relationships: Optional[Dict[str, str]] = None
+    notes: Optional[str] = None

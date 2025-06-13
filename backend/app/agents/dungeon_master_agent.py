@@ -4,6 +4,7 @@ Dungeon Master Agent - The orchestrator agent that coordinates all other agents.
 
 import logging
 from typing import Dict, Any, Tuple
+from datetime import datetime
 
 # Note: Updated for newer Semantic Kernel version
 # ToolManager import commented out as it's causing issues
@@ -128,6 +129,212 @@ class DungeonMasterAgent:
         except Exception as e:
             logger.error(f"Error creating campaign: {str(e)}")
             return {"error": "Failed to create campaign"}
+
+    async def create_campaign_npc(self, campaign_id: str, npc_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Create a new NPC for a campaign.
+
+        Args:
+            campaign_id: The campaign to add the NPC to
+            npc_data: NPC creation data
+
+        Returns:
+            Dict[str, Any]: The created NPC data or error
+        """
+        try:
+            # Check if campaign exists
+            if campaign_id not in self.active_sessions:
+                return {"error": "Campaign not found"}
+
+            campaign = self.active_sessions[campaign_id]
+            
+            # Create NPC with unique ID
+            npc_id = npc_data.get("id", f"npc_{len(campaign.get('npcs', {})) + 1}")
+            
+            # Generate stats if requested
+            if npc_data.get("generate_stats", False):
+                npc_data["stats"] = await self._generate_npc_stats(npc_data)
+            
+            # Create NPC object
+            npc = {
+                "id": npc_id,
+                "name": npc_data.get("name"),
+                "race": npc_data.get("race"),
+                "role": npc_data.get("role", "neutral"),
+                "description": npc_data.get("description"),
+                "personality": npc_data.get("personality"),
+                "location": npc_data.get("location"),
+                "status": "alive",
+                "stats": npc_data.get("stats"),
+                "relationships": {},
+                "notes": npc_data.get("notes"),
+                "created_at": datetime.now().isoformat(),
+                "last_interaction": None
+            }
+
+            # Add NPC to campaign
+            if "npcs" not in campaign:
+                campaign["npcs"] = {}
+            campaign["npcs"][npc_id] = npc
+
+            # Update campaign in storage
+            self.active_sessions[campaign_id] = campaign
+
+            return npc
+
+        except Exception as e:
+            logger.error(f"Error creating NPC: {str(e)}")
+            return {"error": "Failed to create NPC"}
+
+    async def get_campaign_npcs(self, campaign_id: str) -> Dict[str, Any]:
+        """
+        Get all NPCs for a campaign.
+
+        Args:
+            campaign_id: The campaign ID
+
+        Returns:
+            Dict[str, Any]: The NPCs data or error
+        """
+        try:
+            if campaign_id not in self.active_sessions:
+                return {"error": "Campaign not found"}
+
+            campaign = self.active_sessions[campaign_id]
+            npcs = campaign.get("npcs", {})
+            
+            return {"npcs": npcs}
+
+        except Exception as e:
+            logger.error(f"Error getting NPCs: {str(e)}")
+            return {"error": "Failed to get NPCs"}
+
+    async def update_campaign_npc(self, campaign_id: str, npc_id: str, update_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Update an existing NPC in a campaign.
+
+        Args:
+            campaign_id: The campaign ID
+            npc_id: The NPC ID to update
+            update_data: Data to update
+
+        Returns:
+            Dict[str, Any]: The updated NPC data or error
+        """
+        try:
+            if campaign_id not in self.active_sessions:
+                return {"error": "Campaign not found"}
+
+            campaign = self.active_sessions[campaign_id]
+            npcs = campaign.get("npcs", {})
+            
+            if npc_id not in npcs:
+                return {"error": "NPC not found"}
+
+            # Update NPC fields
+            npc = npcs[npc_id]
+            for field, value in update_data.items():
+                if field != "id":  # Don't allow ID changes
+                    npc[field] = value
+
+            # Update campaign in storage
+            self.active_sessions[campaign_id] = campaign
+
+            return npc
+
+        except Exception as e:
+            logger.error(f"Error updating NPC: {str(e)}")
+            return {"error": "Failed to update NPC"}
+
+    async def delete_campaign_npc(self, campaign_id: str, npc_id: str) -> Dict[str, Any]:
+        """
+        Delete an NPC from a campaign.
+
+        Args:
+            campaign_id: The campaign ID
+            npc_id: The NPC ID to delete
+
+        Returns:
+            Dict[str, Any]: Success confirmation or error
+        """
+        try:
+            if campaign_id not in self.active_sessions:
+                return {"error": "Campaign not found"}
+
+            campaign = self.active_sessions[campaign_id]
+            npcs = campaign.get("npcs", {})
+            
+            if npc_id not in npcs:
+                return {"error": "NPC not found"}
+
+            # Remove NPC
+            del npcs[npc_id]
+
+            # Update campaign in storage
+            self.active_sessions[campaign_id] = campaign
+
+            return {"success": True, "message": f"NPC {npc_id} deleted"}
+
+        except Exception as e:
+            logger.error(f"Error deleting NPC: {str(e)}")
+            return {"error": "Failed to delete NPC"}
+
+    async def _generate_npc_stats(self, npc_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Generate combat stats for an NPC.
+
+        Args:
+            npc_data: NPC data for context
+
+        Returns:
+            Dict[str, Any]: Generated stats
+        """
+        # Simple stat generation based on role
+        role = npc_data.get("role", "neutral")
+        
+        if role == "antagonist":
+            level = 5
+            hp = {"current": 65, "maximum": 65}
+            ac = 16
+            abilities = {
+                "strength": 16,
+                "dexterity": 14,
+                "constitution": 15,
+                "intelligence": 12,
+                "wisdom": 13,
+                "charisma": 14
+            }
+        elif role == "ally":
+            level = 3
+            hp = {"current": 27, "maximum": 27}
+            ac = 14
+            abilities = {
+                "strength": 14,
+                "dexterity": 13,
+                "constitution": 14,
+                "intelligence": 12,
+                "wisdom": 14,
+                "charisma": 13
+            }
+        else:  # neutral, merchant, etc.
+            level = 1
+            hp = {"current": 8, "maximum": 8}
+            ac = 10
+            abilities = {
+                "strength": 10,
+                "dexterity": 10,
+                "constitution": 10,
+                "intelligence": 10,
+                "wisdom": 10,
+                "charisma": 10
+            }
+
+        return {
+            "level": level,
+            "hit_points": hp,
+            "armor_class": ac,
+            "abilities": abilities
+        }
 
     async def process_input(
         self, user_input: str, context: Dict[str, Any] | None = None
