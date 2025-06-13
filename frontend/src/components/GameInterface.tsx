@@ -21,6 +21,30 @@ interface GameInterfaceProps {
 	campaign: Campaign;
 }
 
+// Utility function to extract user-friendly error messages from API errors
+const extractErrorMessage = (error: unknown, fallbackMessage: string): string => {
+	if (error && typeof error === 'object') {
+		// Check for axios error response structure
+		if ('response' in error && error.response && typeof error.response === 'object') {
+			const response = error.response as { data?: { detail?: string | Array<{ msg: string }> } };
+			if (response.data?.detail) {
+				if (typeof response.data.detail === 'string') {
+					return response.data.detail;
+				} else if (Array.isArray(response.data.detail)) {
+					// Handle Pydantic validation errors which come as an array
+					const messages = response.data.detail.map((err: { msg: string }) => err.msg);
+					return `Validation error: ${messages.join(', ')}`;
+				}
+			}
+		}
+		// Check for general error message
+		else if ('message' in error && typeof (error as any).message === 'string') {
+			return (error as any).message;
+		}
+	}
+	return fallbackMessage;
+};
+
 const GameInterface: React.FC<GameInterfaceProps> = ({
 	character,
 	campaign,
@@ -104,8 +128,9 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 			}
 		} catch (error) {
 			console.error("Error generating character portrait:", error);
+			const errorMessage = extractErrorMessage(error, "Failed to generate character portrait. Please try again.");
 			setMessages(prev => [...prev, {
-				text: "Failed to generate character portrait. Please try again.",
+				text: errorMessage,
 				sender: "dm"
 			}]);
 		} finally {
@@ -135,8 +160,9 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 			}
 		} catch (error) {
 			console.error("Error generating scene illustration:", error);
+			const errorMessage = extractErrorMessage(error, "Failed to generate scene illustration. Please try again.");
 			setMessages(prev => [...prev, {
-				text: "Failed to generate scene illustration. Please try again.",
+				text: errorMessage,
 				sender: "dm"
 			}]);
 		} finally {
@@ -166,8 +192,9 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 			}
 		} catch (error) {
 			console.error("Error generating battle map:", error);
+			const errorMessage = extractErrorMessage(error, "Failed to generate battle map. Please try again.");
 			setMessages(prev => [...prev, {
-				text: "Failed to generate battle map. Please try again.",
+				text: errorMessage,
 				sender: "dm"
 			}]);
 		} finally {
@@ -210,10 +237,14 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 			}
 		} catch (error) {
 			console.error("Error processing player input:", error);
+			
+			// Extract actual error message from the response
+			const errorMessage = extractErrorMessage(error, "Something went wrong. Please try again.");
+			
 			setMessages((prev) => [
 				...prev,
 				{
-					text: "Something went wrong. Please try again.",
+					text: errorMessage,
 					sender: "dm",
 				},
 			]);
