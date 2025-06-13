@@ -24,6 +24,16 @@ class KernelManager:
         # Create a new kernel
         kernel = sk.Kernel()
 
+        # Check if Azure OpenAI is configured before trying to use it
+        if not settings.is_azure_openai_configured():
+            raise ValueError(
+                "Azure OpenAI configuration is missing or invalid. "
+                "This agentic demo requires proper Azure OpenAI setup. "
+                "Please ensure the following environment variables are set: "
+                "AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_API_KEY, "
+                "AZURE_OPENAI_CHAT_DEPLOYMENT, AZURE_OPENAI_EMBEDDING_DEPLOYMENT"
+            )
+
         # Configure kernel with Azure OpenAI service
         try:
             # Add Azure Chat service

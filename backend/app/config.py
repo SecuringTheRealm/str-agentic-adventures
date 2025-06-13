@@ -9,13 +9,13 @@ load_dotenv()
 
 class Settings(BaseSettings):
     # Azure OpenAI Settings
-    azure_openai_endpoint: str = os.getenv("AZURE_OPENAI_ENDPOINT")
-    azure_openai_api_key: str = os.getenv("AZURE_OPENAI_API_KEY")
+    azure_openai_endpoint: str = os.getenv("AZURE_OPENAI_ENDPOINT", "")
+    azure_openai_api_key: str = os.getenv("AZURE_OPENAI_API_KEY", "")
     azure_openai_api_version: str = os.getenv("AZURE_OPENAI_API_VERSION", "2023-12-01-preview")
 
     # Model Deployments
-    azure_openai_chat_deployment: str = os.getenv("AZURE_OPENAI_CHAT_DEPLOYMENT")
-    azure_openai_embedding_deployment: str = os.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT")
+    azure_openai_chat_deployment: str = os.getenv("AZURE_OPENAI_CHAT_DEPLOYMENT", "")
+    azure_openai_embedding_deployment: str = os.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT", "")
     azure_openai_dalle_deployment: str = os.getenv("AZURE_OPENAI_DALLE_DEPLOYMENT", "dall-e-3")
 
     # Semantic Kernel Settings
@@ -32,6 +32,15 @@ class Settings(BaseSettings):
 
     class Config:
         env_file = ".env"
+    
+    def is_azure_openai_configured(self) -> bool:
+        """Check if Azure OpenAI is properly configured."""
+        return (
+            bool(self.azure_openai_endpoint) and
+            bool(self.azure_openai_api_key) and
+            bool(self.azure_openai_chat_deployment) and
+            bool(self.azure_openai_embedding_deployment)
+        )
 
 # Lazy initialization to avoid validation during import
 _settings = None

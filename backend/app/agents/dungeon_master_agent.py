@@ -29,27 +29,34 @@ class DungeonMasterAgent:
 
     def __init__(self):
         """Initialize the Dungeon Master agent with its own kernel instance."""
+        # Initialize basic attributes first
+        self.active_sessions = {}
+        self._fallback_mode = False
+        self.kernel = None
+        
         try:
+            # Try to create kernel - this will fail if Azure OpenAI is not configured
             self.kernel = kernel_manager.create_kernel()
             # ToolManager initialization commented out as it's causing issues
             # self.tool_manager = ToolManager(self.kernel)
             self._register_plugins()
-
-            # Game session tracking
-            self.active_sessions = {}
+            
         except Exception as e:
             # Check if this is a configuration error
             error_msg = str(e)
-            if "validation errors for Settings" in error_msg and (
+            if (("validation errors for Settings" in error_msg and (
                 "azure_openai" in error_msg or "openai" in error_msg
-            ):
-                raise ValueError(
+            )) or "Azure OpenAI configuration is missing or invalid" in error_msg):
+                logger.warning(
                     "Azure OpenAI configuration is missing or invalid. "
-                    "This agentic demo requires proper Azure OpenAI setup. "
-                    "Please ensure the following environment variables are set: "
+                    "Operating in fallback mode with basic functionality. "
+                    "For full AI features, ensure the following environment variables are set: "
                     "AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_API_KEY, "
                     "AZURE_OPENAI_CHAT_DEPLOYMENT, AZURE_OPENAI_EMBEDDING_DEPLOYMENT"
-                ) from e
+                )
+                # Initialize in fallback mode
+                self._fallback_mode = True
+                self._initialize_fallback_components()
             else:
                 # Re-raise other errors as-is
                 raise
@@ -472,68 +479,70 @@ class DungeonMasterAgent:
         Returns:
             Tuple[str, Dict[str, Any]]: Input type and extracted details
         """
-        try:
-            # Enhanced input analysis using Azure OpenAI for better intent recognition
-            from app.azure_openai_client import AzureOpenAIClient
-
-            openai_client = AzureOpenAIClient()
-
-            # Prepare analysis prompt for the AI
-            analysis_prompt = f"""
-            Analyze the following D&D player input and classify it into one of these categories:
-            - "combat" (fighting, attacking, casting spells, initiative, combat actions)
-            - "character" (inventory management, leveling up, equipment, abilities, character sheet updates)
-            - "narrative" (exploration, roleplay, story actions, talking to NPCs)
-
-            Player input: "{user_input}"
-            Current context: {context.get("location", "unknown location")}
-
-            Respond with JSON format:
-            {{"category": "combat|character|narrative", "action_type": "specific_action", "confidence": 0.8}}
-            """
-
-            messages = [
-                {
-                    "role": "system",
-                    "content": "You are a D&D game assistant that analyzes player intent. Always respond with valid JSON.",
-                },
-                {"role": "user", "content": analysis_prompt},
-            ]
-
-            # Get AI analysis
-            response = await openai_client.chat_completion(
-                messages, max_tokens=150, temperature=0.3
-            )
-
-            # Parse AI response
-            import json
-
+        # Skip AI analysis if in fallback mode or if Azure OpenAI is not available
+        if not getattr(self, '_fallback_mode', True):
             try:
-                analysis = json.loads(response.strip())
-                category = analysis.get("category", "narrative")
-                action_type = analysis.get("action_type", "general")
-                confidence = analysis.get("confidence", 0.5)
+                # Enhanced input analysis using Azure OpenAI for better intent recognition
+                from app.azure_openai_client import AzureOpenAIClient
 
-                # If confidence is too low, fall back to keyword analysis
-                if confidence < 0.6:
-                    raise ValueError("Low confidence, using fallback")
+                openai_client = AzureOpenAIClient()
 
-                return category, {
-                    "action_type": action_type,
-                    "confidence": confidence,
-                    "method": "ai_analysis",
-                }
+                # Prepare analysis prompt for the AI
+                analysis_prompt = f"""
+                Analyze the following D&D player input and classify it into one of these categories:
+                - "combat" (fighting, attacking, casting spells, initiative, combat actions)
+                - "character" (inventory management, leveling up, equipment, abilities, character sheet updates)
+                - "narrative" (exploration, roleplay, story actions, talking to NPCs)
 
-            except (json.JSONDecodeError, ValueError):
-                # Fall back to keyword analysis if AI parsing fails
-                logger.warning(
-                    "AI analysis failed, falling back to keyword-based approach"
+                Player input: "{user_input}"
+                Current context: {context.get("location", "unknown location")}
+
+                Respond with JSON format:
+                {{"category": "combat|character|narrative", "action_type": "specific_action", "confidence": 0.8}}
+                """
+
+                messages = [
+                    {
+                        "role": "system",
+                        "content": "You are a D&D game assistant that analyzes player intent. Always respond with valid JSON.",
+                    },
+                    {"role": "user", "content": analysis_prompt},
+                ]
+
+                # Get AI analysis
+                response = await openai_client.chat_completion(
+                    messages, max_tokens=150, temperature=0.3
                 )
 
-        except Exception as e:
-            logger.warning(
-                f"Enhanced input analysis failed: {str(e)}, using fallback approach"
-            )
+                # Parse AI response
+                import json
+
+                try:
+                    analysis = json.loads(response.strip())
+                    category = analysis.get("category", "narrative")
+                    action_type = analysis.get("action_type", "general")
+                    confidence = analysis.get("confidence", 0.5)
+
+                    # If confidence is too low, fall back to keyword analysis
+                    if confidence < 0.6:
+                        raise ValueError("Low confidence, using fallback")
+
+                    return category, {
+                        "action_type": action_type,
+                        "confidence": confidence,
+                        "method": "ai_analysis",
+                    }
+
+                except (json.JSONDecodeError, ValueError):
+                    # Fall back to keyword analysis if AI parsing fails
+                    logger.warning(
+                        "AI analysis failed, falling back to keyword-based approach"
+                    )
+
+            except Exception as e:
+                logger.warning(
+                    f"Enhanced input analysis failed: {str(e)}, using keyword-based approach"
+                )
 
         # Fallback: Enhanced keyword-based approach with better patterns
         input_lower = user_input.lower()
