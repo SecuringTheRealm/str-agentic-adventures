@@ -52,7 +52,7 @@
 }
 
 .campaign-setup {
-  max-width: 600px;
+  max-width: 1400px; /* Allow more space for campaign grid, but prevent excessive width on large screens */
   margin: 0 auto;
   background: rgba(15, 64, 79, 0.8); /* Semi-transparent primary color */
   padding: 2rem;
@@ -68,4 +68,19 @@
   font-family: 'Cinzel', serif;
   font-weight: 600;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Responsive adjustments for campaign setup */
+@media (max-width: 768px) {
+  .campaign-setup {
+    margin: 0 1rem;
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .campaign-setup {
+    margin: 0 0.5rem;
+    padding: 0.75rem;
+  }
 }
