@@ -329,6 +329,39 @@ class ScribeAgent:
             )
             character["proficiency_bonus"] = new_proficiency_bonus
 
+            # Update spell slots if the character is a spellcaster
+            spell_slot_result = rules_engine.calculate_spell_slots(character_class, new_level)
+            if "error" not in spell_slot_result and spell_slot_result.get("spell_slots"):
+                new_spell_slots = spell_slot_result["spell_slots"]
+                old_max_spell_slots = character.get("max_spell_slots", [0, 0, 0, 0, 0, 0, 0, 0, 0])
+                
+                # Update max spell slots
+                character["max_spell_slots"] = new_spell_slots
+                
+                # For current spell slots, keep any unused slots from previous level
+                # but ensure we don't exceed the new maximum
+                old_current_spell_slots = character.get("current_spell_slots", [0, 0, 0, 0, 0, 0, 0, 0, 0])
+                new_current_spell_slots = []
+                for i in range(9):
+                    # Keep existing current slots up to the new maximum
+                    current_slots = min(old_current_spell_slots[i], new_spell_slots[i])
+                    # Add any new spell slots gained at this level
+                    if new_spell_slots[i] > old_max_spell_slots[i]:
+                        current_slots += (new_spell_slots[i] - old_max_spell_slots[i])
+                    new_current_spell_slots.append(current_slots)
+                
+                character["current_spell_slots"] = new_current_spell_slots
+                
+                # Add feature notification for spell slot changes
+                if any(new_spell_slots[i] > old_max_spell_slots[i] for i in range(9)):
+                    spell_changes = []
+                    for i in range(9):
+                        if new_spell_slots[i] > old_max_spell_slots[i]:
+                            gained = new_spell_slots[i] - old_max_spell_slots[i]
+                            spell_changes.append(f"Level {i+1}: +{gained}")
+                    if spell_changes:
+                        features_gained.append(f"Spell Slots Gained: {', '.join(spell_changes)}")
+
             # Add level-specific features
             if new_level == 5:
                 features_gained.append("Proficiency Bonus increased to +3")
@@ -345,6 +378,15 @@ class ScribeAgent:
                     db_character.data = character
                     db.commit()
 
+            # Prepare spell slot information for return value
+            spell_slot_info = {}
+            if "max_spell_slots" in character:
+                spell_slot_info = {
+                    "old_max_spell_slots": old_max_spell_slots if 'old_max_spell_slots' in locals() else [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    "new_max_spell_slots": character["max_spell_slots"],
+                    "current_spell_slots": character["current_spell_slots"],
+                }
+
             return {
                 "success": True,
                 "character_id": character_id,
@@ -355,6 +397,7 @@ class ScribeAgent:
                 "new_proficiency_bonus": new_proficiency_bonus,
                 "features_gained": features_gained,
                 "hp_calculation": hp_result,
+                "spell_slot_info": spell_slot_info,
                 "updated_character": character,
             }
 

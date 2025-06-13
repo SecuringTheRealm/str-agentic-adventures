@@ -198,3 +198,90 @@ class TestCharacterSheetSpellSlots:
         character.current_spell_slots = restore_result["current_slots"]
         
         assert character.current_spell_slots == character.max_spell_slots
+
+
+class TestLevelUpSpellSlotIntegration:
+    """Test spell slot integration with character level-up process."""
+    
+    def test_level_up_spell_slot_update_wizard(self):
+        """Test that spell slots are properly updated when a wizard levels up."""
+        plugin = RulesEnginePlugin()
+        
+        # Simulate level 1 wizard data
+        character_data = {
+            "character_class": "wizard",
+            "level": 1,
+            "max_spell_slots": [2, 0, 0, 0, 0, 0, 0, 0, 0],
+            "current_spell_slots": [1, 0, 0, 0, 0, 0, 0, 0, 0],  # Used 1 slot
+        }
+        
+        # Calculate new spell slots for level 3 (gains 2nd level spells)
+        new_level = 3
+        spell_slot_result = plugin.calculate_spell_slots("wizard", new_level)
+        
+        assert "error" not in spell_slot_result
+        new_spell_slots = spell_slot_result["spell_slots"]
+        assert new_spell_slots == [4, 2, 0, 0, 0, 0, 0, 0, 0]
+        
+        # Simulate level-up spell slot update logic
+        old_max_spell_slots = character_data["max_spell_slots"]
+        old_current_spell_slots = character_data["current_spell_slots"]
+        
+        new_current_spell_slots = []
+        for i in range(9):
+            # Keep existing current slots up to the new maximum
+            current_slots = min(old_current_spell_slots[i], new_spell_slots[i])
+            # Add any new spell slots gained at this level
+            if new_spell_slots[i] > old_max_spell_slots[i]:
+                current_slots += (new_spell_slots[i] - old_max_spell_slots[i])
+            new_current_spell_slots.append(current_slots)
+        
+        # Verify the update logic
+        assert new_current_spell_slots == [3, 2, 0, 0, 0, 0, 0, 0, 0]  # 1+2 level 1 slots, 2 new level 2 slots
+
+    def test_level_up_spell_slot_update_paladin(self):
+        """Test that spell slots are properly updated when a paladin levels up."""
+        plugin = RulesEnginePlugin()
+        
+        # Simulate level 1 paladin data (no spells yet)
+        character_data = {
+            "character_class": "paladin",
+            "level": 1,
+            "max_spell_slots": [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "current_spell_slots": [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        }
+        
+        # Calculate new spell slots for level 2 (gains first spells)
+        new_level = 2
+        spell_slot_result = plugin.calculate_spell_slots("paladin", new_level)
+        
+        assert "error" not in spell_slot_result
+        new_spell_slots = spell_slot_result["spell_slots"]
+        assert new_spell_slots == [2, 0, 0, 0, 0, 0, 0, 0, 0]  # Half-caster table, padded to 9
+        
+        # Simulate level-up spell slot update logic
+        old_max_spell_slots = character_data["max_spell_slots"]
+        old_current_spell_slots = character_data["current_spell_slots"]
+        
+        new_current_spell_slots = []
+        for i in range(9):
+            # Keep existing current slots up to the new maximum
+            current_slots = min(old_current_spell_slots[i], new_spell_slots[i])
+            # Add any new spell slots gained at this level
+            if new_spell_slots[i] > old_max_spell_slots[i]:
+                current_slots += (new_spell_slots[i] - old_max_spell_slots[i])
+            new_current_spell_slots.append(current_slots)
+        
+        # Verify the update logic - should gain 2 first level slots
+        assert new_current_spell_slots[:5] == [2, 0, 0, 0, 0]
+
+    def test_level_up_non_spellcaster(self):
+        """Test that non-spellcasters don't get spell slots."""
+        plugin = RulesEnginePlugin()
+        
+        # Test with fighter (non-spellcaster)
+        spell_slot_result = plugin.calculate_spell_slots("fighter", 5)
+        
+        assert "error" not in spell_slot_result
+        assert spell_slot_result["spell_slots"] == [0, 0, 0, 0, 0, 0, 0, 0, 0]
+        assert spell_slot_result["spellcasting_type"] == "none"

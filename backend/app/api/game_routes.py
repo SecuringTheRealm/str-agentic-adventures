@@ -845,6 +845,167 @@ async def process_general_action(
     }
 
 
+# Spell slot management endpoints
+@router.get("/character/{character_id}/spell-slots", response_model=Dict[str, Any])
+async def get_character_spell_slots(character_id: str):
+    """Get current spell slot information for a character."""
+    try:
+        character = await get_scribe().get_character(character_id)
+        if not character:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Character {character_id} not found",
+            )
+
+        from app.plugins.rules_engine_plugin import RulesEnginePlugin
+        rules_engine = RulesEnginePlugin()
+
+        character_class = character.get("character_class", "fighter")
+        level = character.get("level", 1)
+        max_spell_slots = character.get("max_spell_slots", [0, 0, 0, 0, 0, 0, 0, 0, 0])
+        current_spell_slots = character.get("current_spell_slots", [0, 0, 0, 0, 0, 0, 0, 0, 0])
+
+        # Get spellcasting type
+        spellcasting_type = rules_engine.spellcasting_classes.get(character_class, "none")
+
+        return {
+            "character_id": character_id,
+            "character_class": character_class,
+            "level": level,
+            "spellcasting_type": spellcasting_type,
+            "max_spell_slots": max_spell_slots,
+            "current_spell_slots": current_spell_slots,
+            "total_slots_remaining": sum(current_spell_slots),
+            "slot_breakdown": [
+                {
+                    "level": i + 1,
+                    "current": current_spell_slots[i],
+                    "maximum": max_spell_slots[i],
+                    "available": current_spell_slots[i] > 0
+                }
+                for i in range(9)
+                if max_spell_slots[i] > 0
+            ]
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get spell slots: {str(e)}",
+        )
+
+
+@router.post("/character/{character_id}/spell-slots/expend", response_model=Dict[str, Any])
+async def expend_spell_slot(character_id: str, slot_data: Dict[str, int]):
+    """Expend a spell slot for a character."""
+    try:
+        slot_level = slot_data.get("slot_level", 1)
+        if slot_level < 1 or slot_level > 9:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Slot level must be between 1 and 9",
+            )
+
+        character = await get_scribe().get_character(character_id)
+        if not character:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Character {character_id} not found",
+            )
+
+        from app.plugins.rules_engine_plugin import RulesEnginePlugin
+        rules_engine = RulesEnginePlugin()
+
+        current_spell_slots = character.get("current_spell_slots", [0, 0, 0, 0, 0, 0, 0, 0, 0])
+        
+        # Attempt to expend the spell slot
+        result = rules_engine.expend_spell_slot(current_spell_slots.copy(), slot_level)
+        
+        if not result.get("success", False):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=result.get("error", "Failed to expend spell slot"),
+            )
+
+        # Update character's current spell slots
+        character["current_spell_slots"] = result["current_slots"]
+        
+        # Save to database
+        updated_character = await get_scribe().update_character(character_id, character)
+        if "error" in updated_character:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=updated_character["error"],
+            )
+
+        return {
+            "success": True,
+            "character_id": character_id,
+            "slot_level": slot_level,
+            "slots_remaining": result["slots_remaining"],
+            "current_spell_slots": result["current_slots"],
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to expend spell slot: {str(e)}",
+        )
+
+
+@router.post("/character/{character_id}/spell-slots/restore", response_model=Dict[str, Any])
+async def restore_spell_slots(character_id: str):
+    """Restore all spell slots for a character (long rest)."""
+    try:
+        character = await get_scribe().get_character(character_id)
+        if not character:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Character {character_id} not found",
+            )
+
+        from app.plugins.rules_engine_plugin import RulesEnginePlugin
+        rules_engine = RulesEnginePlugin()
+
+        max_spell_slots = character.get("max_spell_slots", [0, 0, 0, 0, 0, 0, 0, 0, 0])
+        
+        # Restore all spell slots
+        result = rules_engine.restore_spell_slots(max_spell_slots)
+        
+        if not result.get("success", False):
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to restore spell slots",
+            )
+
+        # Update character's current spell slots
+        character["current_spell_slots"] = result["current_slots"]
+        
+        # Save to database
+        updated_character = await get_scribe().update_character(character_id, character)
+        if "error" in updated_character:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=updated_character["error"],
+            )
+
+        return {
+            "success": True,
+            "character_id": character_id,
+            "total_slots_restored": result["total_slots_restored"],
+            "current_spell_slots": result["current_slots"],
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to restore spell slots: {str(e)}",
+        )
+
+
 # TODO: Add spell system API endpoints
 # TODO: POST /character/{character_id}/spells - Manage known spells for character
 # TODO: POST /character/{character_id}/spell-slots - Manage spell slot usage and recovery
