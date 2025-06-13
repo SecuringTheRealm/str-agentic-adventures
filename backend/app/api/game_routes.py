@@ -886,6 +886,9 @@ async def manage_character_spells(character_id: str, request: ManageSpellsReques
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid action or missing required fields"
             )
+    except HTTPException:
+        # Re-raise HTTP exceptions (like our 400 error above)
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -923,6 +926,9 @@ async def manage_spell_slots(character_id: str, request: ManageSpellSlotsRequest
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid action. Must be 'use', 'recover', or 'set'"
             )
+    except HTTPException:
+        # Re-raise HTTP exceptions (like our 400 error above)
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -1102,6 +1108,9 @@ async def manage_concentration(character_id: str, request: ConcentrationRequest)
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid action or missing required fields"
             )
+    except HTTPException:
+        # Re-raise HTTP exceptions (like our 400 error above)
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
