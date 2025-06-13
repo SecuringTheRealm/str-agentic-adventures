@@ -3,7 +3,7 @@ API routes for the AI Dungeon Master application.
 """
 
 from fastapi import APIRouter, HTTPException, status
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from datetime import datetime
 
 from app.models.game_models import (
@@ -854,11 +854,109 @@ async def process_general_action(
 # TODO: POST /spells/attack-bonus - Calculate spell attack bonus for a character
 # TODO: POST /character/{character_id}/concentration - Manage spell concentration tracking
 
-# TODO: Add advanced inventory system API endpoints
-# TODO: POST /character/{character_id}/equipment - Equip/unequip items with stat effects
-# TODO: GET /character/{character_id}/encumbrance - Calculate carrying capacity and weight
-# TODO: POST /items/magical-effects - Apply magical item effects to character stats
-# TODO: GET /items/catalog - Browse available items with rarity and value information
+# Advanced inventory system API endpoints
+
+@router.post("/character/{character_id}/equipment", response_model=Dict[str, Any])
+async def manage_character_equipment(character_id: str, equipment_data: Dict[str, Any]):
+    """Equip or unequip items for a character with stat effects."""
+    try:
+        action = equipment_data.get("action")  # "equip" or "unequip"
+        item_id = equipment_data.get("item_id")
+        
+        if not action or not item_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Both 'action' and 'item_id' are required"
+            )
+        
+        result = await get_scribe().manage_equipment(character_id, action, item_id)
+        
+        if "error" in result:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail=result["error"]
+            )
+        
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to manage equipment: {str(e)}",
+        )
+
+
+@router.get("/character/{character_id}/encumbrance", response_model=Dict[str, Any])
+async def get_character_encumbrance(character_id: str):
+    """Calculate carrying capacity and weight for a character."""
+    try:
+        result = await get_scribe().calculate_encumbrance(character_id)
+        
+        if "error" in result:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=result["error"]
+            )
+        
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to calculate encumbrance: {str(e)}",
+        )
+
+
+@router.post("/items/magical-effects", response_model=Dict[str, Any])
+async def apply_magical_item_effects(effects_data: Dict[str, Any]):
+    """Apply magical item effects to character stats."""
+    try:
+        character_id = effects_data.get("character_id")
+        item_id = effects_data.get("item_id")
+        effects = effects_data.get("effects", {})
+        
+        if not character_id or not item_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Both 'character_id' and 'item_id' are required"
+            )
+        
+        result = await get_scribe().apply_magical_effects(character_id, item_id, effects)
+        
+        if "error" in result:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail=result["error"]
+            )
+        
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to apply magical effects: {str(e)}",
+        )
+
+
+@router.get("/items/catalog", response_model=Dict[str, Any])
+async def get_items_catalog(rarity: Optional[str] = None, item_type: Optional[str] = None):
+    """Browse available items with rarity and value information."""
+    try:
+        result = await get_scribe().get_items_catalog(rarity, item_type)
+        
+        if "error" in result:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=result["error"]
+            )
+        
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get items catalog: {str(e)}",
+        )
 
 # TODO: Add enhanced NPC management API endpoints
 # TODO: POST /campaign/{campaign_id}/npcs - Create and manage campaign NPCs

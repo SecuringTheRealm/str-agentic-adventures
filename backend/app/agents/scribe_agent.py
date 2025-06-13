@@ -212,6 +212,260 @@ class ScribeAgent:
             logger.error(f"Error adding to inventory: {str(e)}")
             return {"error": "Failed to add item to inventory"}
 
+    async def manage_equipment(
+        self, character_id: str, action: str, item_id: str
+    ) -> Dict[str, Any]:
+        """
+        Equip or unequip items for a character.
+
+        Args:
+            character_id: The ID of the character
+            action: "equip" or "unequip"
+            item_id: The ID of the item to equip/unequip
+
+        Returns:
+            Dict[str, Any]: Updated character data with equipment changes
+        """
+        try:
+            with next(get_session()) as db:
+                db_character = db.get(Character, character_id)
+                if not db_character:
+                    return {"error": f"Character {character_id} not found"}
+                
+                character = db_character.data
+                inventory = character.get("inventory", [])
+                equipped_items = character.get("equipped_items", {})
+                
+                # Find item in inventory
+                item = next((i for i in inventory if i.get("id") == item_id), None)
+                if not item:
+                    return {"error": f"Item {item_id} not found in inventory"}
+                
+                if action == "equip":
+                    # Simple equipment logic - store item ID in equipped_items
+                    item_type = item.get("properties", {}).get("type", "misc")
+                    equipped_items[item_type] = item_id
+                    result = {"action": "equipped", "item": item, "slot": item_type}
+                elif action == "unequip":
+                    # Remove from equipped items
+                    for slot, equipped_id in list(equipped_items.items()):
+                        if equipped_id == item_id:
+                            del equipped_items[slot]
+                            break
+                    result = {"action": "unequipped", "item": item}
+                else:
+                    return {"error": f"Invalid action: {action}. Use 'equip' or 'unequip'"}
+                
+                character["equipped_items"] = equipped_items
+                db_character.data = character
+                db.commit()
+                
+                return {
+                    "character_id": character_id,
+                    "equipped_items": equipped_items,
+                    **result
+                }
+
+        except Exception as e:
+            logger.error(f"Error managing equipment: {str(e)}")
+            return {"error": "Failed to manage equipment"}
+
+    async def calculate_encumbrance(self, character_id: str) -> Dict[str, Any]:
+        """
+        Calculate carrying capacity and current weight for a character.
+
+        Args:
+            character_id: The ID of the character
+
+        Returns:
+            Dict[str, Any]: Encumbrance information
+        """
+        try:
+            with next(get_session()) as db:
+                db_character = db.get(Character, character_id)
+                if not db_character:
+                    return {"error": f"Character {character_id} not found"}
+                
+                character = db_character.data
+                inventory = character.get("inventory", [])
+                abilities = character.get("abilities", {})
+                
+                # Calculate current weight from inventory
+                current_weight = 0.0
+                for item in inventory:
+                    weight = item.get("weight", 0.0) or 0.0
+                    quantity = item.get("quantity", 1)
+                    current_weight += weight * quantity
+                
+                # Calculate carrying capacity based on Strength (D&D 5e rules)
+                strength = abilities.get("strength", 10)
+                carrying_capacity = strength * 15  # Basic carrying capacity
+                push_drag_lift = carrying_capacity * 2
+                
+                # Calculate encumbrance levels
+                encumbrance_level = "normal"
+                if current_weight > carrying_capacity:
+                    encumbrance_level = "heavily_encumbered"
+                elif current_weight > carrying_capacity * 0.66:
+                    encumbrance_level = "encumbered"
+                
+                return {
+                    "character_id": character_id,
+                    "current_weight": current_weight,
+                    "carrying_capacity": carrying_capacity,
+                    "push_drag_lift": push_drag_lift,
+                    "encumbrance_level": encumbrance_level,
+                    "weight_remaining": max(0, carrying_capacity - current_weight)
+                }
+
+        except Exception as e:
+            logger.error(f"Error calculating encumbrance: {str(e)}")
+            return {"error": "Failed to calculate encumbrance"}
+
+    async def apply_magical_effects(
+        self, character_id: str, item_id: str, effects: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Apply magical item effects to character stats.
+
+        Args:
+            character_id: The ID of the character
+            item_id: The ID of the magical item
+            effects: Dictionary of effects to apply
+
+        Returns:
+            Dict[str, Any]: Updated character data with applied effects
+        """
+        try:
+            with next(get_session()) as db:
+                db_character = db.get(Character, character_id)
+                if not db_character:
+                    return {"error": f"Character {character_id} not found"}
+                
+                character = db_character.data
+                
+                # Store magical effects in character data
+                magical_effects = character.get("magical_effects", {})
+                magical_effects[item_id] = effects
+                character["magical_effects"] = magical_effects
+                
+                # Apply temporary stat modifications
+                temp_stats = character.get("temp_stat_modifications", {})
+                for stat, value in effects.items():
+                    if stat in ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"]:
+                        temp_stats[stat] = temp_stats.get(stat, 0) + value
+                    elif stat == "armor_class":
+                        temp_stats["armor_class"] = temp_stats.get("armor_class", 0) + value
+                
+                character["temp_stat_modifications"] = temp_stats
+                db_character.data = character
+                db.commit()
+                
+                return {
+                    "character_id": character_id,
+                    "item_id": item_id,
+                    "effects_applied": effects,
+                    "magical_effects": magical_effects,
+                    "temp_stat_modifications": temp_stats
+                }
+
+        except Exception as e:
+            logger.error(f"Error applying magical effects: {str(e)}")
+            return {"error": "Failed to apply magical effects"}
+
+    async def get_items_catalog(
+        self, rarity: Optional[str] = None, item_type: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Get catalog of available items with filtering options.
+
+        Args:
+            rarity: Filter by item rarity (common, uncommon, rare, very_rare, legendary)
+            item_type: Filter by item type (weapon, armor, tool, etc.)
+
+        Returns:
+            Dict[str, Any]: Catalog of available items
+        """
+        try:
+            # Basic item catalog - in a real implementation this would come from a database
+            catalog_items = [
+                {
+                    "id": "sword_longsword",
+                    "name": "Longsword",
+                    "description": "A versatile martial weapon",
+                    "weight": 3.0,
+                    "value": 15,
+                    "rarity": "common",
+                    "properties": {
+                        "type": "weapon",
+                        "damage": "1d8",
+                        "damage_type": "slashing",
+                        "versatile": "1d10"
+                    }
+                },
+                {
+                    "id": "armor_leather",
+                    "name": "Leather Armor",
+                    "description": "Light armor made from supple leather",
+                    "weight": 10.0,
+                    "value": 10,
+                    "rarity": "common",
+                    "properties": {
+                        "type": "armor",
+                        "armor_class": 11,
+                        "armor_type": "light"
+                    }
+                },
+                {
+                    "id": "potion_healing",
+                    "name": "Potion of Healing",
+                    "description": "A magical red potion that restores health",
+                    "weight": 0.5,
+                    "value": 50,
+                    "rarity": "common",
+                    "properties": {
+                        "type": "consumable",
+                        "healing": "2d4+2",
+                        "magical": True
+                    }
+                },
+                {
+                    "id": "sword_flame_tongue",
+                    "name": "Flame Tongue Sword",
+                    "description": "A magical sword wreathed in flames",
+                    "weight": 3.0,
+                    "value": 5000,
+                    "rarity": "rare",
+                    "properties": {
+                        "type": "weapon",
+                        "damage": "1d8",
+                        "damage_type": "slashing",
+                        "fire_damage": "2d6",
+                        "magical": True
+                    }
+                }
+            ]
+            
+            # Apply filters
+            filtered_items = catalog_items
+            if rarity:
+                filtered_items = [item for item in filtered_items if item.get("rarity") == rarity]
+            if item_type:
+                filtered_items = [item for item in filtered_items if item.get("properties", {}).get("type") == item_type]
+            
+            return {
+                "items": filtered_items,
+                "total_count": len(filtered_items),
+                "filters_applied": {
+                    "rarity": rarity,
+                    "item_type": item_type
+                }
+            }
+
+        except Exception as e:
+            logger.error(f"Error getting items catalog: {str(e)}")
+            return {"error": "Failed to get items catalog"}
+
     async def level_up_character(
         self,
         character_id: str,
