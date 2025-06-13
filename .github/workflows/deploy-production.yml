@@ -196,8 +196,8 @@ jobs:
         echo "backend-uri=$BACKEND_URI" >> $GITHUB_OUTPUT
       timeout-minutes: 15
 
-    - name: Deploy frontend to Static Web App
-      id: frontend-deploy
+    - name: Build frontend for Static Web App
+      id: frontend-build
       if: steps.infrastructure-deploy.outcome == 'success' && steps.backend-deploy.outputs.backend-status == 'success'
       run: |
         # Get Static Web App details
@@ -240,10 +240,10 @@ jobs:
       timeout-minutes: 10
 
     - name: Deploy frontend using Static Web Apps action
-      if: steps.frontend-deploy.outputs.frontend-status == 'success'
+      if: steps.frontend-build.outputs.frontend-status == 'success'
       uses: Azure/static-web-apps-deploy@v1
       with:
-        azure_static_web_apps_api_token: ${{ steps.frontend-deploy.outputs.deployment-token }}
+        azure_static_web_apps_api_token: ${{ steps.frontend-build.outputs.deployment-token }}
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         action: 'upload'
         app_location: 'frontend/build'
@@ -259,7 +259,7 @@ jobs:
 
         # Use outputs from backend and frontend deployments
         BACKEND_URI="${{ steps.backend-deploy.outputs.backend-uri || 'Backend deployment in progress' }}"
-        FRONTEND_URI="${{ steps.frontend-deploy.outputs.frontend-uri || steps.infrastructure-deploy.outputs.FRONTEND_URI || 'Frontend deployment in progress' }}"
+        FRONTEND_URI="${{ steps.frontend-build.outputs.static_web_app_url || steps.frontend-build.outputs.frontend-uri || steps.infrastructure-deploy.outputs.FRONTEND_URI || 'Frontend deployment in progress' }}"
 
         echo "backend-uri=$BACKEND_URI" >> $GITHUB_OUTPUT
         echo "frontend-uri=$FRONTEND_URI" >> $GITHUB_OUTPUT
