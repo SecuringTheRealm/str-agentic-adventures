@@ -21,8 +21,8 @@ class Settings(BaseSettings):
     # Semantic Kernel Settings
     semantic_kernel_debug: bool = os.getenv("SEMANTIC_KERNEL_DEBUG", "False").lower() == "true"
 
-    # Storage Settings
-    storage_connection_string: str = os.getenv("STORAGE_CONNECTION_STRING")
+    # Storage Settings  
+    storage_connection_string: str = os.getenv("STORAGE_CONNECTION_STRING", "")
 
     # App Settings
     app_host: str = os.getenv("APP_HOST", "0.0.0.0")
@@ -40,7 +40,22 @@ def get_settings() -> Settings:
     """Get the settings instance, creating it if necessary."""
     global _settings
     if _settings is None:
-        _settings = Settings()
+        try:
+            _settings = Settings()
+        except Exception as e:
+            # Check if this is due to missing Azure OpenAI configuration
+            error_msg = str(e)
+            if "azure_openai" in error_msg.lower():
+                raise ValueError(
+                    "Azure OpenAI configuration is missing or invalid. "
+                    "This agentic demo requires proper Azure OpenAI setup. "
+                    "Please ensure the following environment variables are set: "
+                    "AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_API_KEY, "
+                    "AZURE_OPENAI_CHAT_DEPLOYMENT, AZURE_OPENAI_EMBEDDING_DEPLOYMENT"
+                ) from e
+            else:
+                # Re-raise original error for non-Azure OpenAI issues
+                raise
     return _settings
 
 # For backward compatibility, expose as 'settings'
