@@ -12,6 +12,7 @@ from app.models.game_models import (
     GameResponse,
     CharacterSheet,
     LevelUpRequest,
+    EquipmentRequest,
 )
 from app.agents.dungeon_master_agent import get_dungeon_master
 from app.agents.scribe_agent import get_scribe
@@ -854,8 +855,34 @@ async def process_general_action(
 # TODO: POST /spells/attack-bonus - Calculate spell attack bonus for a character
 # TODO: POST /character/{character_id}/concentration - Manage spell concentration tracking
 
+# Equipment management endpoint
+@router.post("/character/{character_id}/equipment", response_model=Dict[str, Any])
+async def manage_equipment(character_id: str, equipment_data: EquipmentRequest):
+    """Equip or unequip items with stat effects."""
+    try:
+        # Manage equipment via Scribe agent
+        result = await get_scribe().equip_item(
+            character_id,
+            equipment_data.item_id,
+            equipment_data.action,
+            equipment_data.equipment_slot,
+        )
+
+        if "error" in result:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail=result["error"]
+            )
+
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to manage equipment: {str(e)}",
+        )
+
 # TODO: Add advanced inventory system API endpoints
-# TODO: POST /character/{character_id}/equipment - Equip/unequip items with stat effects
 # TODO: GET /character/{character_id}/encumbrance - Calculate carrying capacity and weight
 # TODO: POST /items/magical-effects - Apply magical item effects to character stats
 # TODO: GET /items/catalog - Browse available items with rarity and value information

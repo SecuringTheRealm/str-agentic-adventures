@@ -99,6 +99,7 @@ class ScribeAgent:
                 "proficiency_bonus": 2,
                 "ability_score_improvements_used": 0,
                 "inventory": [],
+                "equipped_items": {},
             }
 
             # Set hit dice based on class
@@ -405,6 +406,115 @@ class ScribeAgent:
         except Exception as e:
             logger.error(f"Error awarding experience: {str(e)}")
             return {"error": f"Failed to award experience: {str(e)}"}
+
+    async def equip_item(
+        self, character_id: str, item_id: str, action: str, equipment_slot: str = None
+    ) -> Dict[str, Any]:
+        """
+        Equip or unequip an item for a character with stat effects.
+
+        Args:
+            character_id: The ID of the character
+            item_id: The ID of the item to equip/unequip
+            action: "equip" or "unequip"
+            equipment_slot: The equipment slot (optional for auto-detection)
+
+        Returns:
+            Dict[str, Any]: The result of the equipment operation
+        """
+        try:
+            with next(get_session()) as db:
+                db_character = db.get(Character, character_id)
+                if not db_character:
+                    return {"error": f"Character {character_id} not found"}
+                character = db_character.data
+                
+                inventory = character.get("inventory", [])
+                equipped_items = character.get("equipped_items", {})
+                
+                # Find the item in inventory
+                item = None
+                for inv_item in inventory:
+                    if inv_item.get("id") == item_id:
+                        item = inv_item
+                        break
+                
+                if not item:
+                    return {"error": f"Item {item_id} not found in inventory"}
+                
+                if action == "equip":
+                    # Determine equipment slot if not provided
+                    if not equipment_slot:
+                        equipment_slot = item.get("equipment_type")
+                        if not equipment_slot:
+                            return {"error": "Item is not equippable (no equipment_type)"}
+                    
+                    # Check if slot is already occupied
+                    if equipment_slot in equipped_items:
+                        return {"error": f"Equipment slot '{equipment_slot}' is already occupied"}
+                    
+                    # Equip the item
+                    equipped_items[equipment_slot] = item
+                    character["equipped_items"] = equipped_items
+                    
+                    # Apply stat effects
+                    stat_effects = item.get("stat_effects", {})
+                    for stat, value in stat_effects.items():
+                        if stat == "armor_class":
+                            character["armor_class"] = character.get("armor_class", 10) + value
+                        elif stat in ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"]:
+                            abilities = character.get("abilities", {})
+                            abilities[stat] = abilities.get(stat, 10) + value
+                            character["abilities"] = abilities
+                    
+                    result_message = f"Equipped {item['name']} in {equipment_slot} slot"
+                    
+                elif action == "unequip":
+                    # Find which slot the item is in
+                    slot_to_unequip = None
+                    for slot, equipped_item in equipped_items.items():
+                        if equipped_item.get("id") == item_id:
+                            slot_to_unequip = slot
+                            break
+                    
+                    if not slot_to_unequip:
+                        return {"error": f"Item {item_id} is not currently equipped"}
+                    
+                    # Remove stat effects
+                    stat_effects = item.get("stat_effects", {})
+                    for stat, value in stat_effects.items():
+                        if stat == "armor_class":
+                            character["armor_class"] = character.get("armor_class", 10) - value
+                        elif stat in ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"]:
+                            abilities = character.get("abilities", {})
+                            abilities[stat] = abilities.get(stat, 10) - value
+                            character["abilities"] = abilities
+                    
+                    # Unequip the item
+                    del equipped_items[slot_to_unequip]
+                    character["equipped_items"] = equipped_items
+                    
+                    result_message = f"Unequipped {item['name']} from {slot_to_unequip} slot"
+                else:
+                    return {"error": f"Invalid action: {action}. Must be 'equip' or 'unequip'"}
+                
+                # Save changes
+                db_character.data = character
+                db.commit()
+                
+                return {
+                    "success": True,
+                    "message": result_message,
+                    "equipped_items": equipped_items,
+                    "character_stats": {
+                        "armor_class": character.get("armor_class"),
+                        "abilities": character.get("abilities")
+                    }
+                }
+                
+        except Exception as e:
+            logger.error(f"Error managing equipment: {str(e)}")
+            return {"error": f"Failed to {action} item: {str(e)}"}
 
 
 # Lazy singleton instance

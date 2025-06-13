@@ -67,6 +67,8 @@ class Item(BaseModel):
     weight: Optional[float] = None
     value: Optional[int] = None
     properties: Optional[Dict[str, Any]] = None
+    equipment_type: Optional[str] = None  # "armor", "weapon", "shield", "accessory", etc.
+    stat_effects: Optional[Dict[str, int]] = None  # {"armor_class": 2, "strength": 1}
 
 class Spell(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -95,6 +97,7 @@ class CharacterSheet(BaseModel):
     proficiency_bonus: int = 2
     skills: Dict[str, bool] = {}
     inventory: List[Item] = []
+    equipped_items: Dict[str, Item] = {}  # Equipment slot -> Item mapping
     spells: List[Spell] = []
     features: List[Dict[str, Any]] = []
     backstory: Optional[str] = None
@@ -167,6 +170,11 @@ class LevelUpResponse(BaseModel):
     new_proficiency_bonus: int
     features_gained: List[str]
     message: str
+
+class EquipmentRequest(BaseModel):
+    item_id: str
+    action: str  # "equip" or "unequip"
+    equipment_slot: Optional[str] = None  # "armor", "main_hand", "off_hand", "shield", etc.
 
 class PlayerInput(BaseModel):
     message: str
