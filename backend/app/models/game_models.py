@@ -78,6 +78,7 @@ class Spell(BaseModel):
     components: str
     duration: str
     description: str
+    requires_concentration: bool = False
 
 class CharacterSheet(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
