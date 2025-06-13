@@ -52,10 +52,10 @@ const DiceRoller: React.FC<DiceRollerProps> = ({ onRoll, characterId, playerName
 
 	const rollDice = useCallback(async (diceNotation: string = notation) => {
 		setIsRolling(true);
-		
+
 		try {
 			let result: DiceResult;
-			
+
 			if (websocket && websocket.readyState === WebSocket.OPEN) {
 				// Send dice roll via WebSocket for real-time updates
 				const message = {
@@ -70,10 +70,10 @@ const DiceRoller: React.FC<DiceRollerProps> = ({ onRoll, characterId, playerName
 				return; // WebSocket will handle the response
 			} else {
 				// Fallback to direct API call
-				const endpoint = characterId && skill 
+				const endpoint = characterId && skill
 					? '/game/dice/roll-with-character'
 					: '/game/dice/roll';
-				
+
 				const requestBody = characterId && skill ? {
 					notation: diceNotation,
 					character_id: characterId,
@@ -93,7 +93,7 @@ const DiceRoller: React.FC<DiceRollerProps> = ({ onRoll, characterId, playerName
 
 			setLastResult(result);
 			setRollHistory(prev => [result, ...prev.slice(0, 9)]); // Keep last 10 rolls
-			
+
 			if (onRoll) {
 				onRoll(result);
 			}
@@ -107,33 +107,33 @@ const DiceRoller: React.FC<DiceRollerProps> = ({ onRoll, characterId, playerName
 
 	const formatResult = (result: DiceResult) => {
 		const parts = [];
-		
+
 		// Show individual rolls
 		if (result.rolls && result.rolls.length > 0) {
 			parts.push(`Rolls: [${result.rolls.join(', ')}]`);
 		}
-		
+
 		// Show dropped dice
 		if (result.dropped && result.dropped.length > 0) {
 			parts.push(`Dropped: [${result.dropped.join(', ')}]`);
 		}
-		
+
 		// Show rerolls
 		if (result.rerolls && result.rerolls.length > 0) {
 			const rerollText = result.rerolls.map(r => `${r.original}→${r.new}`).join(', ');
 			parts.push(`Rerolled: ${rerollText}`);
 		}
-		
+
 		// Show modifiers
 		if (result.modifier && result.modifier !== 0) {
 			parts.push(`Modifier: ${result.modifier > 0 ? '+' : ''}${result.modifier}`);
 		}
-		
+
 		// Show character bonus
 		if (result.character_bonus && result.character_bonus !== 0) {
 			parts.push(`Character Bonus: ${result.character_bonus > 0 ? '+' : ''}${result.character_bonus}`);
 		}
-		
+
 		return parts.join(' | ');
 	};
 
@@ -142,7 +142,7 @@ const DiceRoller: React.FC<DiceRollerProps> = ({ onRoll, characterId, playerName
 			<div className="dice-roller-header">
 				<h3>Dice Roller</h3>
 			</div>
-			
+
 			<div className="dice-input-section">
 				<div className="notation-input">
 					<label htmlFor="dice-notation">Dice Notation:</label>
@@ -155,7 +155,7 @@ const DiceRoller: React.FC<DiceRollerProps> = ({ onRoll, characterId, playerName
 						disabled={isRolling}
 					/>
 				</div>
-				
+
 				{characterId && (
 					<div className="skill-input">
 						<label htmlFor="skill-select">Skill (optional):</label>
@@ -174,7 +174,7 @@ const DiceRoller: React.FC<DiceRollerProps> = ({ onRoll, characterId, playerName
 						</select>
 					</div>
 				)}
-				
+
 				<button
 					className="roll-button"
 					onClick={() => rollDice()}
@@ -183,7 +183,7 @@ const DiceRoller: React.FC<DiceRollerProps> = ({ onRoll, characterId, playerName
 					{isRolling ? 'Rolling...' : 'Roll Dice'}
 				</button>
 			</div>
-			
+
 			<div className="common-rolls">
 				<h4>Quick Rolls:</h4>
 				<div className="quick-roll-buttons">
@@ -199,7 +199,7 @@ const DiceRoller: React.FC<DiceRollerProps> = ({ onRoll, characterId, playerName
 					))}
 				</div>
 			</div>
-			
+
 			{lastResult && (
 				<div className="last-result">
 					<h4>Last Roll:</h4>
@@ -210,7 +210,7 @@ const DiceRoller: React.FC<DiceRollerProps> = ({ onRoll, characterId, playerName
 					</div>
 				</div>
 			)}
-			
+
 			{rollHistory.length > 0 && (
 				<div className="roll-history">
 					<h4>Recent Rolls:</h4>
