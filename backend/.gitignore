@@ -43,3 +43,7 @@ Thumbs.db
 .local/
 logs/
 *.log
+
+# Database files
+*.db
+app.db
