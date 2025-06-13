@@ -79,6 +79,11 @@ class Spell(BaseModel):
     duration: str
     description: str
 
+class SpellSlot(BaseModel):
+    level: int
+    total: int
+    used: int
+
 class CharacterSheet(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str
@@ -96,6 +101,8 @@ class CharacterSheet(BaseModel):
     skills: Dict[str, bool] = {}
     inventory: List[Item] = []
     spells: List[Spell] = []
+    spell_slots: Dict[int, SpellSlot] = {}  # Level -> SpellSlot mapping
+    concentration: Optional[Dict[str, Any]] = None  # {"spell_id": str, "rounds_remaining": int}
     features: List[Dict[str, Any]] = []
     backstory: Optional[str] = None
     # Progression tracking
@@ -251,3 +258,52 @@ class NarrativeEvent(BaseModel):
     consequences: Dict[str, Any] = {}
     story_arc_id: Optional[str] = None
     plot_point_id: Optional[str] = None
+
+# Spell system models
+class ManageSpellsRequest(BaseModel):
+    action: str  # "add", "remove", "learn"
+    spell_id: Optional[str] = None
+    spell: Optional[Spell] = None
+
+class ManageSpellSlotsRequest(BaseModel):
+    action: str  # "use", "recover", "set"
+    level: int
+    amount: int = 1
+
+class CastSpellRequest(BaseModel):
+    character_id: str
+    spell_id: str
+    spell_level: int
+    target_id: Optional[str] = None
+    target_position: Optional[Dict[str, int]] = None
+
+class SpellListQuery(BaseModel):
+    character_class: Optional[CharacterClass] = None
+    level: Optional[int] = None
+    school: Optional[str] = None
+    
+class CalculateSaveDCRequest(BaseModel):
+    character_id: str
+    spell_id: str
+    
+class CalculateAttackBonusRequest(BaseModel):
+    character_id: str
+    spell_id: str
+    
+class ConcentrationRequest(BaseModel):
+    action: str  # "start", "end", "check"
+    spell_id: Optional[str] = None
+    damage_taken: Optional[int] = None
+
+class SpellCastResult(BaseModel):
+    success: bool
+    damage: Optional[int] = None
+    effects: List[str] = []
+    targets_affected: List[str] = []
+    narrative: str
+    
+class ConcentrationStatus(BaseModel):
+    is_concentrating: bool
+    spell_id: Optional[str] = None
+    spell_name: Optional[str] = None
+    rounds_remaining: Optional[int] = None
