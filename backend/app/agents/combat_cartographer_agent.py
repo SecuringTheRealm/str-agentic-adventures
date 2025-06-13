@@ -36,29 +36,31 @@ class CombatCartographerAgent:
             from app.plugins.battle_positioning_plugin import BattlePositioningPlugin
             from app.plugins.environmental_hazards_plugin import EnvironmentalHazardsPlugin
 
-            # Create plugin instances
-            map_generation = MapGenerationPlugin()
-            tactical_analysis = TacticalAnalysisPlugin()
-            terrain_assessment = TerrainAssessmentPlugin()
-            battle_positioning = BattlePositioningPlugin()
-            environmental_hazards = EnvironmentalHazardsPlugin()
+            # Define plugin configuration: (PluginClass, attribute_name, skill_name)
+            plugins_config = [
+                (MapGenerationPlugin, "map_generation", "MapGeneration"),
+                (TacticalAnalysisPlugin, "tactical_analysis", "TacticalAnalysis"),
+                (TerrainAssessmentPlugin, "terrain_assessment", "TerrainAssessment"),
+                (BattlePositioningPlugin, "battle_positioning", "BattlePositioning"),
+                (EnvironmentalHazardsPlugin, "environmental_hazards", "EnvironmentalHazards"),
+            ]
 
-            # Register plugins with the kernel using the new API
-            self.kernel.add_plugin(map_generation, "MapGeneration")
-            self.kernel.add_plugin(tactical_analysis, "TacticalAnalysis")
-            self.kernel.add_plugin(terrain_assessment, "TerrainAssessment")
-            self.kernel.add_plugin(battle_positioning, "BattlePositioning")
-            self.kernel.add_plugin(environmental_hazards, "EnvironmentalHazards")
-
-            # Store references for direct access
-            self.map_generation = map_generation
-            self.tactical_analysis = tactical_analysis
-            self.terrain_assessment = terrain_assessment
-            self.battle_positioning = battle_positioning
-            self.environmental_hazards = environmental_hazards
+            # Register plugins using the configuration
+            for plugin_class, attribute_name, skill_name in plugins_config:
+                # Create plugin instance
+                plugin_instance = plugin_class()
+                
+                # Register plugin with the kernel
+                self.kernel.add_plugin(plugin_instance, skill_name)
+                
+                # Store reference for direct access
+                setattr(self, attribute_name, plugin_instance)
 
             logger.info("Combat Cartographer agent skills registered successfully")
-        except Exception as e:
+        except ImportError as e:
+            logger.error(f"Error importing Combat Cartographer agent skills: {str(e)}")
+            raise
+        except (AttributeError, ValueError) as e:
             logger.error(f"Error registering Combat Cartographer agent skills: {str(e)}")
             raise
 

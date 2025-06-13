@@ -169,10 +169,10 @@ class MapGenerationPlugin:
         width, height = dimensions["width"], dimensions["height"]
         
         return [
-            {"position": (0, height // 2), "side": "west", "type": "edge"},
-            {"position": (width - 1, height // 2), "side": "east", "type": "edge"},
-            {"position": (width // 2, 0), "side": "north", "type": "edge"},
-            {"position": (width // 2, height - 1), "side": "south", "type": "edge"}
+            {"position": [0, height // 2], "side": "west", "type": "edge"},
+            {"position": [width - 1, height // 2], "side": "east", "type": "edge"},
+            {"position": [width // 2, 0], "side": "north", "type": "edge"},
+            {"position": [width // 2, height - 1], "side": "south", "type": "edge"}
         ]
 
     def _define_terrain_zones(self, features: list, dimensions: Dict[str, int]) -> list:
@@ -205,17 +205,17 @@ class MapGenerationPlugin:
         
         # Corner positions (often strategic)
         corners = [
-            {"position": (2, 2), "type": "corner", "advantage": "multiple_escape_routes"},
-            {"position": (dimensions["width"] - 3, 2), "type": "corner", "advantage": "multiple_escape_routes"},
-            {"position": (2, dimensions["height"] - 3), "type": "corner", "advantage": "multiple_escape_routes"},
-            {"position": (dimensions["width"] - 3, dimensions["height"] - 3), "type": "corner", "advantage": "multiple_escape_routes"}
+            {"position": [2, 2], "type": "corner", "advantage": "multiple_escape_routes"},
+            {"position": [dimensions["width"] - 3, 2], "type": "corner", "advantage": "multiple_escape_routes"},
+            {"position": [2, dimensions["height"] - 3], "type": "corner", "advantage": "multiple_escape_routes"},
+            {"position": [dimensions["width"] - 3, dimensions["height"] - 3], "type": "corner", "advantage": "multiple_escape_routes"}
         ]
         positions.extend(corners)
         
         # High ground positions if elevation features present
         if any("elevation" in feature.get("properties", []) for feature in features):
             positions.append({
-                "position": (dimensions["width"] // 2, dimensions["height"] // 2),
+                "position": [dimensions["width"] // 2, dimensions["height"] // 2],
                 "type": "elevated",
                 "advantage": "high_ground_bonus"
             })
