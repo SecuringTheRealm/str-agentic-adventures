@@ -139,7 +139,7 @@ class CombatCartographerAgent:
                     "environment_context": environment_context,
                     "combat_context": combat_context,
                     "generation_details": {
-                        "size": "1024x1024", 
+                        "size": size if size else "1024x1024", 
                         "quality": "standard",
                         "style": "placeholder",
                     },

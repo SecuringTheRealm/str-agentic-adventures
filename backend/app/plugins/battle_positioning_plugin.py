@@ -3,6 +3,7 @@ Battle Positioning Plugin for the Semantic Kernel.
 This plugin provides battle positioning capabilities for combat encounters.
 """
 import logging
+import re
 from typing import Dict, Any, List
 
 from semantic_kernel.functions import kernel_function
@@ -408,7 +409,6 @@ class BattlePositioningPlugin:
     def _parse_current_positions(self, current_positions: str) -> Dict[str, Any]:
         """Parse current unit positions."""
         # Simplified parsing - would be more sophisticated in practice
-        import re
         
         result = {
             "unit_count": 0,
@@ -431,7 +431,7 @@ class BattlePositioningPlugin:
                 continue
                 
             # Look for position indicators
-            position_match = re.search(r'(\w+)\s*(?:at|in|on)\s*(\w+)', line)
+            position_match = re.search(r'(\w+)\s*(?:at|in|on)\s*([\w-]+(?:\s[\w-]+)*)', line)
             if position_match:
                 unit_name = position_match.group(1)
                 position = position_match.group(2)

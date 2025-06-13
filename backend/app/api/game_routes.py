@@ -1197,6 +1197,7 @@ async def cast_spell_in_combat(combat_id: str, request: CastSpellRequest):
         )
         
         # Process concentration spells (future enhancement)
+        # TODO: Implement logic to handle concentration spells based on spell data.
         # concentration_needed = spell_data.get("concentration", False)
         
         return SpellCastingResponse(

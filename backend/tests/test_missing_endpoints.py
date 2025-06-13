@@ -285,7 +285,7 @@ class TestFrontendBackendAPICompatibility:
             for field_name in schema.get("properties", {}):
                 if hasattr(model_class, field_name):
                     # Ensure fields are properly annotated for TypeScript generation
-                    assert field_name in type_hints or hasattr(model_class, '__annotations__'), (
+                    assert field_name in type_hints or (hasattr(model_class, '__annotations__') and field_name in model_class.__annotations__), (
                         f"Field {field_name} in {model_class.__name__} should have type annotation"
                     )
 
