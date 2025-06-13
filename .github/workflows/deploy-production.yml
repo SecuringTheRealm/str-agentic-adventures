@@ -247,7 +247,6 @@ jobs:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         action: 'upload'
         app_location: 'frontend/build'
-        skip_deploy_on_missing_secrets: true
         skip_app_build: true
         output_location: ''
 
