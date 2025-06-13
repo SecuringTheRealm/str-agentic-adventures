@@ -189,6 +189,19 @@ class GenerateImageRequest(BaseModel):
     image_type: str  # "character_portrait", "scene_illustration", "item_visualization"
     details: Dict[str, Any]
 
+class SpellSaveDCRequest(BaseModel):
+    character_id: str
+
+class SpellSaveDCResponse(BaseModel):
+    spell_save_dc: Optional[int]
+    spellcasting_ability: Optional[str]
+    ability_score: Optional[int]
+    ability_modifier: Optional[int]
+    proficiency_bonus: Optional[int]
+    level: int
+    character_class: str
+    error: Optional[str] = None
+
 class BattleMapRequest(BaseModel):
     environment: Dict[str, Any]
     combat_context: Optional[Dict[str, Any]] = None

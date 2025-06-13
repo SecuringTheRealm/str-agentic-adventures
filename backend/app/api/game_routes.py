@@ -12,11 +12,14 @@ from app.models.game_models import (
     GameResponse,
     CharacterSheet,
     LevelUpRequest,
+    SpellSaveDCRequest,
+    SpellSaveDCResponse,
 )
 from app.agents.dungeon_master_agent import get_dungeon_master
 from app.agents.scribe_agent import get_scribe
 from app.agents.combat_cartographer_agent import get_combat_cartographer
 from app.agents.artist_agent import get_artist
+from app.plugins.rules_engine_plugin import RulesEnginePlugin
 
 router = APIRouter(tags=["game"])
 
@@ -845,12 +848,70 @@ async def process_general_action(
     }
 
 
+@router.post("/spells/save-dc", response_model=SpellSaveDCResponse)
+async def calculate_spell_save_dc(spell_request: SpellSaveDCRequest):
+    """Calculate spell save DC for a character."""
+    try:
+        # Get character data
+        character_result = await get_scribe().get_character(spell_request.character_id)
+        
+        if "error" in character_result:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Character not found: {character_result['error']}"
+            )
+        
+        character = character_result
+        
+        # Extract required data from character
+        character_class = character.get("character_class")
+        level = character.get("level", 1)
+        abilities = character.get("abilities", {})
+        
+        if not character_class:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Character missing class information"
+            )
+        
+        if not abilities:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Character missing ability scores"
+            )
+        
+        # Calculate spell save DC using rules engine
+        rules_engine = RulesEnginePlugin()
+        result = rules_engine.calculate_spell_save_dc(character_class, level, abilities)
+        
+        # Convert to response model
+        response = SpellSaveDCResponse(
+            spell_save_dc=result.get("spell_save_dc"),
+            spellcasting_ability=result.get("spellcasting_ability"),
+            ability_score=result.get("ability_score"),
+            ability_modifier=result.get("ability_modifier"),
+            proficiency_bonus=result.get("proficiency_bonus"),
+            level=level,
+            character_class=character_class,
+            error=result.get("error")
+        )
+        
+        return response
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to calculate spell save DC: {str(e)}"
+        )
+
+
 # TODO: Add spell system API endpoints
 # TODO: POST /character/{character_id}/spells - Manage known spells for character
 # TODO: POST /character/{character_id}/spell-slots - Manage spell slot usage and recovery
 # TODO: POST /combat/{combat_id}/cast-spell - Cast spells during combat with effect resolution
 # TODO: GET /spells/list - Get available spells by class and level
-# TODO: POST /spells/save-dc - Calculate spell save DC for a character
 # TODO: POST /spells/attack-bonus - Calculate spell attack bonus for a character
 # TODO: POST /character/{character_id}/concentration - Manage spell concentration tracking
 

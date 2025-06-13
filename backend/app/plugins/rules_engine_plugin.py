@@ -70,9 +70,24 @@ class RulesEnginePlugin:
             "wizard": "1d6",
         }
 
-        # TODO: Implement spell system components
+        # Spellcasting ability by class (D&D 5e SRD)
+        self.spellcasting_abilities = {
+            "bard": "charisma",
+            "cleric": "wisdom", 
+            "druid": "wisdom",
+            "paladin": "charisma",
+            "ranger": "wisdom",
+            "sorcerer": "charisma",
+            "warlock": "charisma",
+            "wizard": "intelligence",
+            # Non-spellcasting classes return None
+            "barbarian": None,
+            "fighter": None,  # Unless Eldritch Knight subclass
+            "monk": None,     # Unless Way of Four Elements subclass
+            "rogue": None,    # Unless Arcane Trickster subclass
+        }
+
         # TODO: Add spell slot tracking by level and class
-        # TODO: Add spell save DC calculation
         # TODO: Add spell attack bonus calculation
         # TODO: Add spell effect resolution system
         # TODO: Add concentration tracking for ongoing spells
@@ -690,6 +705,77 @@ class RulesEnginePlugin:
         except Exception as e:
             logger.error(f"Error calculating level up HP: {str(e)}")
             return {"error": f"Error calculating level up HP: {str(e)}"}
+
+    @kernel_function(
+        description="Calculate spell save DC for a character.",
+        name="calculate_spell_save_dc",
+    )
+    def calculate_spell_save_dc(
+        self, character_class: str, level: int, abilities: Dict[str, int]
+    ) -> Dict[str, Any]:
+        """
+        Calculate spell save DC for a character based on D&D 5e rules.
+        
+        Formula: 8 + proficiency bonus + spellcasting ability modifier
+        
+        Args:
+            character_class: The character's class
+            level: The character's level
+            abilities: Dictionary of ability scores (e.g., {"intelligence": 16, "wisdom": 14, ...})
+            
+        Returns:
+            Dict[str, Any]: Spell save DC calculation result
+        """
+        try:
+            # Get spellcasting ability for this class
+            spellcasting_ability = self.spellcasting_abilities.get(character_class.lower())
+            
+            if spellcasting_ability is None:
+                return {
+                    "error": f"Class '{character_class}' does not have innate spellcasting ability",
+                    "spell_save_dc": None,
+                    "spellcasting_ability": None,
+                    "ability_modifier": None,
+                    "proficiency_bonus": None
+                }
+            
+            # Get ability score
+            ability_score = abilities.get(spellcasting_ability)
+            if ability_score is None:
+                return {
+                    "error": f"Missing ability score for {spellcasting_ability}",
+                    "spell_save_dc": None,
+                    "spellcasting_ability": spellcasting_ability,
+                    "ability_modifier": None,
+                    "proficiency_bonus": None
+                }
+            
+            # Calculate ability modifier
+            ability_modifier = (ability_score - 10) // 2
+            
+            # Get proficiency bonus
+            proficiency_result = self.calculate_proficiency_bonus(level)
+            if "error" in proficiency_result:
+                return proficiency_result
+            
+            proficiency_bonus = proficiency_result["proficiency_bonus"]
+            
+            # Calculate spell save DC: 8 + proficiency bonus + spellcasting ability modifier
+            spell_save_dc = 8 + proficiency_bonus + ability_modifier
+            
+            return {
+                "spell_save_dc": spell_save_dc,
+                "spellcasting_ability": spellcasting_ability,
+                "ability_score": ability_score,
+                "ability_modifier": ability_modifier,
+                "proficiency_bonus": proficiency_bonus,
+                "level": level,
+                "character_class": character_class
+            }
+            
+        except Exception as e:
+            logger.error(f"Error calculating spell save DC: {str(e)}")
+            return {"error": f"Error calculating spell save DC: {str(e)}"}
 
     def roll_with_character(
         self, dice_notation: str, character: Dict[str, Any], skill: str = None

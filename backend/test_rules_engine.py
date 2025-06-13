@@ -161,3 +161,143 @@ class TestRollHistory:
         history = self.plugin.get_roll_history()
         # Should be limited to 100 entries
         assert len(history) <= 100
+
+
+class TestSpellSaveDC:
+    """Test spell save DC calculation functionality."""
+    
+    def setup_method(self):
+        """Set up test fixtures."""
+        self.plugin = RulesEnginePlugin()
+    
+    def test_wizard_spell_save_dc(self):
+        """Test spell save DC calculation for a wizard."""
+        abilities = {
+            "strength": 10,
+            "dexterity": 14,
+            "constitution": 16,
+            "intelligence": 18,  # Primary spellcasting ability
+            "wisdom": 12,
+            "charisma": 8
+        }
+        
+        result = self.plugin.calculate_spell_save_dc("wizard", 5, abilities)
+        
+        assert "error" not in result
+        assert result["spellcasting_ability"] == "intelligence"
+        assert result["ability_score"] == 18
+        assert result["ability_modifier"] == 4  # (18-10)//2 = 4
+        assert result["proficiency_bonus"] == 3  # Level 5 = +3
+        assert result["spell_save_dc"] == 15  # 8 + 3 + 4 = 15
+        assert result["level"] == 5
+        assert result["character_class"] == "wizard"
+    
+    def test_cleric_spell_save_dc(self):
+        """Test spell save DC calculation for a cleric."""
+        abilities = {
+            "strength": 14,
+            "dexterity": 10,
+            "constitution": 16,
+            "intelligence": 12,
+            "wisdom": 16,  # Primary spellcasting ability
+            "charisma": 13
+        }
+        
+        result = self.plugin.calculate_spell_save_dc("cleric", 1, abilities)
+        
+        assert "error" not in result
+        assert result["spellcasting_ability"] == "wisdom"
+        assert result["ability_score"] == 16
+        assert result["ability_modifier"] == 3  # (16-10)//2 = 3
+        assert result["proficiency_bonus"] == 2  # Level 1 = +2
+        assert result["spell_save_dc"] == 13  # 8 + 2 + 3 = 13
+    
+    def test_sorcerer_spell_save_dc(self):
+        """Test spell save DC calculation for a sorcerer."""
+        abilities = {
+            "strength": 8,
+            "dexterity": 15,
+            "constitution": 14,
+            "intelligence": 12,
+            "wisdom": 10,
+            "charisma": 17  # Primary spellcasting ability
+        }
+        
+        result = self.plugin.calculate_spell_save_dc("sorcerer", 9, abilities)
+        
+        assert "error" not in result
+        assert result["spellcasting_ability"] == "charisma"
+        assert result["ability_score"] == 17
+        assert result["ability_modifier"] == 3  # (17-10)//2 = 3
+        assert result["proficiency_bonus"] == 4  # Level 9 = +4
+        assert result["spell_save_dc"] == 15  # 8 + 4 + 3 = 15
+    
+    def test_non_spellcaster_class(self):
+        """Test spell save DC calculation for non-spellcasting classes."""
+        abilities = {
+            "strength": 18,
+            "dexterity": 14,
+            "constitution": 16,
+            "intelligence": 10,
+            "wisdom": 12,
+            "charisma": 8
+        }
+        
+        result = self.plugin.calculate_spell_save_dc("barbarian", 5, abilities)
+        
+        assert "error" in result
+        assert result["spell_save_dc"] is None
+        assert result["spellcasting_ability"] is None
+        assert "does not have innate spellcasting ability" in result["error"]
+    
+    def test_missing_ability_score(self):
+        """Test spell save DC calculation with missing ability score."""
+        abilities = {
+            "strength": 16,
+            "dexterity": 14,
+            "constitution": 16,
+            # Missing intelligence
+            "wisdom": 12,
+            "charisma": 8
+        }
+        
+        result = self.plugin.calculate_spell_save_dc("wizard", 3, abilities)
+        
+        assert "error" in result
+        assert result["spell_save_dc"] is None
+        assert "Missing ability score for intelligence" in result["error"]
+    
+    def test_edge_case_low_ability_score(self):
+        """Test spell save DC calculation with very low spellcasting ability."""
+        abilities = {
+            "strength": 10,
+            "dexterity": 10,
+            "constitution": 10,
+            "intelligence": 6,  # Very low intelligence
+            "wisdom": 10,
+            "charisma": 10
+        }
+        
+        result = self.plugin.calculate_spell_save_dc("wizard", 1, abilities)
+        
+        assert "error" not in result
+        assert result["ability_modifier"] == -2  # (6-10)//2 = -2
+        assert result["spell_save_dc"] == 8  # 8 + 2 + (-2) = 8
+    
+    def test_high_level_character(self):
+        """Test spell save DC calculation for high-level character."""
+        abilities = {
+            "strength": 10,
+            "dexterity": 10,
+            "constitution": 10,
+            "intelligence": 20,  # Maxed intelligence
+            "wisdom": 10,
+            "charisma": 10
+        }
+        
+        result = self.plugin.calculate_spell_save_dc("wizard", 17, abilities)
+        
+        assert "error" not in result
+        assert result["ability_modifier"] == 5  # (20-10)//2 = 5
+        assert result["proficiency_bonus"] == 6  # Level 17 = +6
+        assert result["spell_save_dc"] == 19  # 8 + 6 + 5 = 19
