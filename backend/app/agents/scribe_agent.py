@@ -427,14 +427,14 @@ class ScribeAgent:
                     return {"error": f"Character {character_id} not found"}
                 character = db_character.data
 
-            if action == "start":
-                return await self._start_concentration(character, character_id, db_character, db, **kwargs)
-            elif action == "end":
-                return await self._end_concentration(character, character_id, db_character, db)
-            elif action == "check":
-                return await self._check_concentration(character, character_id, db_character, db, **kwargs)
-            else:
-                return {"error": f"Unknown concentration action: {action}"}
+                if action == "start":
+                    return await self._start_concentration(character, character_id, db_character, db, **kwargs)
+                elif action == "end":
+                    return await self._end_concentration(character, character_id, db_character, db)
+                elif action == "check":
+                    return await self._check_concentration(character, character_id, db_character, db, **kwargs)
+                else:
+                    return {"error": f"Unknown concentration action: {action}"}
 
         except Exception as e:
             logger.error(f"Error managing concentration: {str(e)}")
@@ -452,8 +452,6 @@ class ScribeAgent:
         if character.get("concentration"):
             old_spell = character["concentration"]["spell_name"]
             character["concentration"] = None
-            db_character.data = character
-            db.commit()
             logger.info(f"Ended concentration on {old_spell} to start new concentration")
 
         # Start new concentration
