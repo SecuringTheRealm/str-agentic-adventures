@@ -21,7 +21,7 @@ The AI Dungeon Master project requires a robust framework for implementing a mul
     * Full-featured framework for building AI applications with plugin support
     * Pros:
       * Native integration with Azure OpenAI
-      * Support for plugins ("skills") to extend LLM functionality
+      * Support for plugins (formerly "skills") to extend LLM functionality
       * Connectors for various data sources
       * Support for both Python and TypeScript
       * Memory management capabilities
@@ -64,10 +64,10 @@ Justification:
 ## Consequences
 
 ### Positive
-* Simplified integration with Azure OpenAI endpoints
-* Built-in support for plugins will accelerate development
-* Memory and state management features will help implement game state persistence
-* Ability to use the same framework across backend and frontend
+* Simplified integration with Azure OpenAI endpoints through native SDK support
+* Built-in plugin system accelerated development of specialized agent functions
+* Agent coordination and kernel management provide robust multi-agent orchestration
+* Python implementation works well with FastAPI backend architecture
 
 ### Negative
 * Team will need to learn the Semantic Kernel framework

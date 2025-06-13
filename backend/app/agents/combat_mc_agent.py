@@ -41,7 +41,8 @@ class CombatMCAgent:
             logger.info("Combat MC agent plugins registered successfully")
         except Exception as e:
             logger.error(f"Error registering Combat MC agent plugins: {str(e)}")
-            # Continue without failing - we'll have reduced functionality
+            # TODO: Implement proper fallback behavior when plugin registration fails
+            # Consider graceful degradation or alternative combat mechanics
             pass
 
     async def create_encounter(
@@ -189,7 +190,9 @@ class CombatMCAgent:
             Dict[str, Any]: The result of the action and updated combat state
         """
         # Implementation would include attack resolution, damage calculation, etc.
-        # Simplified placeholder implementation
+        # TODO: Implement full combat action processing
+        # Should handle: attack rolls, damage calculation, spell effects,
+        # movement, special abilities, and state changes
         return {"message": "Combat action processed", "success": True}
 
     def _calculate_average_party_level(self, party_info: Dict[str, Any]) -> float:

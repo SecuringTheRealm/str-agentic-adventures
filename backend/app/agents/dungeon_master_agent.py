@@ -76,7 +76,8 @@ class DungeonMasterAgent:
             logger.info("Dungeon Master agent plugins registered successfully")
         except Exception as e:
             logger.error(f"Error registering Dungeon Master agent plugins: {str(e)}")
-            # Continue without failing - we'll have reduced functionality
+            # TODO: Implement proper fallback behavior when plugin registration fails
+            # Consider graceful degradation or core DM functionality without full plugin suite
             pass
 
     async def create_campaign(self, campaign_data: Dict[str, Any]) -> Dict[str, Any]:

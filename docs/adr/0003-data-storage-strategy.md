@@ -1,7 +1,8 @@
 # Data Storage Strategy for Game State and Assets
 
-* Status: accepted
+* Status: superseded
 * Date: 2025-06-10
+* Superseded by: Updated decision below (2025-06-12)
 
 ## Context and Problem Statement
 
@@ -49,7 +50,8 @@ The AI Dungeon Master system needs to persist various types of data including ga
 
 ## Decision Outcome
 
-Chosen option: "Hybrid Approach with Semantic Memory"
+**Original Decision: "Hybrid Approach with Semantic Memory"**
+*Note: This decision was superseded due to implementation practicalities*
 
 Justification:
 * Semantic Kernel's memory capabilities align well with our agent-based architecture
@@ -78,8 +80,44 @@ Justification:
 * Risk: Limited tooling for data management
   * Mitigation: Develop custom tools for data administration as needed
 
-## Links
+## Updated Decision (2025-06-12)
 
-* Related ADRs:
-  * [0001-semantic-kernel-multi-agent-framework.md](0001-semantic-kernel-multi-agent-framework.md)
-* References: [Semantic Kernel Memory](https://github.com/microsoft/semantic-kernel/tree/main/python/semantic_kernel/memory)
+**Revised Status: accepted**
+
+Upon implementation review, the actual storage strategy implemented differs from the original decision. The system uses SQLAlchemy with SQL databases instead of Semantic Memory, which better aligns with Python ecosystem best practices and provides more mature tooling for complex relational data.
+
+**New Decision Outcome: SQLAlchemy ORM with SQL Database**
+
+Justification:
+* SQLAlchemy provides mature, battle-tested ORM capabilities for Python applications
+* SQL databases offer strong ACID properties for game state consistency
+* Better tooling ecosystem for database administration and migrations
+* Clear separation between data persistence and Semantic Kernel's AI capabilities
+* SQLite for development with easy migration path to PostgreSQL for production
+* JSON columns in SQL provide schema flexibility where needed
+
+**Updated Consequences:**
+
+### Positive
+* Mature and stable data persistence layer with extensive Python ecosystem support
+* Strong consistency guarantees for critical game state data
+* Excellent tooling for database management, migrations, and monitoring
+* Clear abstraction between data layer and AI agent functionality
+* Easy local development with SQLite and production scaling with PostgreSQL
+
+### Negative
+* Traditional object-relational mapping complexity
+* Requires separate solutions for semantic/vector search capabilities
+* Less direct integration with Semantic Kernel's memory features
+
+### Risks and Mitigations
+* Risk: Impedance mismatch between object models and relational schema
+  * Mitigation: Use JSON columns for flexible data and structured tables for core entities
+* Risk: Limited semantic search capabilities in SQL
+  * Mitigation: Add vector database integration (e.g., pgvector) when semantic search is needed
+* Risk: Database migration complexity as schema evolves
+  * Mitigation: Use Alembic migrations for version-controlled schema changes
+
+## Original Decision Record
+
+The original decision record is maintained for historical reference and to track the evolution of the data storage strategy.

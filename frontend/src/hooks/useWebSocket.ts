@@ -1,5 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
+/**
+ * React hook for WebSocket connections in multiplayer campaigns.
+ * Implements the FastAPI WebSocket architecture per ADR 0008.
+ */
+
 export interface WebSocketMessage {
 	type: string;
 	[key: string]: any;
@@ -19,11 +24,11 @@ export const useWebSocket = (url: string, options: UseWebSocketOptions = {}) => 
 	const [isConnected, setIsConnected] = useState(false);
 	const [isConnecting, setIsConnecting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
-	
+
 	const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 	const reconnectAttemptsRef = useRef(0);
 	const shouldReconnectRef = useRef(true);
-	
+
 	const {
 		onMessage,
 		onConnect,
@@ -49,7 +54,7 @@ export const useWebSocket = (url: string, options: UseWebSocketOptions = {}) => 
 				setIsConnecting(false);
 				setError(null);
 				reconnectAttemptsRef.current = 0;
-				
+
 				if (onConnect) {
 					onConnect();
 				}
@@ -69,15 +74,15 @@ export const useWebSocket = (url: string, options: UseWebSocketOptions = {}) => 
 			ws.onclose = (event) => {
 				setIsConnected(false);
 				setIsConnecting(false);
-				
+
 				if (onDisconnect) {
 					onDisconnect();
 				}
 
 				// Attempt to reconnect if not manually closed
-				if (shouldReconnectRef.current && 
+				if (shouldReconnectRef.current &&
 					reconnectAttemptsRef.current < maxReconnectAttempts) {
-					
+
 					reconnectAttemptsRef.current++;
 					reconnectTimeoutRef.current = setTimeout(() => {
 						connect();
@@ -88,7 +93,7 @@ export const useWebSocket = (url: string, options: UseWebSocketOptions = {}) => 
 			ws.onerror = (event) => {
 				setError('WebSocket connection error');
 				setIsConnecting(false);
-				
+
 				if (onError) {
 					onError(event);
 				}
@@ -103,16 +108,16 @@ export const useWebSocket = (url: string, options: UseWebSocketOptions = {}) => 
 
 	const disconnect = useCallback(() => {
 		shouldReconnectRef.current = false;
-		
+
 		if (reconnectTimeoutRef.current) {
 			clearTimeout(reconnectTimeoutRef.current);
 		}
-		
+
 		if (socket) {
 			socket.close();
 			setSocket(null);
 		}
-		
+
 		setIsConnected(false);
 		setIsConnecting(false);
 	}, [socket]);
@@ -128,7 +133,7 @@ export const useWebSocket = (url: string, options: UseWebSocketOptions = {}) => 
 	// Connect on mount
 	useEffect(() => {
 		connect();
-		
+
 		return () => {
 			shouldReconnectRef.current = false;
 			if (reconnectTimeoutRef.current) {

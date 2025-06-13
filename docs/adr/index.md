@@ -19,12 +19,12 @@ This directory contains Architecture Decision Records (ADRs) for the Agentic Adv
 | 0000 | [Using ADRs](template.md) | Accepted | 2025-06-10 | Template for architecture decisions |
 | 0001 | [Use Microsoft Semantic Kernel for Multi-Agent Architecture](0001-semantic-kernel-multi-agent-framework.md) | Accepted | 2025-06-10 | Selection of Microsoft Semantic Kernel as the foundation for our multi-agent system |
 | 0002 | [Specialized Multi-Agent Architecture for AI Dungeon Master](0002-specialized-multi-agent-architecture.md) | Accepted | 2025-06-10 | Approach for structuring the different AI agents in the system |
-| 0003 | [Data Storage Strategy for Game State and Assets](0003-data-storage-strategy.md) | Accepted | 2025-06-10 | Strategy for storing and managing game data and assets |
+| 0003 | [Data Storage Strategy for Game State and Assets](0003-data-storage-strategy.md) | Superseded | 2025-06-10 | Strategy for storing and managing game data - updated for SQLAlchemy implementation |
 | 0004 | [React and TypeScript Frontend Architecture](0004-react-typescript-frontend.md) | Accepted | 2025-06-10 | Selection of React with TypeScript for the frontend application |
 | 0005 | [Azure OpenAI Integration for AI Agents](0005-azure-openai-integration.md) | Accepted | 2025-06-10 | Approach for integrating Azure OpenAI services for AI capabilities |
 | 0006 | [D&D 5e Character Progression System Implementation](0006-dnd-5e-character-progression-system.md) | Accepted | 2025-06-11 | Implementation of character progression mechanics |
 | 0007 | [GitHub Actions CI/CD Pipeline](0007-github-actions-cicd-pipeline.md) | Accepted | 2025-06-11 | Continuous integration and deployment pipeline for automated testing and quality assurance |
-| 0008 | [Multiplayer Implementation for Real-Time Collaborative Gameplay](0008-multiplayer-implementation.md) | Accepted | 2025-01-27 | Real-time multiplayer architecture using Azure SignalR for collaborative gameplay sessions |
+| 0008 | [Multiplayer Implementation for Real-Time Collaborative Gameplay](0008-multiplayer-implementation.md) | Superseded | 2025-01-27 | Real-time multiplayer architecture - updated for Python/FastAPI compatibility |
 
 ## ADR Statuses
 

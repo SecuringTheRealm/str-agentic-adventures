@@ -90,4 +90,4 @@ Justification:
 * Related ADRs:
   * [0001-semantic-kernel-multi-agent-framework.md](0001-semantic-kernel-multi-agent-framework.md)
 * References:
-  * [Azure OpenAI Documentation](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/)
+  * [Azure OpenAI Service Documentation](https://learn.microsoft.com/en-us/azure/ai-services/openai/)

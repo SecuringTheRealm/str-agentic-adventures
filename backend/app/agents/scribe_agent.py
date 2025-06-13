@@ -33,16 +33,22 @@ class ScribeAgent:
     @property
     def npcs(self) -> Dict[str, Any]:
         """Return NPCs placeholder."""
+        # TODO: Implement NPC storage and retrieval system
+        # Should store NPC data, relationships, and interaction history
         return {}
 
     @property
     def inventory(self) -> Dict[str, Any]:
         """Return inventory placeholder."""
+        # TODO: Implement inventory management system
+        # Should track items, quantities, weight, and magical properties
         return {}
 
     def _register_skills(self):
         """Register necessary skills for the Scribe agent."""
-        # Will register skills once implemented
+        # TODO: Implement Scribe agent skills registration
+        # Skills needed: character_sheet_management, inventory_tracking,
+        # experience_calculation, ability_score_improvement
         pass
 
     async def create_character(self, character_data: Dict[str, Any]) -> Dict[str, Any]:

@@ -1,7 +1,8 @@
 # Multiplayer Implementation for Real-Time Collaborative Gameplay
 
-* Status: accepted
+* Status: superseded
 * Date: 2025-01-27
+* Superseded by: Updated decision below (2025-06-12)
 
 ## Context and Problem Statement
 
@@ -10,7 +11,7 @@ The AI Dungeon Master system currently supports single-player experiences but la
 ## Decision Drivers
 
 * Need for real-time communication between multiple players in the same session
-* Requirement to maintain game state synchronization across all connected clients  
+* Requirement to maintain game state synchronization across all connected clients
 * Support for turn-based mechanics and initiative order in multiplayer context
 * Integration with existing Semantic Kernel multi-agent architecture
 * Compatibility with current SQLAlchemy data persistence layer
@@ -60,7 +61,8 @@ The AI Dungeon Master system currently supports single-player experiences but la
 
 ## Decision Outcome
 
-Chosen option: "WebSocket-based Real-Time Architecture with SignalR"
+**Original Decision: "WebSocket-based Real-Time Architecture with SignalR"**
+*Note: This decision was superseded due to Python ecosystem limitations*
 
 Justification:
 * SignalR provides enterprise-grade real-time communication with built-in scaling capabilities
@@ -69,6 +71,44 @@ Justification:
 * Built-in group management enables efficient session-based communication
 * Strong TypeScript support integrates well with React frontend (ADR 0004)
 * Automatic connection management and fallback options ensure reliability
+
+## Updated Decision (2025-06-12)
+
+**Revised Status: accepted**
+
+Upon implementation review, it was discovered that Azure SignalR Service lacks robust Python SDK support, making it incompatible with our Python/FastAPI backend architecture (ADR 0001, 0005). The original decision has been updated to reflect technical reality.
+
+**New Decision Outcome: Custom WebSocket Implementation with FastAPI**
+
+Justification:
+* Azure SignalR Service is primarily designed for .NET applications with limited Python support
+* FastAPI provides excellent native WebSocket support with built-in connection management
+* Custom implementation allows full control over message protocols and game-specific optimizations
+* No additional Azure service costs or external dependencies
+* Better alignment with Python ecosystem and existing FastAPI backend
+
+**Updated Consequences:**
+
+### Positive
+* Native Python integration with FastAPI WebSocket support
+* Complete control over connection management and message protocols
+* No additional Azure service costs
+* Simplified deployment and maintenance
+* Game-specific optimizations possible
+
+### Negative
+* Manual implementation of connection pooling and group management
+* Need to implement reconnection logic and connection state management
+* Scaling considerations require manual load balancing solutions
+* No built-in enterprise features like automatic fallbacks
+
+### Risks and Mitigations
+* Risk: Connection management complexity
+  * Mitigation: Leverage FastAPI's built-in WebSocket support and proven patterns
+* Risk: Scaling limitations with single-server WebSocket connections
+  * Mitigation: Implement Redis pub/sub for multi-server WebSocket scaling when needed
+* Risk: Manual reconnection handling
+  * Mitigation: Implement robust client-side reconnection with exponential backoff
 
 ## Consequences
 
