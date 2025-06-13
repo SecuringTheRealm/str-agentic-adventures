@@ -254,12 +254,12 @@ class NarrativeEvent(BaseModel):
 
 # Spell casting models
 class CastSpellRequest(BaseModel):
-    character_id: str
-    spell_id: str
-    spell_level: int  # Level at which the spell is cast (for upcasting)
-    target_ids: List[str] = []  # IDs of targets (other characters/enemies)
-    spell_attack_roll: Optional[int] = None  # If already rolled by player
-    save_dc: Optional[int] = None  # Override default save DC calculation
+    character_id: str = Field(min_length=1, description="ID of the character casting the spell")
+    spell_id: str = Field(min_length=1, description="ID of the spell to cast")
+    spell_level: int = Field(ge=0, le=9, description="Level at which the spell is cast (0-9)")
+    target_ids: List[str] = Field(default=[], description="IDs of targets (other characters/enemies)")
+    spell_attack_roll: Optional[int] = Field(default=None, ge=1, le=30, description="Pre-rolled spell attack roll")
+    save_dc: Optional[int] = Field(default=None, ge=8, le=30, description="Override default save DC calculation")
 
 class CastSpellResponse(BaseModel):
     success: bool

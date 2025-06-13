@@ -995,7 +995,7 @@ async def process_general_action(
 # TODO: Add spell system API endpoints
 # TODO: POST /character/{character_id}/spells - Manage known spells for character
 # TODO: POST /character/{character_id}/spell-slots - Manage spell slot usage and recovery
-# TODO: POST /combat/{combat_id}/cast-spell - Cast spells during combat with effect resolution
+# ✓ COMPLETED: POST /combat/{combat_id}/cast-spell - Cast spells during combat with effect resolution
 # TODO: GET /spells/list - Get available spells by class and level
 # TODO: POST /spells/save-dc - Calculate spell save DC for a character
 # TODO: POST /spells/attack-bonus - Calculate spell attack bonus for a character

@@ -600,6 +600,43 @@ class TestCastSpellRequest:
         assert request.spell_attack_roll == 18
         assert request.save_dc == 15
 
+    def test_cast_spell_request_validation(self):
+        """Test CastSpellRequest validation."""
+        import pytest
+        from pydantic import ValidationError
+        
+        # Test empty character_id
+        with pytest.raises(ValidationError):
+            CastSpellRequest(
+                character_id="",
+                spell_id="spell_456",
+                spell_level=1
+            )
+        
+        # Test empty spell_id
+        with pytest.raises(ValidationError):
+            CastSpellRequest(
+                character_id="char_123",
+                spell_id="",
+                spell_level=1
+            )
+        
+        # Test invalid spell level (negative)
+        with pytest.raises(ValidationError):
+            CastSpellRequest(
+                character_id="char_123",
+                spell_id="spell_456",
+                spell_level=-1
+            )
+        
+        # Test invalid spell level (too high)
+        with pytest.raises(ValidationError):
+            CastSpellRequest(
+                character_id="char_123",
+                spell_id="spell_456",
+                spell_level=10
+            )
+
 
 class TestCastSpellResponse:
     """Test class for CastSpellResponse model."""
