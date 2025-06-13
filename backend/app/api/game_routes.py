@@ -2,6 +2,7 @@
 API routes for the AI Dungeon Master application.
 """
 
+import logging
 from fastapi import APIRouter, HTTPException, status
 from typing import Dict, Any, List, Optional
 from datetime import datetime
@@ -61,6 +62,9 @@ from app.agents.scribe_agent import get_scribe
 from app.agents.combat_cartographer_agent import get_combat_cartographer
 from app.agents.artist_agent import get_artist
 from app.services.campaign_service import campaign_service
+
+# Create a logger for this module
+logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["game"])
 
@@ -419,14 +423,19 @@ async def generate_battle_map(map_request: Dict[str, Any]):
 async def process_player_input(player_input: PlayerInput):
     """Process player input and get game response."""
     try:
-        # Get character and campaign context
-        character = await get_scribe().get_character(player_input.character_id)
-
-        if not character:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Character {player_input.character_id} not found",
-            )
+        # Try to get character and campaign context, but fallback gracefully
+        character = None
+        try:
+            character = await get_scribe().get_character(player_input.character_id)
+        except Exception as e:
+            logger.warning(f"Could not retrieve character {player_input.character_id}: {str(e)}")
+            # Use fallback character info
+            character = {
+                "id": player_input.character_id,
+                "name": "Adventurer",
+                "class": "Fighter", 
+                "level": 1
+            }
 
         # Create context for the Dungeon Master agent
         context = {
@@ -457,6 +466,7 @@ async def process_player_input(player_input: PlayerInput):
     except HTTPException:
         raise
     except Exception as e:
+        logger.error(f"Failed to process input: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to process input: {str(e)}",
