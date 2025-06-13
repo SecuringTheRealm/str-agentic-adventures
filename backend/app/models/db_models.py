@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from sqlalchemy import Column, JSON, String, Boolean, DateTime, Text, Integer, ForeignKey
-from sqlalchemy.orm import relationship
 from datetime import datetime
 
 from app.database import Base

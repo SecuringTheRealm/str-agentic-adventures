@@ -8,7 +8,7 @@ from pathlib import Path
 
 def check_basic_srd_compliance():
     """Check basic SRD compliance for core game elements."""
-    repo_root = Path("/home/runner/work/str-agentic-adventures/str-agentic-adventures")
+    repo_root = Path(__file__).resolve().parent
     
     # Core D&D 5e elements to check
     core_elements = {

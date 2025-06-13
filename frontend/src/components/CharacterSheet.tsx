@@ -1,4 +1,5 @@
 import type React from "react";
+import { useMemo } from "react";
 import type { Character } from "../services/api";
 import "./CharacterSheet.css";
 
@@ -14,13 +15,15 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
 	};
 
 	// Helper functions for inventory and equipment management
-	const calculateTotalWeight = (inventory: any[]): number => {
-		return inventory.reduce((total, item) => {
-			const weight = (item as any).weight || 0;
-			const quantity = item.quantity || 1;
-			return total + (weight * quantity);
-		}, 0);
-	};
+	const calculateTotalWeight = useMemo(() => {
+		return (inventory: any[]): number => {
+			return inventory.reduce((total, item) => {
+				const weight = (item as any).weight || 0;
+				const quantity = item.quantity || 1;
+				return total + (weight * quantity);
+			}, 0);
+		};
+	}, []);
 
 	const getEncumbranceStatus = (character: Character): string => {
 		const totalWeight = calculateTotalWeight(character.inventory || []);

@@ -171,7 +171,7 @@ class SRDRulesChecker:
                     for spell in self.rules_found['spells']:
                         if spell.lower().replace(' ', '_') in content or spell.lower().replace(' ', '') in content:
                             implemented_spells.add(spell)
-            except:
+            except Exception:
                 continue
                 
         total_spells = len(self.rules_found['spells'])
@@ -197,7 +197,7 @@ class SRDRulesChecker:
                     for char_class in self.rules_found['classes']:
                         if char_class.lower() in content:
                             implemented_classes.add(char_class)
-            except:
+            except Exception:
                 continue
                 
         total_classes = len(self.rules_found['classes'])
@@ -222,7 +222,7 @@ class SRDRulesChecker:
                     for race in self.rules_found['races']:
                         if race.lower() in content:
                             implemented_races.add(race)
-            except:
+            except Exception:
                 continue
                 
         total_races = len(self.rules_found['races'])
@@ -249,7 +249,7 @@ class SRDRulesChecker:
                     for item in self.rules_found['equipment']:
                         if item.lower() in content:
                             implemented_equipment.add(item)
-            except:
+            except Exception:
                 continue
                 
         total_equipment = len(self.rules_found['equipment'])
@@ -276,7 +276,7 @@ class SRDRulesChecker:
                     for rule in self.rules_found['combat_rules']:
                         if rule.lower().replace(' ', '_') in content or rule.lower().replace(' ', '') in content:
                             implemented_rules.add(rule)
-            except:
+            except Exception:
                 continue
                 
         total_rules = len(self.rules_found['combat_rules'])
