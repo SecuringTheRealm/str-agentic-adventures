@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Literal
 
-import openai
+from openai import AsyncAzureOpenAI
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from app.config import settings
@@ -14,10 +14,11 @@ class AzureOpenAIClient:
     """Client wrapper around openai for Azure OpenAI Service."""
 
     def __init__(self) -> None:
-        openai.api_type = "azure"
-        openai.api_version = settings.azure_openai_api_version
-        openai.api_key = settings.azure_openai_api_key
-        openai.base_url = settings.azure_openai_endpoint
+        self.client = AsyncAzureOpenAI(
+            api_key=settings.azure_openai_api_key,
+            api_version=settings.azure_openai_api_version,
+            azure_endpoint=settings.azure_openai_endpoint,
+        )
 
     @retry(
         wait=wait_exponential(multiplier=2, min=2, max=10), stop=stop_after_attempt(3)
@@ -30,12 +31,18 @@ class AzureOpenAIClient:
     ) -> str:
         """Generate a chat completion from Azure OpenAI."""
         deployment_name = deployment or settings.azure_openai_chat_deployment
-        response = await openai.ChatCompletion.acreate(
-            deployment_id=deployment_name,
-            messages=messages,
+
+        # Convert messages to proper format for new SDK
+        formatted_messages = []
+        for msg in messages:
+            formatted_messages.append({"role": msg["role"], "content": msg["content"]})
+
+        response = await self.client.chat.completions.create(
+            model=deployment_name,
+            messages=formatted_messages,
             **kwargs,
         )
-        return response.choices[0].message["content"].strip()
+        return response.choices[0].message.content.strip()
 
     @retry(
         wait=wait_exponential(multiplier=2, min=2, max=10), stop=stop_after_attempt(3)
@@ -43,17 +50,18 @@ class AzureOpenAIClient:
     async def generate_image(
         self,
         prompt: str,
-        size: str = "1024x1024",
-        quality: str = "standard",
-        style: str = "vivid",
+        size: Literal["1024x1024", "1792x1024", "1024x1792"] = "1024x1024",
+        quality: Literal["standard", "hd"] = "standard",
+        style: Literal["vivid", "natural"] = "vivid",
         deployment: str | None = None,
         **kwargs: Any,
     ) -> Dict[str, Any]:
         """Generate an image using Azure OpenAI DALL-E."""
         deployment_name = deployment or settings.azure_openai_dalle_deployment
         try:
-            response = await openai.Image.acreate(
-                deployment_id=deployment_name,
+            # Use the new OpenAI SDK 1.0+ API for images
+            response = await self.client.images.generate(
+                model=deployment_name,
                 prompt=prompt,
                 size=size,
                 quality=quality,
@@ -61,25 +69,22 @@ class AzureOpenAIClient:
                 n=1,
                 **kwargs,
             )
-            
+
             if response and response.data:
                 image_data = response.data[0]
                 return {
                     "success": True,
-                    "image_url": image_data.get("url"),
-                    "revised_prompt": image_data.get("revised_prompt", prompt),
+                    "image_url": image_data.url,
+                    "revised_prompt": getattr(image_data, "revised_prompt", prompt),
                     "size": size,
                     "quality": quality,
-                    "style": style
+                    "style": style,
                 }
             else:
                 return {
                     "success": False,
-                    "error": "No image data returned from Azure OpenAI"
+                    "error": "No image data returned from Azure OpenAI",
                 }
-                
+
         except Exception as e:
-            return {
-                "success": False,
-                "error": f"Failed to generate image: {str(e)}"
-            }
+            return {"success": False, "error": f"Failed to generate image: {str(e)}"}
