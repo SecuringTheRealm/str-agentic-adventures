@@ -28,10 +28,39 @@ class ArtistAgent:
 
     def _register_skills(self):
         """Register necessary skills for the Artist agent."""
-        # TODO: Implement Artist agent skills registration
-        # Skills needed: image_generation, art_style_analysis, visual_consistency,
-        # character_visualization, scene_composition
-        pass
+        try:
+            # Import artist-specific plugins
+            from app.plugins.image_generation_plugin import ImageGenerationPlugin
+            from app.plugins.art_style_analysis_plugin import ArtStyleAnalysisPlugin
+            from app.plugins.visual_consistency_plugin import VisualConsistencyPlugin
+            from app.plugins.character_visualization_plugin import CharacterVisualizationPlugin
+            from app.plugins.scene_composition_plugin import SceneCompositionPlugin
+
+            # Create plugin instances
+            image_generation = ImageGenerationPlugin()
+            art_style_analysis = ArtStyleAnalysisPlugin()
+            visual_consistency = VisualConsistencyPlugin()
+            character_visualization = CharacterVisualizationPlugin()
+            scene_composition = SceneCompositionPlugin()
+
+            # Register plugins with the kernel using the new API
+            self.kernel.add_plugin(image_generation, "ImageGeneration")
+            self.kernel.add_plugin(art_style_analysis, "ArtStyleAnalysis")
+            self.kernel.add_plugin(visual_consistency, "VisualConsistency")
+            self.kernel.add_plugin(character_visualization, "CharacterVisualization")
+            self.kernel.add_plugin(scene_composition, "SceneComposition")
+
+            # Store references for direct access
+            self.image_generation = image_generation
+            self.art_style_analysis = art_style_analysis
+            self.visual_consistency = visual_consistency
+            self.character_visualization = character_visualization
+            self.scene_composition = scene_composition
+
+            logger.info("Artist agent skills registered successfully")
+        except Exception as e:
+            logger.error(f"Error registering Artist agent skills: {str(e)}")
+            raise
 
     async def generate_character_portrait(
         self, character_details: Dict[str, Any]
