@@ -141,3 +141,21 @@
   20% { opacity: 1; }
   100% { opacity: 0.4; }
 }
+
+/* Streaming message styles */
+.message-text.streaming {
+  position: relative;
+}
+
+.streaming-cursor {
+  display: inline-block;
+  animation: cursor-blink 1s infinite;
+  color: #E4BB1E; /* Gold cursor */
+  font-weight: bold;
+  margin-left: 2px;
+}
+
+@keyframes cursor-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}

@@ -97,9 +97,30 @@ manager = ConnectionManager()
 router = APIRouter()
 
 
+@router.websocket("/ws/chat/{campaign_id}")
+async def chat_websocket(websocket: WebSocket, campaign_id: str):
+    """WebSocket endpoint for streaming chat responses."""
+    await manager.connect(websocket, campaign_id)
+    try:
+        while True:
+            # Listen for chat messages from client
+            data = await websocket.receive_text()
+            try:
+                message = json.loads(data)
+                await handle_chat_message(message, websocket, campaign_id)
+            except json.JSONDecodeError:
+                await manager.send_personal_message(
+                    json.dumps({"type": "error", "message": "Invalid JSON format"}),
+                    websocket,
+                )
+    except WebSocketDisconnect:
+        manager.disconnect(websocket, campaign_id)
+        logger.info(f"Client disconnected from chat in campaign {campaign_id}")
+
+
 @router.websocket("/ws/{campaign_id}")
 async def campaign_websocket(websocket: WebSocket, campaign_id: str):
-    """WebSocket endpoint for campaign-specific real-time updates."""
+    """WebSocket endpoint for campaign-specific real-time updates (non-chat)."""
     await manager.connect(websocket, campaign_id)
     try:
         while True:
@@ -136,6 +157,97 @@ async def global_websocket(websocket: WebSocket):
     except WebSocketDisconnect:
         manager.disconnect(websocket)
         logger.info("Client disconnected from global websocket")
+
+
+async def handle_chat_message(
+    message: Dict[str, Any], websocket: WebSocket, campaign_id: str
+):
+    """Handle incoming chat messages and stream AI responses."""
+    try:
+        message_type = message.get("type")
+        
+        if message_type == "chat_input":
+            await handle_chat_input(message, websocket, campaign_id)
+        elif message_type == "ping":
+            await manager.send_personal_message(
+                json.dumps({"type": "pong", "timestamp": message.get("timestamp")}),
+                websocket,
+            )
+        else:
+            await manager.send_personal_message(
+                json.dumps(
+                    {
+                        "type": "error",
+                        "message": f"Unknown chat message type: {message_type}",
+                    }
+                ),
+                websocket,
+            )
+    except Exception as e:
+        logger.error(f"Error handling chat message: {str(e)}")
+        await manager.send_personal_message(
+            json.dumps({"type": "error", "message": "Failed to process chat message"}),
+            websocket,
+        )
+
+
+async def handle_chat_input(
+    message: Dict[str, Any], websocket: WebSocket, campaign_id: str
+):
+    """Handle chat input and stream AI response."""
+    try:
+        user_input = message.get("message", "")
+        character_id = message.get("character_id")
+        
+        if not user_input.strip():
+            await manager.send_personal_message(
+                json.dumps({"type": "chat_error", "message": "Empty message"}),
+                websocket,
+            )
+            return
+            
+        if not character_id:
+            await manager.send_personal_message(
+                json.dumps({"type": "chat_error", "message": "Missing character_id"}),
+                websocket,
+            )
+            return
+
+        # Send acknowledgment that we received the message
+        await manager.send_personal_message(
+            json.dumps({
+                "type": "chat_start",
+                "message": "Processing your input..."
+            }),
+            websocket,
+        )
+
+        # Import here to avoid circular imports
+        from app.agents.dungeon_master_agent import get_dungeon_master
+        
+        # Get DM agent and stream response
+        dm_agent = get_dungeon_master()
+        
+        # Create context for DM processing
+        context = {
+            "character_id": character_id,
+            "campaign_id": campaign_id,
+            "websocket": websocket,
+            "streaming": True
+        }
+        
+        # Process input with streaming enabled
+        await dm_agent.process_input_stream(user_input, context)
+
+    except Exception as e:
+        logger.error(f"Error handling chat input: {str(e)}")
+        await manager.send_personal_message(
+            json.dumps({
+                "type": "chat_error", 
+                "message": f"Failed to process chat input: {str(e)}"
+            }),
+            websocket,
+        )
 
 
 async def handle_websocket_message(

@@ -4,7 +4,7 @@ Dungeon Master Agent - The orchestrator agent that coordinates all other agents.
 
 import logging
 import random
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, Tuple, List
 
 # Note: Updated for newer Semantic Kernel version
 # ToolManager import commented out as it's causing issues
@@ -246,6 +246,237 @@ class DungeonMasterAgent:
         except Exception as e:
             logger.error(f"Error creating campaign: {str(e)}")
             return {"error": "Failed to create campaign"}
+
+    async def process_input_stream(
+        self, user_input: str, context: Dict[str, Any] | None = None
+    ) -> None:
+        """
+        Process user input and stream responses via WebSocket.
+
+        Args:
+            user_input: The player's input text
+            context: Additional context including WebSocket for streaming
+        """
+        if not context:
+            context = {}
+
+        websocket = context.get("websocket")
+        if not websocket:
+            logger.error("No WebSocket provided for streaming")
+            return
+
+        logger.info(f"Processing streaming player input: {user_input}")
+
+        # Check if we're in fallback mode
+        if getattr(self, '_fallback_mode', False):
+            await self._process_input_stream_fallback(user_input, context)
+            return
+
+        try:
+            # Send typing indicator
+            await self._send_chat_message(websocket, {
+                "type": "chat_typing",
+                "message": "The Dungeon Master is thinking..."
+            })
+
+            # Analyze the input type
+            input_type, input_details = await self._analyze_input(user_input, context)
+
+            # Get character context if available
+            character_context = await self._get_character_context(context)
+
+            # Create messages for streaming chat completion
+            messages = await self._create_chat_messages(user_input, input_type, character_context, context)
+
+            # Stream the response
+            await self._stream_chat_response(messages, websocket, context)
+
+        except Exception as e:
+            logger.error(f"Error in streaming processing: {str(e)}")
+            await self._send_chat_message(websocket, {
+                "type": "chat_error",
+                "message": "I'm sorry, I encountered an issue processing your request. Please try again."
+            })
+
+    async def _process_input_stream_fallback(
+        self, user_input: str, context: Dict[str, Any]
+    ) -> None:
+        """Process input in fallback mode with streaming simulation."""
+        websocket = context.get("websocket")
+        if not websocket:
+            return
+
+        logger.info("Processing streaming input in fallback mode")
+        
+        try:
+            # Simulate typing
+            await self._send_chat_message(websocket, {
+                "type": "chat_typing",
+                "message": "Preparing response..."
+            })
+
+            # Get basic response from fallback
+            input_type, input_details = await self._analyze_input(user_input, context)
+            
+            # Generate appropriate response based on input type
+            if input_type == "combat":
+                response_text = "The battle intensifies as combat unfolds! "
+                response_text += f"You attempt to {user_input.lower()}. "
+                response_text += "Roll for your action to see the outcome."
+            elif input_type == "narrative":
+                action_type = input_details.get("action_type", "exploration")
+                if action_type == "social_interaction":
+                    response_text = "The conversation develops as you engage with others. "
+                    response_text += "Your words carry weight in this moment."
+                elif action_type == "movement":
+                    response_text = "You move carefully through the environment, "
+                    response_text += "taking in your new surroundings with keen awareness."
+                else:
+                    response_text = "You explore the area around you, alert for anything of interest. "
+                    response_text += "The world responds to your actions."
+            else:
+                response_text = f"The adventure continues as you take action: {user_input}. "
+                response_text += "Your choices shape the unfolding story."
+
+            # Stream the response word by word to simulate real streaming
+            await self._simulate_streaming_response(response_text, websocket)
+
+        except Exception as e:
+            logger.error(f"Error in fallback streaming: {str(e)}")
+            await self._send_chat_message(websocket, {
+                "type": "chat_error",
+                "message": "The adventure continues, though the path is unclear."
+            })
+
+    async def _get_character_context(self, context: Dict[str, Any]) -> Dict[str, Any]:
+        """Get character information for context."""
+        character_context = {}
+        character_id = context.get("character_id")
+        
+        if character_id:
+            try:
+                scribe_agent = get_scribe()
+                character = await scribe_agent.get_character(character_id)
+                if "error" not in character:
+                    character_context = {
+                        "name": character.get("name", "Adventurer"),
+                        "race": character.get("race", "Unknown"),
+                        "class": character.get("class", "Fighter"),
+                        "level": character.get("level", 1)
+                    }
+            except Exception as e:
+                logger.warning(f"Could not retrieve character {character_id}: {str(e)}")
+        
+        return character_context
+
+    async def _create_chat_messages(
+        self, user_input: str, input_type: str, character_context: Dict[str, Any], context: Dict[str, Any]
+    ) -> List[Dict[str, str]]:
+        """Create messages for chat completion."""
+        
+        # Build character description
+        char_desc = "an adventurer"
+        if character_context:
+            char_desc = f"{character_context.get('name', 'an adventurer')}, a level {character_context.get('level', 1)} {character_context.get('race', 'unknown')} {character_context.get('class', 'fighter')}"
+
+        # System message based on input type
+        if input_type == "combat":
+            system_content = f"You are an expert Dungeon Master running a D&D 5e game. The player ({char_desc}) is in combat. Respond to their action with exciting, detailed combat narration. Keep responses engaging and describe outcomes, but don't roll dice for the player. Be concise but vivid."
+        elif input_type == "narrative":
+            system_content = f"You are an expert Dungeon Master running a D&D 5e game. The player ({char_desc}) is exploring and taking narrative actions. Respond with immersive storytelling, describe the environment and consequences of their actions. Be descriptive but not overly long."
+        elif input_type == "character":
+            system_content = f"You are an expert Dungeon Master helping with character management for {char_desc}. Provide helpful guidance about character abilities, equipment, or development. Be informative and supportive."
+        else:
+            system_content = f"You are an expert Dungeon Master running a D&D 5e game for {char_desc}. Respond to the player's input with appropriate narrative, keeping the game engaging and moving forward. Be creative and responsive to player agency."
+
+        messages = [
+            {"role": "system", "content": system_content},
+            {"role": "user", "content": user_input}
+        ]
+
+        return messages
+
+    async def _stream_chat_response(
+        self, messages: List[Dict[str, str]], websocket, context: Dict[str, Any]
+    ) -> None:
+        """Stream chat response from Azure OpenAI."""
+        try:
+            # Import here to avoid circular imports
+            from app.azure_openai_client import AzureOpenAIClient
+            
+            openai_client = AzureOpenAIClient()
+            
+            # Send start streaming message
+            await self._send_chat_message(websocket, {
+                "type": "chat_start_stream",
+                "message": ""
+            })
+
+            full_response = ""
+            async for chunk in openai_client.chat_completion_stream(
+                messages, 
+                temperature=0.7, 
+                max_tokens=500
+            ):
+                if chunk:
+                    full_response += chunk
+                    await self._send_chat_message(websocket, {
+                        "type": "chat_stream",
+                        "chunk": chunk,
+                        "full_text": full_response
+                    })
+
+            # Send completion message
+            await self._send_chat_message(websocket, {
+                "type": "chat_complete",
+                "message": full_response
+            })
+
+        except Exception as e:
+            logger.error(f"Error streaming chat response: {str(e)}")
+            await self._send_chat_message(websocket, {
+                "type": "chat_error",
+                "message": f"Failed to generate response: {str(e)}"
+            })
+
+    async def _simulate_streaming_response(self, response_text: str, websocket) -> None:
+        """Simulate streaming by sending text word by word."""
+        import asyncio
+        
+        await self._send_chat_message(websocket, {
+            "type": "chat_start_stream",
+            "message": ""
+        })
+
+        words = response_text.split()
+        full_response = ""
+        
+        for i, word in enumerate(words):
+            if i > 0:
+                full_response += " "
+            full_response += word
+            
+            await self._send_chat_message(websocket, {
+                "type": "chat_stream", 
+                "chunk": f"{' ' if i > 0 else ''}{word}",
+                "full_text": full_response
+            })
+            
+            # Small delay to simulate real streaming
+            await asyncio.sleep(0.1)
+
+        await self._send_chat_message(websocket, {
+            "type": "chat_complete",
+            "message": full_response
+        })
+
+    async def _send_chat_message(self, websocket, message: Dict[str, Any]) -> None:
+        """Send a message via WebSocket."""
+        try:
+            import json
+            await websocket.send_text(json.dumps(message))
+        except Exception as e:
+            logger.error(f"Error sending chat message: {str(e)}")
 
     async def process_input(
         self, user_input: str, context: Dict[str, Any] | None = None

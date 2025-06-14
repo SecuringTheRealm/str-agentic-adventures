@@ -5,18 +5,21 @@ import "./ChatBox.css";
 interface ChatMessage {
 	text: string;
 	sender: "player" | "dm";
+	isStreaming?: boolean;
 }
 
 interface ChatBoxProps {
 	messages: ChatMessage[];
 	onSendMessage: (message: string) => void;
 	isLoading: boolean;
+	streamingMessage?: string;
 }
 
 const ChatBox: React.FC<ChatBoxProps> = ({
 	messages,
 	onSendMessage,
 	isLoading,
+	streamingMessage,
 }) => {
 	const [input, setInput] = useState<string>("");
 	const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -54,7 +57,16 @@ const ChatBox: React.FC<ChatBoxProps> = ({
 						<div className="message-text">{message.text}</div>
 					</div>
 				))}
-				{isLoading && (
+				{streamingMessage && (
+					<div className="message dm-message">
+						<div className="message-sender">Dungeon Master</div>
+						<div className="message-text streaming">
+							{streamingMessage}
+							<span className="streaming-cursor">|</span>
+						</div>
+					</div>
+				)}
+				{isLoading && !streamingMessage && (
 					<div className="message dm-message">
 						<div className="message-sender">Dungeon Master</div>
 						<div className="message-text loading">

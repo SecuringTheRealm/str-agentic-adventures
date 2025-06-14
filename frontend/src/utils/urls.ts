@@ -34,3 +34,10 @@ export const getWebSocketBaseUrl = (): string => {
 export const getCampaignWebSocketUrl = (campaignId: string): string => {
   return `${getWebSocketBaseUrl()}/ws/${campaignId}`;
 };
+
+/**
+ * Construct WebSocket URL for chat streaming
+ */
+export const getChatWebSocketUrl = (campaignId: string): string => {
+  return `${getWebSocketBaseUrl()}/ws/chat/${campaignId}`;
+};
