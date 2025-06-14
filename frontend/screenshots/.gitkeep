@@ -1,0 +1,2 @@
+# This file ensures the screenshots directory is tracked in Git
+# Screenshots are important for documentation but we'll ignore the actual image files in CI

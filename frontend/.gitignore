@@ -21,3 +21,12 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Playwright
+/test-results/
+/playwright-report/
+/playwright/.cache/
+
+# Keep screenshots directory structure but ignore large image files in CI
+screenshots/*.png
+!screenshots/.gitkeep
