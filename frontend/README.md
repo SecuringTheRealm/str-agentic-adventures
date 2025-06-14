@@ -32,8 +32,28 @@ You will also see any lint errors in the console.
 
 ### `npm test`
 
-Launches the test runner in interactive watch mode.\
+Launches the unit test runner in interactive watch mode using Vitest.
 See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+
+### `npm run test:run`
+
+Runs unit tests once without watch mode.
+
+### `npm run test:e2e`
+
+Runs end-to-end tests using Playwright. Tests the complete user journey including:
+- Campaign creation flow
+- Character creation and selection
+- Game session interaction
+- D&D 5e SRD compliance validation
+
+### `npm run test:e2e:ui`
+
+Runs E2E tests with interactive UI mode for debugging.
+
+### `npm run test:e2e:debug`
+
+Runs E2E tests in debug mode with browser visible.
 
 ### `npm run build`
 
@@ -43,7 +63,28 @@ It correctly bundles React in production mode and optimizes the build for the be
 The build is minified and the filenames include the hashes.\
 Your app is ready to be deployed!
 
-## Development Notes
+## Testing
+
+### Unit Tests
+- Uses **Vitest** for fast unit testing
+- Component testing with React Testing Library
+- Located in `src/**/*.test.tsx` files
+
+### End-to-End Tests
+- Uses **Playwright** for comprehensive E2E testing
+- Tests located in `e2e/` directory
+- Validates complete user workflows and D&D 5e compliance
+- Automatic screenshot capture for documentation
+- See [E2E Test Documentation](./e2e/README.md) for details
+
+### Test Coverage
+E2E tests validate key user stories from the Product Requirements Document:
+1. Campaign creation with D&D settings
+2. Character creation following D&D 5e SRD rules
+3. AI Dungeon Master interaction
+4. Dice rolling and skill checks
+5. Combat encounters
+6. Character progression and leveling
 
 ### TODO Items
 - **Spell Management UI**: Add spell slot tracking, prepared spells, and casting interface for spellcasters
