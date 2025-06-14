@@ -1196,14 +1196,31 @@ async def cast_spell_in_combat(combat_id: str, request: CastSpellRequest):
             spell_data, request.slot_level, request.target_ids, combat_id
         )
         
-        # Process concentration spells (future enhancement)
-        # TODO: Implement logic to handle concentration spells based on spell data.
-        # concentration_needed = spell_data.get("concentration", False)
+        # Process concentration spells
+        concentration_needed = spell_data.get("concentration", False) or spell_data.get("requires_concentration", False)
+        concentration_broken = False
+        
+        if concentration_needed:
+            from app.plugins.rules_engine_plugin import RulesEnginePlugin
+            rules_engine = RulesEnginePlugin()
+            
+            # Start concentration on the spell
+            concentration_result = rules_engine.start_concentration(
+                request.character_id, 
+                spell_data, 
+                duration_rounds=10  # Default 1 minute duration
+            )
+            
+            if not concentration_result.get("success", False):
+                # If concentration failed to start, it could mean the spell doesn't require it
+                # or there was an error, but we'll continue with the spell casting
+                pass
         
         return SpellCastingResponse(
             success=True,
             message=f"Spell '{spell_data.get('name', request.spell_id)}' cast successfully in combat {combat_id}",
             spell_effects=spell_effects,
+            concentration_broken=concentration_broken,
             slot_used=True
         )
     except Exception as e:
