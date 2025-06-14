@@ -18,7 +18,7 @@ test.describe('Complete User Journey - Manual Testing as a User', () => {
     console.log('🏰 Exploring campaign creation options...');
     
     // Wait for initial load and look for campaign interface elements
-    await page.waitForTimeout(2000);
+    await page.waitForSelector('button:has-text("Create"), button:has-text("Campaign"), button:has-text("New")', { timeout: 5000 });
     
     // Check what's initially visible
     const visibleElements = await page.locator('*').allTextContents();
