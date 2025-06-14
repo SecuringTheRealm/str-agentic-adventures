@@ -3,11 +3,10 @@ import { useEffect, useState } from "react";
 import {
 	type Campaign,
 	type Character,
-	sendPlayerInput,
 	generateImage,
 	generateBattleMap,
 } from "../services/api";
-import { getCampaignWebSocketUrl } from "../utils/urls";
+import { getCampaignWebSocketUrl, getChatWebSocketUrl } from "../utils/urls";
 import BattleMap from "./BattleMap";
 import CharacterSheet from "./CharacterSheet";
 import ChatBox from "./ChatBox";
@@ -57,9 +56,62 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 	const [currentImage, setCurrentImage] = useState<string | null>(null);
 	const [battleMapUrl, setBattleMapUrl] = useState<string | null>(null);
 	const [combatActive, setCombatActive] = useState<boolean>(false);
+	const [streamingMessage, setStreamingMessage] = useState<string>("");
+	const [isStreaming, setIsStreaming] = useState<boolean>(false);
 
-	// WebSocket integration for real-time updates
+	// WebSocket integration for campaign updates (non-chat)
 	const wsUrl = getCampaignWebSocketUrl(campaign.id);
+	// WebSocket integration for chat streaming  
+	const chatWsUrl = getChatWebSocketUrl(campaign.id);
+
+	const handleChatWebSocketMessage = (message: WebSocketMessage) => {
+		switch (message.type) {
+			case 'chat_start':
+				setLoading(true);
+				setIsStreaming(false);
+				setStreamingMessage("");
+				break;
+
+			case 'chat_typing':
+				setLoading(true);
+				setIsStreaming(false);
+				break;
+
+			case 'chat_start_stream':
+				setLoading(false);
+				setIsStreaming(true);
+				setStreamingMessage("");
+				break;
+
+			case 'chat_stream':
+				if (typeof message.chunk === 'string') {
+					setStreamingMessage(message.full_text || "");
+				}
+				break;
+
+			case 'chat_complete':
+				setIsStreaming(false);
+				setLoading(false);
+				if (message.message) {
+					setMessages(prev => [...prev, { text: message.message, sender: 'dm' }]);
+				}
+				setStreamingMessage("");
+				break;
+
+			case 'chat_error':
+				setIsStreaming(false);
+				setLoading(false);
+				setMessages(prev => [...prev, { 
+					text: message.message || "An error occurred processing your message.", 
+					sender: 'dm' 
+				}]);
+				setStreamingMessage("");
+				break;
+
+			default:
+				console.log('Unknown chat WebSocket message:', message);
+		}
+	};
 
 	const handleWebSocketMessage = (message: WebSocketMessage) => {
 		switch (message.type) {
@@ -93,6 +145,13 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 		onConnect: () => console.log('Connected to campaign WebSocket'),
 		onDisconnect: () => console.log('Disconnected from campaign WebSocket'),
 		onError: (error) => console.error('WebSocket error:', error)
+	});
+
+	const { socket: chatSocket, isConnected: chatConnected } = useWebSocket(chatWsUrl, {
+		onMessage: handleChatWebSocketMessage,
+		onConnect: () => console.log('Connected to chat WebSocket'),
+		onDisconnect: () => console.log('Disconnected from chat WebSocket'),
+		onError: (error) => console.error('Chat WebSocket error:', error)
 	});
 
 	useEffect(() => {
@@ -259,64 +318,37 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 			return;
 		}
 
+		// Check if chat WebSocket is connected
+		if (!chatConnected || !chatSocket) {
+			setMessages((prev) => [...prev, { 
+				text: "Chat connection is not available. Please wait and try again.", 
+				sender: "dm" 
+			}]);
+			return;
+		}
+
 		// Add player message to chat
 		setMessages((prev) => [...prev, { text: message, sender: "player" }]);
-		setLoading(true);
+		
+		// Send message via WebSocket for streaming response
+		const chatMessage = {
+			type: "chat_input",
+			message: message.trim(),
+			character_id: character.id,
+			campaign_id: campaign.id,
+		};
 
 		try {
-			// Send message to API with validated data
-			const response = await sendPlayerInput({
-				message: message.trim(),
-				character_id: character.id,
-				campaign_id: campaign.id,
-			});
-
-			// Validate response structure before processing
-			if (!response || typeof response !== 'object') {
-				throw new Error('Invalid response from server');
-			}
-
-			// Add DM response to chat
-			const responseMessage = response.message || "The DM seems speechless...";
-			setMessages((prev) => [
-				...prev,
-				{ text: responseMessage, sender: "dm" },
-			]);
-
-			// Update images if provided and valid
-			if (response.images && Array.isArray(response.images) && response.images.length > 0) {
-				const imageUrl = response.images[0];
-				if (imageUrl && typeof imageUrl === 'string') {
-					setCurrentImage(imageUrl);
-				}
-			}
-
-			// Handle combat updates if provided
-			if (response.combat_updates && typeof response.combat_updates === 'object') {
-				if (response.combat_updates.status) {
-					setCombatActive(response.combat_updates.status === "active");
-				}
-
-				// Set battle map if available and valid
-				if (response.combat_updates.map_url && typeof response.combat_updates.map_url === 'string') {
-					setBattleMapUrl(response.combat_updates.map_url);
-				}
-			}
+			chatSocket.send(JSON.stringify(chatMessage));
 		} catch (error) {
-			console.error("Error processing player input:", error);
-			
-			// Extract actual error message from the response
-			const errorMessage = extractErrorMessage(error, "Something went wrong. Please try again.");
-			
+			console.error("Error sending chat message:", error);
 			setMessages((prev) => [
 				...prev,
 				{
-					text: errorMessage,
+					text: "Failed to send message. Please try again.",
 					sender: "dm",
 				},
 			]);
-		} finally {
-			setLoading(false);
 		}
 	};
 
@@ -344,6 +376,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 						messages={messages}
 						onSendMessage={handlePlayerInput}
 						isLoading={loading}
+						streamingMessage={isStreaming ? streamingMessage : undefined}
 					/>
 				</div>
 
