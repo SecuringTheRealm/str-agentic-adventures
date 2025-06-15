@@ -10,6 +10,7 @@ from typing import Dict, Any, Tuple, List
 # ToolManager import commented out as it's causing issues
 # from semantic_kernel.tools.tool_manager import ToolManager
 
+from app.azure_openai_client import AzureOpenAIClient
 from app.kernel_setup import kernel_manager
 from app.agents.narrator_agent import get_narrator
 from app.agents.artist_agent import get_artist
