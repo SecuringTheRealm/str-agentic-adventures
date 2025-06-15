@@ -369,9 +369,6 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 		try {
 			setLoading(true);
 			
-			// Import API function
-			const { sendPlayerInput } = await import("../services/api");
-			
 			const response = await sendPlayerInput({
 				character_id: character.id,
 				campaign_id: campaign.id,
