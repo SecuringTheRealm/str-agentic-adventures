@@ -64,6 +64,9 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 	// WebSocket integration for chat streaming  
 	const chatWsUrl = getChatWebSocketUrl(campaign.id);
 
+	// Add fallback mode when WebSocket isn't available
+	const [useWebSocketFallback, setUseWebSocketFallback] = useState<boolean>(false);
+
 	const handleChatWebSocketMessage = (message: WebSocketMessage) => {
 		switch (message.type) {
 			case 'chat_start':
@@ -150,9 +153,18 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 	const { socket: chatSocket, isConnected: chatConnected } = useWebSocket(chatWsUrl, {
 		onMessage: handleChatWebSocketMessage,
 		onConnect: () => console.log('Connected to chat WebSocket'),
-		onDisconnect: () => console.log('Disconnected from chat WebSocket'),
-		onError: (error) => console.error('Chat WebSocket error:', error)
+		onDisconnect: () => {
+			console.log('Disconnected from chat WebSocket');
+			setUseWebSocketFallback(true);
+		},
+		onError: (error) => {
+			console.error('Chat WebSocket error:', error);
+			setUseWebSocketFallback(true);
+		}
 	});
+
+	// Fallback to REST API if WebSocket fails
+	const effectiveChatConnected = chatConnected || useWebSocketFallback;
 
 	useEffect(() => {
 		// Initial welcome message
@@ -318,8 +330,8 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 			return;
 		}
 
-		// Check if chat WebSocket is connected
-		if (!chatConnected || !chatSocket) {
+		// Check if chat WebSocket is connected or fallback is enabled
+		if (!effectiveChatConnected && !chatSocket) {
 			setMessages((prev) => [...prev, { 
 				text: "Chat connection is not available. Please wait and try again.", 
 				sender: "dm" 
@@ -330,25 +342,63 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 		// Add player message to chat
 		setMessages((prev) => [...prev, { text: message, sender: "player" }]);
 		
-		// Send message via WebSocket for streaming response
-		const chatMessage = {
-			type: "chat_input",
-			message: message.trim(),
-			character_id: character.id,
-			campaign_id: campaign.id,
-		};
+		// Try WebSocket first, fallback to REST API
+		if (chatConnected && chatSocket) {
+			// Send message via WebSocket for streaming response
+			const chatMessage = {
+				type: "chat_input",
+				message: message.trim(),
+				character_id: character.id,
+				campaign_id: campaign.id,
+			};
 
+			try {
+				chatSocket.send(JSON.stringify(chatMessage));
+			} catch (error) {
+				console.error("Error sending chat message:", error);
+				// Fallback to REST API
+				await handleRestApiMessage(message);
+			}
+		} else {
+			// Use REST API fallback
+			await handleRestApiMessage(message);
+		}
+	};
+
+	const handleRestApiMessage = async (message: string) => {
 		try {
-			chatSocket.send(JSON.stringify(chatMessage));
+			setLoading(true);
+			
+			const response = await sendPlayerInput({
+				character_id: character.id,
+				campaign_id: campaign.id,
+				input: message.trim(),
+			});
+
+			if (response.message) {
+				setMessages((prev) => [...prev, { 
+					text: response.message, 
+					sender: "dm" 
+				}]);
+			}
+
+			// Handle visuals if present
+			if (response.visuals && response.visuals.length > 0) {
+				const visual = response.visuals[0];
+				if (visual.image_url) {
+					setCurrentImage(visual.image_url);
+				}
+			}
+
 		} catch (error) {
-			console.error("Error sending chat message:", error);
-			setMessages((prev) => [
-				...prev,
-				{
-					text: "Failed to send message. Please try again.",
-					sender: "dm",
-				},
-			]);
+			console.error("Error with REST API fallback:", error);
+			const errorMessage = extractErrorMessage(error, "Failed to process your message. Please try again.");
+			setMessages((prev) => [...prev, {
+				text: errorMessage,
+				sender: "dm",
+			}]);
+		} finally {
+			setLoading(false);
 		}
 	};
 
