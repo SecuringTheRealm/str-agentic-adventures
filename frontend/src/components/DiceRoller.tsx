@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import './DiceRoller.css';
 import { apiClient } from '../services/api';
 
@@ -22,14 +22,38 @@ interface DiceRollerProps {
 	characterId?: string;
 	playerName?: string;
 	websocket?: WebSocket | null;
+	webSocketDiceResult?: DiceResult | null;
 }
 
-const DiceRoller: React.FC<DiceRollerProps> = ({ onRoll, characterId, playerName, websocket }) => {
+const DiceRoller: React.FC<DiceRollerProps> = ({ onRoll, characterId, playerName, websocket, webSocketDiceResult }) => {
 	const [notation, setNotation] = useState('1d20');
 	const [skill, setSkill] = useState('');
 	const [isRolling, setIsRolling] = useState(false);
 	const [lastResult, setLastResult] = useState<DiceResult | null>(null);
 	const [rollHistory, setRollHistory] = useState<DiceResult[]>([]);
+
+	// Handle WebSocket dice results
+	const completeWebSocketDiceRoll = useCallback((result: DiceResult) => {
+		// Add timestamp if not present
+		if (!result.timestamp) {
+			result.timestamp = new Date().toISOString();
+		}
+
+		setLastResult(result);
+		setRollHistory(prev => [result, ...prev.slice(0, 9)]); // Keep last 10 rolls
+		setIsRolling(false);
+
+		if (onRoll) {
+			onRoll(result);
+		}
+	}, [onRoll]);
+
+	// Handle WebSocket dice results when they come in
+	useEffect(() => {
+		if (webSocketDiceResult && isRolling) {
+			completeWebSocketDiceRoll(webSocketDiceResult);
+		}
+	}, [webSocketDiceResult, isRolling, completeWebSocketDiceRoll]);
 
 	const commonRolls = [
 		{ label: 'd20', notation: '1d20' },
