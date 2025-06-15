@@ -43,6 +43,13 @@ export const useWebSocket = (url: string, options: UseWebSocketOptions = {}) => 
 			return;
 		}
 
+		// Check if URL is valid
+		if (!url || !url.startsWith('ws')) {
+			console.error('Invalid WebSocket URL:', url);
+			setError('Invalid WebSocket URL');
+			return;
+		}
+
 		setIsConnecting(true);
 		setError(null);
 
