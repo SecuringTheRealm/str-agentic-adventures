@@ -5,6 +5,7 @@ import {
 	type Character,
 	generateImage,
 	generateBattleMap,
+	sendPlayerInput,
 } from "../services/api";
 import { getCampaignWebSocketUrl, getChatWebSocketUrl } from "../utils/urls";
 import BattleMap from "./BattleMap";
@@ -58,6 +59,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 	const [combatActive, setCombatActive] = useState<boolean>(false);
 	const [streamingMessage, setStreamingMessage] = useState<string>("");
 	const [isStreaming, setIsStreaming] = useState<boolean>(false);
+	const [webSocketDiceResult, setWebSocketDiceResult] = useState<any>(null);
 
 	// WebSocket integration for campaign updates (non-chat)
 	const wsUrl = getCampaignWebSocketUrl(campaign.id);
@@ -122,6 +124,11 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 				// Add dice result to chat
 				const diceMessage = `${message.player_name} rolled ${message.notation}: ${message.result.total}`;
 				setMessages(prev => [...prev, { text: diceMessage, sender: 'dm' }]);
+				
+				// Pass the dice result to the DiceRoller component
+				setWebSocketDiceResult(message.result);
+				// Clear it after a short delay to allow re-triggering if needed
+				setTimeout(() => setWebSocketDiceResult(null), 100);
 				break;
 
 			case 'game_update':
@@ -411,6 +418,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 						characterId={character.id}
 						playerName={character.name}
 						websocket={socket}
+						webSocketDiceResult={webSocketDiceResult}
 						onRoll={(result) => {
 							// Add dice roll to local chat if not using WebSocket
 							if (!isConnected) {
