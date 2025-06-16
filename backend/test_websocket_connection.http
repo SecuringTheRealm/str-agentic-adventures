@@ -1,0 +1,97 @@
+# WebSocket Connection Tests for STR Agentic Adventures
+# Use the REST Client extension in VS Code to test these endpoints
+
+### Variables
+@baseUrl = http://localhost:8000
+@campaignId = test-campaign-123
+@characterId = test-character-456
+
+### Test 1: Check if backend is running
+GET {{baseUrl}}/docs
+Accept: text/html
+
+### Test 2: Test basic API health (if available)
+GET {{baseUrl}}/api/
+Accept: application/json
+
+### Test 3: Test game API router availability
+GET {{baseUrl}}/api/game/campaigns
+Accept: application/json
+
+### Test 4: Create a test character first
+POST {{baseUrl}}/api/game/character
+Content-Type: application/json
+
+{
+  "name": "Test Character",
+  "race": "Human",
+  "character_class": "Fighter", 
+  "abilities": {
+    "strength": 15,
+    "dexterity": 14,
+    "constitution": 13,
+    "intelligence": 12,
+    "wisdom": 10,
+    "charisma": 8
+  },
+  "backstory": "A brave test character"
+}
+
+### Test 5: Create a test campaign
+POST {{baseUrl}}/api/game/campaign
+Content-Type: application/json
+
+{
+  "name": "Test Campaign",
+  "setting": "Fantasy Adventure",
+  "world_description": "A magical world for testing",
+  "tone": "heroic"
+}
+
+### Test 6: Test the REST API fallback endpoint that should work
+POST {{baseUrl}}/api/game/input
+Content-Type: application/json
+
+{
+  "message": "I look around the room",
+  "character_id": "{{characterId}}",
+  "campaign_id": "{{campaignId}}"
+}
+
+### Test 7: Test dice rolling endpoint
+POST {{baseUrl}}/api/game/dice/roll
+Content-Type: application/json
+
+{
+  "notation": "1d20"
+}
+
+### Test 8: Test WebSocket endpoint accessibility (this will fail in REST client but shows endpoint exists)
+# Note: WebSocket connections can't be tested with REST client, but we can verify the endpoint exists
+GET {{baseUrl}}/api/ws/chat/{{campaignId}}
+Accept: application/json
+
+### Test 9: Test campaign WebSocket endpoint
+GET {{baseUrl}}/api/ws/{{campaignId}}
+Accept: application/json
+
+### Test 10: Test if the main app is configured correctly
+GET {{baseUrl}}/api/game/character/{{characterId}}
+Accept: application/json
+
+### Test 11: Check OpenAPI docs for WebSocket routes
+GET {{baseUrl}}/openapi.json
+Accept: application/json
+
+### Test 12: Test image generation (might fail due to Azure config)
+POST {{baseUrl}}/api/game/generate-image
+Content-Type: application/json
+
+{
+  "image_type": "character_portrait",
+  "details": {
+    "name": "Test Character",
+    "race": "Human",
+    "class": "Fighter"
+  }
+}

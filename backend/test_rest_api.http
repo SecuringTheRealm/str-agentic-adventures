@@ -1,0 +1,204 @@
+# REST API Tests for STR Agentic Adventures Chat System
+# Use the REST Client extension in VS Code to test these endpoints
+
+### Variables
+@baseUrl = http://localhost:8000
+@campaignId = test-campaign-123
+@characterId = test-character-456
+
+### Test 1: Verify backend is running
+GET {{baseUrl}}/docs
+Accept: text/html
+
+###
+
+### Test 2: Check API health
+GET {{baseUrl}}/api/
+Accept: application/json
+
+###
+
+### Test 3: List all campaigns
+GET {{baseUrl}}/api/game/campaigns
+Accept: application/json
+
+###
+
+### Test 4: Create a working character for testing
+POST {{baseUrl}}/api/game/character
+Content-Type: application/json
+
+{
+  "name": "Test Hero",
+  "race": "Human",
+  "character_class": "Wizard",
+  "abilities": {
+    "strength": 10,
+    "dexterity": 12,
+    "constitution": 14,
+    "intelligence": 16,
+    "wisdom": 13,
+    "charisma": 11
+  },
+  "backstory": "A curious wizard eager to explore the world"
+}
+
+###
+
+### Test 5: Create a test campaign
+POST {{baseUrl}}/api/game/campaign
+Content-Type: application/json
+
+{
+  "name": "Debug Campaign",
+  "setting": "High Fantasy",
+  "world_description": "A mystical realm perfect for testing chat functionality",
+  "tone": "adventurous"
+}
+
+###
+
+### Test 6: Test the main player input endpoint (this is what the frontend fallback uses)
+POST {{baseUrl}}/api/game/input
+Content-Type: application/json
+
+{
+  "message": "I cast a light spell to illuminate the dark corridor ahead",
+  "character_id": "{{characterId}}",
+  "campaign_id": "{{campaignId}}"
+}
+
+###
+
+### Test 7: Test player input with simple message
+POST {{baseUrl}}/api/game/input
+Content-Type: application/json
+
+{
+  "message": "Hello, what do I see around me?",
+  "character_id": "{{characterId}}",
+  "campaign_id": "{{campaignId}}"
+}
+
+###
+
+### Test 8: Test player input with action
+POST {{baseUrl}}/api/game/input
+Content-Type: application/json
+
+{
+  "message": "I want to search for hidden doors or secret passages in this room",
+  "character_id": "{{characterId}}",
+  "campaign_id": "{{campaignId}}"
+}
+
+###
+
+### Test 9: Test with invalid character ID (should still work with fallback)
+POST {{baseUrl}}/api/game/input
+Content-Type: application/json
+
+{
+  "message": "Testing with invalid character ID",
+  "character_id": "invalid-character-id",
+  "campaign_id": "{{campaignId}}"
+}
+
+###
+
+### Test 10: Test with missing required fields (should return 422)
+POST {{baseUrl}}/api/game/input
+Content-Type: application/json
+
+{
+  "message": "Missing character and campaign IDs"
+}
+
+###
+
+### Test 11: Test basic dice rolling
+POST {{baseUrl}}/api/game/dice/roll
+Content-Type: application/json
+
+{
+  "notation": "1d20+5"
+}
+
+###
+
+### Test 12: Test dice rolling with character context
+POST {{baseUrl}}/api/game/dice/roll-with-character
+Content-Type: application/json
+
+{
+  "notation": "1d20",
+  "character_id": "{{characterId}}",
+  "skill": "perception"
+}
+
+###
+
+### Test 13: Get character details (verify character exists)
+GET {{baseUrl}}/api/game/character/{{characterId}}
+Accept: application/json
+
+###
+
+### Test 14: Get campaign details (verify campaign exists)
+GET {{baseUrl}}/api/game/campaign/{{campaignId}}
+Accept: application/json
+
+###
+
+### Test 15: Test image generation (may fail due to Azure config)
+POST {{baseUrl}}/api/game/generate-image
+Content-Type: application/json
+
+{
+  "image_type": "scene_illustration",
+  "details": {
+    "location": "tavern",
+    "mood": "welcoming",
+    "time": "evening"
+  }
+}
+
+###
+
+### Test 16: Test battle map generation (may fail due to Azure config)
+POST {{baseUrl}}/api/game/battle-map
+Content-Type: application/json
+
+{
+  "environment": {
+    "location": "dungeon room",
+    "terrain": "stone",
+    "size": "medium"
+  }
+}
+
+###
+
+### Test 17: Test AI assistance endpoint
+POST {{baseUrl}}/api/game/campaign/ai-assist
+Content-Type: application/json
+
+{
+  "text": "The heroes enter a dark cave",
+  "context_type": "description",
+  "campaign_tone": "adventurous"
+}
+
+###
+
+### Test 18: Test empty message validation
+POST {{baseUrl}}/api/game/input
+Content-Type: application/json
+
+{
+  "message": "",
+  "character_id": "{{characterId}}",
+  "campaign_id": "{{campaignId}}"
+}
+
+###
