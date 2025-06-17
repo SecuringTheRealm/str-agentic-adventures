@@ -379,7 +379,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 			const response = await sendPlayerInput({
 				character_id: character.id,
 				campaign_id: campaign.id,
-				input: message.trim(),
+				message: message.trim(),
 			});
 
 			if (response.message) {
@@ -390,10 +390,23 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 			}
 
 			// Handle visuals if present
-			if (response.visuals && response.visuals.length > 0) {
-				const visual = response.visuals[0];
-				if (visual.image_url) {
-					setCurrentImage(visual.image_url);
+			if (response.images && response.images.length > 0) {
+				const imageUrl = response.images[0];
+				if (imageUrl) {
+					setCurrentImage(imageUrl);
+				}
+			}
+
+			// Handle combat updates if present
+			if (response.combat_updates) {
+				if (response.combat_updates.status === 'active') {
+					setCombatActive(true);
+					if (response.combat_updates.map_url) {
+						setBattleMapUrl(response.combat_updates.map_url);
+					}
+				} else if (response.combat_updates.status === 'inactive') {
+					setCombatActive(false);
+					setBattleMapUrl(null);
 				}
 			}
 

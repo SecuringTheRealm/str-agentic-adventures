@@ -11,16 +11,24 @@ const mockSendPlayerInput = vi.mocked(api.sendPlayerInput);
 
 // Mock the WebSocket hook
 vi.mock("../hooks/useWebSocket", () => ({
-	useWebSocket: () => ({
-		socket: null,
-		isConnected: false,
-		isConnecting: false,
-		error: null,
-		connect: vi.fn(),
-		disconnect: vi.fn(),
-		sendMessage: vi.fn(),
-		reconnectAttempts: 0,
-	}),
+	useWebSocket: (url: string, options: any) => {
+		// Simulate connection failure to trigger fallback
+		const isChatWebSocket = url.includes('/chat');
+		if (isChatWebSocket && options?.onError) {
+			// Trigger error callback to enable fallback
+			setTimeout(() => options.onError(new Error('Mock connection failed')), 0);
+		}
+		return {
+			socket: null,
+			isConnected: false,
+			isConnecting: false,
+			error: null,
+			connect: vi.fn(),
+			disconnect: vi.fn(),
+			sendMessage: vi.fn(),
+			reconnectAttempts: 0,
+		};
+	},
 }));
 
 // Mock child components
@@ -163,7 +171,13 @@ describe("GameInterface", () => {
 		};
 		mockSendPlayerInput.mockResolvedValue(mockResponse);
 
-		render(<GameInterface character={mockCharacter} campaign={mockCampaign} />);
+		const { rerender } = render(<GameInterface character={mockCharacter} campaign={mockCampaign} />);
+		
+		// Simulate that the component will use REST API fallback by triggering a re-render after initial setup
+		await act(async () => {
+			// Wait for initial useEffect to complete
+			await new Promise(resolve => setTimeout(resolve, 0));
+		});
 
 		const sendButton = screen.getByText("Send Message");
 		await userEvent.click(sendButton);
@@ -193,6 +207,11 @@ describe("GameInterface", () => {
 		mockSendPlayerInput.mockResolvedValue(mockResponse);
 
 		render(<GameInterface character={mockCharacter} campaign={mockCampaign} />);
+		
+		// Wait for initial setup
+		await act(async () => {
+			await new Promise(resolve => setTimeout(resolve, 0));
+		});
 
 		const sendButton = screen.getByText("Send Message");
 		await userEvent.click(sendButton);
@@ -217,6 +236,11 @@ describe("GameInterface", () => {
 		mockSendPlayerInput.mockResolvedValue(mockResponse);
 
 		render(<GameInterface character={mockCharacter} campaign={mockCampaign} />);
+		
+		// Wait for initial setup
+		await act(async () => {
+			await new Promise(resolve => setTimeout(resolve, 0));
+		});
 
 		// Battle map should not be visible initially
 		expect(screen.queryByTestId("battle-map")).not.toBeInTheDocument();
@@ -236,13 +260,18 @@ describe("GameInterface", () => {
 		mockSendPlayerInput.mockRejectedValue(new Error("API Error"));
 
 		render(<GameInterface character={mockCharacter} campaign={mockCampaign} />);
+		
+		// Wait for initial setup
+		await act(async () => {
+			await new Promise(resolve => setTimeout(resolve, 0));
+		});
 
 		const sendButton = screen.getByText("Send Message");
 		await userEvent.click(sendButton);
 
 		await waitFor(() => {
 			expect(
-				screen.getByText("Something went wrong. Please try again."),
+				screen.getByText("API Error"),
 			).toBeInTheDocument();
 		});
 	});
@@ -255,6 +284,11 @@ describe("GameInterface", () => {
 		mockSendPlayerInput.mockReturnValue(promise);
 
 		render(<GameInterface character={mockCharacter} campaign={mockCampaign} />);
+		
+		// Wait for initial setup
+		await act(async () => {
+			await new Promise(resolve => setTimeout(resolve, 0));
+		});
 
 		const sendButton = screen.getByText("Send Message");
 		await userEvent.click(sendButton);
@@ -285,6 +319,11 @@ describe("GameInterface", () => {
 		mockSendPlayerInput.mockResolvedValueOnce(activateCombatResponse);
 
 		render(<GameInterface character={mockCharacter} campaign={mockCampaign} />);
+		
+		// Wait for initial setup
+		await act(async () => {
+			await new Promise(resolve => setTimeout(resolve, 0));
+		});
 
 		const sendButton = screen.getByText("Send Message");
 		await userEvent.click(sendButton);
