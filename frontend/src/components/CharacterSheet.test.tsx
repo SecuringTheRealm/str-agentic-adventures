@@ -46,8 +46,10 @@ describe("CharacterSheet", () => {
 		render(<CharacterSheet character={mockCharacter} />);
 
 		expect(screen.getByText("Armor Class")).toBeInTheDocument();
-		// Look for default armor class value
-		expect(screen.getByText("10")).toBeInTheDocument();
+		// Look for armor class specifically within the armor-class section
+		const armorClassSection = screen.getByText("Armor Class").closest('.armor-class');
+		expect(armorClassSection).toBeInTheDocument();
+		expect(armorClassSection?.textContent).toContain("10");
 	});
 
 	it("renders all ability scores", () => {
@@ -60,12 +62,14 @@ describe("CharacterSheet", () => {
 		expect(screen.getByText("WIS")).toBeInTheDocument();
 		expect(screen.getByText("CHA")).toBeInTheDocument();
 
-		// Check for ability scores being displayed
-		expect(screen.getByText("16")).toBeInTheDocument(); // STR
-		expect(screen.getByText("14")).toBeInTheDocument(); // DEX
-		expect(screen.getByText("15")).toBeInTheDocument(); // CON
-		expect(screen.getByText("12")).toBeInTheDocument(); // INT
-		expect(screen.getByText("18")).toBeInTheDocument(); // WIS
+		// Check for ability scores being displayed by finding the abilities section
+		const abilitiesSection = screen.getByText("Abilities").closest('.abilities');
+		expect(abilitiesSection).toBeInTheDocument();
+		expect(abilitiesSection?.textContent).toContain("16"); // STR
+		expect(abilitiesSection?.textContent).toContain("14"); // DEX
+		expect(abilitiesSection?.textContent).toContain("15"); // CON
+		expect(abilitiesSection?.textContent).toContain("12"); // INT
+		expect(abilitiesSection?.textContent).toContain("18"); // WIS
 	});
 
 	it("calculates and displays ability modifiers correctly", () => {
@@ -134,8 +138,9 @@ describe("CharacterSheet", () => {
 		render(<CharacterSheet character={mockCharacter} />);
 
 		expect(screen.getByText("Inventory")).toBeInTheDocument();
-		expect(screen.getByText("Longsword (1)")).toBeInTheDocument();
-		expect(screen.getByText("Health Potion (3)")).toBeInTheDocument();
+		expect(screen.getByText("Longsword")).toBeInTheDocument();
+		expect(screen.getByText("Health Potion")).toBeInTheDocument();
+		expect(screen.getByText("x3")).toBeInTheDocument(); // quantity indicator for Health Potion
 	});
 
 	it("handles extreme ability scores correctly", () => {
@@ -260,6 +265,9 @@ describe("CharacterSheet", () => {
 
 		// Default armor class should be shown
 		expect(screen.getByText("Armor Class")).toBeInTheDocument();
-		expect(screen.getByText("10")).toBeInTheDocument();
+		// Look for armor class specifically within the armor-class section
+		const armorClassSection = screen.getByText("Armor Class").closest('.armor-class');
+		expect(armorClassSection).toBeInTheDocument();
+		expect(armorClassSection?.textContent).toContain("10");
 	});
 });

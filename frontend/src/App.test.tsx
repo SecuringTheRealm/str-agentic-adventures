@@ -4,9 +4,9 @@ import React from "react";
 import App from "./App";
 
 // Mock the child components to focus on App integration
-vi.mock("./components/CampaignCreation", () => ({
+vi.mock("./components/CampaignSelection", () => ({
 	default: ({ onCampaignCreated }: { onCampaignCreated: (campaign: any) => void }) => (
-		<div data-testid="campaign-creation">
+		<div data-testid="campaign-selection">
 			<button 
 				onClick={() => onCampaignCreated({
 					id: "test-campaign",
@@ -18,6 +18,34 @@ vi.mock("./components/CampaignCreation", () => ({
 				})}
 			>
 				Create Campaign
+			</button>
+		</div>
+	),
+}));
+
+vi.mock("./components/CharacterSelection", () => ({
+	default: ({ campaign, onCharacterSelected }: { campaign: any; onCharacterSelected: (character: any) => void }) => (
+		<div data-testid="character-selection">
+			<button 
+				onClick={() => onCharacterSelected({
+					id: "test-character",
+					name: "Test Character",
+					race: "Human",
+					character_class: "Fighter",
+					level: 1,
+					abilities: {
+						strength: 15,
+						dexterity: 14,
+						constitution: 13,
+						intelligence: 12,
+						wisdom: 10,
+						charisma: 8
+					},
+					hit_points: { current: 10, maximum: 10 },
+					inventory: []
+				})}
+			>
+				Select Character
 			</button>
 		</div>
 	),
@@ -37,19 +65,32 @@ describe("App", () => {
 		expect(screen.getByText("Securing the Realm - Agentic Adventures")).toBeInTheDocument();
 	});
 
-	it("shows campaign creation by default", () => {
+	it("shows campaign selection by default", () => {
 		render(<App />);
-		expect(screen.getByTestId("campaign-creation")).toBeInTheDocument();
+		expect(screen.getByTestId("campaign-selection")).toBeInTheDocument();
 	});
 
-	it("switches to game interface after campaign creation", async () => {
+	it("shows character selection after campaign creation", async () => {
 		render(<App />);
 		
-		// Should start with campaign creation
-		expect(screen.getByTestId("campaign-creation")).toBeInTheDocument();
+		// Should start with campaign selection
+		expect(screen.getByTestId("campaign-selection")).toBeInTheDocument();
 		
 		// Create a campaign
 		await userEvent.click(screen.getByText("Create Campaign"));
+		
+		// Should now show character selection
+		expect(screen.getByTestId("character-selection")).toBeInTheDocument();
+	});
+
+	it("switches to game interface after character selection", async () => {
+		render(<App />);
+		
+		// Create a campaign
+		await userEvent.click(screen.getByText("Create Campaign"));
+		
+		// Select a character
+		await userEvent.click(screen.getByText("Select Character"));
 		
 		// Should now show game interface
 		expect(screen.getByTestId("game-interface")).toBeInTheDocument();
@@ -59,24 +100,26 @@ describe("App", () => {
 	it("shows back button when game is started", async () => {
 		render(<App />);
 		
-		// Create a campaign to start the game
+		// Create a campaign and select character to start the game
 		await userEvent.click(screen.getByText("Create Campaign"));
+		await userEvent.click(screen.getByText("Select Character"));
 		
 		// Should show back button
 		expect(screen.getByText("← Back to Campaigns")).toBeInTheDocument();
 	});
 
-	it("returns to campaign creation when back button is clicked", async () => {
+	it("returns to campaign selection when back button is clicked", async () => {
 		render(<App />);
 		
 		// Start a game
 		await userEvent.click(screen.getByText("Create Campaign"));
+		await userEvent.click(screen.getByText("Select Character"));
 		expect(screen.getByTestId("game-interface")).toBeInTheDocument();
 		
 		// Go back
 		await userEvent.click(screen.getByText("← Back to Campaigns"));
 		
-		// Should be back to campaign creation
-		expect(screen.getByTestId("campaign-creation")).toBeInTheDocument();
+		// Should be back to campaign selection
+		expect(screen.getByTestId("campaign-selection")).toBeInTheDocument();
 	});
 });
