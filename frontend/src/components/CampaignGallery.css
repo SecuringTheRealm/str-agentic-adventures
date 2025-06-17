@@ -2,22 +2,35 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
+  background: rgba(15, 64, 79, 0.8); /* Semi-transparent primary fantasy color */
+  border-radius: 8px;
+  border: 2px solid #E4BB1E; /* Gold border to match theme */
 }
 
 .gallery-header {
   text-align: center;
   margin-bottom: 3rem;
+  padding: 2rem;
+  background: rgba(26, 47, 58, 0.6); /* Darker background for emphasis */
+  border-radius: 12px;
+  border: 2px solid #E4BB1E; /* Gold border for prominence */
 }
 
 .gallery-header h2 {
-  font-size: 2.5rem;
-  color: #2c3e50;
+  font-size: 3rem; /* Larger size for prominence */
+  color: #E4BB1E; /* Gold accent color */
   margin-bottom: 0.5rem;
+  font-family: 'Cinzel Decorative', serif; /* More decorative font */
+  font-weight: 700;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Strong shadow for readability */
+  letter-spacing: 1px; /* Better spacing */
 }
 
 .gallery-header p {
-  font-size: 1.1rem;
-  color: #7f8c8d;
+  font-size: 1.2rem; /* Slightly larger */
+  color: #f4f1e8; /* Warm off-white for better contrast */
+  font-family: 'Cinzel', serif;
+  font-weight: 500;
 }
 
 .campaign-options {
@@ -28,26 +41,28 @@
 }
 
 .campaign-card, .custom-campaign-card {
-  background: white;
+  background: rgba(26, 47, 58, 0.7); /* Darker fantasy background */
   border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
   overflow: hidden;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  border: 2px solid transparent;
+  border: 2px solid #788070; /* Steel border */
 }
 
 .campaign-card:hover, .custom-campaign-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 25px rgba(228, 187, 30, 0.3); /* Gold shadow */
+  border-color: #E4BB1E; /* Gold border on hover */
 }
 
 .custom-campaign-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #B15005 0%, #D67C2D 100%); /* Wood gradient to match theme */
   color: white;
+  border-color: #E4BB1E; /* Gold border */
 }
 
 .custom-campaign-card .card-content {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.2); /* Darker overlay for better readability */
 }
 
 .card-content {
@@ -73,12 +88,14 @@
 .card-header h3 {
   font-size: 1.3rem;
   margin: 0;
-  color: #2c3e50;
+  color: #E4BB1E; /* Gold color for card titles */
   flex: 1;
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
 }
 
 .custom-campaign-card .card-header h3 {
-  color: white;
+  color: white; /* Keep white for custom card */
 }
 
 .tone-badge {
@@ -118,13 +135,13 @@
 .card-description {
   font-size: 0.95rem;
   line-height: 1.6;
-  color: #5a6c7d;
+  color: #f4f1e8; /* Light warm text for better contrast */
   margin-bottom: 1.5rem;
   flex: 1;
 }
 
 .custom-campaign-card .card-description {
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.95); /* Slightly more opaque white */
 }
 
 .card-details {
@@ -138,13 +155,14 @@
 
 .detail-item strong {
   display: block;
-  color: #2c3e50;
+  color: #E4BB1E; /* Gold color for labels */
   margin-bottom: 0.25rem;
   font-weight: 600;
+  font-family: 'Cinzel', serif;
 }
 
 .detail-item span {
-  color: #7f8c8d;
+  color: #f4f1e8; /* Light warm text */
   line-height: 1.4;
 }
 
@@ -154,44 +172,49 @@
 }
 
 .detail-item li {
-  color: #7f8c8d;
+  color: #f4f1e8; /* Light warm text */
   margin-bottom: 0.25rem;
   font-size: 0.85rem;
 }
 
 .select-button {
-  background: #3498db;
+  background: linear-gradient(135deg, #B15005, #D67C2D); /* Wood gradient to match theme */
   color: white;
-  border: none;
+  border: 1px solid #E4BB1E; /* Gold border */
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
   margin-top: auto;
+  font-family: 'Cinzel', serif;
 }
 
 .select-button:hover:not(:disabled) {
-  background: #2980b9;
+  background: linear-gradient(135deg, #D67C2D, #E4953F); /* Lighter wood on hover */
+  box-shadow: 0 2px 4px rgba(228, 187, 30, 0.3);
 }
 
 .select-button:disabled {
-  background: #bdc3c7;
+  background: rgba(120, 128, 112, 0.6); /* Steel color when disabled */
   cursor: not-allowed;
+  border-color: #788070;
 }
 
 .select-button.custom {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.3); /* Dark transparent background */
+  border-color: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(10px);
 }
 
 .select-button.custom:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(0, 0, 0, 0.5);
+  border-color: white;
 }
 
 .loading-spinner {
@@ -262,14 +285,17 @@
 .no-templates {
   text-align: center;
   padding: 3rem 1rem;
-  background: #f8f9fa;
+  background: rgba(15, 64, 79, 0.4); /* Semi-transparent primary */
   border-radius: 12px;
-  color: #6c757d;
+  color: #f4f1e8; /* Light warm text */
+  border: 2px dashed #788070; /* Steel dashed border */
 }
 
 .no-templates h3 {
   margin: 0 0 1rem 0;
-  color: #495057;
+  color: #E4BB1E; /* Gold color for headings */
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
 }
 
 .no-templates button {

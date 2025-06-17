@@ -2,6 +2,9 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
+  background: rgba(15, 64, 79, 0.8); /* Semi-transparent primary fantasy color */
+  border-radius: 8px;
+  border: 2px solid #E4BB1E; /* Gold border to match theme */
 }
 
 .manager-header {
@@ -10,24 +13,29 @@
   align-items: flex-start;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid #f1f5f9;
+  border-bottom: 2px solid #E4BB1E; /* Gold accent border */
 }
 
 .header-content h1 {
   font-size: 2.5rem;
-  color: #2c3e50;
+  color: #E4BB1E; /* Gold accent color for main title */
   margin: 0 0 0.5rem 0;
+  font-family: 'Cinzel', serif; /* Match fantasy theme font */
+  font-weight: 600;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* Better readability */
 }
 
 .header-content p {
-  color: #64748b;
+  color: #f4f1e8; /* Warm off-white for better contrast */
   font-size: 1.1rem;
   margin: 0;
 }
 
 .manager-header h2 {
-  color: #2c3e50;
+  color: #E4BB1E; /* Gold color for consistency */
   margin: 0;
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
 }
 
 .header-actions {
@@ -38,22 +46,26 @@
 
 .view-toggle {
   padding: 0.5rem 1rem;
-  border: 2px solid #e2e8f0;
-  background: white;
+  border: 2px solid #788070; /* Steel color border */
+  background: rgba(15, 64, 79, 0.6); /* Semi-transparent primary */
+  color: #f4f1e8; /* Light text for contrast */
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
   font-weight: 500;
+  font-family: 'Cinzel', serif;
 }
 
 .view-toggle:hover {
-  border-color: #cbd5e1;
+  border-color: #E4BB1E; /* Gold on hover */
+  background: rgba(15, 64, 79, 0.8);
 }
 
 .view-toggle.active {
-  background: #3b82f6;
-  color: white;
-  border-color: #3b82f6;
+  background: #E4BB1E; /* Gold background when active */
+  color: #0F404F; /* Dark text for contrast on gold */
+  border-color: #E4BB1E;
+  font-weight: 600;
 }
 
 .action-button {
@@ -70,39 +82,40 @@
   text-decoration: none;
   text-align: center;
   justify-content: center;
+  font-family: 'Cinzel', serif;
 }
 
 .action-button.primary {
-  background: #3b82f6;
+  background: linear-gradient(135deg, #B15005, #D67C2D); /* Wood gradient to match theme */
   color: white;
-  border-color: #3b82f6;
+  border-color: #E4BB1E; /* Gold border */
 }
 
 .action-button.primary:hover:not(:disabled) {
-  background: #2563eb;
-  border-color: #2563eb;
+  background: linear-gradient(135deg, #D67C2D, #E4953F); /* Lighter wood on hover */
+  box-shadow: 0 2px 4px rgba(228, 187, 30, 0.3);
 }
 
 .action-button.secondary {
-  background: white;
-  color: #6b7280;
-  border-color: #d1d5db;
+  background: rgba(120, 128, 112, 0.8); /* Steel color with transparency */
+  color: #f4f1e8;
+  border-color: #788070;
 }
 
 .action-button.secondary:hover:not(:disabled) {
-  background: #f9fafb;
-  border-color: #9ca3af;
+  background: rgba(144, 140, 107, 0.9); /* Stone color on hover */
+  border-color: #E4BB1E;
 }
 
 .action-button.danger {
-  background: #ef4444;
+  background: linear-gradient(135deg, #8B4513, #A0522D); /* Brown gradients for danger */
   color: white;
-  border-color: #ef4444;
+  border-color: #A0522D;
 }
 
 .action-button.danger:hover:not(:disabled) {
-  background: #dc2626;
-  border-color: #dc2626;
+  background: linear-gradient(135deg, #A0522D, #CD853F);
+  border-color: #CD853F;
 }
 
 .action-button.small {
@@ -171,8 +184,8 @@
 }
 
 .campaign-item {
-  background: white;
-  border: 2px solid #e2e8f0;
+  background: rgba(26, 47, 58, 0.6); /* Darker fantasy background */
+  border: 2px solid #788070; /* Steel color border */
   border-radius: 12px;
   padding: 1.5rem;
   display: flex;
@@ -182,8 +195,9 @@
 }
 
 .campaign-item:hover {
-  border-color: #cbd5e1;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-color: #E4BB1E; /* Gold border on hover */
+  box-shadow: 0 4px 6px rgba(228, 187, 30, 0.2);
+  background: rgba(26, 47, 58, 0.8);
 }
 
 .campaign-info {
@@ -193,12 +207,14 @@
 
 .campaign-info h3 {
   margin: 0 0 0.5rem 0;
-  color: #1f2937;
+  color: #E4BB1E; /* Gold color for campaign names */
   font-size: 1.25rem;
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
 }
 
 .campaign-description {
-  color: #6b7280;
+  color: #f4f1e8; /* Light warm text */
   margin: 0 0 1rem 0;
   line-height: 1.5;
 }
@@ -260,9 +276,9 @@
 .empty-state {
   text-align: center;
   padding: 3rem 2rem;
-  background: #f8fafc;
+  background: rgba(15, 64, 79, 0.4); /* Semi-transparent primary */
   border-radius: 12px;
-  border: 2px dashed #cbd5e1;
+  border: 2px dashed #788070; /* Steel dashed border */
 }
 
 .empty-icon {
@@ -271,12 +287,14 @@
 }
 
 .empty-state h3 {
-  color: #374151;
+  color: #E4BB1E; /* Gold color for headings */
   margin: 0 0 0.5rem 0;
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
 }
 
 .empty-state p {
-  color: #6b7280;
+  color: #f4f1e8; /* Light warm text */
   margin: 0 0 2rem 0;
 }
 

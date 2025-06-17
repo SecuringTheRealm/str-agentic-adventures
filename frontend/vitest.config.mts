@@ -30,5 +30,13 @@ export default defineConfig({
     clearMocks: true,
     // Better isolation between tests
     isolate: true,
+    // Exclude e2e tests from vitest (they should be run with Playwright)
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/e2e/**',
+      '**/.{git,cache,output,temp}/**',
+      '**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*'
+    ],
   },
 })
