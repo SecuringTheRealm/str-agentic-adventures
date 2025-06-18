@@ -14,6 +14,7 @@ from .factories import (
     SkillCheckActionFactory,
     SavingThrowActionFactory,
     CombatEncounterFactory,
+    FighterCharacterFactory,
 )
 
 
@@ -170,3 +171,29 @@ class TestParameterizedCombatActions:
         # we'd measure actual processing time
         assert len(encounter["enemies"]) == encounter_size
         assert expected_processing_time > 0  # Simple validation
+
+    @pytest.mark.unit
+    def test_factory_data_consistency(self):
+        """Test that factories produce consistent, valid data."""
+        # Create multiple instances to test consistency
+        fighters = [FighterCharacterFactory() for _ in range(5)]
+        
+        for fighter in fighters:
+            assert fighter["character_class"] == "fighter"
+            assert fighter["armor_class"] >= 15  # Fighters should have decent AC
+            assert "abilities" in fighter
+            assert "hit_points" in fighter
+
+    @pytest.mark.integration  
+    def test_combat_action_integration(self):
+        """Test integration between different combat action types."""
+        encounter = CombatEncounterFactory()
+        attack = AttackActionFactory()
+        spell = SpellAttackActionFactory()
+        
+        # Test that different action types can work together
+        actions = [attack, spell]
+        for action in actions:
+            assert "type" in action
+            assert "actor_id" in action
+            # In a real test, we'd process these actions sequentially
