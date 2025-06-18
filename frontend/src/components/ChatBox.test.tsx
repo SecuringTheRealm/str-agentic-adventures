@@ -121,8 +121,8 @@ describe("ChatBox", () => {
 		render(<ChatBox {...defaultProps} isLoading={true} />);
 
 		expect(screen.getByText("Dungeon Master")).toBeInTheDocument();
-		// Use Testing Library query instead of querySelector
-		expect(screen.getByTestId("typing-indicator")).toBeInTheDocument();
+		// Look for the typing indicator by its class
+		expect(document.querySelector(`.${styles.typingIndicator}`)).toBeInTheDocument();
 	});
 
 	it("prevents submission when loading", async () => {
