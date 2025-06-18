@@ -55,6 +55,7 @@ from app.agents.scribe_agent import get_scribe
 from app.agents.combat_cartographer_agent import get_combat_cartographer
 from app.agents.artist_agent import get_artist
 from app.services.campaign_service import campaign_service
+from app.config import ConfigDep
 
 # Create a logger for this module
 logger = logging.getLogger(__name__)
@@ -63,9 +64,17 @@ router = APIRouter(tags=["game"])
 
 
 @router.post("/character", response_model=CharacterSheet)
-async def create_character(character_data: CreateCharacterRequest):
+async def create_character(character_data: CreateCharacterRequest, config: ConfigDep):
     """Create a new player character."""
     try:
+        # Check if Azure OpenAI is configured
+        if not config.is_azure_openai_configured():
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Azure OpenAI configuration is missing or invalid. "
+                       "This agentic demo requires proper Azure OpenAI setup."
+            )
+        
         # Convert Pydantic model to dictionary for the agent
         character_dict = character_data.model_dump()
 
@@ -81,33 +90,80 @@ async def create_character(character_data: CreateCharacterRequest):
             )
 
         return character_sheet
+    except HTTPException:
+        # Re-raise HTTPExceptions as-is
+        raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to create character: {str(e)}",
-        )
+        # Handle configuration errors specifically
+        error_msg = str(e)
+        if "Azure OpenAI configuration" in error_msg:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=error_msg
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to create character: {str(e)}",
+            )
 
 
 @router.get("/character/{character_id}", response_model=Dict[str, Any])
-async def get_character(character_id: str):
+async def get_character(character_id: str, config: ConfigDep):
     """Retrieve a character sheet by ID."""
-    character = await get_scribe().get_character(character_id)
+    try:
+        # Check if Azure OpenAI is configured
+        if not config.is_azure_openai_configured():
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Azure OpenAI configuration is missing or invalid. "
+                       "This agentic demo requires proper Azure OpenAI setup."
+            )
+        
+        character = await get_scribe().get_character(character_id)
 
-    if not character:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Character {character_id} not found",
-        )
+        if not character:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Character {character_id} not found",
+            )
+
+        return character
+    except HTTPException:
+        # Re-raise HTTPExceptions as-is
+        raise
+    except Exception as e:
+        # Handle configuration errors specifically
+        error_msg = str(e)
+        if "Azure OpenAI configuration" in error_msg:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=error_msg
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to retrieve character: {str(e)}",
+            )
 
     return character
 
 
 @router.post("/campaign", response_model=Campaign)
-async def create_campaign(campaign_data: CreateCampaignRequest):
+async def create_campaign(campaign_data: CreateCampaignRequest, config: ConfigDep):
     """Create a new campaign."""
     try:
+        # Check if Azure OpenAI is configured
+        if not config.is_azure_openai_configured():
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Azure OpenAI configuration is missing or invalid. "
+                       "This agentic demo requires proper Azure OpenAI setup."
+            )
+        
         campaign = campaign_service.create_campaign(campaign_data)
         return campaign
+    except HTTPException:
+        # Re-raise HTTPExceptions as-is
+        raise
     except ValueError as e:
         # Handle configuration errors specifically
         error_msg = str(e)
