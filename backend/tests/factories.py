@@ -3,11 +3,20 @@ Factory classes for generating test data using pytest-factoryboy.
 
 This module provides factory classes for creating common test data patterns,
 reducing code duplication and making tests more maintainable.
+
+Note: This module requires factory_boy to be installed. If factory_boy is not
+available, importing this module will raise an ImportError.
 """
 
-import factory
-from factory import fuzzy
-import uuid
+try:
+    import factory
+    from factory import fuzzy
+    import uuid
+except ImportError as e:
+    raise ImportError(
+        "factory_boy is required for test factories. "
+        "Install it with: pip install factory_boy pytest-factoryboy"
+    ) from e
 
 
 class AbilitiesFactory(factory.DictFactory):

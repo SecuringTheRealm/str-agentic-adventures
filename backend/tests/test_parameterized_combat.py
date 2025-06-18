@@ -7,14 +7,35 @@ with parameterized tests for better maintainability.
 import pytest
 from unittest.mock import Mock
 from app.plugins.rules_engine_plugin import RulesEnginePlugin
-from .factories import (
-    AttackActionFactory,
-    SpellAttackActionFactory,
-    SpellDamageActionFactory,
-    SkillCheckActionFactory,
-    SavingThrowActionFactory,
-    CombatEncounterFactory,
-    FighterCharacterFactory,
+
+# Import factories with graceful degradation
+try:
+    from .factories import (
+        AttackActionFactory,
+        SpellAttackActionFactory,
+        SpellDamageActionFactory,
+        SkillCheckActionFactory,
+        SavingThrowActionFactory,
+        CombatEncounterFactory,
+        FighterCharacterFactory,
+    )
+    _FACTORIES_AVAILABLE = True
+except ImportError:
+    # factory_boy not available - tests will be skipped
+    _FACTORIES_AVAILABLE = False
+    AttackActionFactory = None
+    SpellAttackActionFactory = None
+    SpellDamageActionFactory = None
+    SkillCheckActionFactory = None
+    SavingThrowActionFactory = None
+    CombatEncounterFactory = None
+    FighterCharacterFactory = None
+
+
+# Skip all tests in this module if factories are not available
+pytestmark = pytest.mark.skipif(
+    not _FACTORIES_AVAILABLE, 
+    reason="factory_boy not available - parameterized tests require factories"
 )
 
 
