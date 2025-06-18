@@ -4,6 +4,7 @@ import React from "react";
 import * as api from "../services/api";
 import type { Campaign, Character } from "../services/api";
 import GameInterface from "./GameInterface";
+import styles from "./GameInterface.module.css";
 
 // Mock the API module
 vi.mock("../services/api");
@@ -353,10 +354,10 @@ describe("GameInterface", () => {
 			<GameInterface character={mockCharacter} campaign={mockCampaign} />,
 		);
 
-		expect(container.querySelector(".game-interface")).toBeInTheDocument();
-		expect(container.querySelector(".game-container")).toBeInTheDocument();
-		expect(container.querySelector(".left-panel")).toBeInTheDocument();
-		expect(container.querySelector(".center-panel")).toBeInTheDocument();
-		expect(container.querySelector(".right-panel")).toBeInTheDocument();
+		expect(container.querySelector(`.${styles.gameInterface}`)).toBeInTheDocument();
+		expect(container.querySelector(`.${styles.gameContainer}`)).toBeInTheDocument();
+		expect(container.querySelector(`.${styles.leftPanel}`)).toBeInTheDocument();
+		expect(container.querySelector(`.${styles.centerPanel}`)).toBeInTheDocument();
+		expect(container.querySelector(`.${styles.rightPanel}`)).toBeInTheDocument();
 	});
 });

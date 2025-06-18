@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import React from "react";
 import type { Character } from "../services/api";
 import CharacterSheet from "./CharacterSheet";
+import styles from "./CharacterSheet.module.css";
 
 describe("CharacterSheet", () => {
 	const mockCharacter: Character = {
@@ -47,7 +48,7 @@ describe("CharacterSheet", () => {
 
 		expect(screen.getByText("Armor Class")).toBeInTheDocument();
 		// Look for armor class specifically within the armor-class section
-		const armorClassSection = screen.getByText("Armor Class").closest('.armor-class');
+		const armorClassSection = screen.getByText("Armor Class").closest(`.${styles.armorClass}`);
 		expect(armorClassSection).toBeInTheDocument();
 		expect(armorClassSection?.textContent).toContain("10");
 	});
@@ -63,7 +64,7 @@ describe("CharacterSheet", () => {
 		expect(screen.getByText("CHA")).toBeInTheDocument();
 
 		// Check for ability scores being displayed by finding the abilities section
-		const abilitiesSection = screen.getByText("Abilities").closest('.abilities');
+		const abilitiesSection = screen.getByText("Abilities").closest(`.${styles.abilities}`);
 		expect(abilitiesSection).toBeInTheDocument();
 		expect(abilitiesSection?.textContent).toContain("16"); // STR
 		expect(abilitiesSection?.textContent).toContain("14"); // DEX
@@ -266,7 +267,7 @@ describe("CharacterSheet", () => {
 		// Default armor class should be shown
 		expect(screen.getByText("Armor Class")).toBeInTheDocument();
 		// Look for armor class specifically within the armor-class section
-		const armorClassSection = screen.getByText("Armor Class").closest('.armor-class');
+		const armorClassSection = screen.getByText("Armor Class").closest(`.${styles.armorClass}`);
 		expect(armorClassSection).toBeInTheDocument();
 		expect(armorClassSection?.textContent).toContain("10");
 	});

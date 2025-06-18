@@ -14,7 +14,7 @@ import ChatBox from "./ChatBox";
 import ImageDisplay from "./ImageDisplay";
 import DiceRoller from "./DiceRoller";
 import { useWebSocket, type WebSocketMessage } from "../hooks/useWebSocket";
-import "./GameInterface.css";
+import styles from "./GameInterface.module.css";
 
 interface GameInterfaceProps {
 	character: Character;
@@ -423,9 +423,9 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 	};
 
 	return (
-		<div className="game-interface">
-			<div className="game-container">
-				<div className="left-panel">
+		<div className={styles.gameInterface}>
+			<div className={styles.gameContainer}>
+				<div className={styles.leftPanel}>
 					<CharacterSheet character={character} />
 					<DiceRoller
 						characterId={character.id}
@@ -442,7 +442,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 					/>
 				</div>
 
-				<div className="center-panel">
+				<div className={styles.centerPanel}>
 					<ChatBox
 						messages={messages}
 						onSendMessage={handlePlayerInput}
@@ -451,40 +451,40 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 					/>
 				</div>
 
-				<div className="right-panel">
-					<div className="visual-controls">
+				<div className={styles.rightPanel}>
+					<div className={styles.visualControls}>
 						<h4>Generate Visuals</h4>
-						<div className="visual-buttons">
+						<div className={styles.visualButtons}>
 							<button
 								onClick={handleGenerateCharacterPortrait}
 								disabled={imageLoading}
-								className="visual-button"
+								className={styles.visualButton}
 							>
 								{imageLoading ? "Generating..." : "Character Portrait"}
 							</button>
 							<button
 								onClick={handleGenerateSceneIllustration}
 								disabled={imageLoading}
-								className="visual-button"
+								className={styles.visualButton}
 							>
 								{imageLoading ? "Generating..." : "Scene Illustration"}
 							</button>
 							<button
 								onClick={handleGenerateBattleMap}
 								disabled={imageLoading}
-								className="visual-button"
+								className={styles.visualButton}
 							>
 								{imageLoading ? "Generating..." : "Battle Map"}
 							</button>
 						</div>
 					</div>
 
-					<div className="image-section">
+					<div className={styles.imageSection}>
 						<ImageDisplay imageUrl={currentImage} />
 					</div>
 
 					{combatActive && (
-						<div className="battle-map-section">
+						<div className={styles.battleMapSection}>
 							<BattleMap mapUrl={battleMapUrl} />
 						</div>
 					)}

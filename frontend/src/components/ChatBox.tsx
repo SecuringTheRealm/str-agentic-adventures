@@ -1,6 +1,6 @@
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import "./ChatBox.css";
+import styles from "./ChatBox.module.css";
 
 interface ChatMessage {
 	text: string;
@@ -44,33 +44,33 @@ const ChatBox: React.FC<ChatBoxProps> = ({
 	};
 
 	return (
-		<div className="chat-box">
-			<div className="messages-container">
+		<div className={styles.chatBox}>
+			<div className={styles.messagesContainer}>
 				{messages.map((message, index) => (
 					<div
 						key={`${message.text}-${index}`}
-						className={`message ${message.sender === "player" ? "player-message" : "dm-message"}`}
+						className={`${styles.message} ${message.sender === "player" ? styles.playerMessage : styles.dmMessage}`}
 					>
-						<div className="message-sender">
+						<div className={styles.messageSender}>
 							{message.sender === "player" ? "You" : "Dungeon Master"}
 						</div>
-						<div className="message-text">{message.text}</div>
+						<div className={styles.messageText}>{message.text}</div>
 					</div>
 				))}
 				{streamingMessage && (
-					<div className="message dm-message">
-						<div className="message-sender">Dungeon Master</div>
-						<div className="message-text streaming">
+					<div className={`${styles.message} ${styles.dmMessage}`}>
+						<div className={styles.messageSender}>Dungeon Master</div>
+						<div className={`${styles.messageText} ${styles.streaming}`}>
 							{streamingMessage}
-							<span className="streaming-cursor">|</span>
+							<span className={styles.streamingCursor}>|</span>
 						</div>
 					</div>
 				)}
 				{isLoading && !streamingMessage && (
-					<div className="message dm-message">
-						<div className="message-sender">Dungeon Master</div>
-						<div className="message-text loading">
-							<div className="typing-indicator">
+					<div className={`${styles.message} ${styles.dmMessage}`}>
+						<div className={styles.messageSender}>Dungeon Master</div>
+						<div className={`${styles.messageText} ${styles.loading}`}>
+							<div className={styles.typingIndicator}>
 								<span />
 								<span />
 								<span />
@@ -81,7 +81,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
 				<div ref={messagesEndRef} />
 			</div>
 
-			<form className="input-form" onSubmit={handleSubmit}>
+			<form className={styles.inputForm} onSubmit={handleSubmit}>
 				<input
 					type="text"
 					value={input}
