@@ -28,7 +28,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
 	const getEncumbranceStatus = (character: Character): string => {
 		const totalWeight = calculateTotalWeight(character.inventory || []);
 		const strength = character.abilities.strength;
-		const carryingCapacity = strength * 15;
+		const carryingCapacity = (strength || 10) * 15;
 		const heavyLoad = carryingCapacity * 2;
 		
 		if (totalWeight <= carryingCapacity) return "Normal";
@@ -67,19 +67,19 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
 	};
 
 	const calculateSpellSaveDC = (character: Character): number => {
-		const proficiencyBonus = Math.ceil(character.level / 4) + 1;
-		const spellcastingAbility = getSpellcastingAbility(character.character_class);
+		const proficiencyBonus = Math.ceil((character.level || 1) / 4) + 1;
+		const spellcastingAbility = getSpellcastingAbility(character.character_class || 'fighter');
 		let abilityModifier = 0;
 		
 		switch (spellcastingAbility) {
 			case 'Intelligence':
-				abilityModifier = Math.floor((character.abilities.intelligence - 10) / 2);
+				abilityModifier = Math.floor(((character.abilities.intelligence || 10) - 10) / 2);
 				break;
 			case 'Wisdom':
-				abilityModifier = Math.floor((character.abilities.wisdom - 10) / 2);
+				abilityModifier = Math.floor(((character.abilities.wisdom || 10) - 10) / 2);
 				break;
 			case 'Charisma':
-				abilityModifier = Math.floor((character.abilities.charisma - 10) / 2);
+				abilityModifier = Math.floor(((character.abilities.charisma || 10) - 10) / 2);
 				break;
 		}
 		
@@ -87,19 +87,19 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
 	};
 
 	const calculateSpellAttackBonus = (character: Character): number => {
-		const proficiencyBonus = Math.ceil(character.level / 4) + 1;
-		const spellcastingAbility = getSpellcastingAbility(character.character_class);
+		const proficiencyBonus = Math.ceil((character.level || 1) / 4) + 1;
+		const spellcastingAbility = getSpellcastingAbility(character.character_class || 'fighter');
 		let abilityModifier = 0;
 		
 		switch (spellcastingAbility) {
 			case 'Intelligence':
-				abilityModifier = Math.floor((character.abilities.intelligence - 10) / 2);
+				abilityModifier = Math.floor(((character.abilities.intelligence || 10) - 10) / 2);
 				break;
 			case 'Wisdom':
-				abilityModifier = Math.floor((character.abilities.wisdom - 10) / 2);
+				abilityModifier = Math.floor(((character.abilities.wisdom || 10) - 10) / 2);
 				break;
 			case 'Charisma':
-				abilityModifier = Math.floor((character.abilities.charisma - 10) / 2);
+				abilityModifier = Math.floor(((character.abilities.charisma || 10) - 10) / 2);
 				break;
 		}
 		
@@ -108,10 +108,10 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
 
 	const getMaxSpellSlots = (character: Character, level: number): number => {
 		// Simplified spell slot calculation based on character level and class
-		if (!isSpellcaster(character.character_class)) return 0;
+		if (!isSpellcaster(character.character_class || 'fighter')) return 0;
 		
-		const characterLevel = character.level;
-		const classType = character.character_class.toLowerCase();
+		const characterLevel = character.level || 1;
+		const classType = (character.character_class || 'fighter').toLowerCase();
 		
 		// Warlock uses different spell slot progression
 		if (classType === 'warlock') {
@@ -196,48 +196,48 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
 				<div className={styles.abilitiesGrid}>
 					<div className={styles.ability}>
 						<div className={styles.abilityName}>STR</div>
-						<div className={styles.abilityScore}>{character.abilities.strength}</div>
+						<div className={styles.abilityScore}>{character.abilities.strength || 10}</div>
 						<div className={styles.abilityMod}>
-							{getAbilityModifier(character.abilities.strength)}
+							{getAbilityModifier(character.abilities.strength || 10)}
 						</div>
 					</div>
 					<div className={styles.ability}>
 						<div className={styles.abilityName}>DEX</div>
-						<div className={styles.abilityScore}>{character.abilities.dexterity}</div>
+						<div className={styles.abilityScore}>{character.abilities.dexterity || 10}</div>
 						<div className={styles.abilityMod}>
-							{getAbilityModifier(character.abilities.dexterity)}
+							{getAbilityModifier(character.abilities.dexterity || 10)}
 						</div>
 					</div>
 					<div className={styles.ability}>
 						<div className={styles.abilityName}>CON</div>
 						<div className={styles.abilityScore}>
-							{character.abilities.constitution}
+							{character.abilities.constitution || 10}
 						</div>
 						<div className={styles.abilityMod}>
-							{getAbilityModifier(character.abilities.constitution)}
+							{getAbilityModifier(character.abilities.constitution || 10)}
 						</div>
 					</div>
 					<div className={styles.ability}>
 						<div className={styles.abilityName}>INT</div>
 						<div className={styles.abilityScore}>
-							{character.abilities.intelligence}
+							{character.abilities.intelligence || 10}
 						</div>
 						<div className={styles.abilityMod}>
-							{getAbilityModifier(character.abilities.intelligence)}
+							{getAbilityModifier(character.abilities.intelligence || 10)}
 						</div>
 					</div>
 					<div className={styles.ability}>
 						<div className={styles.abilityName}>WIS</div>
-						<div className={styles.abilityScore}>{character.abilities.wisdom}</div>
+						<div className={styles.abilityScore}>{character.abilities.wisdom || 10}</div>
 						<div className={styles.abilityMod}>
-							{getAbilityModifier(character.abilities.wisdom)}
+							{getAbilityModifier(character.abilities.wisdom || 10)}
 						</div>
 					</div>
 					<div className={styles.ability}>
 						<div className={styles.abilityName}>CHA</div>
-						<div className={styles.abilityScore}>{character.abilities.charisma}</div>
+						<div className={styles.abilityScore}>{character.abilities.charisma || 10}</div>
 						<div className={styles.abilityMod}>
-							{getAbilityModifier(character.abilities.charisma)}
+							{getAbilityModifier(character.abilities.charisma || 10)}
 						</div>
 					</div>
 				</div>
@@ -297,8 +297,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
 					<ul className={styles.inventoryList}>
 						{character.inventory && character.inventory.length > 0 ? (
 							character.inventory.map((item, index) => (
-								<li key={`${item.name}-${index}`} className={styles.inventoryItem}>
-									<span className={styles.itemName}>{item.name}</span>
+								<li key={`${(item as any).name || item.item_id}-${index}`} className={styles.inventoryItem}>
+									<span className={styles.itemName}>{(item as any).name || item.item_id}</span>
 									<span className={`item-rarity rarity-${(item as any).rarity || 'common'}`}>
 										{getRarityDisplay((item as any).rarity)}
 									</span>
@@ -322,7 +322,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
 			</div>
 
 			{/* Spell Management Section */}
-			{isSpellcaster(character.character_class) && (
+			{isSpellcaster(character.character_class || 'fighter') && (
 				<div className={styles.spellManagement}>
 					<h3>Spells</h3>
 					
@@ -338,7 +338,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
 						</div>
 						<div className={styles.spellStat}>
 							<label>Spellcasting Ability:</label>
-							<span>{getSpellcastingAbility(character.character_class)}</span>
+							<span>{getSpellcastingAbility(character.character_class || 'fighter')}</span>
 						</div>
 					</div>
 

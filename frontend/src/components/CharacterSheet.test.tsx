@@ -8,7 +8,7 @@ describe("CharacterSheet", () => {
 	const mockCharacter: Character = {
 		id: "1",
 		name: "Aragorn",
-		race: "Human",
+		race: "human",
 		character_class: "Ranger",
 		level: 5,
 		abilities: {
@@ -180,8 +180,8 @@ describe("CharacterSheet", () => {
 		const minimalCharacter: Character = {
 			id: "minimal",
 			name: "Basic Hero",
-			race: "Human",
-			character_class: "Fighter",
+			race: "human",
+			character_class: "fighter",
 			level: 1,
 			abilities: {
 				strength: 10,
@@ -213,7 +213,7 @@ describe("CharacterSheet", () => {
 	it("displays different character classes correctly", () => {
 		const wizardCharacter: Character = {
 			...mockCharacter,
-			character_class: "Wizard",
+			character_class: "wizard",
 			name: "Gandalf",
 		};
 
@@ -226,7 +226,7 @@ describe("CharacterSheet", () => {
 	it("displays different races correctly", () => {
 		const elfCharacter: Character = {
 			...mockCharacter,
-			race: "Elf",
+			race: "elf",
 			name: "Legolas",
 		};
 

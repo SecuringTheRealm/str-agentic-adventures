@@ -82,7 +82,7 @@ describe("GameInterface", () => {
 	const mockCharacter: Character = {
 		id: "1",
 		name: "Aragorn",
-		race: "Human",
+		race: "human",
 		character_class: "Ranger",
 		level: 5,
 		abilities: {

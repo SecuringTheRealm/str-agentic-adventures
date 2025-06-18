@@ -16,8 +16,8 @@ const CharacterCreation: React.FC<CharacterCreationProps> = ({
 }) => {
   const [formData, setFormData] = useState<CharacterCreateRequest>({
     name: '',
-    race: 'Human',
-    character_class: 'Fighter',
+    race: 'human',
+    character_class: 'fighter',
     abilities: {
       strength: 13,
       dexterity: 13,
@@ -193,7 +193,7 @@ const CharacterCreation: React.FC<CharacterCreationProps> = ({
             <textarea
               id="backstory"
               name="backstory"
-              value={formData.backstory}
+              value={formData.backstory || ''}
               onChange={handleInputChange}
               placeholder="Tell us about your character's background, motivations, and history..."
               rows={4}

@@ -62,9 +62,9 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 	const [webSocketDiceResult, setWebSocketDiceResult] = useState<any>(null);
 
 	// WebSocket integration for campaign updates (non-chat)
-	const wsUrl = getCampaignWebSocketUrl(campaign.id);
+	const wsUrl = getCampaignWebSocketUrl(campaign.id!);
 	// WebSocket integration for chat streaming  
-	const chatWsUrl = getChatWebSocketUrl(campaign.id);
+	const chatWsUrl = getChatWebSocketUrl(campaign.id!);
 
 	// Add fallback mode when WebSocket isn't available
 	const [useWebSocketFallback, setUseWebSocketFallback] = useState<boolean>(false);
@@ -377,8 +377,8 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 			setLoading(true);
 			
 			const response = await sendPlayerInput({
-				character_id: character.id,
-				campaign_id: campaign.id,
+				character_id: character.id!,
+				campaign_id: campaign.id!,
 				message: message.trim(),
 			});
 

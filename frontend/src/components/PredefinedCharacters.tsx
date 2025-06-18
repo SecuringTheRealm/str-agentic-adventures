@@ -57,47 +57,47 @@ const PredefinedCharacters: React.FC<PredefinedCharactersProps> = ({
               <div className={styles.abilitiesGrid}>
                 <div className={styles.ability}>
                   <span className={styles.abilityName}>STR</span>
-                  <span className={styles.abilityScore}>{character.abilities.strength}</span>
-                  <span className={styles.abilityModifier}>{getAbilityModifier(character.abilities.strength)}</span>
+                  <span className={styles.abilityScore}>{character.abilities.strength || 10}</span>
+                  <span className={styles.abilityModifier}>{getAbilityModifier(character.abilities.strength || 10)}</span>
                 </div>
                 <div className={styles.ability}>
                   <span className={styles.abilityName}>DEX</span>
-                  <span className={styles.abilityScore}>{character.abilities.dexterity}</span>
-                  <span className={styles.abilityModifier}>{getAbilityModifier(character.abilities.dexterity)}</span>
+                  <span className={styles.abilityScore}>{character.abilities.dexterity || 10}</span>
+                  <span className={styles.abilityModifier}>{getAbilityModifier(character.abilities.dexterity || 10)}</span>
                 </div>
                 <div className={styles.ability}>
                   <span className={styles.abilityName}>CON</span>
-                  <span className={styles.abilityScore}>{character.abilities.constitution}</span>
-                  <span className={styles.abilityModifier}>{getAbilityModifier(character.abilities.constitution)}</span>
+                  <span className={styles.abilityScore}>{character.abilities.constitution || 10}</span>
+                  <span className={styles.abilityModifier}>{getAbilityModifier(character.abilities.constitution || 10)}</span>
                 </div>
                 <div className={styles.ability}>
                   <span className={styles.abilityName}>INT</span>
-                  <span className={styles.abilityScore}>{character.abilities.intelligence}</span>
-                  <span className={styles.abilityModifier}>{getAbilityModifier(character.abilities.intelligence)}</span>
+                  <span className={styles.abilityScore}>{character.abilities.intelligence || 10}</span>
+                  <span className={styles.abilityModifier}>{getAbilityModifier(character.abilities.intelligence || 10)}</span>
                 </div>
                 <div className={styles.ability}>
                   <span className={styles.abilityName}>WIS</span>
-                  <span className={styles.abilityScore}>{character.abilities.wisdom}</span>
-                  <span className={styles.abilityModifier}>{getAbilityModifier(character.abilities.wisdom)}</span>
+                  <span className={styles.abilityScore}>{character.abilities.wisdom || 10}</span>
+                  <span className={styles.abilityModifier}>{getAbilityModifier(character.abilities.wisdom || 10)}</span>
                 </div>
                 <div className={styles.ability}>
                   <span className={styles.abilityName}>CHA</span>
-                  <span className={styles.abilityScore}>{character.abilities.charisma}</span>
-                  <span className={styles.abilityModifier}>{getAbilityModifier(character.abilities.charisma)}</span>
+                  <span className={styles.abilityScore}>{character.abilities.charisma || 10}</span>
+                  <span className={styles.abilityModifier}>{getAbilityModifier(character.abilities.charisma || 10)}</span>
                 </div>
               </div>
 
               <div className={styles.equipmentPreview}>
                 <h4>Equipment</h4>
                 <ul>
-                  {character.inventory.slice(0, 4).map((item, itemIndex) => (
+                  {(character.inventory || []).slice(0, 4).map((item, itemIndex) => (
                     <li key={itemIndex}>
-                      {item.name}
+                      {(item as any).name || item.item_id}
                       {item.quantity > 1 && ` (${item.quantity})`}
                     </li>
                   ))}
-                  {character.inventory.length > 4 && (
-                    <li>...and {character.inventory.length - 4} more items</li>
+                  {(character.inventory || []).length > 4 && (
+                    <li>...and {(character.inventory || []).length - 4} more items</li>
                   )}
                 </ul>
               </div>

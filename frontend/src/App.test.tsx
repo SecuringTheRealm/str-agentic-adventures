@@ -30,8 +30,8 @@ vi.mock("./components/CharacterSelection", () => ({
 				onClick={() => onCharacterSelected({
 					id: "test-character",
 					name: "Test Character",
-					race: "Human",
-					character_class: "Fighter",
+					race: "human",
+					character_class: "fighter",
 					level: 1,
 					abilities: {
 						strength: 15,

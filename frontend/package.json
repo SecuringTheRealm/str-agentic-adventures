@@ -36,6 +36,7 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:debug": "playwright test --debug",
+    "generate:api": "openapi-generator-cli generate -i http://localhost:8000/openapi.json -g typescript-axios -o src/api-client --skip-validate-spec",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -58,6 +59,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
+    "@openapitools/openapi-generator-cli": "^2.20.2",
     "@playwright/test": "^1.53.0",
     "@vitest/coverage-v8": "^3.2.3",
     "@vitest/ui": "^3.2.3",

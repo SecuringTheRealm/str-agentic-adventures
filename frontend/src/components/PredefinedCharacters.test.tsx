@@ -34,8 +34,8 @@ describe('PredefinedCharacters', () => {
     );
 
     // Check for character basics
-    expect(screen.getByText('Level 1 Dwarf Fighter')).toBeInTheDocument();
-    expect(screen.getByText('Level 1 Elf Ranger')).toBeInTheDocument();
+    expect(screen.getByText('Level 1 dwarf fighter')).toBeInTheDocument();
+    expect(screen.getByText('Level 1 elf ranger')).toBeInTheDocument();
     
     // Check for ability scores
     expect(screen.getAllByText('STR')).toHaveLength(6); // 6 characters
@@ -71,8 +71,8 @@ describe('PredefinedCharacters', () => {
     expect(mockOnCharacterSelected).toHaveBeenCalledWith(
       expect.objectContaining({
         name: 'Thorin Ironforge',
-        race: 'Dwarf',
-        character_class: 'Fighter',
+        race: 'dwarf',
+        character_class: 'fighter',
         id: expect.any(String)
       })
     );
