@@ -127,7 +127,12 @@ To run the application locally, you need access to Azure OpenAI models through A
 
 ### Environment Configuration
 
-1. **Backend setup**:
+1. **Install UV package manager** (if not already installed):
+   ```bash
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+   ```
+
+2. **Backend setup**:
    ```bash
    cd backend
    cp .env.example .env
@@ -138,12 +143,19 @@ To run the application locally, you need access to Azure OpenAI models through A
    # AZURE_OPENAI_EMBEDDING_DEPLOYMENT=text-embedding-ada-002
    ```
 
-2. **Install dependencies and start services**:
+3. **Install dependencies and start services**:
    ```bash
-   # Backend
+   # Install all dependencies with UV (from project root)
+   uv sync
+   
+   # Start backend (option 1: using start script)
    cd backend
-   pip install -r requirements.txt
    ./start.sh
+   
+   # Start backend (option 2: manually)
+   source .venv/bin/activate
+   cd backend
+   python -m app.main
 
    # Frontend (in a new terminal)
    cd frontend
@@ -155,9 +167,17 @@ The frontend will be available at `http://localhost:3000` and connects to the ba
 
 ## Running Tests
 
-Execute the backend test suite with `pytest`:
+Execute the backend test suite using UV environment:
 
 ```bash
+# From project root, ensure dependencies are installed
+uv sync
+
+# Activate the virtual environment and run tests
+source .venv/bin/activate
 cd backend
 python -m pytest tests/ -v
+
+# Alternative: Run tests directly with UV
+uv run pytest backend/tests/ -v
 ```

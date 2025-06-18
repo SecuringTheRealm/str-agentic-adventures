@@ -6,18 +6,18 @@ if ! command -v uv &> /dev/null; then
     curl -LsSf https://astral.sh/uv/install.sh | sh
 fi
 
-# Check if virtual environment exists
-if [ ! -d ".venv" ]; then
-    echo "Creating virtual environment with uv..."
-    uv venv .venv
-fi
+# Navigate to project root for UV commands
+cd "$(dirname "$0")/.."
+
+# Sync dependencies using UV
+echo "Installing dependencies with uv..."
+uv sync
 
 # Activate virtual environment
 source .venv/bin/activate
 
-# Install requirements
-echo "Installing requirements with uv..."
-uv pip install -r requirements.txt
+# Navigate back to backend directory
+cd backend
 
 # Start the application
 echo "Starting AI Dungeon Master backend..."
