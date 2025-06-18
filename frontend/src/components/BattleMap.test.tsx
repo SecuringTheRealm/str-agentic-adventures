@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
 import BattleMap from "./BattleMap";
+import styles from "./BattleMap.module.css";
 
 describe("BattleMap", () => {
 	it("renders battle map with image when mapUrl is provided", () => {
@@ -60,51 +61,51 @@ describe("BattleMap", () => {
 	it("applies expanded CSS class when expanded", async () => {
 		const { container } = render(<BattleMap mapUrl="test.jpg" />);
 
-		const battleMap = container.querySelector(".battle-map");
-		expect(battleMap).not.toHaveClass("expanded");
+		const battleMap = container.querySelector(`.${styles.battleMap}`);
+		expect(battleMap).not.toHaveClass(styles.expanded);
 
 		const expandButton = screen.getByRole("button", { name: "Expand" });
 		await userEvent.click(expandButton);
 
-		expect(battleMap).toHaveClass("expanded");
+		expect(battleMap).toHaveClass(styles.expanded);
 	});
 
 	it("removes expanded CSS class when minimized", async () => {
 		const { container } = render(<BattleMap mapUrl="test.jpg" />);
 
-		const battleMap = container.querySelector(".battle-map");
+		const battleMap = container.querySelector(`.${styles.battleMap}`);
 		const toggleButton = screen.getByRole("button");
 
 		// Expand first
 		await userEvent.click(toggleButton);
-		expect(battleMap).toHaveClass("expanded");
+		expect(battleMap).toHaveClass(styles.expanded);
 
 		// Then minimize
 		await userEvent.click(toggleButton);
-		expect(battleMap).not.toHaveClass("expanded");
+		expect(battleMap).not.toHaveClass(styles.expanded);
 	});
 
 	it("has correct CSS classes", () => {
 		const { container } = render(<BattleMap mapUrl="test.jpg" />);
 
-		expect(container.querySelector(".battle-map")).toBeInTheDocument();
-		expect(container.querySelector(".battle-map-header")).toBeInTheDocument();
-		expect(container.querySelector(".map-container")).toBeInTheDocument();
-		expect(container.querySelector(".toggle-button")).toBeInTheDocument();
+		expect(container.querySelector(`.${styles.battleMap}`)).toBeInTheDocument();
+		expect(container.querySelector(`.${styles.battleMapHeader}`)).toBeInTheDocument();
+		expect(container.querySelector(`.${styles.mapContainer}`)).toBeInTheDocument();
+		expect(container.querySelector(`.${styles.toggleButton}`)).toBeInTheDocument();
 	});
 
 	it("has correct CSS classes for empty state", () => {
 		const { container } = render(<BattleMap mapUrl={null} />);
 
-		expect(container.querySelector(".battle-map")).toBeInTheDocument();
-		expect(container.querySelector(".map-container")).toBeInTheDocument();
-		expect(container.querySelector(".empty-map-state")).toBeInTheDocument();
+		expect(container.querySelector(`.${styles.battleMap}`)).toBeInTheDocument();
+		expect(container.querySelector(`.${styles.mapContainer}`)).toBeInTheDocument();
+		expect(container.querySelector(`.${styles.emptyMapState}`)).toBeInTheDocument();
 	});
 
 	it("toggle button has correct class", () => {
 		render(<BattleMap mapUrl="test.jpg" />);
 
 		const button = screen.getByRole("button");
-		expect(button).toHaveClass("toggle-button");
+		expect(button).toHaveClass(styles.toggleButton);
 	});
 });

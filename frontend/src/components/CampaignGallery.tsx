@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Campaign, getCampaignTemplates, cloneCampaign } from '../services/api';
-import './CampaignGallery.css';
+import styles from './CampaignGallery.module.css';
 
 interface CampaignGalleryProps {
   onCampaignSelected: (campaign: Campaign) => void;
@@ -51,8 +51,8 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
 
   if (loading) {
     return (
-      <div className="campaign-gallery loading">
-        <div className="loading-spinner"></div>
+      <div className={`${styles.campaignGallery} ${styles.loading}`}>
+        <div className={styles.loadingSpinner}></div>
         <p>Loading campaign templates...</p>
       </div>
     );
@@ -60,8 +60,8 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
 
   if (error) {
     return (
-      <div className="campaign-gallery error">
-        <div className="error-message">
+      <div className={`${styles.campaignGallery} ${styles.error}`}>
+        <div className={styles.errorMessage}>
           <h3>Error Loading Templates</h3>
           <p>{error}</p>
           <button onClick={() => window.location.reload()}>Try Again</button>
@@ -71,20 +71,20 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
   }
 
   return (
-    <div className="campaign-gallery">
-      <header className="gallery-header">
+    <div className={styles.campaignGallery}>
+      <header className={styles.galleryHeader}>
         <h2>Choose Your Adventure</h2>
         <p>Select from our curated campaign templates or create your own custom campaign</p>
       </header>
 
-      <div className="campaign-options">
-        <div className="custom-campaign-card">
-          <div className="card-content">
-            <div className="card-icon">✨</div>
+      <div className={styles.campaignOptions}>
+        <div className={styles.customCampaignCard}>
+          <div className={styles.cardContent}>
+            <div className={styles.cardIcon}>✨</div>
             <h3>Create Custom Campaign</h3>
             <p>Start from scratch with your own unique world and story</p>
             <button 
-              className="select-button custom"
+              className={`${styles.selectButton} ${styles.custom}`}
               onClick={onCreateCustom}
             >
               Create Custom
@@ -93,27 +93,27 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
         </div>
 
         {templates.map((template) => (
-          <div key={template.id} className="campaign-card">
-            <div className="card-content">
-              <div className="card-header">
+          <div key={template.id} className={styles.campaignCard}>
+            <div className={styles.cardContent}>
+              <div className={styles.cardHeader}>
                 <h3>{template.name}</h3>
-                <span className={`tone-badge ${template.tone}`}>
+                <span className={`${styles.toneBadge} ${styles[template.tone]}`}>
                   {template.tone}
                 </span>
               </div>
               
-              <p className="card-description">
+              <p className={styles.cardDescription}>
                 {template.description || 'An exciting adventure awaits!'}
               </p>
               
-              <div className="card-details">
-                <div className="detail-item">
+              <div className={styles.cardDetails}>
+                <div className={styles.detailItem}>
                   <strong>Setting:</strong>
                   <span>{template.setting.substring(0, 100)}...</span>
                 </div>
                 
                 {template.plot_hooks && template.plot_hooks.length > 0 && (
-                  <div className="detail-item">
+                  <div className={styles.detailItem}>
                     <strong>Plot Hooks:</strong>
                     <ul>
                       {template.plot_hooks.slice(0, 2).map((hook, index) => (
@@ -124,7 +124,7 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
                 )}
                 
                 {template.homebrew_rules && template.homebrew_rules.length > 0 && (
-                  <div className="detail-item">
+                  <div className={styles.detailItem}>
                     <strong>Special Rules:</strong>
                     <span>{template.homebrew_rules.length} custom rule(s)</span>
                   </div>
@@ -132,13 +132,13 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
               </div>
               
               <button 
-                className="select-button"
+                className={styles.selectButton}
                 onClick={() => handleSelectTemplate(template)}
                 disabled={cloning === template.id}
               >
                 {cloning === template.id ? (
                   <>
-                    <span className="loading-spinner small"></span>
+                    <span className={`${styles.loadingSpinner} ${styles.small}`}></span>
                     Preparing...
                   </>
                 ) : (
@@ -151,10 +151,10 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
       </div>
 
       {templates.length === 0 && (
-        <div className="no-templates">
+        <div className={styles.noTemplates}>
           <h3>No Templates Available</h3>
           <p>Create a custom campaign to get started!</p>
-          <button className="select-button" onClick={onCreateCustom}>
+          <button className={styles.selectButton} onClick={onCreateCustom}>
             Create Custom Campaign
           </button>
         </div>

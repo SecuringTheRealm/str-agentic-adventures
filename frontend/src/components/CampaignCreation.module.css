@@ -1,4 +1,4 @@
-.campaign-creation {
+.campaignCreation {
   max-width: 600px;
   margin: 0 auto;
   padding: 20px;
@@ -9,7 +9,7 @@
   border: 2px solid #E4BB1E; /* Gold border */
 }
 
-.campaign-creation h2 {
+.campaignCreation h2 {
   color: #E4BB1E; /* Gold for the main heading */
   margin-bottom: 20px;
   text-align: center;
@@ -19,17 +19,17 @@
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-.form-group {
+.formGroup {
   margin-bottom: 20px;
 }
 
-.form-group.optional {
+.formGroup.optional {
   border-left: 3px solid #6c757d;
   padding-left: 15px;
   margin-left: 5px;
 }
 
-.form-group label {
+.formGroup label {
   display: block;
   margin-bottom: 8px;
   font-weight: bold;
@@ -38,14 +38,14 @@
   font-weight: 500;
 }
 
-.label-with-help {
+.labelWithHelp {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-bottom: 8px;
 }
 
-.help-icon {
+.helpIcon {
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -61,7 +61,7 @@
   transition: background-color 0.3s ease;
 }
 
-.help-icon:hover {
+.helpIcon:hover {
   background: #F4D03F;
 }
 
@@ -91,9 +91,9 @@
   border-top-color: #E4BB1E;
 }
 
-.form-group input,
-.form-group select,
-.form-group textarea {
+.formGroup input,
+.formGroup select,
+.formGroup textarea {
   width: 100%;
   padding: 10px;
   border: 1px solid #908C6B; /* Stone color border */
@@ -104,39 +104,39 @@
   transition: border-color 0.3s ease;
 }
 
-.form-group input.error,
-.form-group textarea.error {
+.formGroup input.error,
+.formGroup textarea.error {
   border-color: #dc3545;
   box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2);
 }
 
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
+.formGroup input:focus,
+.formGroup select:focus,
+.formGroup textarea:focus {
   outline: none;
   border-color: #E4BB1E; /* Gold focus border */
   box-shadow: 0 0 0 2px rgba(228, 187, 30, 0.2);
 }
 
-.optional-field {
+.optionalField {
   border-color: #6c757d !important;
 }
 
-.optional-field:focus {
+.optionalField:focus {
   border-color: #E4BB1E !important;
   box-shadow: 0 0 0 2px rgba(228, 187, 30, 0.2) !important;
 }
 
-.textarea-container {
+.textareaContainer {
   position: relative;
 }
 
-.form-group textarea {
+.formGroup textarea {
   min-height: 100px;
   resize: vertical;
 }
 
-.character-count {
+.characterCount {
   position: absolute;
   bottom: 8px;
   right: 12px;
@@ -148,7 +148,7 @@
   pointer-events: none;
 }
 
-.custom-select select {
+.customSelect select {
   appearance: none;
   background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E4BB1E' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
   background-repeat: no-repeat;
@@ -157,7 +157,7 @@
   padding-right: 40px;
 }
 
-.validation-error {
+.validationError {
   color: #dc3545;
   font-size: 14px;
   margin-top: 5px;
@@ -165,7 +165,7 @@
   font-family: 'Cinzel', serif;
 }
 
-.create-button {
+.createButton {
   width: 100%;
   padding: 12px;
   border: none;
@@ -183,14 +183,14 @@
   overflow: hidden;
 }
 
-.create-button:hover:not(:disabled) {
+.createButton:hover:not(:disabled) {
   background: linear-gradient(135deg, #D67C2D, #E4953F); /* Lighter wood on hover */
   box-shadow: 0 4px 8px rgba(228, 187, 30, 0.3);
   transform: translateY(-1px);
   filter: brightness(1.1);
 }
 
-.create-button:disabled {
+.createButton:disabled {
   background: linear-gradient(135deg, #788070, #98A090); /* Steel colors when disabled */
   cursor: not-allowed;
   border-color: #788070;
@@ -198,14 +198,14 @@
   box-shadow: none;
 }
 
-.button-content {
+.buttonContent {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
 }
 
-.loading-spinner {
+.loadingSpinner {
   width: 16px;
   height: 16px;
   border: 2px solid transparent;
@@ -219,7 +219,7 @@
   100% { transform: rotate(360deg); }
 }
 
-.create-button.submitting {
+.createButton.submitting {
   background: linear-gradient(135deg, #6c757d, #868e96);
   animation: pulse 2s infinite;
 }
@@ -233,13 +233,13 @@
   }
 }
 
-.button-checkmark {
+.buttonCheckmark {
   display: none;
   color: #28a745;
   font-weight: bold;
 }
 
-.create-button.success .button-checkmark {
+.createButton.success .buttonCheckmark {
   display: inline;
   animation: checkmark-appear 0.3s ease-in;
 }
@@ -255,7 +255,7 @@
   }
 }
 
-.error-message {
+.errorMessage {
   padding: 10px;
   margin-bottom: 20px;
   background-color: rgba(220, 53, 69, 0.2); /* Darker red background */

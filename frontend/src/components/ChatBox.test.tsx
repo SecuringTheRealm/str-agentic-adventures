@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
 import ChatBox from "./ChatBox";
+import styles from "./ChatBox.module.css";
 
 // Mock scrollIntoView
 Object.defineProperty(HTMLElement.prototype, "scrollIntoView", {
@@ -121,7 +122,7 @@ describe("ChatBox", () => {
 
 		expect(screen.getByText("Dungeon Master")).toBeInTheDocument();
 		// Look for the typing indicator by its class
-		expect(document.querySelector(".typing-indicator")).toBeInTheDocument();
+		expect(document.querySelector(`.${styles.typingIndicator}`)).toBeInTheDocument();
 	});
 
 	it("prevents submission when loading", async () => {
@@ -144,12 +145,12 @@ describe("ChatBox", () => {
 
 		render(<ChatBox {...defaultProps} messages={messages} />);
 
-		const dmMessage = screen.getByText("DM message").closest(".message");
+		const dmMessage = screen.getByText("DM message").closest(`.${styles.message}`);
 		const playerMessage = screen
 			.getByText("Player message")
-			.closest(".message");
+			.closest(`.${styles.message}`);
 
-		expect(dmMessage).toHaveClass("dm-message");
-		expect(playerMessage).toHaveClass("player-message");
+		expect(dmMessage).toHaveClass(styles.dmMessage);
+		expect(playerMessage).toHaveClass(styles.playerMessage);
 	});
 });

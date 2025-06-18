@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Campaign, getCampaigns, deleteCampaign } from '../services/api';
 import CampaignGallery from './CampaignGallery';
 import CampaignEditor from './CampaignEditor';
-import './CampaignSelection.css';
+import styles from "./CampaignSelection.module.css";
 
 interface CampaignSelectionProps {
   onCampaignCreated: (campaign: Campaign) => void;
@@ -101,10 +101,10 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({ onCampaignCreated
 
   if (viewMode === 'list') {
     return (
-      <div className="campaign-manager">
-        <div className="manager-header">
+      <div className={styles.campaignManager}>
+        <div className={styles.managerHeader}>
           <h2>My Campaigns</h2>
-          <div className="header-actions">
+          <div className={styles.headerActions}>
             <button 
               className="action-button secondary"
               onClick={handleBackToGallery}
@@ -121,22 +121,22 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({ onCampaignCreated
         </div>
 
         {error && (
-          <div className="error-message">
+          <div className={styles.errorMessage}>
             {error}
             <button onClick={() => setError(null)}>×</button>
           </div>
         )}
 
         {loading ? (
-          <div className="loading-state">
-            <div className="loading-spinner"></div>
+          <div className={styles.loadingState}>
+            <div className={styles.loadingSpinner}></div>
             <p>Loading campaigns...</p>
           </div>
         ) : (
-          <div className="campaign-list">
+          <div className={styles.campaignList}>
             {customCampaigns.length === 0 ? (
-              <div className="empty-state">
-                <div className="empty-icon">📚</div>
+              <div className={styles.emptyState}>
+                <div className={styles.emptyIcon}>📚</div>
                 <h3>No Custom Campaigns Yet</h3>
                 <p>Create your first custom campaign or select a template to get started!</p>
                 <button 
@@ -148,24 +148,24 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({ onCampaignCreated
               </div>
             ) : (
               customCampaigns.map(campaign => (
-                  <div key={campaign.id} className="campaign-item">
-                    <div className="campaign-info">
+                  <div key={campaign.id} className={styles.campaignItem}>
+                    <div className={styles.campaignInfo}>
                       <h3>{campaign.name}</h3>
-                      <p className="campaign-description">
+                      <p className={styles.campaignDescription}>
                         {campaign.description || campaign.setting}
                       </p>
-                      <div className="campaign-meta">
+                      <div className={styles.campaignMeta}>
                         <span className={`tone-badge ${campaign.tone}`}>
                           {campaign.tone}
                         </span>
                         {campaign.template_id && (
-                          <span className="clone-badge">
+                          <span className={styles.cloneBadge}>
                             Cloned from template
                           </span>
                         )}
                       </div>
                     </div>
-                    <div className="campaign-actions">
+                    <div className={styles.campaignActions}>
                       <button
                         className="action-button primary small"
                         onClick={() => handleCampaignSelected(campaign)}
@@ -195,13 +195,13 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({ onCampaignCreated
   }
 
   return (
-    <div className="campaign-manager">
-      <div className="manager-header">
-        <div className="header-content">
+    <div className={styles.campaignManager}>
+      <div className={styles.managerHeader}>
+        <div className={styles.headerContent}>
           <h1>Campaign Hub</h1>
           <p>Choose from our curated templates or manage your custom campaigns</p>
         </div>
-        <div className="header-actions">
+        <div className={styles.headerActions}>
           <button 
             className={`view-toggle ${viewMode === 'gallery' ? 'active' : ''}`}
             onClick={() => setViewMode('gallery')}
@@ -218,7 +218,7 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({ onCampaignCreated
       </div>
 
       {error && (
-        <div className="error-message">
+        <div className={styles.errorMessage}>
           {error}
           <button onClick={() => setError(null)}>×</button>
         </div>
@@ -230,10 +230,10 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({ onCampaignCreated
           onCreateCustom={handleCreateCustom}
         />
       ) : (
-        <div className="campaign-list">
+        <div className={styles.campaignList}>
           {customCampaigns.length === 0 ? (
-            <div className="empty-state">
-              <div className="empty-icon">📚</div>
+            <div className={styles.emptyState}>
+              <div className={styles.emptyIcon}>📚</div>
               <h3>No Custom Campaigns Yet</h3>
               <p>Create your first custom campaign or select a template to get started!</p>
               <button 
@@ -245,24 +245,24 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({ onCampaignCreated
             </div>
           ) : (
             customCampaigns.map(campaign => (
-                <div key={campaign.id} className="campaign-item">
-                  <div className="campaign-info">
+                <div key={campaign.id} className={styles.campaignItem}>
+                  <div className={styles.campaignInfo}>
                     <h3>{campaign.name}</h3>
-                    <p className="campaign-description">
+                    <p className={styles.campaignDescription}>
                       {campaign.description || campaign.setting}
                     </p>
-                    <div className="campaign-meta">
+                    <div className={styles.campaignMeta}>
                       <span className={`tone-badge ${campaign.tone}`}>
                         {campaign.tone}
                       </span>
                       {campaign.template_id && (
-                        <span className="clone-badge">
+                        <span className={styles.cloneBadge}>
                           Cloned from template
                         </span>
                       )}
                     </div>
                   </div>
-                  <div className="campaign-actions">
+                  <div className={styles.campaignActions}>
                     <button
                       className="action-button primary small"
                       onClick={() => handleCampaignSelected(campaign)}

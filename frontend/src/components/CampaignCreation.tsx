@@ -5,7 +5,7 @@ import {
 	type CampaignCreateRequest,
 	createCampaign,
 } from "../services/api";
-import "./CampaignCreation.css";
+import styles from "./CampaignCreation.module.css";
 
 interface CampaignCreationProps {
 	onCampaignCreated: (campaign: Campaign) => void;
@@ -71,13 +71,13 @@ const CampaignCreation: React.FC<CampaignCreationProps> = ({
 	};
 
 	return (
-		<div className="campaign-creation">
+		<div className={styles.campaignCreation}>
 			<h2>Create New Campaign</h2>
 
-			{error && <div className="error-message">{error}</div>}
+			{error && <div className={styles.errorMessage}>{error}</div>}
 
 			<form onSubmit={handleSubmit}>
-				<div className="form-group">
+				<div className={styles.formGroup}>
 					<label htmlFor="campaign-name">Campaign Name</label>
 					<input
 						id="campaign-name"
@@ -90,27 +90,27 @@ const CampaignCreation: React.FC<CampaignCreationProps> = ({
 						className={validationErrors.campaignName ? 'error' : ''}
 					/>
 					{validationErrors.campaignName && (
-						<div className="validation-error">{validationErrors.campaignName}</div>
+						<div className={styles.validationError}>{validationErrors.campaignName}</div>
 					)}
 				</div>
 
-				<div className="form-group">
-					<div className="label-with-help">
+				<div className={styles.formGroup}>
+					<div className={styles.labelWithHelp}>
 						<label htmlFor="setting">Campaign Setting</label>
 						<div
-							className="help-icon"
+							className={styles.helpIcon}
 							onMouseEnter={() => setShowTooltip(true)}
 							onMouseLeave={() => setShowTooltip(false)}
 						>
 							ⓘ
 							{showTooltip && (
-								<div className="tooltip">
+								<div className={styles.tooltip}>
 									Example: 'Medieval fantasy city threatened by dragons'
 								</div>
 							)}
 						</div>
 					</div>
-					<div className="textarea-container">
+					<div className={styles.textareaContainer}>
 						<textarea
 							id="setting"
 							value={setting}
@@ -121,16 +121,16 @@ const CampaignCreation: React.FC<CampaignCreationProps> = ({
 							maxLength={500}
 							className={validationErrors.setting ? 'error' : ''}
 						/>
-						<div className="character-count">{setting.length}/500 characters</div>
+						<div className={styles.characterCount}>{setting.length}/500 characters</div>
 					</div>
 					{validationErrors.setting && (
-						<div className="validation-error">{validationErrors.setting}</div>
+						<div className={styles.validationError}>{validationErrors.setting}</div>
 					)}
 				</div>
 
-				<div className="form-group">
+				<div className={styles.formGroup}>
 					<label htmlFor="tone">Campaign Tone</label>
-					<div className="custom-select">
+					<div className={styles.customSelect}>
 						<select
 							id="tone"
 							value={tone}
@@ -154,7 +154,7 @@ const CampaignCreation: React.FC<CampaignCreationProps> = ({
 						onChange={(e) => setHomebrewRules(e.target.value)}
 						placeholder="E.g., Critical hits double damage dice, No encumbrance rules"
 						disabled={isSubmitting}
-						className="optional-field"
+						className={styles.optionalField}
 					/>
 				</div>
 
@@ -164,14 +164,14 @@ const CampaignCreation: React.FC<CampaignCreationProps> = ({
 					disabled={isSubmitting}
 				>
 					{isSubmitting ? (
-						<span className="button-content">
-							<span className="loading-spinner"></span>
+						<span className={styles.buttonContent}>
+							<span className={styles.loadingSpinner}></span>
 							Creating...
 						</span>
 					) : (
-						<span className="button-content">
+						<span className={styles.buttonContent}>
 							Create Campaign
-							<span className="button-checkmark">✓</span>
+							<span className={styles.buttonCheckmark}>✓</span>
 						</span>
 					)}
 				</button>

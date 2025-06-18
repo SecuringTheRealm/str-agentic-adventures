@@ -1,4 +1,4 @@
-.campaign-manager {
+.campaignManager {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
@@ -7,7 +7,7 @@
   border: 2px solid #E4BB1E; /* Gold border to match theme */
 }
 
-.manager-header {
+.managerHeader {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -16,7 +16,7 @@
   border-bottom: 2px solid #E4BB1E; /* Gold accent border */
 }
 
-.header-content h1 {
+.headerContent h1 {
   font-size: 2.5rem;
   color: #E4BB1E; /* Gold accent color for main title */
   margin: 0 0 0.5rem 0;
@@ -25,26 +25,26 @@
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* Better readability */
 }
 
-.header-content p {
+.headerContent p {
   color: #f4f1e8; /* Warm off-white for better contrast */
   font-size: 1.1rem;
   margin: 0;
 }
 
-.manager-header h2 {
+.managerHeader h2 {
   color: #E4BB1E; /* Gold color for consistency */
   margin: 0;
   font-family: 'Cinzel', serif;
   font-weight: 600;
 }
 
-.header-actions {
+.headerActions {
   display: flex;
   gap: 1rem;
   align-items: center;
 }
 
-.view-toggle {
+.viewToggle {
   padding: 0.5rem 1rem;
   border: 2px solid #788070; /* Steel color border */
   background: rgba(15, 64, 79, 0.6); /* Semi-transparent primary */
@@ -56,19 +56,19 @@
   font-family: 'Cinzel', serif;
 }
 
-.view-toggle:hover {
+.viewToggle:hover {
   border-color: #E4BB1E; /* Gold on hover */
   background: rgba(15, 64, 79, 0.8);
 }
 
-.view-toggle.active {
+.viewToggle.active {
   background: #E4BB1E; /* Gold background when active */
   color: #0F404F; /* Dark text for contrast on gold */
   border-color: #E4BB1E;
   font-weight: 600;
 }
 
-.action-button {
+.actionButton {
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
   font-size: 1rem;
@@ -85,50 +85,50 @@
   font-family: 'Cinzel', serif;
 }
 
-.action-button.primary {
+.actionButton.primary {
   background: linear-gradient(135deg, #B15005, #D67C2D); /* Wood gradient to match theme */
   color: white;
   border-color: #E4BB1E; /* Gold border */
 }
 
-.action-button.primary:hover:not(:disabled) {
+.actionButton.primary:hover:not(:disabled) {
   background: linear-gradient(135deg, #D67C2D, #E4953F); /* Lighter wood on hover */
   box-shadow: 0 2px 4px rgba(228, 187, 30, 0.3);
 }
 
-.action-button.secondary {
+.actionButton.secondary {
   background: rgba(120, 128, 112, 0.8); /* Steel color with transparency */
   color: #f4f1e8;
   border-color: #788070;
 }
 
-.action-button.secondary:hover:not(:disabled) {
+.actionButton.secondary:hover:not(:disabled) {
   background: rgba(144, 140, 107, 0.9); /* Stone color on hover */
   border-color: #E4BB1E;
 }
 
-.action-button.danger {
+.actionButton.danger {
   background: linear-gradient(135deg, #8B4513, #A0522D); /* Brown gradients for danger */
   color: white;
   border-color: #A0522D;
 }
 
-.action-button.danger:hover:not(:disabled) {
+.actionButton.danger:hover:not(:disabled) {
   background: linear-gradient(135deg, #A0522D, #CD853F);
   border-color: #CD853F;
 }
 
-.action-button.small {
+.actionButton.small {
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
 }
 
-.action-button:disabled {
+.actionButton:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-.error-message {
+.errorMessage {
   background: #fef2f2;
   border: 1px solid #fecaca;
   color: #dc2626;
@@ -140,7 +140,7 @@
   align-items: center;
 }
 
-.error-message button {
+.errorMessage button {
   background: none;
   border: none;
   color: #dc2626;
@@ -154,7 +154,7 @@
   justify-content: center;
 }
 
-.loading-state {
+.loadingState {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -163,7 +163,7 @@
   gap: 1rem;
 }
 
-.loading-spinner {
+.loadingSpinner {
   width: 40px;
   height: 40px;
   border: 4px solid #f3f3f3;
@@ -177,13 +177,13 @@
   100% { transform: rotate(360deg); }
 }
 
-.campaign-list {
+.campaignList {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-.campaign-item {
+.campaignItem {
   background: rgba(26, 47, 58, 0.6); /* Darker fantasy background */
   border: 2px solid #788070; /* Steel color border */
   border-radius: 12px;
@@ -194,18 +194,18 @@
   transition: all 0.2s ease;
 }
 
-.campaign-item:hover {
+.campaignItem:hover {
   border-color: #E4BB1E; /* Gold border on hover */
   box-shadow: 0 4px 6px rgba(228, 187, 30, 0.2);
   background: rgba(26, 47, 58, 0.8);
 }
 
-.campaign-info {
+.campaignInfo {
   flex: 1;
   margin-right: 2rem;
 }
 
-.campaign-info h3 {
+.campaignInfo h3 {
   margin: 0 0 0.5rem 0;
   color: #E4BB1E; /* Gold color for campaign names */
   font-size: 1.25rem;
@@ -213,19 +213,19 @@
   font-weight: 600;
 }
 
-.campaign-description {
+.campaignDescription {
   color: #f4f1e8; /* Light warm text */
   margin: 0 0 1rem 0;
   line-height: 1.5;
 }
 
-.campaign-meta {
+.campaignMeta {
   display: flex;
   gap: 0.75rem;
   align-items: center;
 }
 
-.tone-badge {
+.toneBadge {
   padding: 0.25rem 0.75rem;
   border-radius: 20px;
   font-size: 0.8rem;
@@ -233,32 +233,32 @@
   text-transform: capitalize;
 }
 
-.tone-badge.heroic {
+.toneBadge.heroic {
   background: #3b82f6;
   color: white;
 }
 
-.tone-badge.dark {
+.toneBadge.dark {
   background: #374151;
   color: white;
 }
 
-.tone-badge.lighthearted {
+.toneBadge.lighthearted {
   background: #f59e0b;
   color: white;
 }
 
-.tone-badge.gritty {
+.toneBadge.gritty {
   background: #ef4444;
   color: white;
 }
 
-.tone-badge.mysterious {
+.toneBadge.mysterious {
   background: #8b5cf6;
   color: white;
 }
 
-.clone-badge {
+.cloneBadge {
   padding: 0.25rem 0.75rem;
   border-radius: 20px;
   font-size: 0.8rem;
@@ -267,13 +267,13 @@
   border: 1px solid #d1d5db;
 }
 
-.campaign-actions {
+.campaignActions {
   display: flex;
   gap: 0.5rem;
   flex-shrink: 0;
 }
 
-.empty-state {
+.emptyState {
   text-align: center;
   padding: 3rem 2rem;
   background: rgba(15, 64, 79, 0.4); /* Semi-transparent primary */
@@ -281,57 +281,57 @@
   border: 2px dashed #788070; /* Steel dashed border */
 }
 
-.empty-icon {
+.emptyIcon {
   font-size: 4rem;
   margin-bottom: 1rem;
 }
 
-.empty-state h3 {
+.emptyState h3 {
   color: #E4BB1E; /* Gold color for headings */
   margin: 0 0 0.5rem 0;
   font-family: 'Cinzel', serif;
   font-weight: 600;
 }
 
-.empty-state p {
+.emptyState p {
   color: #f4f1e8; /* Light warm text */
   margin: 0 0 2rem 0;
 }
 
 /* Responsive design */
 @media (max-width: 768px) {
-  .campaign-manager {
+  .campaignManager {
     padding: 1rem;
   }
 
-  .manager-header {
+  .managerHeader {
     flex-direction: column;
     gap: 1rem;
     align-items: stretch;
   }
 
-  .header-actions {
+  .headerActions {
     justify-content: space-between;
   }
 
-  .campaign-item {
+  .campaignItem {
     flex-direction: column;
     gap: 1rem;
   }
 
-  .campaign-info {
+  .campaignInfo {
     margin-right: 0;
   }
 
-  .campaign-actions {
+  .campaignActions {
     justify-content: stretch;
   }
 
-  .campaign-actions .action-button {
+  .campaignActions .actionButton {
     flex: 1;
   }
 
-  .header-content h1 {
+  .headerContent h1 {
     font-size: 2rem;
   }
 }

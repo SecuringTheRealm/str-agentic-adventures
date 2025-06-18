@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import React from "react";
 import * as api from "../services/api";
 import CampaignGallery from "./CampaignGallery";
+import styles from './CampaignGallery.module.css';
 
 // Mock the API module
 vi.mock("../services/api");
@@ -75,7 +76,7 @@ describe("CampaignGallery", () => {
 		await screen.findByText("Create Custom");
 		
 		// Check that the gallery container doesn't have excessive constraints
-		const galleryContainer = container.querySelector('.campaign-gallery');
+		const galleryContainer = container.querySelector(`.${styles.campaignGallery}`);
 		expect(galleryContainer).toBeInTheDocument();
 		
 		// Verify buttons are present and visible

@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 import PredefinedCharacters from './PredefinedCharacters';
+import styles from "./PredefinedCharacters.module.css";
 
 describe('PredefinedCharacters', () => {
   const mockOnCharacterSelected = vi.fn();

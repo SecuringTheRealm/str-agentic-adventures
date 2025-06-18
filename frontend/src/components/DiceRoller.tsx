@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import './DiceRoller.css';
+import styles from "./DiceRoller.module.css";
 import { apiClient } from '../services/api';
 
 interface DiceResult {
@@ -162,13 +162,13 @@ const DiceRoller: React.FC<DiceRollerProps> = ({ onRoll, characterId, playerName
 	};
 
 	return (
-		<div className="dice-roller">
-			<div className="dice-roller-header">
+		<div className={styles.diceRoller}>
+			<div className={styles.diceRollerHeader}>
 				<h3>Dice Roller</h3>
 			</div>
 
-			<div className="dice-input-section">
-				<div className="notation-input">
+			<div className={styles.diceInputSection}>
+				<div className={styles.notationInput}>
 					<label htmlFor="dice-notation">Dice Notation:</label>
 					<input
 						id="dice-notation"
@@ -181,7 +181,7 @@ const DiceRoller: React.FC<DiceRollerProps> = ({ onRoll, characterId, playerName
 				</div>
 
 				{characterId && (
-					<div className="skill-input">
+					<div className={styles.skillInput}>
 						<label htmlFor="skill-select">Skill (optional):</label>
 						<select
 							id="skill-select"
@@ -200,7 +200,7 @@ const DiceRoller: React.FC<DiceRollerProps> = ({ onRoll, characterId, playerName
 				)}
 
 				<button
-					className="roll-button"
+					className={styles.rollButton}
 					onClick={() => rollDice()}
 					disabled={isRolling || !notation.trim()}
 				>
@@ -208,13 +208,13 @@ const DiceRoller: React.FC<DiceRollerProps> = ({ onRoll, characterId, playerName
 				</button>
 			</div>
 
-			<div className="common-rolls">
+			<div className={styles.commonRolls}>
 				<h4>Quick Rolls:</h4>
-				<div className="quick-roll-buttons">
+				<div className={styles.quickRollButtons}>
 					{commonRolls.map((roll) => (
 						<button
 							key={roll.notation}
-							className="quick-roll-button"
+							className={styles.quickRollButton}
 							onClick={() => rollDice(roll.notation)}
 							disabled={isRolling}
 						>
@@ -225,25 +225,25 @@ const DiceRoller: React.FC<DiceRollerProps> = ({ onRoll, characterId, playerName
 			</div>
 
 			{lastResult && (
-				<div className="last-result">
+				<div className={styles.lastResult}>
 					<h4>Last Roll:</h4>
-					<div className="result-display">
-						<div className="result-notation">{lastResult.notation}</div>
-						<div className="result-total">Total: {lastResult.total}</div>
-						<div className="result-details">{formatResult(lastResult)}</div>
+					<div className={styles.resultDisplay}>
+						<div className={styles.resultNotation}>{lastResult.notation}</div>
+						<div className={styles.resultTotal}>Total: {lastResult.total}</div>
+						<div className={styles.resultDetails}>{formatResult(lastResult)}</div>
 					</div>
 				</div>
 			)}
 
 			{rollHistory.length > 0 && (
-				<div className="roll-history">
+				<div className={styles.rollHistory}>
 					<h4>Recent Rolls:</h4>
-					<div className="history-list">
+					<div className={styles.historyList}>
 						{rollHistory.map((result, index) => (
-							<div key={`${result.timestamp}-${index}`} className="history-item">
-								<span className="history-notation">{result.notation}</span>
-								<span className="history-total">{result.total}</span>
-								<span className="history-time">
+							<div key={`${result.timestamp}-${index}`} className={styles.historyItem}>
+								<span className={styles.historyNotation}>{result.notation}</span>
+								<span className={styles.historyTotal}>{result.total}</span>
+								<span className={styles.historyTime}>
 									{new Date(result.timestamp).toLocaleTimeString()}
 								</span>
 							</div>

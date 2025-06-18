@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './CharacterSelection.css';
+import styles from "./CharacterSelection.module.css";
 import CharacterCreation from './CharacterCreation';
 import PredefinedCharacters from './PredefinedCharacters';
 import type { Character, Campaign } from '../services/api';
@@ -41,21 +41,21 @@ const CharacterSelection: React.FC<CharacterSelectionProps> = ({
   }
 
   return (
-    <div className="character-selection">
-      <div className="character-selection-header">
+    <div className={styles.characterSelection}>
+      <div className={styles.characterSelectionHeader}>
         <h2>Choose Your Character</h2>
         <p>Campaign: <strong>{campaign.name}</strong></p>
         <button 
           onClick={onBackToCampaigns} 
-          className="back-button secondary"
+          className={`${styles.backButton} ${styles.secondary}`}
         >
           ← Back to Campaigns
         </button>
       </div>
 
-      <div className="character-options">
-        <div className="character-option">
-          <div className="character-option-card">
+      <div className={styles.characterOptions}>
+        <div className={styles.characterOption}>
+          <div className={styles.characterOptionCard}>
             <h3>Create New Character</h3>
             <p>Build your own custom character with full D&D 5e customization options.</p>
             <ul>
@@ -66,15 +66,15 @@ const CharacterSelection: React.FC<CharacterSelectionProps> = ({
             </ul>
             <button 
               onClick={() => setSelectionMode('create')}
-              className="character-option-button primary"
+              className={`${styles.characterOptionButton} ${styles.primary}`}
             >
               Create Character
             </button>
           </div>
         </div>
 
-        <div className="character-option">
-          <div className="character-option-card">
+        <div className={styles.characterOption}>
+          <div className={styles.characterOptionCard}>
             <h3>Choose Pre-Defined Character</h3>
             <p>Select from a curated list of ready-to-play characters for quick starts.</p>
             <ul>
@@ -85,7 +85,7 @@ const CharacterSelection: React.FC<CharacterSelectionProps> = ({
             </ul>
             <button 
               onClick={() => setSelectionMode('predefined')}
-              className="character-option-button primary"
+              className={`${styles.characterOptionButton} ${styles.primary}`}
             >
               Browse Characters
             </button>

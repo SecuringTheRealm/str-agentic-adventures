@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import React from "react";
 import ImageDisplay from "./ImageDisplay";
+import styles from "./ImageDisplay.module.css";
 
 describe("ImageDisplay", () => {
 	it("renders image when imageUrl is provided", () => {
@@ -30,15 +31,15 @@ describe("ImageDisplay", () => {
 	it("has correct CSS classes", () => {
 		const { container } = render(<ImageDisplay imageUrl="test.jpg" />);
 
-		expect(container.querySelector(".image-display")).toBeInTheDocument();
-		expect(container.querySelector(".image-container")).toBeInTheDocument();
+		expect(container.querySelector(`.${styles.imageDisplay}`)).toBeInTheDocument();
+		expect(container.querySelector(`.${styles.imageContainer}`)).toBeInTheDocument();
 	});
 
 	it("has correct CSS classes for empty state", () => {
 		const { container } = render(<ImageDisplay imageUrl={null} />);
 
-		expect(container.querySelector(".image-display")).toBeInTheDocument();
-		expect(container.querySelector(".image-container")).toBeInTheDocument();
-		expect(container.querySelector(".empty-image-state")).toBeInTheDocument();
+		expect(container.querySelector(`.${styles.imageDisplay}`)).toBeInTheDocument();
+		expect(container.querySelector(`.${styles.imageContainer}`)).toBeInTheDocument();
+		expect(container.querySelector(`.${styles.emptyImageState}`)).toBeInTheDocument();
 	});
 });
