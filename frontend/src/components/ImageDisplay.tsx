@@ -1,5 +1,5 @@
 import type React from "react";
-import "./ImageDisplay.css";
+import styles from "./ImageDisplay.module.css";
 
 interface ImageDisplayProps {
 	imageUrl: string | null;
@@ -7,12 +7,12 @@ interface ImageDisplayProps {
 
 const ImageDisplay: React.FC<ImageDisplayProps> = ({ imageUrl }) => {
 	return (
-		<div className="image-display">
-			<div className="image-container">
+		<div className={styles.imageDisplay}>
+			<div className={styles.imageContainer}>
 				{imageUrl ? (
 					<img src={imageUrl} alt="Game Visualization" />
 				) : (
-					<div className="empty-image-state">
+					<div className={styles.emptyImageState}>
 						<p>No image available</p>
 					</div>
 				)}

@@ -1,4 +1,4 @@
-.campaign-gallery {
+.campaignGallery {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
@@ -7,7 +7,7 @@
   border: 2px solid #E4BB1E; /* Gold border to match theme */
 }
 
-.gallery-header {
+.galleryHeader {
   text-align: center;
   margin-bottom: 3rem;
   padding: 2rem;
@@ -16,7 +16,7 @@
   border: 2px solid #E4BB1E; /* Gold border for prominence */
 }
 
-.gallery-header h2 {
+.galleryHeader h2 {
   font-size: 3rem; /* Larger size for prominence */
   color: #E4BB1E; /* Gold accent color */
   margin-bottom: 0.5rem;
@@ -26,21 +26,21 @@
   letter-spacing: 1px; /* Better spacing */
 }
 
-.gallery-header p {
+.galleryHeader p {
   font-size: 1.2rem; /* Slightly larger */
   color: #f4f1e8; /* Warm off-white for better contrast */
   font-family: 'Cinzel', serif;
   font-weight: 500;
 }
 
-.campaign-options {
+.campaignOptions {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 2rem;
   margin-bottom: 2rem;
 }
 
-.campaign-card, .custom-campaign-card {
+.campaignCard, .customCampaignCard {
   background: rgba(26, 47, 58, 0.7); /* Darker fantasy background */
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
@@ -49,43 +49,43 @@
   border: 2px solid #788070; /* Steel border */
 }
 
-.campaign-card:hover, .custom-campaign-card:hover {
+.campaignCard:hover, .customCampaignCard:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 25px rgba(228, 187, 30, 0.3); /* Gold shadow */
   border-color: #E4BB1E; /* Gold border on hover */
 }
 
-.custom-campaign-card {
+.customCampaignCard {
   background: linear-gradient(135deg, #B15005 0%, #D67C2D 100%); /* Wood gradient to match theme */
   color: white;
   border-color: #E4BB1E; /* Gold border */
 }
 
-.custom-campaign-card .card-content {
+.customCampaignCard .cardContent {
   background: rgba(0, 0, 0, 0.2); /* Darker overlay for better readability */
 }
 
-.card-content {
+.cardContent {
   padding: 1.5rem;
   height: 100%;
   display: flex;
   flex-direction: column;
 }
 
-.card-icon {
+.cardIcon {
   font-size: 3rem;
   text-align: center;
   margin-bottom: 1rem;
 }
 
-.card-header {
+.cardHeader {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 1rem;
 }
 
-.card-header h3 {
+.cardHeader h3 {
   font-size: 1.3rem;
   margin: 0;
   color: #E4BB1E; /* Gold color for card titles */
@@ -94,11 +94,11 @@
   font-weight: 600;
 }
 
-.custom-campaign-card .card-header h3 {
+.customCampaignCard .cardHeader h3 {
   color: white; /* Keep white for custom card */
 }
 
-.tone-badge {
+.toneBadge {
   padding: 0.25rem 0.75rem;
   border-radius: 20px;
   font-size: 0.8rem;
@@ -107,32 +107,32 @@
   margin-left: 1rem;
 }
 
-.tone-badge.heroic {
+.toneBadge.heroic {
   background: #3498db;
   color: white;
 }
 
-.tone-badge.dark {
+.toneBadge.dark {
   background: #34495e;
   color: white;
 }
 
-.tone-badge.lighthearted {
+.toneBadge.lighthearted {
   background: #f39c12;
   color: white;
 }
 
-.tone-badge.gritty {
+.toneBadge.gritty {
   background: #e74c3c;
   color: white;
 }
 
-.tone-badge.mysterious {
+.toneBadge.mysterious {
   background: #9b59b6;
   color: white;
 }
 
-.card-description {
+.cardDescription {
   font-size: 0.95rem;
   line-height: 1.6;
   color: #f4f1e8; /* Light warm text for better contrast */
@@ -140,20 +140,20 @@
   flex: 1;
 }
 
-.custom-campaign-card .card-description {
+.customCampaignCard .cardDescription {
   color: rgba(255, 255, 255, 0.95); /* Slightly more opaque white */
 }
 
-.card-details {
+.cardDetails {
   margin-bottom: 1.5rem;
 }
 
-.detail-item {
+.detailItem {
   margin-bottom: 1rem;
   font-size: 0.9rem;
 }
 
-.detail-item strong {
+.detailItem strong {
   display: block;
   color: #E4BB1E; /* Gold color for labels */
   margin-bottom: 0.25rem;
@@ -161,23 +161,23 @@
   font-family: 'Cinzel', serif;
 }
 
-.detail-item span {
+.detailItem span {
   color: #f4f1e8; /* Light warm text */
   line-height: 1.4;
 }
 
-.detail-item ul {
+.detailItem ul {
   margin: 0.5rem 0 0 1rem;
   padding: 0;
 }
 
-.detail-item li {
+.detailItem li {
   color: #f4f1e8; /* Light warm text */
   margin-bottom: 0.25rem;
   font-size: 0.85rem;
 }
 
-.select-button {
+.selectButton {
   background: linear-gradient(135deg, #B15005, #D67C2D); /* Wood gradient to match theme */
   color: white;
   border: 1px solid #E4BB1E; /* Gold border */
@@ -195,29 +195,29 @@
   font-family: 'Cinzel', serif;
 }
 
-.select-button:hover:not(:disabled) {
+.selectButton:hover:not(:disabled) {
   background: linear-gradient(135deg, #D67C2D, #E4953F); /* Lighter wood on hover */
   box-shadow: 0 2px 4px rgba(228, 187, 30, 0.3);
 }
 
-.select-button:disabled {
+.selectButton:disabled {
   background: rgba(120, 128, 112, 0.6); /* Steel color when disabled */
   cursor: not-allowed;
   border-color: #788070;
 }
 
-.select-button.custom {
+.selectButton.custom {
   background: rgba(0, 0, 0, 0.3); /* Dark transparent background */
   border-color: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(10px);
 }
 
-.select-button.custom:hover:not(:disabled) {
+.selectButton.custom:hover:not(:disabled) {
   background: rgba(0, 0, 0, 0.5);
   border-color: white;
 }
 
-.loading-spinner {
+.loadingSpinner {
   width: 40px;
   height: 40px;
   border: 4px solid #f3f3f3;
@@ -227,7 +227,7 @@
   margin: 0 auto;
 }
 
-.loading-spinner.small {
+.loadingSpinner.small {
   width: 16px;
   height: 16px;
   border-width: 2px;
@@ -238,7 +238,7 @@
   100% { transform: rotate(360deg); }
 }
 
-.campaign-gallery.loading {
+.campaignGallery.loading {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -247,14 +247,14 @@
   gap: 1rem;
 }
 
-.campaign-gallery.error {
+.campaignGallery.error {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 400px;
 }
 
-.error-message {
+.errorMessage {
   text-align: center;
   padding: 2rem;
   background: #fff5f5;
@@ -263,12 +263,12 @@
   color: #c53030;
 }
 
-.error-message h3 {
+.errorMessage h3 {
   margin: 0 0 1rem 0;
   color: #c53030;
 }
 
-.error-message button {
+.errorMessage button {
   background: #e53e3e;
   color: white;
   border: none;
@@ -278,11 +278,11 @@
   margin-top: 1rem;
 }
 
-.error-message button:hover {
+.errorMessage button:hover {
   background: #c53030;
 }
 
-.no-templates {
+.noTemplates {
   text-align: center;
   padding: 3rem 1rem;
   background: rgba(15, 64, 79, 0.4); /* Semi-transparent primary */
@@ -291,37 +291,37 @@
   border: 2px dashed #788070; /* Steel dashed border */
 }
 
-.no-templates h3 {
+.noTemplates h3 {
   margin: 0 0 1rem 0;
   color: #E4BB1E; /* Gold color for headings */
   font-family: 'Cinzel', serif;
   font-weight: 600;
 }
 
-.no-templates button {
+.noTemplates button {
   margin-top: 1rem;
 }
 
 @media (max-width: 768px) {
-  .campaign-gallery {
+  .campaignGallery {
     padding: 1rem;
   }
   
-  .gallery-header h2 {
+  .galleryHeader h2 {
     font-size: 2rem;
   }
   
-  .campaign-options {
+  .campaignOptions {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
   
-  .card-header {
+  .cardHeader {
     flex-direction: column;
     align-items: flex-start;
   }
   
-  .tone-badge {
+  .toneBadge {
     margin: 0.5rem 0 0 0;
   }
 }
