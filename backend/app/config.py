@@ -2,10 +2,10 @@
 Configuration for the backend application.
 """
 import os
+from typing import Optional, Annotated
 from pydantic_settings import BaseSettings
 from dotenv import load_dotenv
-
-load_dotenv()
+from fastapi import Depends
 
 class Settings(BaseSettings):
     # Azure OpenAI Settings
@@ -42,30 +42,43 @@ class Settings(BaseSettings):
             bool(self.azure_openai_embedding_deployment)
         )
 
-# Lazy initialization to avoid validation during import
-_settings = None
+# Global configuration instance - initialized at startup
+_settings: Optional[Settings] = None
+
+def init_settings() -> Settings:
+    """Initialize settings by loading .env file. Called at startup."""
+    # Load environment variables from .env file
+    load_dotenv()
+    
+    try:
+        settings = Settings()
+        return settings
+    except Exception as e:
+        # Check if this is due to missing Azure OpenAI configuration
+        error_msg = str(e)
+        if "azure_openai" in error_msg.lower():
+            raise ValueError(
+                "Azure OpenAI configuration is missing or invalid. "
+                "This agentic demo requires proper Azure OpenAI setup. "
+                "Please ensure the following environment variables are set: "
+                "AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_API_KEY, "
+                "AZURE_OPENAI_CHAT_DEPLOYMENT, AZURE_OPENAI_EMBEDDING_DEPLOYMENT"
+            ) from e
+        else:
+            # Re-raise original error for non-Azure OpenAI issues
+            raise
 
 def get_settings() -> Settings:
-    """Get the settings instance, creating it if necessary."""
+    """Get the settings instance. Used for FastAPI dependency injection."""
     global _settings
     if _settings is None:
-        try:
-            _settings = Settings()
-        except Exception as e:
-            # Check if this is due to missing Azure OpenAI configuration
-            error_msg = str(e)
-            if "azure_openai" in error_msg.lower():
-                raise ValueError(
-                    "Azure OpenAI configuration is missing or invalid. "
-                    "This agentic demo requires proper Azure OpenAI setup. "
-                    "Please ensure the following environment variables are set: "
-                    "AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_API_KEY, "
-                    "AZURE_OPENAI_CHAT_DEPLOYMENT, AZURE_OPENAI_EMBEDDING_DEPLOYMENT"
-                ) from e
-            else:
-                # Re-raise original error for non-Azure OpenAI issues
-                raise
+        _settings = init_settings()
     return _settings
+
+def set_settings(settings: Settings) -> None:
+    """Set the global settings instance. Used for testing."""
+    global _settings
+    _settings = settings
 
 # For backward compatibility, expose as 'settings'
 class SettingsProxy:
@@ -77,3 +90,11 @@ class SettingsProxy:
         return setattr(get_settings(), name, value)
 
 settings = SettingsProxy()
+
+# FastAPI dependency for configuration injection
+def get_config() -> Settings:
+    """FastAPI dependency to inject configuration."""
+    return get_settings()
+
+# Type alias for dependency injection
+ConfigDep = Annotated[Settings, Depends(get_config)]

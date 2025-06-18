@@ -13,6 +13,7 @@ from app.api import game_routes
 from app.api import websocket_routes
 from app.database import init_db
 from app.services.campaign_service import campaign_service
+from app.config import init_settings
 
 # Load environment variables
 load_dotenv()
@@ -44,6 +45,9 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup_event():
     """Initialize database and create default templates."""
+    logger.info("Initializing configuration...")
+    init_settings()  # Load configuration once at startup
+    
     logger.info("Initializing database...")
     init_db()
     
