@@ -27,6 +27,7 @@ This directory contains Architecture Decision Records (ADRs) for the Agentic Adv
 | 0008 | [Multiplayer Implementation for Real-Time Collaborative Gameplay](0008-multiplayer-implementation.md) | Superseded | 2025-01-27 | Real-time multiplayer architecture - updated for Python/FastAPI compatibility |
 | 0009 | [Container App Deployment Strategy](0009-container-app-deployment-strategy.md) | Accepted | 2025-06-12 | Single deployment approach to avoid duplicate container apps |
 | 0010 | [Technology Review Implementation Strategy](0010-technology-review-implementation.md) | Accepted | 2025-01-27 | Comprehensive implementation of all "real implementation" comments and system enhancements |
+| 0011 | [OpenAPI Client Generation for Frontend-Backend Integration](0011-openapi-client-generation.md) | Accepted | 2025-01-29 | Generate TypeScript client from FastAPI OpenAPI schema to eliminate manual API type duplication |
 
 ## ADR Statuses
 
