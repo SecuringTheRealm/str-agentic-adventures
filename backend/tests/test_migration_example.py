@@ -124,23 +124,17 @@ class TestMigrationExample:
         with patch("app.api.game_routes.get_scribe") as mock_get_scribe:
             mock_scribe = MagicMock()
             async def mock_create_character(*args, **kwargs):
-                return {
-                    "id": "test",
-                    "name": "Test",
-                    "race": "human",
-                    "character_class": "fighter",
-                    "level": 1,
-                    "abilities": {"strength": 16, "dexterity": 14, "constitution": 15, "intelligence": 12, "wisdom": 13, "charisma": 10},
-                    "hit_points": {"current": 10, "maximum": 10},
-                    "armor_class": 15,
-                    "inventory": [], "features": [], "spells": []
-                }
+                return fighter_character_factory()
             mock_scribe.create_character = mock_create_character
             mock_get_scribe.return_value = mock_scribe
             
+            # Use factory for request data too
+            character_data = fighter_character_factory()
             response = client_with_missing_config.post("/api/game/character", json={
-                "name": "Test", "race": "human", "character_class": "fighter",
-                "abilities": {"strength": 16, "dexterity": 14, "constitution": 15, "intelligence": 12, "wisdom": 13, "charisma": 10}
+                "name": character_data["name"], 
+                "race": character_data["race"], 
+                "character_class": character_data["character_class"],
+                "abilities": character_data["abilities"]
             })
             
             # Should return 503 due to missing configuration

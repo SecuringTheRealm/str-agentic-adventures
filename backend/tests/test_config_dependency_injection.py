@@ -111,13 +111,10 @@ class TestConfigurationDependencyInjection:
             assert response.status_code == 200
             assert mock_create.called
 
-    def test_campaign_creation_with_missing_config(self, client_with_missing_config):
+    def test_campaign_creation_with_missing_config(self, client_with_missing_config, campaign_factory):
         """Test campaign creation with missing Azure OpenAI configuration."""
-        campaign_data = {
-            "name": "Test Campaign",
-            "setting": "Fantasy World",
-            "tone": "heroic",
-        }
+        # Use factory instead of hand-crafted dictionary
+        campaign_data = campaign_factory()
 
         response = client_with_missing_config.post("/api/game/campaign", json=campaign_data)
 
