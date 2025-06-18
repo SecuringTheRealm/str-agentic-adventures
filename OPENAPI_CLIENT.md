@@ -6,6 +6,62 @@ This document describes the integration of a generated TypeScript client from th
 
 The frontend now uses a generated TypeScript client instead of manually building fetch calls. This eliminates type duplication and ensures the frontend automatically updates when the backend API changes.
 
+## 🔄 Developer Workflow
+
+**IMPORTANT**: When the backend API changes, developers must regenerate the frontend client to maintain synchronization.
+
+### When to Regenerate the Client
+
+You must regenerate the client when:
+- ✅ Adding new API endpoints
+- ✅ Modifying existing endpoint parameters or responses
+- ✅ Changing data models (request/response types)
+- ✅ Updating enum values or field names
+- ✅ After pulling backend changes from other developers
+
+### How to Regenerate the Client
+
+1. **Start the backend server:**
+   ```bash
+   cd backend && python -m app.main
+   ```
+
+2. **Regenerate the frontend client:**
+   ```bash
+   cd frontend && npm run generate:api
+   ```
+
+3. **Verify the update:**
+   ```bash
+   cd frontend && npm run build
+   ```
+
+4. **Test the integration:**
+   ```bash
+   cd frontend && npm test
+   ```
+
+### Troubleshooting
+
+If the generation fails:
+- Ensure the backend is running on `http://localhost:8000`
+- Check that `/openapi.json` endpoint is accessible
+- Verify no TypeScript compilation errors in the backend
+- Review any API breaking changes that may require frontend updates
+
+### Automated Validation
+
+To validate the entire workflow automatically:
+```bash
+./scripts/validate-openapi-client.sh
+```
+
+This script checks:
+- ✅ Backend server accessibility
+- ✅ OpenAPI schema validity
+- ✅ Client generation success
+- ✅ TypeScript compilation
+
 ## Files Changed
 
 ### Generated Client
@@ -45,6 +101,8 @@ The generated API uses different names for some types:
 
 ## Regenerating the Client
 
+⚠️ **This section is deprecated. See the enhanced [Developer Workflow](#-developer-workflow) section above.**
+
 When the backend API changes:
 
 1. Start the backend: `cd backend && python -m app.main`
@@ -57,6 +115,27 @@ When the backend API changes:
 2. **Type safety** - All API calls are strongly typed
 3. **No duplication** - Single source of truth for API types
 4. **Documentation** - Generated docs in `src/api-client/docs/`
+
+## 🧪 API Compatibility Testing
+
+To ensure the frontend client stays synchronized with the backend API, automated tests verify:
+
+### Backend Tests (`backend/tests/`)
+- `test_api_compatibility.py` - Validates frontend/backend model compatibility
+- `test_frontend_backend_integration.py` - Tests endpoint integration
+- `test_openapi_schema_validation.py` - Validates OpenAPI schema accessibility
+
+### Frontend Tests
+Run the test suite to verify client compatibility:
+```bash
+cd frontend && npm test
+```
+
+### Manual Verification
+Test the OpenAPI schema is accessible:
+```bash
+curl http://localhost:8000/openapi.json
+```
 
 ## Known Issues
 
