@@ -4,8 +4,8 @@ import type { Character } from '../services/api';
 export const predefinedCharacters: Omit<Character, 'id'>[] = [
   {
     name: "Thorin Ironforge",
-    race: "Dwarf",
-    character_class: "Fighter",
+    race: "dwarf",
+    character_class: "fighter",
     level: 1,
     abilities: {
       strength: 16,
@@ -20,16 +20,16 @@ export const predefinedCharacters: Omit<Character, 'id'>[] = [
       maximum: 11
     },
     inventory: [
-      { name: "Chain Mail", quantity: 1 },
-      { name: "Battleaxe", quantity: 1 },
-      { name: "Handaxe", quantity: 2 },
-      { name: "Explorer's Pack", quantity: 1 }
+      { item_id: "Chain Mail", quantity: 1 },
+      { item_id: "Battleaxe", quantity: 1 },
+      { item_id: "Handaxe", quantity: 2 },
+      { item_id: "Explorer's Pack", quantity: 1 }
     ]
   },
   {
     name: "Lyralei Swiftarrow",
-    race: "Elf",
-    character_class: "Ranger",
+    race: "elf",
+    character_class: "ranger",
     level: 1,
     abilities: {
       strength: 13,
@@ -44,17 +44,17 @@ export const predefinedCharacters: Omit<Character, 'id'>[] = [
       maximum: 12
     },
     inventory: [
-      { name: "Studded Leather Armor", quantity: 1 },
-      { name: "Longbow", quantity: 1 },
-      { name: "Arrows", quantity: 20 },
-      { name: "Shortsword", quantity: 1 },
-      { name: "Dungeoneer's Pack", quantity: 1 }
+      { item_id: "Studded Leather Armor", quantity: 1 },
+      { item_id: "Longbow", quantity: 1 },
+      { item_id: "Arrows", quantity: 20 },
+      { item_id: "Shortsword", quantity: 1 },
+      { item_id: "Dungeoneer's Pack", quantity: 1 }
     ]
   },
   {
     name: "Zara Moonwhisper",
-    race: "Human",
-    character_class: "Wizard",
+    race: "human",
+    character_class: "wizard",
     level: 1,
     abilities: {
       strength: 8,
@@ -69,16 +69,16 @@ export const predefinedCharacters: Omit<Character, 'id'>[] = [
       maximum: 7
     },
     inventory: [
-      { name: "Spellbook", quantity: 1 },
-      { name: "Dagger", quantity: 1 },
-      { name: "Component Pouch", quantity: 1 },
-      { name: "Scholar's Pack", quantity: 1 }
+      { item_id: "Spellbook", quantity: 1 },
+      { item_id: "Dagger", quantity: 1 },
+      { item_id: "Component Pouch", quantity: 1 },
+      { item_id: "Scholar's Pack", quantity: 1 }
     ]
   },
   {
     name: "Brother Marcus",
-    race: "Human",
-    character_class: "Cleric",
+    race: "human",
+    character_class: "cleric",
     level: 1,
     abilities: {
       strength: 14,
@@ -93,17 +93,17 @@ export const predefinedCharacters: Omit<Character, 'id'>[] = [
       maximum: 9
     },
     inventory: [
-      { name: "Chain Mail", quantity: 1 },
-      { name: "Shield", quantity: 1 },
-      { name: "Mace", quantity: 1 },
-      { name: "Priest's Pack", quantity: 1 },
-      { name: "Holy Symbol", quantity: 1 }
+      { item_id: "Chain Mail", quantity: 1 },
+      { item_id: "Shield", quantity: 1 },
+      { item_id: "Mace", quantity: 1 },
+      { item_id: "Priest's Pack", quantity: 1 },
+      { item_id: "Holy Symbol", quantity: 1 }
     ]
   },
   {
     name: "Shadowstep",
-    race: "Halfling",
-    character_class: "Rogue",
+    race: "halfling",
+    character_class: "rogue",
     level: 1,
     abilities: {
       strength: 10,
@@ -118,17 +118,17 @@ export const predefinedCharacters: Omit<Character, 'id'>[] = [
       maximum: 10
     },
     inventory: [
-      { name: "Leather Armor", quantity: 1 },
-      { name: "Shortsword", quantity: 1 },
-      { name: "Dagger", quantity: 2 },
-      { name: "Thieves' Tools", quantity: 1 },
-      { name: "Burglar's Pack", quantity: 1 }
+      { item_id: "Leather Armor", quantity: 1 },
+      { item_id: "Shortsword", quantity: 1 },
+      { item_id: "Dagger", quantity: 2 },
+      { item_id: "Thieves' Tools", quantity: 1 },
+      { item_id: "Burglar's Pack", quantity: 1 }
     ]
   },
   {
     name: "Seraphina Brightflame",
-    race: "Dragonborn",
-    character_class: "Paladin",
+    race: "dragonborn",
+    character_class: "paladin",
     level: 1,
     abilities: {
       strength: 16,
@@ -143,11 +143,11 @@ export const predefinedCharacters: Omit<Character, 'id'>[] = [
       maximum: 12
     },
     inventory: [
-      { name: "Chain Mail", quantity: 1 },
-      { name: "Shield", quantity: 1 },
-      { name: "Longsword", quantity: 1 },
-      { name: "Javelin", quantity: 5 },
-      { name: "Explorer's Pack", quantity: 1 }
+      { item_id: "Chain Mail", quantity: 1 },
+      { item_id: "Shield", quantity: 1 },
+      { item_id: "Longsword", quantity: 1 },
+      { item_id: "Javelin", quantity: 5 },
+      { item_id: "Explorer's Pack", quantity: 1 }
     ]
   }
 ];

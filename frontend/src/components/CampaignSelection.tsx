@@ -180,7 +180,7 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({ onCampaignCreated
                       </button>
                       <button
                         className="action-button danger small"
-                        onClick={() => handleDeleteCampaign(campaign.id)}
+                        onClick={() => handleDeleteCampaign(campaign.id!)}
                       >
                         Delete
                       </button>
@@ -277,7 +277,7 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({ onCampaignCreated
                     </button>
                     <button
                       className="action-button danger small"
-                      onClick={() => handleDeleteCampaign(campaign.id)}
+                      onClick={() => handleDeleteCampaign(campaign.id!)}
                     >
                       Delete
                     </button>

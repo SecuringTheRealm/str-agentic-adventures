@@ -161,3 +161,39 @@ Execute the backend test suite with `pytest`:
 cd backend
 python -m pytest tests/ -v
 ```
+
+## Development Workflow
+
+### 🔄 OpenAPI Client Synchronization
+
+The frontend uses a generated TypeScript client from the backend's OpenAPI schema. **When backend API changes, developers must regenerate the frontend client.**
+
+#### When to Regenerate
+
+Regenerate the client after:
+- ✅ Adding new API endpoints
+- ✅ Modifying endpoint parameters or responses
+- ✅ Changing data models or types
+- ✅ Pulling backend changes from other developers
+
+#### How to Regenerate
+
+```bash
+# 1. Start backend server
+cd backend && python -m app.main
+
+# 2. Regenerate frontend client  
+cd frontend && npm run generate:api
+
+# 3. Verify the update
+npm run build && npm test
+```
+
+#### Automated Validation
+
+Validate the entire workflow:
+```bash
+./scripts/validate-openapi-client.sh
+```
+
+See [OPENAPI_CLIENT.md](OPENAPI_CLIENT.md) for detailed documentation.

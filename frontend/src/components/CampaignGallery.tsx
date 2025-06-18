@@ -35,9 +35,9 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
 
   const handleSelectTemplate = async (template: Campaign) => {
     try {
-      setCloning(template.id);
+      setCloning(template.id!);
       const clonedCampaign = await cloneCampaign({
-        template_id: template.id,
+        template_id: template.id!,
         new_name: `${template.name} (My Campaign)`
       });
       onCampaignSelected(clonedCampaign);
@@ -97,7 +97,7 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
             <div className={styles.cardContent}>
               <div className={styles.cardHeader}>
                 <h3>{template.name}</h3>
-                <span className={`${styles.toneBadge} ${styles[template.tone]}`}>
+                <span className={`${styles.toneBadge} ${template.tone ? styles[template.tone] : ''}`}>
                   {template.tone}
                 </span>
               </div>
