@@ -1,37 +1,6 @@
-[lint]
-select = ["E", "F", "B", "I", "N", "UP", "ANN", "S", "A", "COM", "C4", "T10", "RET", "SIM", "ERA"]
-ignore = ["ANN101", "ANN102"]  # Ignore missing self and cls type annotations
+# This configuration has been moved to the root pyproject.toml
+# This file is kept for backward compatibility during transition
+# All tool configurations (ruff, pytest, etc.) are now managed at the root level
 
-[format]
-quote-style = "double"
-indent-style = "space"
-skip-magic-trailing-comma = false
-line-ending = "auto"
-
-[lint.pydocstyle]
-convention = "google"
-
-[lint.per-file-ignores]
-"__init__.py" = ["E402", "F401"]  # Ignore import-related warnings in __init__ files
-"tests/*" = ["S101"]  # Allow assert in tests
-
-[lint.mccabe]
-max-complexity = 10
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-python_files = ["test_*.py"]
-python_classes = ["Test*"]
-python_functions = ["test_*"]
-addopts = [
-    "-v",
-    "--tb=short",
-    "--strict-markers",
-    "--strict-config",
-]
-markers = [
-    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
-    "integration: marks tests as integration tests",
-    "unit: marks tests as unit tests",
-    "asyncio: marks tests as async tests",
-]
+# Legacy configuration - DO NOT ADD NEW CONFIGURATIONS HERE
+# Use /pyproject.toml at the repository root instead
