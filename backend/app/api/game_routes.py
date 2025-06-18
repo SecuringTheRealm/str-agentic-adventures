@@ -108,15 +108,41 @@ async def create_character(character_data: CreateCharacterRequest, config: Confi
 
 
 @router.get("/character/{character_id}", response_model=Dict[str, Any])
-async def get_character(character_id: str):
+async def get_character(character_id: str, config: ConfigDep):
     """Retrieve a character sheet by ID."""
-    character = await get_scribe().get_character(character_id)
+    try:
+        # Check if Azure OpenAI is configured
+        if not config.is_azure_openai_configured():
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Azure OpenAI configuration is missing or invalid. "
+                       "This agentic demo requires proper Azure OpenAI setup."
+            )
+        
+        character = await get_scribe().get_character(character_id)
 
-    if not character:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Character {character_id} not found",
-        )
+        if not character:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Character {character_id} not found",
+            )
+
+        return character
+    except HTTPException:
+        # Re-raise HTTPExceptions as-is
+        raise
+    except Exception as e:
+        # Handle configuration errors specifically
+        error_msg = str(e)
+        if "Azure OpenAI configuration" in error_msg:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=error_msg
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to retrieve character: {str(e)}",
+            )
 
     return character
 

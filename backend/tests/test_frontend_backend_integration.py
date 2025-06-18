@@ -56,8 +56,9 @@ class TestFrontendBackendIntegration:
         for route, method in routes_to_test:
             if method == "GET":
                 response = client.get(route)
-                # GET endpoints should either work (200) or return proper error (404, 422)
-                assert response.status_code in [200, 404, 422, 500], (
+                # GET endpoints should either work (200) or return proper error (404, 422, 500, 503)
+                # 503 can happen when Azure OpenAI configuration is missing
+                assert response.status_code in [200, 404, 422, 500, 503], (
                     f"Route {route} returned unexpected status {response.status_code}"
                 )
             elif method == "POST":

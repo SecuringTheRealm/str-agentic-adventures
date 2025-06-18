@@ -194,3 +194,31 @@ class TestConfigurationDependencyInjection:
         finally:
             # Clean up
             app.dependency_overrides.clear()
+
+    def test_get_character_with_valid_config(self, client_with_config):
+        """Test get character with valid configuration."""
+        with patch("app.api.game_routes.get_scribe") as mock_get_scribe:
+            mock_scribe = MagicMock()
+            # Make get_character return an awaitable
+            async def get_character_async(*args, **kwargs):
+                return {
+                    "id": "char_123",
+                    "name": "Existing Character",
+                    "race": "elf",
+                    "character_class": "wizard"
+                }
+            mock_scribe.get_character = get_character_async
+            mock_get_scribe.return_value = mock_scribe
+
+            response = client_with_config.get("/api/game/character/char_123")
+
+            assert response.status_code == 200
+            assert mock_get_scribe.called
+
+    def test_get_character_with_missing_config(self, client_with_missing_config):
+        """Test get character with missing Azure OpenAI configuration."""
+        response = client_with_missing_config.get("/api/game/character/char_123")
+
+        # Should return 503 error for missing configuration
+        assert response.status_code == 503
+        assert "Azure OpenAI configuration" in response.json().get("detail", "")
