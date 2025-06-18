@@ -1,0 +1,113 @@
+[project]
+name = "str-agentic-adventures"
+version = "0.1.0"
+description = "AI Dungeon Master - Multi-agent adventure game system"
+authors = [
+    {name = "Securing the Realm", email = "noreply@securingtherealm.com"}
+]
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.12"
+keywords = ["ai", "dungeon-master", "game", "fastapi", "semantic-kernel"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Games/Entertainment :: Role-Playing",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+# Core dependencies
+dependencies = [
+    "fastapi>=0.100.0",
+    "uvicorn>=0.22.0",
+    "pydantic>=2.0.0",
+    "python-dotenv>=1.0.0",
+    "semantic-kernel>=0.9.0",
+    "azure-identity>=1.13.0",
+    "azure-storage-blob>=12.16.0",
+    "openai>=1.0.0",
+    "sqlalchemy>=2.0.0",
+    "alembic>=1.11.0",
+    "psycopg2-binary>=2.9.6",
+    "python-multipart>=0.0.6",
+    "aiohttp>=3.8.5",
+    "tenacity>=8.2.2",
+    "pyyaml>=6.0",
+]
+
+# Development dependencies
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.1.5",
+    "pytest>=7.4.0",
+    "httpx>=0.24.1",
+]
+
+[project.urls]
+Homepage = "https://github.com/SecuringTheRealm/str-agentic-adventures"
+Repository = "https://github.com/SecuringTheRealm/str-agentic-adventures"
+Issues = "https://github.com/SecuringTheRealm/str-agentic-adventures/issues"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# Simple configuration - this is primarily for dependency management
+[tool.hatch.build.targets.wheel]
+include = ["backend/app"]
+
+# UV Configuration
+[tool.uv]
+dev-dependencies = [
+    "ruff>=0.1.5",
+    "pytest>=7.4.0",
+    "httpx>=0.24.1",
+]
+
+# Ruff configuration (moved from backend/pyproject.toml)
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+extend-include = ["*.ipynb"]
+
+[tool.ruff.lint]
+select = ["E", "F", "B", "I", "N", "UP", "ANN", "S", "A", "COM", "C4", "T10", "RET", "SIM", "ERA"]
+ignore = ["ANN101", "ANN102"]  # Ignore missing self and cls type annotations
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["E402", "F401"]  # Ignore import-related warnings in __init__ files
+"tests/*" = ["S101"]  # Allow assert in tests
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+# Pytest configuration (moved from backend/pyproject.toml)
+[tool.pytest.ini_options]
+testpaths = ["backend/tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-v",
+    "--tb=short",
+    "--strict-markers",
+    "--strict-config",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+    "asyncio: marks tests as async tests",
+]

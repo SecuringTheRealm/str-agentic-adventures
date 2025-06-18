@@ -1,0 +1,21 @@
+# Generated from pyproject.toml [project] dependencies
+fastapi>=0.100.0
+uvicorn>=0.22.0
+pydantic>=2.0.0
+python-dotenv>=1.0.0
+semantic-kernel>=0.9.0
+azure-identity>=1.13.0
+azure-storage-blob>=12.16.0
+openai>=1.0.0
+sqlalchemy>=2.0.0
+alembic>=1.11.0
+psycopg2-binary>=2.9.6
+python-multipart>=0.0.6
+aiohttp>=3.8.5
+tenacity>=8.2.2
+pyyaml>=6.0
+
+# Development dependencies from [project.optional-dependencies.dev]
+ruff>=0.1.5
+pytest>=7.4.0
+httpx>=0.24.1
