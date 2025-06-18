@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './CharacterCreation.css';
+import styles from "./CharacterCreation.module.css";
 import type { Character, CharacterCreateRequest, Campaign } from '../services/api';
 import { createCharacter } from '../services/api';
 
@@ -100,20 +100,20 @@ const CharacterCreation: React.FC<CharacterCreationProps> = ({
   };
 
   return (
-    <div className="character-creation">
-      <div className="character-creation-header">
+    <div className={styles.characterCreation}>
+      <div className={styles.characterCreationHeader}>
         <h2>Create Your Character</h2>
         <p>Campaign: <strong>{campaign.name}</strong></p>
-        <button onClick={onBack} className="back-button">
+        <button onClick={onBack} className={styles.backButton}>
           ← Back to Character Options
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="character-form">
-        <div className="form-section">
+      <form onSubmit={handleSubmit} className={styles.characterForm}>
+        <div className={styles.formSection}>
           <h3>Basic Information</h3>
           
-          <div className="form-group">
+          <div className={styles.formGroup}>
             <label htmlFor="name">Character Name</label>
             <input
               type="text"
@@ -126,8 +126,8 @@ const CharacterCreation: React.FC<CharacterCreationProps> = ({
             />
           </div>
 
-          <div className="form-row">
-            <div className="form-group">
+          <div className={styles.formRow}>
+            <div className={styles.formGroup}>
               <label htmlFor="race">Race</label>
               <select
                 id="race"
@@ -141,7 +141,7 @@ const CharacterCreation: React.FC<CharacterCreationProps> = ({
               </select>
             </div>
 
-            <div className="form-group">
+            <div className={styles.formGroup}>
               <label htmlFor="character_class">Class</label>
               <select
                 id="character_class"
@@ -157,15 +157,15 @@ const CharacterCreation: React.FC<CharacterCreationProps> = ({
           </div>
         </div>
 
-        <div className="form-section">
+        <div className={styles.formSection}>
           <h3>Ability Scores</h3>
-          <p className="ability-points-info">
+          <p className={styles.abilityPointsInfo}>
             Total Points: {getTotalPoints()}/78 (Standard point buy equivalent)
           </p>
           
-          <div className="abilities-grid">
+          <div className={styles.abilitiesGrid}>
             {Object.entries(formData.abilities).map(([ability, value]) => (
-              <div key={ability} className="ability-input">
+              <div key={ability} className={styles.abilityInput}>
                 <label htmlFor={`abilities.${ability}`}>
                   {ability.charAt(0).toUpperCase() + ability.slice(1)}
                 </label>
@@ -178,7 +178,7 @@ const CharacterCreation: React.FC<CharacterCreationProps> = ({
                   min="8"
                   max="18"
                 />
-                <span className="modifier">
+                <span className={styles.modifier}>
                   {getAbilityModifier(value)}
                 </span>
               </div>
@@ -186,9 +186,9 @@ const CharacterCreation: React.FC<CharacterCreationProps> = ({
           </div>
         </div>
 
-        <div className="form-section">
+        <div className={styles.formSection}>
           <h3>Backstory (Optional)</h3>
-          <div className="form-group">
+          <div className={styles.formGroup}>
             <label htmlFor="backstory">Character Background</label>
             <textarea
               id="backstory"
@@ -202,16 +202,16 @@ const CharacterCreation: React.FC<CharacterCreationProps> = ({
         </div>
 
         {error && (
-          <div className="error-message">
+          <div className={styles.errorMessage}>
             {error}
           </div>
         )}
 
-        <div className="form-actions">
+        <div className={styles.formActions}>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="create-button"
+            className={styles.createButton}
           >
             {isSubmitting ? 'Creating Character...' : 'Create Character'}
           </button>

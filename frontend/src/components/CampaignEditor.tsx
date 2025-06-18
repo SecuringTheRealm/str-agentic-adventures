@@ -10,7 +10,7 @@ import {
   AIAssistanceRequest,
   AIContentGenerationRequest
 } from '../services/api';
-import './CampaignEditor.css';
+import styles from "./CampaignEditor.module.css";
 
 interface CampaignEditorProps {
   campaign?: Campaign;
@@ -311,12 +311,12 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
   };
 
   return (
-    <div className="campaign-editor">
-      <div className="editor-header">
+    <div className={styles.campaignEditor}>
+      <div className={styles.editorHeader}>
         <h2>{isEditing ? 'Edit Campaign' : 'Create Custom Campaign'}</h2>
         {isEditing && (
-          <div className="editor-controls">
-            <label className="auto-save-toggle">
+          <div className={styles.editorControls}>
+            <label className={styles.autoSaveToggle}>
               <input
                 type="checkbox"
                 checked={autoSave}
@@ -325,16 +325,16 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
               Auto-save
             </label>
             {hasUnsavedChanges && (
-              <span className="unsaved-indicator">● Unsaved changes</span>
+              <span className={styles.unsavedIndicator}>● Unsaved changes</span>
             )}
           </div>
         )}
       </div>
 
-      {error && <div className="error-message">{error}</div>}
+      {error && <div className={styles.errorMessage}>{error}</div>}
 
       <form onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
-        <div className="form-group">
+        <div className={styles.formGroup}>
           <label htmlFor="name">Campaign Name *</label>
           <input
             id="name"
@@ -346,13 +346,13 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
             disabled={isSubmitting}
           />
           {validationErrors.name && (
-            <div className="validation-error">{validationErrors.name}</div>
+            <div className={styles.validationError}>{validationErrors.name}</div>
           )}
         </div>
 
-        <div className="form-group">
+        <div className={styles.formGroup}>
           <label htmlFor="description">Description</label>
-          <div className="editor-toolbar">
+          <div className={styles.editorToolbar}>
             <button 
               type="button" 
               onClick={() => handleFormatText('description', 'bold')}
@@ -384,7 +384,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
             <button 
               type="button" 
               onClick={() => handleAIAssist('description', 'description')}
-              className="ai-assist-btn"
+              className={styles.aiAssistBtn}
               title="AI Assistance"
             >
               ✨ AI
@@ -400,9 +400,9 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
           />
         </div>
 
-        <div className="form-group">
+        <div className={styles.formGroup}>
           <label htmlFor="setting">Campaign Setting *</label>
-          <div className="editor-toolbar">
+          <div className={styles.editorToolbar}>
             <button 
               type="button" 
               onClick={() => handleFormatText('setting', 'bold')}
@@ -434,7 +434,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
             <button 
               type="button" 
               onClick={() => handleAIAssist('setting', 'setting')}
-              className="ai-assist-btn"
+              className={styles.aiAssistBtn}
               title="AI Assistance"
             >
               ✨ AI
@@ -450,13 +450,13 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
             disabled={isSubmitting}
           />
           {validationErrors.setting && (
-            <div className="validation-error">{validationErrors.setting}</div>
+            <div className={styles.validationError}>{validationErrors.setting}</div>
           )}
         </div>
 
-        <div className="form-group">
+        <div className={styles.formGroup}>
           <label htmlFor="world_description">World Description</label>
-          <div className="editor-toolbar">
+          <div className={styles.editorToolbar}>
             <button 
               type="button" 
               onClick={() => handleFormatText('world_description', 'bold')}
@@ -488,7 +488,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
             <button 
               type="button" 
               onClick={() => handleAIAssist('world_description', 'description')}
-              className="ai-assist-btn"
+              className={styles.aiAssistBtn}
               title="AI Assistance"
             >
               ✨ AI
@@ -504,7 +504,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
           />
         </div>
 
-        <div className="form-group">
+        <div className={styles.formGroup}>
           <label htmlFor="tone">Campaign Tone</label>
           <select
             id="tone"
@@ -520,7 +520,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
           </select>
         </div>
 
-        <div className="form-group">
+        <div className={styles.formGroup}>
           <label htmlFor="homebrew_rules">Homebrew Rules (Optional)</label>
           <textarea
             id="homebrew_rules"
@@ -530,23 +530,23 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
             rows={3}
             disabled={isSubmitting}
           />
-          <div className="help-text">
+          <div className={styles.helpText}>
             Enter each homebrew rule on a separate line
           </div>
         </div>
 
-        <div className="form-actions">
+        <div className={styles.formActions}>
           <button
             type="button"
             onClick={onCancel}
-            className="cancel-button"
+            className={styles.cancelButton}
             disabled={isSubmitting}
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="save-button"
+            className={styles.saveButton}
             disabled={isSubmitting}
           >
             {isSubmitting ? (
@@ -563,26 +563,26 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
 
       {/* AI Assistant Modal */}
       {showAIAssistant && (
-        <div className="ai-assistant-modal">
-          <div className="modal-overlay" onClick={() => setShowAIAssistant(false)} />
-          <div className="modal-content">
-            <div className="modal-header">
+        <div className={styles.aiAssistantModal}>
+          <div className={styles.modalOverlay} onClick={() => setShowAIAssistant(false)} />
+          <div className={styles.modalContent}>
+            <div className={styles.modalHeader}>
               <h3>✨ AI Writing Assistant</h3>
               <button 
-                className="close-button"
+                className={styles.closeButton}
                 onClick={() => setShowAIAssistant(false)}
               >
                 ×
               </button>
             </div>
-            <div className="modal-body">
+            <div className={styles.modalBody}>
               {aiLoading ? (
-                <div className="loading-state">
-                  <div className="loading-spinner"></div>
+                <div className={styles.loadingState}>
+                  <div className={styles.loadingSpinner}></div>
                   <p>Getting suggestions...</p>
                 </div>
               ) : (
-                <div className="suggestions">
+                <div className={styles.suggestions}>
                   <h4>Suggestions:</h4>
                   <ul>
                     {aiSuggestions.map((suggestion, index) => {
@@ -594,7 +594,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
                           <span>{suggestion}</span>
                           <button
                             onClick={() => applySuggestion(suggestion)}
-                            className="apply-suggestion"
+                            className={styles.applySuggestion}
                             disabled={aiGenerating || isEmpty}
                             title={isEmpty ? "Cannot apply to empty field" : "Generate AI content based on this suggestion"}
                           >

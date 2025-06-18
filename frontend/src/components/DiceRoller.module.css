@@ -1,4 +1,4 @@
-.dice-roller {
+.diceRoller {
   background: #2c2c2c;
   border: 2px solid #8B4513;
   border-radius: 8px;
@@ -7,29 +7,29 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
-.dice-roller-header h3 {
+.diceRollerHeader h3 {
   color: #d4af37;
   margin: 0 0 1rem 0;
   text-align: center;
   font-family: 'Cinzel', serif;
 }
 
-.dice-input-section {
+.diceInputSection {
   margin-bottom: 1rem;
 }
 
-.notation-input, .skill-input {
+.notationInput, .skillInput {
   margin-bottom: 0.5rem;
 }
 
-.notation-input label, .skill-input label {
+.notationInput label, .skillInput label {
   display: block;
   color: #e6e6e6;
   margin-bottom: 0.25rem;
   font-weight: bold;
 }
 
-.notation-input input, .skill-input select {
+.notationInput input, .skillInput select {
   width: 100%;
   padding: 0.5rem;
   border: 1px solid #666;
@@ -39,13 +39,13 @@
   font-size: 1rem;
 }
 
-.notation-input input:focus, .skill-input select:focus {
+.notationInput input:focus, .skillInput select:focus {
   outline: none;
   border-color: #d4af37;
   box-shadow: 0 0 5px rgba(212, 175, 55, 0.3);
 }
 
-.roll-button {
+.rollButton {
   width: 100%;
   padding: 0.75rem;
   background: linear-gradient(135deg, #8B4513, #A0522D);
@@ -59,39 +59,39 @@
   margin-top: 0.5rem;
 }
 
-.roll-button:hover:not(:disabled) {
+.rollButton:hover:not(:disabled) {
   background: linear-gradient(135deg, #A0522D, #CD853F);
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
-.roll-button:active:not(:disabled) {
+.rollButton:active:not(:disabled) {
   transform: translateY(0);
 }
 
-.roll-button:disabled {
+.rollButton:disabled {
   background: #555;
   cursor: not-allowed;
   opacity: 0.6;
 }
 
-.common-rolls {
+.commonRolls {
   margin: 1rem 0;
 }
 
-.common-rolls h4 {
+.commonRolls h4 {
   color: #d4af37;
   margin: 0 0 0.5rem 0;
   font-size: 1rem;
 }
 
-.quick-roll-buttons {
+.quickRollButtons {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
   gap: 0.5rem;
 }
 
-.quick-roll-button {
+.quickRollButton {
   padding: 0.5rem;
   background: linear-gradient(135deg, #2c5530, #3d7c47);
   color: white;
@@ -102,18 +102,18 @@
   transition: all 0.3s ease;
 }
 
-.quick-roll-button:hover:not(:disabled) {
+.quickRollButton:hover:not(:disabled) {
   background: linear-gradient(135deg, #3d7c47, #4a9c54);
   transform: translateY(-1px);
 }
 
-.quick-roll-button:disabled {
+.quickRollButton:disabled {
   background: #555;
   cursor: not-allowed;
   opacity: 0.6;
 }
 
-.last-result {
+.lastResult {
   margin: 1rem 0;
   padding: 1rem;
   background: #1a1a1a;
@@ -121,24 +121,24 @@
   border-radius: 4px;
 }
 
-.last-result h4 {
+.lastResult h4 {
   color: #d4af37;
   margin: 0 0 0.5rem 0;
   font-size: 1rem;
 }
 
-.result-display {
+.resultDisplay {
   text-align: center;
 }
 
-.result-notation {
+.resultNotation {
   color: #e6e6e6;
   font-size: 1.1rem;
   margin-bottom: 0.5rem;
   font-family: 'Courier New', monospace;
 }
 
-.result-total {
+.resultTotal {
   color: #d4af37;
   font-size: 2rem;
   font-weight: bold;
@@ -146,24 +146,24 @@
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-.result-details {
+.resultDetails {
   color: #ccc;
   font-size: 0.9rem;
   margin-top: 0.5rem;
   line-height: 1.4;
 }
 
-.roll-history {
+.rollHistory {
   margin-top: 1rem;
 }
 
-.roll-history h4 {
+.rollHistory h4 {
   color: #d4af37;
   margin: 0 0 0.5rem 0;
   font-size: 1rem;
 }
 
-.history-list {
+.historyList {
   max-height: 200px;
   overflow-y: auto;
   border: 1px solid #444;
@@ -171,7 +171,7 @@
   background: #1a1a1a;
 }
 
-.history-item {
+.historyItem {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -181,28 +181,28 @@
   font-size: 0.9rem;
 }
 
-.history-item:last-child {
+.historyItem:last-child {
   border-bottom: none;
 }
 
-.history-item:hover {
+.historyItem:hover {
   background: #333;
 }
 
-.history-notation {
+.historyNotation {
   flex: 1;
   font-family: 'Courier New', monospace;
   color: #ccc;
 }
 
-.history-total {
+.historyTotal {
   flex: 0 0 auto;
   font-weight: bold;
   color: #d4af37;
   margin: 0 1rem;
 }
 
-.history-time {
+.historyTime {
   flex: 0 0 auto;
   color: #999;
   font-size: 0.8rem;
@@ -214,11 +214,11 @@
   100% { transform: rotate(360deg); }
 }
 
-.roll-button:disabled.rolling {
+.rollButton:disabled.rolling {
   position: relative;
 }
 
-.roll-button:disabled.rolling::before {
+.rollButton:disabled.rolling::before {
   content: '🎲';
   position: absolute;
   left: 50%;
@@ -229,26 +229,26 @@
 
 /* Mobile responsiveness */
 @media (max-width: 768px) {
-  .dice-roller {
+  .diceRoller {
     padding: 0.75rem;
     margin: 0.5rem 0;
   }
   
-  .quick-roll-buttons {
+  .quickRollButtons {
     grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
     gap: 0.25rem;
   }
   
-  .quick-roll-button {
+  .quickRollButton {
     padding: 0.4rem;
     font-size: 0.8rem;
   }
   
-  .result-total {
+  .resultTotal {
     font-size: 1.5rem;
   }
   
-  .history-item {
+  .historyItem {
     padding: 0.4rem;
     font-size: 0.8rem;
   }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './GameStateDisplay.css';
+import styles from "./GameStateDisplay.module.css";
 
 interface GameSession {
 	session_id: string;
@@ -89,24 +89,24 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
 	};
 
 	return (
-		<div className="game-state-display">
+		<div className={styles.gameStateDisplay}>
 			{/* Session Information */}
 			{session && (
-				<div className="session-info">
-					<div className="session-header">
+				<div className={styles.sessionInfo}>
+					<div className={styles.sessionHeader}>
 						<h3>Game Session</h3>
-						<div className="session-status">
+						<div className={styles.sessionStatus}>
 							<span className={`status-indicator ${session.status}`}>
 								{session.status.toUpperCase()}
 							</span>
-							<span className="session-type">{session.type}</span>
+							<span className={styles.sessionType}>{session.type}</span>
 						</div>
 					</div>
 					
-					<div className="current-scene">
+					<div className={styles.currentScene}>
 						<h4>Current Scene:</h4>
 						<p>{session.current_scene}</p>
-						<div className="scene-meta">
+						<div className={styles.sceneMeta}>
 							<span>Scene {session.scene_count}</span>
 							<span>Started: {new Date(session.started_at).toLocaleTimeString()}</span>
 						</div>
@@ -116,18 +116,18 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
 
 			{/* Combat State */}
 			{combatState && combatState.status === 'active' && (
-				<div className="combat-state">
-					<div className="combat-header">
+				<div className={styles.combatState}>
+					<div className={styles.combatHeader}>
 						<h3>Combat</h3>
-						<div className="combat-info">
-							<span className="round">Round {combatState.round}</span>
-							<span className="environment">{combatState.environment}</span>
+						<div className={styles.combatInfo}>
+							<span className={styles.round}>Round {combatState.round}</span>
+							<span className={styles.environment}>{combatState.environment}</span>
 						</div>
 					</div>
 
-					<div className="initiative-tracker">
+					<div className={styles.initiativeTracker}>
 						<h4>Initiative Order:</h4>
-						<div className="initiative-list">
+						<div className={styles.initiativeList}>
 							{combatState.initiative_order.map((participant, index) => (
 								<div
 									key={participant.id}
@@ -135,32 +135,32 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
 										index === combatState.current_turn ? 'current-turn' : ''
 									} ${participant.type}`}
 								>
-									<div className="participant-info">
-										<span className="name">{participant.name}</span>
-										<span className="type">{participant.type}</span>
+									<div className={styles.participantInfo}>
+										<span className={styles.name}>{participant.name}</span>
+										<span className={styles.type}>{participant.type}</span>
 									</div>
-									<div className="initiative-score">
+									<div className={styles.initiativeScore}>
 										{participant.initiative}
 									</div>
 									{index === combatState.current_turn && (
-										<div className="turn-indicator">▶</div>
+										<div className={styles.turnIndicator}>▶</div>
 									)}
 								</div>
 							))}
 						</div>
 					</div>
 
-					<div className="current-turn-info">
+					<div className={styles.currentTurnInfo}>
 						{(() => {
 							const currentChar = getCurrentTurnCharacter();
 							const nextChar = getNextTurnCharacter();
 							return (
 								<div>
-									<div className="current-turn">
+									<div className={styles.currentTurn}>
 										<strong>Current Turn: </strong>
 										{currentChar ? `${currentChar.name} (${currentChar.type})` : 'Unknown'}
 									</div>
-									<div className="next-turn">
+									<div className={styles.nextTurn}>
 										<strong>Next Up: </strong>
 										{nextChar ? `${nextChar.name} (${nextChar.type})` : 'Round End'}
 									</div>
@@ -173,13 +173,13 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
 
 			{/* Available Actions */}
 			{session && session.available_actions && session.available_actions.length > 0 && (
-				<div className="available-actions">
+				<div className={styles.availableActions}>
 					<h4>Available Actions:</h4>
-					<div className="action-selection">
+					<div className={styles.actionSelection}>
 						<select
 							value={selectedAction}
 							onChange={(e) => setSelectedAction(e.target.value)}
-							className="action-select"
+							className={styles.actionSelect}
 						>
 							<option value="">Select an action...</option>
 							{session.available_actions.map((action, index) => (
@@ -190,12 +190,12 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
 						</select>
 
 						{selectedAction && (
-							<div className="action-details">
+							<div className={styles.actionDetails}>
 								<textarea
 									value={actionDescription}
 									onChange={(e) => setActionDescription(e.target.value)}
 									placeholder="Describe your action in detail..."
-									className="action-description"
+									className={styles.actionDescription}
 									rows={3}
 								/>
 
@@ -203,7 +203,7 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
 									<select
 										value={targetId}
 										onChange={(e) => setTargetId(e.target.value)}
-										className="target-select"
+										className={styles.targetSelect}
 									>
 										<option value="">Select target...</option>
 										{combatState.initiative_order
@@ -218,7 +218,7 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
 
 								<button
 									onClick={handleActionSubmit}
-									className="submit-action-button"
+									className={styles.submitActionButton}
 									disabled={!selectedAction.trim()}
 								>
 									{combatState ? 'Take Combat Action' : 'Take Action'}
@@ -231,9 +231,9 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
 
 			{/* Quick Combat Actions */}
 			{combatState && combatState.status === 'active' && (
-				<div className="quick-actions">
+				<div className={styles.quickActions}>
 					<h4>Quick Combat Actions:</h4>
-					<div className="quick-action-buttons">
+					<div className={styles.quickActionButtons}>
 						<button
 							onClick={() => {
 								setSelectedAction('Attack');
@@ -285,7 +285,7 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
 
 			{/* Connection Status */}
 			{websocket && (
-				<div className="connection-status">
+				<div className={styles.connectionStatus}>
 					<div className={`connection-indicator ${
 						websocket.readyState === WebSocket.OPEN ? 'connected' : 'disconnected'
 					}`}>

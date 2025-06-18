@@ -1,59 +1,59 @@
-.character-creation {
+.characterCreation {
   max-width: 800px;
   margin: 0 auto;
   padding: 20px;
 }
 
-.character-creation-header {
+.characterCreationHeader {
   text-align: center;
   margin-bottom: 30px;
 }
 
-.character-creation-header h2 {
+.characterCreationHeader h2 {
   margin: 0 0 10px 0;
   color: #2c3e50;
   font-size: 2rem;
 }
 
-.character-creation-header p {
+.characterCreationHeader p {
   margin: 10px 0 20px 0;
   color: #7f8c8d;
   font-size: 1.1rem;
 }
 
-.character-form {
+.characterForm {
   background: white;
   border-radius: 12px;
   padding: 30px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.form-section {
+.formSection {
   margin-bottom: 30px;
   padding-bottom: 20px;
 }
 
-.form-section:not(:last-child) {
+.formSection:not(:last-child) {
   border-bottom: 1px solid #ecf0f1;
 }
 
-.form-section h3 {
+.formSection h3 {
   margin: 0 0 20px 0;
   color: #2c3e50;
   font-size: 1.3rem;
 }
 
-.form-group {
+.formGroup {
   margin-bottom: 20px;
 }
 
-.form-row {
+.formRow {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
 }
 
-.form-group label {
+.formGroup label {
   display: block;
   margin-bottom: 5px;
   color: #2c3e50;
@@ -61,9 +61,9 @@
   font-size: 0.9rem;
 }
 
-.form-group input,
-.form-group select,
-.form-group textarea {
+.formGroup input,
+.formGroup select,
+.formGroup textarea {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid #bdc3c7;
@@ -73,31 +73,31 @@
   box-sizing: border-box;
 }
 
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
+.formGroup input:focus,
+.formGroup select:focus,
+.formGroup textarea:focus {
   outline: none;
   border-color: #3498db;
   box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
 }
 
-.abilities-grid {
+.abilitiesGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 15px;
 }
 
-.ability-input {
+.abilityInput {
   text-align: center;
 }
 
-.ability-input label {
+.abilityInput label {
   font-size: 0.8rem;
   color: #7f8c8d;
   margin-bottom: 5px;
 }
 
-.ability-input input {
+.abilityInput input {
   text-align: center;
   font-weight: 600;
   font-size: 1.1rem;
@@ -111,7 +111,7 @@
   font-weight: 500;
 }
 
-.ability-points-info {
+.abilityPointsInfo {
   background: #f8f9fa;
   padding: 10px 15px;
   border-radius: 6px;
@@ -122,7 +122,7 @@
   font-weight: 500;
 }
 
-.error-message {
+.errorMessage {
   background: #fdeeee;
   color: #e74c3c;
   padding: 12px 15px;
@@ -132,12 +132,12 @@
   border: 1px solid #f5c6c6;
 }
 
-.form-actions {
+.formActions {
   text-align: center;
   margin-top: 30px;
 }
 
-.create-button {
+.createButton {
   background-color: #27ae60;
   color: white;
   border: none;
@@ -150,16 +150,16 @@
   min-width: 200px;
 }
 
-.create-button:hover:not(:disabled) {
+.createButton:hover:not(:disabled) {
   background-color: #229954;
 }
 
-.create-button:disabled {
+.createButton:disabled {
   background-color: #95a5a6;
   cursor: not-allowed;
 }
 
-.back-button {
+.backButton {
   padding: 8px 16px;
   border: 1px solid #bdc3c7;
   border-radius: 4px;
@@ -170,26 +170,26 @@
   transition: all 0.2s ease;
 }
 
-.back-button:hover {
+.backButton:hover {
   background-color: #d5dbdb;
   border-color: #95a5a6;
 }
 
 @media (max-width: 768px) {
-  .character-creation {
+  .characterCreation {
     padding: 15px;
   }
   
-  .character-form {
+  .characterForm {
     padding: 20px;
   }
   
-  .form-row {
+  .formRow {
     grid-template-columns: 1fr;
     gap: 15px;
   }
   
-  .abilities-grid {
+  .abilitiesGrid {
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
   }

@@ -1,4 +1,4 @@
-.campaign-editor {
+.campaignEditor {
   max-width: 800px;
   margin: 0 auto;
   padding: 2rem;
@@ -7,7 +7,7 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.editor-header {
+.editorHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -16,18 +16,18 @@
   border-bottom: 2px solid #f1f5f9;
 }
 
-.editor-header h2 {
+.editorHeader h2 {
   color: #2c3e50;
   margin: 0;
 }
 
-.editor-controls {
+.editorControls {
   display: flex;
   align-items: center;
   gap: 1rem;
 }
 
-.auto-save-toggle {
+.autoSaveToggle {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -36,30 +36,30 @@
   cursor: pointer;
 }
 
-.auto-save-toggle input[type="checkbox"] {
+.autoSaveToggle input[type="checkbox"] {
   margin: 0;
 }
 
-.unsaved-indicator {
+.unsavedIndicator {
   color: #f59e0b;
   font-size: 0.9rem;
   font-weight: 500;
 }
 
-.form-group {
+.formGroup {
   margin-bottom: 1.5rem;
 }
 
-.form-group label {
+.formGroup label {
   display: block;
   font-weight: 600;
   color: #374151;
   margin-bottom: 0.5rem;
 }
 
-.form-group input,
-.form-group select,
-.form-group textarea {
+.formGroup input,
+.formGroup select,
+.formGroup textarea {
   width: 100%;
   padding: 0.75rem;
   border: 2px solid #e5e7eb;
@@ -68,26 +68,26 @@
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
+.formGroup input:focus,
+.formGroup select:focus,
+.formGroup textarea:focus {
   outline: none;
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-.form-group input.error,
-.form-group textarea.error {
+.formGroup input.error,
+.formGroup textarea.error {
   border-color: #ef4444;
 }
 
-.form-group textarea {
+.formGroup textarea {
   resize: vertical;
   min-height: 100px;
   font-family: inherit;
 }
 
-.editor-toolbar {
+.editorToolbar {
   display: flex;
   gap: 0.5rem;
   margin-bottom: 0.5rem;
@@ -97,7 +97,7 @@
   border: 1px solid #e2e8f0;
 }
 
-.editor-toolbar button {
+.editorToolbar button {
   padding: 0.25rem 0.5rem;
   border: 1px solid #d1d5db;
   background: white;
@@ -112,33 +112,33 @@
   justify-content: center;
 }
 
-.editor-toolbar button:hover {
+.editorToolbar button:hover {
   background: #f3f4f6;
   border-color: #9ca3af;
 }
 
-.editor-toolbar button:active {
+.editorToolbar button:active {
   transform: translateY(1px);
 }
 
-.ai-assist-btn {
+.aiAssistBtn {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
   color: white !important;
   border-color: transparent !important;
   font-weight: 600;
 }
 
-.ai-assist-btn:hover {
+.aiAssistBtn:hover {
   background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%) !important;
 }
 
-.validation-error {
+.validationError {
   color: #ef4444;
   font-size: 0.875rem;
   margin-top: 0.25rem;
 }
 
-.error-message {
+.errorMessage {
   background: #fef2f2;
   border: 1px solid #fecaca;
   color: #dc2626;
@@ -147,13 +147,13 @@
   margin-bottom: 1.5rem;
 }
 
-.help-text {
+.helpText {
   font-size: 0.875rem;
   color: #6b7280;
   margin-top: 0.25rem;
 }
 
-.form-actions {
+.formActions {
   display: flex;
   gap: 1rem;
   justify-content: flex-end;
@@ -162,8 +162,8 @@
   border-top: 1px solid #e5e7eb;
 }
 
-.cancel-button,
-.save-button {
+.cancelButton,
+.saveButton {
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
   font-size: 1rem;
@@ -177,35 +177,35 @@
   justify-content: center;
 }
 
-.cancel-button {
+.cancelButton {
   background: white;
   color: #6b7280;
   border: 2px solid #d1d5db;
 }
 
-.cancel-button:hover:not(:disabled) {
+.cancelButton:hover:not(:disabled) {
   background: #f9fafb;
   border-color: #9ca3af;
 }
 
-.save-button {
+.saveButton {
   background: #3b82f6;
   color: white;
   border: 2px solid #3b82f6;
 }
 
-.save-button:hover:not(:disabled) {
+.saveButton:hover:not(:disabled) {
   background: #2563eb;
   border-color: #2563eb;
 }
 
-.save-button:disabled,
-.cancel-button:disabled {
+.saveButton:disabled,
+.cancelButton:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-.loading-spinner {
+.loadingSpinner {
   width: 20px;
   height: 20px;
   border: 2px solid #f3f3f3;
@@ -214,7 +214,7 @@
   animation: spin 1s linear infinite;
 }
 
-.loading-spinner.small {
+.loadingSpinner.small {
   width: 16px;
   height: 16px;
   border-width: 2px;
@@ -226,7 +226,7 @@
 }
 
 /* AI Assistant Modal */
-.ai-assistant-modal {
+.aiAssistantModal {
   position: fixed;
   top: 0;
   left: 0;
@@ -238,7 +238,7 @@
   justify-content: center;
 }
 
-.modal-overlay {
+.modalOverlay {
   position: absolute;
   top: 0;
   left: 0;
@@ -248,7 +248,7 @@
   backdrop-filter: blur(4px);
 }
 
-.modal-content {
+.modalContent {
   position: relative;
   background: white;
   border-radius: 12px;
@@ -259,7 +259,7 @@
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
-.modal-header {
+.modalHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -269,12 +269,12 @@
   color: white;
 }
 
-.modal-header h3 {
+.modalHeader h3 {
   margin: 0;
   font-size: 1.25rem;
 }
 
-.close-button {
+.closeButton {
   background: none;
   border: none;
   color: white;
@@ -290,17 +290,17 @@
   transition: background 0.2s ease;
 }
 
-.close-button:hover {
+.closeButton:hover {
   background: rgba(255, 255, 255, 0.2);
 }
 
-.modal-body {
+.modalBody {
   padding: 1.5rem;
   max-height: 60vh;
   overflow-y: auto;
 }
 
-.loading-state {
+.loadingState {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -337,7 +337,7 @@
   color: #374151;
 }
 
-.apply-suggestion {
+.applySuggestion {
   background: #3b82f6;
   color: white;
   border: none;
@@ -349,38 +349,38 @@
   white-space: nowrap;
 }
 
-.apply-suggestion:hover {
+.applySuggestion:hover {
   background: #2563eb;
 }
 
 /* Responsive design */
 @media (max-width: 768px) {
-  .campaign-editor {
+  .campaignEditor {
     padding: 1rem;
     margin: 1rem;
   }
 
-  .editor-header {
+  .editorHeader {
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
   }
 
-  .editor-toolbar {
+  .editorToolbar {
     flex-wrap: wrap;
   }
 
-  .form-actions {
+  .formActions {
     flex-direction: column;
     gap: 0.5rem;
   }
 
-  .cancel-button,
-  .save-button {
+  .cancelButton,
+  .saveButton {
     width: 100%;
   }
 
-  .modal-content {
+  .modalContent {
     margin: 1rem;
     width: calc(100% - 2rem);
   }
@@ -391,7 +391,7 @@
     gap: 0.5rem;
   }
 
-  .apply-suggestion {
+  .applySuggestion {
     align-self: flex-end;
   }
 }

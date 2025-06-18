@@ -1,4 +1,4 @@
-.game-state-display {
+.gameStateDisplay {
   background: #2c2c2c;
   border: 2px solid #8B4513;
   border-radius: 8px;
@@ -9,11 +9,11 @@
 }
 
 /* Session Information */
-.session-info {
+.sessionInfo {
   margin-bottom: 1.5rem;
 }
 
-.session-header {
+.sessionHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -22,19 +22,19 @@
   border-bottom: 1px solid #444;
 }
 
-.session-header h3 {
+.sessionHeader h3 {
   color: #d4af37;
   margin: 0;
   font-family: 'Cinzel', serif;
 }
 
-.session-status {
+.sessionStatus {
   display: flex;
   gap: 0.5rem;
   align-items: center;
 }
 
-.status-indicator {
+.statusIndicator {
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
   font-size: 0.8rem;
@@ -42,22 +42,22 @@
   text-transform: uppercase;
 }
 
-.status-indicator.active {
+.statusIndicator.active {
   background: #28a745;
   color: white;
 }
 
-.status-indicator.paused {
+.statusIndicator.paused {
   background: #ffc107;
   color: #212529;
 }
 
-.status-indicator.completed {
+.statusIndicator.completed {
   background: #6c757d;
   color: white;
 }
 
-.session-type {
+.sessionType {
   background: #17a2b8;
   color: white;
   padding: 0.25rem 0.5rem;
@@ -66,26 +66,26 @@
   text-transform: capitalize;
 }
 
-.current-scene {
+.currentScene {
   background: #1a1a1a;
   padding: 1rem;
   border-radius: 4px;
   border-left: 4px solid #d4af37;
 }
 
-.current-scene h4 {
+.currentScene h4 {
   color: #d4af37;
   margin: 0 0 0.5rem 0;
   font-size: 1rem;
 }
 
-.current-scene p {
+.currentScene p {
   margin: 0 0 0.5rem 0;
   line-height: 1.4;
   font-style: italic;
 }
 
-.scene-meta {
+.sceneMeta {
   display: flex;
   justify-content: space-between;
   font-size: 0.8rem;
@@ -93,7 +93,7 @@
 }
 
 /* Combat State */
-.combat-state {
+.combatState {
   background: #1a1a1a;
   border: 2px solid #dc3545;
   border-radius: 6px;
@@ -101,7 +101,7 @@
   margin-bottom: 1rem;
 }
 
-.combat-header {
+.combatHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -110,13 +110,13 @@
   border-bottom: 1px solid #dc3545;
 }
 
-.combat-header h3 {
+.combatHeader h3 {
   color: #dc3545;
   margin: 0;
   font-family: 'Cinzel', serif;
 }
 
-.combat-info {
+.combatInfo {
   display: flex;
   gap: 1rem;
   align-items: center;
@@ -139,17 +139,17 @@
 }
 
 /* Initiative Tracker */
-.initiative-tracker {
+.initiativeTracker {
   margin-bottom: 1rem;
 }
 
-.initiative-tracker h4 {
+.initiativeTracker h4 {
   color: #d4af37;
   margin: 0 0 0.5rem 0;
   font-size: 1rem;
 }
 
-.initiative-list {
+.initiativeList {
   max-height: 200px;
   overflow-y: auto;
   border: 1px solid #444;
@@ -157,7 +157,7 @@
   background: #0d1117;
 }
 
-.initiative-item {
+.initiativeItem {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -167,41 +167,41 @@
   position: relative;
 }
 
-.initiative-item:last-child {
+.initiativeItem:last-child {
   border-bottom: none;
 }
 
-.initiative-item.current-turn {
+.initiativeItem.currentTurn {
   background: rgba(220, 53, 69, 0.2);
   border-left: 4px solid #dc3545;
 }
 
-.initiative-item.player {
+.initiativeItem.player {
   background: rgba(40, 167, 69, 0.1);
 }
 
-.initiative-item.npc {
+.initiativeItem.npc {
   background: rgba(255, 193, 7, 0.1);
 }
 
-.participant-info {
+.participantInfo {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
 }
 
-.participant-info .name {
+.participantInfo .name {
   font-weight: bold;
   color: #e6e6e6;
 }
 
-.participant-info .type {
+.participantInfo .type {
   font-size: 0.8rem;
   color: #999;
   text-transform: uppercase;
 }
 
-.initiative-score {
+.initiativeScore {
   font-size: 1.2rem;
   font-weight: bold;
   color: #d4af37;
@@ -209,7 +209,7 @@
   text-align: center;
 }
 
-.turn-indicator {
+.turnIndicator {
   position: absolute;
   right: -10px;
   color: #dc3545;
@@ -222,41 +222,41 @@
   50% { opacity: 0.5; }
 }
 
-.current-turn-info {
+.currentTurnInfo {
   background: #0d1117;
   padding: 0.75rem;
   border-radius: 4px;
   border: 1px solid #444;
 }
 
-.current-turn-info .current-turn {
+.currentTurnInfo .currentTurn {
   color: #dc3545;
   margin-bottom: 0.25rem;
 }
 
-.current-turn-info .next-turn {
+.currentTurnInfo .nextTurn {
   color: #6c757d;
 }
 
 /* Available Actions */
-.available-actions {
+.availableActions {
   margin-bottom: 1rem;
 }
 
-.available-actions h4 {
+.availableActions h4 {
   color: #d4af37;
   margin: 0 0 0.5rem 0;
   font-size: 1rem;
 }
 
-.action-selection {
+.actionSelection {
   background: #1a1a1a;
   padding: 1rem;
   border-radius: 4px;
   border: 1px solid #444;
 }
 
-.action-select {
+.actionSelect {
   width: 100%;
   padding: 0.5rem;
   border: 1px solid #666;
@@ -267,17 +267,17 @@
   margin-bottom: 0.5rem;
 }
 
-.action-select:focus {
+.actionSelect:focus {
   outline: none;
   border-color: #d4af37;
   box-shadow: 0 0 5px rgba(212, 175, 55, 0.3);
 }
 
-.action-details {
+.actionDetails {
   margin-top: 0.5rem;
 }
 
-.action-description {
+.actionDescription {
   width: 100%;
   padding: 0.5rem;
   border: 1px solid #666;
@@ -290,13 +290,13 @@
   font-family: inherit;
 }
 
-.action-description:focus {
+.actionDescription:focus {
   outline: none;
   border-color: #d4af37;
   box-shadow: 0 0 5px rgba(212, 175, 55, 0.3);
 }
 
-.target-select {
+.targetSelect {
   width: 100%;
   padding: 0.5rem;
   border: 1px solid #666;
@@ -307,13 +307,13 @@
   margin-bottom: 0.5rem;
 }
 
-.target-select:focus {
+.targetSelect:focus {
   outline: none;
   border-color: #dc3545;
   box-shadow: 0 0 5px rgba(220, 53, 69, 0.3);
 }
 
-.submit-action-button {
+.submitActionButton {
   width: 100%;
   padding: 0.75rem;
   background: linear-gradient(135deg, #8B4513, #A0522D);
@@ -326,36 +326,36 @@
   transition: all 0.3s ease;
 }
 
-.submit-action-button:hover:not(:disabled) {
+.submitActionButton:hover:not(:disabled) {
   background: linear-gradient(135deg, #A0522D, #CD853F);
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
-.submit-action-button:disabled {
+.submitActionButton:disabled {
   background: #555;
   cursor: not-allowed;
   opacity: 0.6;
 }
 
 /* Quick Actions */
-.quick-actions {
+.quickActions {
   margin-bottom: 1rem;
 }
 
-.quick-actions h4 {
+.quickActions h4 {
   color: #d4af37;
   margin: 0 0 0.5rem 0;
   font-size: 1rem;
 }
 
-.quick-action-buttons {
+.quickActionButtons {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
   gap: 0.5rem;
 }
 
-.quick-action-button {
+.quickActionButton {
   padding: 0.5rem;
   border: none;
   border-radius: 4px;
@@ -366,82 +366,82 @@
   color: white;
 }
 
-.quick-action-button.attack {
+.quickActionButton.attack {
   background: linear-gradient(135deg, #dc3545, #c82333);
 }
 
-.quick-action-button.spell {
+.quickActionButton.spell {
   background: linear-gradient(135deg, #6f42c1, #5a2d91);
 }
 
-.quick-action-button.move {
+.quickActionButton.move {
   background: linear-gradient(135deg, #28a745, #1e7e34);
 }
 
-.quick-action-button.defend {
+.quickActionButton.defend {
   background: linear-gradient(135deg, #17a2b8, #138496);
 }
 
-.quick-action-button.item {
+.quickActionButton.item {
   background: linear-gradient(135deg, #ffc107, #e0a800);
   color: #212529;
 }
 
-.quick-action-button:hover {
+.quickActionButton:hover {
   transform: translateY(-1px);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 /* Connection Status */
-.connection-status {
+.connectionStatus {
   text-align: center;
   padding: 0.5rem;
   margin-top: 1rem;
   border-top: 1px solid #444;
 }
 
-.connection-indicator {
+.connectionIndicator {
   font-size: 0.9rem;
   font-weight: bold;
 }
 
-.connection-indicator.connected {
+.connectionIndicator.connected {
   color: #28a745;
 }
 
-.connection-indicator.disconnected {
+.connectionIndicator.disconnected {
   color: #dc3545;
 }
 
 /* Mobile responsiveness */
 @media (max-width: 768px) {
-  .game-state-display {
+  .gameStateDisplay {
     padding: 0.75rem;
     margin: 0.5rem 0;
   }
   
-  .session-header {
+  .sessionHeader {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
   }
   
-  .combat-header {
+  .combatHeader {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
   }
   
-  .quick-action-buttons {
+  .quickActionButtons {
     grid-template-columns: repeat(2, 1fr);
   }
   
-  .quick-action-button {
+  .quickActionButton {
     padding: 0.4rem;
     font-size: 0.8rem;
   }
   
-  .initiative-item {
+  .initiativeItem {
     padding: 0.4rem;
     font-size: 0.9rem;
   }

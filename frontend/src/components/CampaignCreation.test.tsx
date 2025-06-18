@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import React from "react";
 import * as api from "../services/api";
 import CampaignCreation from "./CampaignCreation";
+import styles from "./CampaignCreation.module.css";
 
 // Mock the API module
 vi.mock("../services/api");
