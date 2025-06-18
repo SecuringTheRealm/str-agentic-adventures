@@ -9,6 +9,18 @@ import json
 class TestProjectStructure:
     """Test project structure and syntax validation."""
     
+    def _resolve_backend_path(self, path):
+        """Resolve path relative to backend directory, whether run from backend/ or root."""
+        # If path exists as-is, use it (running from backend/)
+        if os.path.exists(path):
+            return path
+        # Try with backend/ prefix (running from root)
+        backend_path = os.path.join('backend', path)
+        if os.path.exists(backend_path):
+            return backend_path
+        # Return original path if neither exists (will fail appropriately)
+        return path
+    
     def test_backend_file_structure(self):
         """Test that all required backend files exist."""
         required_files = [
@@ -26,24 +38,31 @@ class TestProjectStructure:
         ]
         
         for file_path in required_files:
-            assert os.path.exists(file_path), f"Required file {file_path} is missing"
-            print(f"✅ {file_path} exists")
+            resolved_path = self._resolve_backend_path(file_path)
+            assert os.path.exists(resolved_path), f"Required file {file_path} is missing (looked for {resolved_path})"
+            print(f"✅ {file_path} exists at {resolved_path}")
     
     def test_python_syntax_validation(self):
         """Test that all Python files have valid syntax."""
         python_files = []
         
+        # Determine base paths
+        app_dir = self._resolve_backend_path('app')
+        tests_dir = self._resolve_backend_path('tests')
+        
         # Walk through app directory
-        for root, dirs, files in os.walk('app'):
-            for file in files:
-                if file.endswith('.py'):
-                    python_files.append(os.path.join(root, file))
+        if os.path.exists(app_dir):
+            for root, dirs, files in os.walk(app_dir):
+                for file in files:
+                    if file.endswith('.py'):
+                        python_files.append(os.path.join(root, file))
         
         # Add test files
-        for root, dirs, files in os.walk('tests'):
-            for file in files:
-                if file.endswith('.py') and file.startswith('test_'):
-                    python_files.append(os.path.join(root, file))
+        if os.path.exists(tests_dir):
+            for root, dirs, files in os.walk(tests_dir):
+                for file in files:
+                    if file.endswith('.py') and file.startswith('test_'):
+                        python_files.append(os.path.join(root, file))
         
         syntax_errors = []
         
@@ -63,7 +82,7 @@ class TestProjectStructure:
     
     def test_api_endpoints_defined(self):
         """Test that required API endpoints are defined in route files."""
-        route_file = 'app/api/game_routes.py'
+        route_file = self._resolve_backend_path('app/api/game_routes.py')
         
         with open(route_file, 'r') as f:
             content = f.read()
@@ -91,7 +110,7 @@ class TestProjectStructure:
     
     def test_model_imports_structure(self):
         """Test that model imports are properly structured."""
-        models_file = 'app/models/game_models.py'
+        models_file = self._resolve_backend_path('app/models/game_models.py')
         
         with open(models_file, 'r') as f:
             content = f.read()
@@ -118,13 +137,44 @@ class TestProjectStructure:
         assert len(missing_models) == 0, f"Missing models: {missing_models}"
     
     def test_requirements_file_exists(self):
-        """Test that requirements.txt exists and contains critical dependencies."""
-        requirements_file = 'requirements.txt'
+        """Test that project dependencies are properly defined."""
+        # Check for new root pyproject.toml first (preferred approach)
+        # Try different path variations depending on where pytest is run from
+        possible_pyproject_paths = [
+            '../pyproject.toml',  # when run from backend/
+            './pyproject.toml',   # when run from root
+            'pyproject.toml',     # when run from root (alternative)
+        ]
+        backend_requirements = 'requirements.txt'
         
-        assert os.path.exists(requirements_file), "requirements.txt is missing"
+        content = ""
+        dependency_source = None
         
-        with open(requirements_file, 'r') as f:
-            content = f.read()
+        # Try to find pyproject.toml first
+        for pyproject_path in possible_pyproject_paths:
+            if os.path.exists(pyproject_path):
+                dependency_source = f"root pyproject.toml ({pyproject_path})"
+                with open(pyproject_path, 'r') as f:
+                    content = f.read()
+                print(f"✅ Using {dependency_source} for dependency validation")
+                break
+        
+        # Fallback to backend requirements.txt if pyproject.toml not found
+        if not dependency_source and os.path.exists(backend_requirements):
+            dependency_source = "backend requirements.txt"
+            with open(backend_requirements, 'r') as f:
+                content = f.read()
+            print(f"✅ Using {dependency_source} for dependency validation")
+        
+        # Also try backend/requirements.txt from root directory
+        if not dependency_source and os.path.exists('backend/requirements.txt'):
+            dependency_source = "backend/requirements.txt"
+            with open('backend/requirements.txt', 'r') as f:
+                content = f.read()
+            print(f"✅ Using {dependency_source} for dependency validation")
+        
+        if not dependency_source:
+            assert False, "Neither root pyproject.toml nor backend requirements.txt found"
         
         # Critical dependencies for the project
         critical_deps = [
@@ -146,7 +196,7 @@ class TestProjectStructure:
             else:
                 print(f"✅ Found dependency: {dep}")
         
-        assert len(missing_deps) == 0, f"Missing critical dependencies: {missing_deps}"
+        assert len(missing_deps) == 0, f"Missing critical dependencies: {missing_deps} in {dependency_source}"
 
 
 class TestFrontendBackendAPIMapping:

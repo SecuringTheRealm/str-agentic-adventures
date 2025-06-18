@@ -78,21 +78,19 @@ jobs:
       with:
         python-version: '3.12'
         cache: 'pip'
-        cache-dependency-path: backend/requirements.txt
+        cache-dependency-path: requirements.txt
 
     - name: Install backend dependencies
       run: |
-        cd backend
         pip install -r requirements.txt
 
     - name: Run backend tests
       run: |
-        cd backend
         python -c "
         import sys
-        sys.path.append('.')
-        from tests.test_structure_validation import TestProjectStructure, TestFrontendBackendAPIMapping
-        from tests.test_end_to_end import TestEndToEndWorkflows, TestComponentIntegration
+        sys.path.append('backend')
+        from backend.tests.test_structure_validation import TestProjectStructure, TestFrontendBackendAPIMapping
+        from backend.tests.test_end_to_end import TestEndToEndWorkflows, TestComponentIntegration
 
         print('=== Running Backend Structure Tests ===')
         test_structure = TestProjectStructure()
@@ -164,19 +162,18 @@ jobs:
       with:
         python-version: '3.12'
         cache: 'pip'
-        cache-dependency-path: backend/requirements.txt
+        cache-dependency-path: requirements.txt
 
     - name: Install backend dependencies
       run: |
-        cd backend && pip install -r requirements.txt
+        pip install -r requirements.txt
 
     - name: Check API compatibility
       run: |
-        cd backend
         python -c "
         import sys
-        sys.path.append('.')
-        from app.models.game_models import *
-        from app.main import app
+        sys.path.append('backend')
+        from backend.app.models.game_models import *
+        from backend.app.main import app
         print('✅ Backend models and API routes compatible')
         "
