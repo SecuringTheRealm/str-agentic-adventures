@@ -4,6 +4,7 @@ import {
 	type Campaign,
 	type CampaignCreateRequest,
 	createCampaign,
+	APIError,
 } from "../services/api";
 import styles from "./CampaignCreation.module.css";
 
@@ -20,6 +21,7 @@ const CampaignCreation: React.FC<CampaignCreationProps> = ({
 	const [homebrewRules, setHomebrewRules] = useState("");
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [errorDetails, setErrorDetails] = useState<string | null>(null);
 	const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 	const [showTooltip, setShowTooltip] = useState(false);
 
@@ -29,6 +31,7 @@ const CampaignCreation: React.FC<CampaignCreationProps> = ({
 		// Clear previous validation errors
 		setValidationErrors({});
 		setError(null);
+		setErrorDetails(null);
 
 		// Validate required fields
 		const errors: Record<string, string> = {};
@@ -63,7 +66,13 @@ const CampaignCreation: React.FC<CampaignCreationProps> = ({
 			const result = await createCampaign(campaignData);
 			onCampaignCreated(result);
 		} catch (err) {
-			setError("Failed to create campaign. Please try again.");
+			if (err instanceof APIError) {
+				setError(err.message);
+				setErrorDetails(err.details || null);
+			} else {
+				setError("Failed to create campaign. Please try again.");
+				setErrorDetails(null);
+			}
 			console.error("Error creating campaign:", err);
 		} finally {
 			setIsSubmitting(false);
@@ -74,7 +83,17 @@ const CampaignCreation: React.FC<CampaignCreationProps> = ({
 		<div className={styles.campaignCreation}>
 			<h2>Create New Campaign</h2>
 
-			{error && <div className={styles.errorMessage}>{error}</div>}
+			{error && (
+				<div className={styles.errorMessage}>
+					<p>{error}</p>
+					{errorDetails && (
+						<details className={styles.errorDetails}>
+							<summary>Technical Details</summary>
+							<p>{errorDetails}</p>
+						</details>
+					)}
+				</div>
+			)}
 
 			<form onSubmit={handleSubmit}>
 				<div className={styles.formGroup}>

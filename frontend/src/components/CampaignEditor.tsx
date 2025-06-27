@@ -8,7 +8,8 @@ import {
   getAIAssistance,
   generateAIContent,
   AIAssistanceRequest,
-  AIContentGenerationRequest
+  AIContentGenerationRequest,
+  APIError
 } from '../services/api';
 import styles from "./CampaignEditor.module.css";
 
@@ -34,6 +35,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorDetails, setErrorDetails] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [showAIAssistant, setShowAIAssistant] = useState(false);
   const [aiSuggestions, setAISuggestions] = useState<string[]>([]);
@@ -303,7 +305,13 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
         onCampaignSaved(newCampaign);
       }
     } catch (err) {
-      setError(isEditing ? 'Failed to update campaign' : 'Failed to create campaign');
+      if (err instanceof APIError) {
+        setError(err.message);
+        setErrorDetails(err.details || null);
+      } else {
+        setError(isEditing ? 'Failed to update campaign' : 'Failed to create campaign');
+        setErrorDetails(null);
+      }
       console.error('Error saving campaign:', err);
     } finally {
       setIsSubmitting(false);
@@ -331,7 +339,17 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
         )}
       </div>
 
-      {error && <div className={styles.errorMessage}>{error}</div>}
+      {error && (
+        <div className={styles.errorMessage}>
+          <p>{error}</p>
+          {errorDetails && (
+            <details className={styles.errorDetails}>
+              <summary>Technical Details</summary>
+              <p>{errorDetails}</p>
+            </details>
+          )}
+        </div>
+      )}
 
       <form onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
         <div className={styles.formGroup}>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Campaign, getCampaigns, deleteCampaign } from '../services/api';
+import { Campaign, getCampaigns, deleteCampaign, APIError } from '../services/api';
 import CampaignGallery from './CampaignGallery';
 import CampaignEditor from './CampaignEditor';
 import styles from "./CampaignSelection.module.css";
@@ -16,6 +16,7 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({ onCampaignCreated
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorDetails, setErrorDetails] = useState<string | null>(null);
 
   // Cache filtered custom campaigns to avoid repeated filtering
   const customCampaigns = campaigns.filter(c => c.is_custom || false);
@@ -23,10 +24,18 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({ onCampaignCreated
   const loadCampaigns = async () => {
     try {
       setLoading(true);
+      setError(null);
+      setErrorDetails(null);
       const data = await getCampaigns();
       setCampaigns(data.campaigns);
     } catch (err) {
-      setError('Failed to load campaigns');
+      if (err instanceof APIError) {
+        setError(err.message);
+        setErrorDetails(err.details || null);
+      } else {
+        setError('Failed to load campaigns');
+        setErrorDetails(null);
+      }
       console.error('Error loading campaigns:', err);
     } finally {
       setLoading(false);
@@ -79,7 +88,13 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({ onCampaignCreated
       await deleteCampaign(campaignId);
       await loadCampaigns();
     } catch (err) {
-      setError('Failed to delete campaign');
+      if (err instanceof APIError) {
+        setError(err.message);
+        setErrorDetails(err.details || null);
+      } else {
+        setError('Failed to delete campaign');
+        setErrorDetails(null);
+      }
       console.error('Error deleting campaign:', err);
     }
   };
@@ -122,7 +137,15 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({ onCampaignCreated
 
         {error && (
           <div className={styles.errorMessage}>
-            {error}
+            <div className={styles.errorContent}>
+              <p>{error}</p>
+              {errorDetails && (
+                <details className={styles.errorDetails}>
+                  <summary>Technical Details</summary>
+                  <p>{errorDetails}</p>
+                </details>
+              )}
+            </div>
             <button onClick={() => setError(null)}>×</button>
           </div>
         )}
@@ -219,7 +242,15 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({ onCampaignCreated
 
       {error && (
         <div className={styles.errorMessage}>
-          {error}
+          <div className={styles.errorContent}>
+            <p>{error}</p>
+            {errorDetails && (
+              <details className={styles.errorDetails}>
+                <summary>Technical Details</summary>
+                <p>{errorDetails}</p>
+              </details>
+            )}
+          </div>
           <button onClick={() => setError(null)}>×</button>
         </div>
       )}

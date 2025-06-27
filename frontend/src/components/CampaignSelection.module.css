@@ -137,7 +137,39 @@
   margin-bottom: 1.5rem;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+}
+
+.errorContent {
+  flex: 1;
+}
+
+.errorDetails {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(220, 38, 38, 0.1);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+.errorDetails summary {
+  cursor: pointer;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #dc2626;
+}
+
+.errorDetails summary:hover {
+  color: #ef4444;
+}
+
+.errorDetails p {
+  margin: 0.5rem 0 0 0;
+  color: #666;
+  font-family: monospace;
+  font-size: 0.8rem;
+  line-height: 1.4;
 }
 
 .errorMessage button {

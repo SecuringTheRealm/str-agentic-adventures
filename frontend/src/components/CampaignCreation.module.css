@@ -264,3 +264,31 @@
   color: #ffcccb; /* Light red text for better contrast */
   font-family: 'Cinzel', serif;
 }
+
+.errorDetails {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(220, 53, 69, 0.15);
+  border: 1px solid rgba(220, 53, 69, 0.3);
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+.errorDetails summary {
+  cursor: pointer;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #ffcccb;
+}
+
+.errorDetails summary:hover {
+  color: #ffd6d6;
+}
+
+.errorDetails p {
+  margin: 0.5rem 0 0 0;
+  color: #ccc;
+  font-family: monospace;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
