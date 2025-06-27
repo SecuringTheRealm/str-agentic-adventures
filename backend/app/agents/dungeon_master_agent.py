@@ -251,13 +251,13 @@ Always respond as a helpful, creative DM who wants players to have an exciting a
                 }
             
             # Basic response patterns
-            if any(word in input_lower for word in ["attack", "fight", "combat", "sword", "weapon"]):
+            if any(word in input_lower for word in self.COMBAT_KEYWORDS):
                 message = "You engage in combat! Your weapon gleams as you prepare to strike. Roll for your attack!"
-            elif any(word in input_lower for word in ["explore", "look", "search", "investigate"]):
+            elif any(word in input_lower for word in self.EXPLORE_KEYWORDS):
                 message = "You carefully explore the area, taking note of interesting details and potential secrets."
-            elif any(word in input_lower for word in ["talk", "speak", "say", "ask", "tell"]):
+            elif any(word in input_lower for word in self.TALK_KEYWORDS):
                 message = "Your words carry weight in this moment. The conversation develops based on your approach."
-            elif any(word in input_lower for word in ["inventory", "equipment", "items", "gear"]):
+            elif any(word in input_lower for word in self.INVENTORY_KEYWORDS):
                 message = "You check your belongings and assess your available resources."
             else:
                 message = f"You {user_input.lower()}. The world responds to your actions, and the adventure continues."
