@@ -1,412 +1,201 @@
 """
-Dungeon Master Agent - The orchestrator agent that coordinates all other agents.
+Dungeon Master Agent - Rebuilt with minimal, barebones functionality.
+
+This is a ground-up rebuild focusing on a simple AI approach using system prompts
+to meet PRD requirements, replacing the complex multi-agent orchestration.
 """
 
 import logging
 import random
-from typing import Dict, Any, Tuple, List
-
-# Note: Updated for newer Semantic Kernel version
-# ToolManager import commented out as it's causing issues
-# from semantic_kernel.tools.tool_manager import ToolManager
-
-from app.azure_openai_client import AzureOpenAIClient
-from app.kernel_setup import kernel_manager
-from app.agents.narrator_agent import get_narrator
-from app.agents.artist_agent import get_artist
-from app.agents.scribe_agent import get_scribe
-# Temporarily commenting out other agent imports to fix SK compatibility
-# from app.agents.combat_mc_agent import combat_mc
-# from app.agents.combat_cartographer_agent import combat_cartographer
+import json
+from typing import Dict, Any, List, Tuple
 
 logger = logging.getLogger(__name__)
 
 
 class DungeonMasterAgent:
     """
-    Dungeon Master Agent that acts as the orchestrator for all other agents.
-    This is the primary user-facing agent that manages player interactions and conversation flow.
+    Simplified Dungeon Master Agent using system prompts to fulfill the role
+    of orchestrating the D&D experience through AI guidance rather than 
+    complex agent coordination.
     """
 
     def __init__(self):
-        """Initialize the Dungeon Master agent with its own kernel instance."""
-        # Initialize basic attributes first
-        self.active_sessions = {}
+        """Initialize the Dungeon Master agent."""
         self._fallback_mode = False
-        self.kernel = None
+        self.openai_client = None
         
         try:
-            # Try to create kernel - this will fail if Azure OpenAI is not configured
-            self.kernel = kernel_manager.create_kernel()
-            # ToolManager initialization commented out as it's causing issues
-            # self.tool_manager = ToolManager(self.kernel)
-            self._register_plugins()
+            # Try to initialize Azure OpenAI client
+            from app.azure_openai_client import AzureOpenAIClient
+            self.openai_client = AzureOpenAIClient()
+            logger.info("DM Agent initialized with Azure OpenAI support")
             
         except Exception as e:
-            # Check if this is a configuration error
+            # Fall back to basic mode if Azure OpenAI is not configured
             error_msg = str(e)
             if (("validation errors for Settings" in error_msg and (
                 "azure_openai" in error_msg or "openai" in error_msg
             )) or "Azure OpenAI configuration is missing or invalid" in error_msg):
                 logger.warning(
                     "Azure OpenAI configuration is missing or invalid. "
-                    "Operating in fallback mode with basic functionality. "
-                    "For full AI features, ensure the following environment variables are set: "
-                    "AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_API_KEY, "
-                    "AZURE_OPENAI_CHAT_DEPLOYMENT, AZURE_OPENAI_EMBEDDING_DEPLOYMENT"
+                    "DM Agent operating in fallback mode with basic functionality."
                 )
-                # Initialize in fallback mode
                 self._fallback_mode = True
-                self._initialize_fallback_components()
             else:
-                # Re-raise other errors as-is
+                # Re-raise other errors
                 raise
 
-    def _register_plugins(self):
-        """Register necessary plugins for the Dungeon Master agent."""
-        try:
-            # Import plugins
-            from app.plugins.narrative_memory_plugin import NarrativeMemoryPlugin
-            from app.plugins.rules_engine_plugin import RulesEnginePlugin
+    def _get_dm_system_prompt(self, context: Dict[str, Any]) -> str:
+        """
+        Generate a comprehensive system prompt that embodies the Dungeon Master role
+        as specified in the PRD, replacing complex agent coordination.
+        """
+        character_info = ""
+        if context.get("character_name"):
+            character_info = f"The player character is {context.get('character_name', 'an adventurer')}, "
+            character_info += f"a level {context.get('character_level', '1')} {context.get('character_class', 'fighter')}. "
 
-            # Create plugin instances
-            narrative_memory = NarrativeMemoryPlugin()
-            rules_engine = RulesEnginePlugin()
+        system_prompt = f"""You are an expert Dungeon Master for D&D 5e. You are the primary orchestrator of the tabletop RPG experience, responsible for:
 
-            # Register plugins with the kernel using the new API
-            self.kernel.add_plugin(narrative_memory, "Memory")
-            self.kernel.add_plugin(rules_engine, "Rules")
+- Managing player interactions and conversation flow
+- Coordinating narrative, combat, and character management aspects
+- Maintaining cohesion across the gameplay experience  
+- Ensuring continuity of game rules and narrative
+- Creating immersive storytelling and descriptions
+- Adjudicating player actions and their consequences
 
-            # Add tools to the tool manager
-            # self.tool_manager.add_tool(narrative_memory.remember_fact)
-            # self.tool_manager.add_tool(narrative_memory.recall_facts)
-            # self.tool_manager.add_tool(rules_engine.roll_dice)
+{character_info}
 
-            logger.info("Dungeon Master agent plugins registered successfully")
-        except Exception as e:
-            logger.error(f"Error registering Dungeon Master agent plugins: {str(e)}")
-            # Implement proper fallback behavior when plugin registration fails
-            self._fallback_mode = True
-            logger.warning("Dungeon Master agent entering fallback mode - using core functionality without advanced plugins")
-            
-            # Initialize basic fallback components
-            self._initialize_fallback_components()
+Your responses should:
+- Be engaging and immersive
+- Respect player agency and choices
+- Follow D&D 5e rules when applicable
+- Advance the story meaningfully
+- Describe outcomes clearly
+- Suggest or prompt for dice rolls when appropriate (but don't roll for the player)
+- Maintain the fantasy adventure atmosphere
 
-    def _initialize_fallback_components(self):
-        """Initialize fallback components when plugin registration fails."""
-        try:
-            # Set fallback mode flag
-            self._fallback_mode = True
-            
-            # Initialize basic dice rolling functionality
-            self._fallback_dice = {
-                "d4": lambda n=1: [random.randint(1, 4) for _ in range(n)],
-                "d6": lambda n=1: [random.randint(1, 6) for _ in range(n)],
-                "d8": lambda n=1: [random.randint(1, 8) for _ in range(n)],
-                "d10": lambda n=1: [random.randint(1, 10) for _ in range(n)],
-                "d12": lambda n=1: [random.randint(1, 12) for _ in range(n)],
-                "d20": lambda n=1: [random.randint(1, 20) for _ in range(n)],
-                "d100": lambda n=1: [random.randint(1, 100) for _ in range(n)]
-            }
-            
-            # Initialize basic narrative responses
-            self._fallback_responses = {
-                "combat": [
-                    "The battle intensifies as your enemies press their attack!",
-                    "Steel clashes against steel in the heat of combat!",
-                    "The tide of battle shifts with each passing moment!"
-                ],
-                "exploration": [
-                    "You venture forth into the unknown, ready for whatever awaits.",
-                    "The path ahead is shrouded in mystery and possibility.",
-                    "Your footsteps echo as you explore this new area."
-                ],
-                "social": [
-                    "The conversation takes an interesting turn...",
-                    "Your words carry weight in this interaction.",
-                    "The NPCs listen carefully to what you have to say."
-                ],
-                "default": [
-                    "The adventure continues as you face new challenges.",
-                    "Your actions have consequences in this unfolding story.",
-                    "The world responds to your choices and decisions."
-                ]
-            }
-            
-            # Initialize basic campaign templates
-            self._fallback_campaign_templates = {
-                "fantasy": {
-                    "setting": "A classic fantasy world of magic and adventure",
-                    "themes": ["heroism", "magic", "ancient evils"],
-                    "locations": ["tavern", "dungeon", "forest", "castle"],
-                    "npcs": ["innkeeper", "guard", "wizard", "merchant"]
-                },
-                "modern": {
-                    "setting": "Contemporary world with hidden supernatural elements",
-                    "themes": ["mystery", "investigation", "urban fantasy"],
-                    "locations": ["city", "office", "warehouse", "apartment"],
-                    "npcs": ["detective", "informant", "scientist", "witness"]
-                },
-                "sci-fi": {
-                    "setting": "Futuristic space-faring civilization",
-                    "themes": ["technology", "exploration", "alien contact"],
-                    "locations": ["space station", "planet", "ship", "laboratory"],
-                    "npcs": ["captain", "engineer", "scientist", "alien"]
-                }
-            }
-            
-            logger.info("Fallback components initialized successfully")
-            
-        except Exception as e:
-            logger.error(f"Error initializing fallback components: {str(e)}")
-            # Even fallback initialization failed - set to minimal mode
-            self._fallback_mode = True
-            self._minimal_mode = True
+Always respond as a helpful, creative DM who wants players to have an exciting adventure. Keep responses focused and not overly long. You are the single point of coordination for the entire game experience."""
 
-    def _fallback_dice_roll(self, dice_notation: str) -> Dict[str, Any]:
-        """Fallback dice rolling when plugins aren't available."""
-        import re
+        return system_prompt
+
+    async def process_input(
+        self, user_input: str, context: Dict[str, Any] = None
+    ) -> Dict[str, Any]:
+        """
+        Process user input using a simple AI approach with system prompts.
         
-        try:
-            # Parse dice notation (e.g., "2d6+3", "1d20")
-            match = re.match(r"(\d+)?d(\d+)([+-]\d+)?", dice_notation.lower())
-            if not match:
-                return {"error": f"Invalid dice notation: {dice_notation}"}
-            
-            num_dice = int(match.group(1)) if match.group(1) else 1
-            die_size = int(match.group(2))
-            modifier = int(match.group(3)) if match.group(3) else 0
-            
-            # Roll the dice
-            rolls = [random.randint(1, die_size) for _ in range(num_dice)]
-            total = sum(rolls) + modifier
-            
-            return {
-                "notation": dice_notation,
-                "rolls": rolls,
-                "modifier": modifier,
-                "total": total,
-                "details": f"Rolled {rolls} + {modifier} = {total}"
-            }
-            
-        except Exception as e:
-            return {"error": f"Error rolling dice: {str(e)}"}
-
-    def _fallback_generate_response(self, context: str = "default") -> str:
-        """Generate a basic narrative response in fallback mode."""
-        import random
-        
-        responses = self._fallback_responses.get(context, self._fallback_responses["default"])
-        return random.choice(responses)
-
-    async def create_campaign(self, campaign_data: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Create a new campaign based on the provided settings.
-
-        Args:
-            campaign_data: Campaign settings and preferences
-
-        Returns:
-            Dict[str, Any]: The created campaign
-        """
-        try:
-            campaign_id = campaign_data.get(
-                "id", f"campaign_{len(self.active_sessions) + 1}"
-            )
-
-            # Create basic campaign
-            campaign = {
-                "id": campaign_id,
-                "name": campaign_data.get("name", "Unnamed Adventure"),
-                "setting": campaign_data.get("setting", "fantasy"),
-                "tone": campaign_data.get("tone", "heroic"),
-                "homebrew_rules": campaign_data.get("homebrew_rules", []),
-                "characters": [],
-                "session_log": [],
-                "state": "created",
-            }
-
-            # Generate world concept with Narrator
-            world_context = {"setting": campaign["setting"], "tone": campaign["tone"]}
-
-            # Use the get_narrator function to get a narrator instance
-            narrator_agent = get_narrator()
-            world_description = await narrator_agent.describe_scene(world_context)
-            campaign["world_description"] = world_description
-
-            # Use the get_artist function to get an artist instance
-            artist_agent = get_artist()
-            world_art = await artist_agent.illustrate_scene(world_context)
-            campaign["world_art"] = world_art
-
-            # Store campaign
-            self.active_sessions[campaign_id] = campaign
-
-            return campaign
-
-        except Exception as e:
-            logger.error(f"Error creating campaign: {str(e)}")
-            return {"error": "Failed to create campaign"}
-
-    async def process_input_stream(
-        self, user_input: str, context: Dict[str, Any] | None = None
-    ) -> None:
-        """
-        Process user input and stream responses via WebSocket.
-
         Args:
             user_input: The player's input text
-            context: Additional context including WebSocket for streaming
+            context: Additional context information
+            
+        Returns:
+            Dict with required fields: message, visuals, state_updates, combat_updates
         """
         if not context:
             context = {}
+            
+        logger.info(f"DM processing player input: {user_input}")
+        
+        # Use fallback mode if needed
+        if self._fallback_mode:
+            return self._process_input_fallback(user_input, context)
+        
+        try:
+            # Create system prompt
+            system_prompt = self._get_dm_system_prompt(context)
+            
+            # Create user message with context
+            user_message = user_input
+            if context.get("character_name"):
+                user_message = f"Player ({context['character_name']}): {user_input}"
+            
+            messages = [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_message}
+            ]
+            
+            # Get AI response
+            ai_response = await self.openai_client.chat_completion(
+                messages,
+                temperature=0.7,
+                max_tokens=500
+            )
+            
+            # Structure the response in the expected format
+            response = {
+                "message": ai_response.strip() if ai_response else "The adventure continues...",
+                "visuals": [],  # Simple implementation - no visual generation
+                "state_updates": {"last_action": user_input},
+                "combat_updates": None
+            }
+            
+            return response
+            
+        except Exception as e:
+            logger.error(f"Error in DM processing: {str(e)}")
+            # Fall back to using the full fallback processing which handles dice, etc.
+            return self._process_input_fallback(user_input, context)
 
+    async def process_input_stream(
+        self, user_input: str, context: Dict[str, Any] = None
+    ) -> None:
+        """
+        Process user input with streaming responses via WebSocket.
+        
+        Args:
+            user_input: The player's input text
+            context: Context including WebSocket for streaming
+        """
+        if not context:
+            context = {}
+            
         websocket = context.get("websocket")
         if not websocket:
             logger.error("No WebSocket provided for streaming")
             return
-
-        logger.info(f"Processing streaming player input: {user_input}")
-
-        # Check if we're in fallback mode
-        if getattr(self, '_fallback_mode', False):
+            
+        logger.info(f"DM processing streaming input: {user_input}")
+        
+        # Use fallback streaming if needed
+        if self._fallback_mode:
             await self._process_input_stream_fallback(user_input, context)
             return
-
+        
         try:
             # Send typing indicator
             await self._send_chat_message(websocket, {
                 "type": "chat_typing",
-                "message": "The Dungeon Master is thinking..."
+                "message": "The Dungeon Master considers your action..."
             })
-
-            # Analyze the input type
-            input_type, input_details = await self._analyze_input(user_input, context)
-
-            # Get character context if available
-            character_context = await self._get_character_context(context)
-
-            # Create messages for streaming chat completion
-            messages = await self._create_chat_messages(user_input, input_type, character_context, context)
-
-            # Stream the response
-            await self._stream_chat_response(messages, websocket, context)
-
+            
+            # Create system prompt
+            system_prompt = self._get_dm_system_prompt(context)
+            
+            # Create user message
+            user_message = user_input
+            if context.get("character_name"):
+                user_message = f"Player ({context['character_name']}): {user_input}"
+                
+            messages = [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_message}
+            ]
+            
+            # Stream the AI response
+            await self._stream_ai_response(messages, websocket)
+            
         except Exception as e:
             logger.error(f"Error in streaming processing: {str(e)}")
             await self._send_chat_message(websocket, {
                 "type": "chat_error",
-                "message": "I'm sorry, I encountered an issue processing your request. Please try again."
+                "message": "I encountered an issue processing your request. Please try again."
             })
 
-    async def _process_input_stream_fallback(
-        self, user_input: str, context: Dict[str, Any]
-    ) -> None:
-        """Process input in fallback mode with streaming simulation."""
-        websocket = context.get("websocket")
-        if not websocket:
-            return
-
-        logger.info("Processing streaming input in fallback mode")
-        
+    async def _stream_ai_response(self, messages: List[Dict[str, str]], websocket) -> None:
+        """Stream AI response using Azure OpenAI."""
         try:
-            # Simulate typing
-            await self._send_chat_message(websocket, {
-                "type": "chat_typing",
-                "message": "Preparing response..."
-            })
-
-            # Get basic response from fallback
-            input_type, input_details = await self._analyze_input(user_input, context)
-            
-            # Generate appropriate response based on input type
-            if input_type == "combat":
-                response_text = "The battle intensifies as combat unfolds! "
-                response_text += f"You attempt to {user_input.lower()}. "
-                response_text += "Roll for your action to see the outcome."
-            elif input_type == "narrative":
-                action_type = input_details.get("action_type", "exploration")
-                if action_type == "social_interaction":
-                    response_text = "The conversation develops as you engage with others. "
-                    response_text += "Your words carry weight in this moment."
-                elif action_type == "movement":
-                    response_text = "You move carefully through the environment, "
-                    response_text += "taking in your new surroundings with keen awareness."
-                else:
-                    response_text = "You explore the area around you, alert for anything of interest. "
-                    response_text += "The world responds to your actions."
-            else:
-                response_text = f"The adventure continues as you take action: {user_input}. "
-                response_text += "Your choices shape the unfolding story."
-
-            # Stream the response word by word to simulate real streaming
-            await self._simulate_streaming_response(response_text, websocket)
-
-        except Exception as e:
-            logger.error(f"Error in fallback streaming: {str(e)}")
-            await self._send_chat_message(websocket, {
-                "type": "chat_error",
-                "message": "The adventure continues, though the path is unclear."
-            })
-
-    async def _get_character_context(self, context: Dict[str, Any]) -> Dict[str, Any]:
-        """Get character information for context."""
-        character_context = {}
-        character_id = context.get("character_id")
-        
-        if character_id:
-            try:
-                scribe_agent = get_scribe()
-                character = await scribe_agent.get_character(character_id)
-                if "error" not in character:
-                    character_context = {
-                        "name": character.get("name", "Adventurer"),
-                        "race": character.get("race", "Unknown"),
-                        "class": character.get("class", "Fighter"),
-                        "level": character.get("level", 1)
-                    }
-            except Exception as e:
-                logger.warning(f"Could not retrieve character {character_id}: {str(e)}")
-        
-        return character_context
-
-    async def _create_chat_messages(
-        self, user_input: str, input_type: str, character_context: Dict[str, Any], context: Dict[str, Any]
-    ) -> List[Dict[str, str]]:
-        """Create messages for chat completion."""
-        
-        # Build character description
-        char_desc = "an adventurer"
-        if character_context:
-            char_desc = f"{character_context.get('name', 'an adventurer')}, a level {character_context.get('level', 1)} {character_context.get('race', 'unknown')} {character_context.get('class', 'fighter')}"
-
-        # System message based on input type
-        if input_type == "combat":
-            system_content = f"You are an expert Dungeon Master running a D&D 5e game. The player ({char_desc}) is in combat. Respond to their action with exciting, detailed combat narration. Keep responses engaging and describe outcomes, but don't roll dice for the player. Be concise but vivid."
-        elif input_type == "narrative":
-            system_content = f"You are an expert Dungeon Master running a D&D 5e game. The player ({char_desc}) is exploring and taking narrative actions. Respond with immersive storytelling, describe the environment and consequences of their actions. Be descriptive but not overly long."
-        elif input_type == "character":
-            system_content = f"You are an expert Dungeon Master helping with character management for {char_desc}. Provide helpful guidance about character abilities, equipment, or development. Be informative and supportive."
-        else:
-            system_content = f"You are an expert Dungeon Master running a D&D 5e game for {char_desc}. Respond to the player's input with appropriate narrative, keeping the game engaging and moving forward. Be creative and responsive to player agency."
-
-        messages = [
-            {"role": "system", "content": system_content},
-            {"role": "user", "content": user_input}
-        ]
-
-        return messages
-
-    async def _stream_chat_response(
-        self, messages: List[Dict[str, str]], websocket, context: Dict[str, Any]
-    ) -> None:
-        """Stream chat response from Azure OpenAI."""
-        try:
-            # Import here to avoid circular imports
-            from app.azure_openai_client import AzureOpenAIClient
-            
-            openai_client = AzureOpenAIClient()
-            
             # Send start streaming message
             await self._send_chat_message(websocket, {
                 "type": "chat_start_stream",
@@ -414,7 +203,7 @@ class DungeonMasterAgent:
             })
 
             full_response = ""
-            async for chunk in openai_client.chat_completion_stream(
+            async for chunk in self.openai_client.chat_completion_stream(
                 messages, 
                 temperature=0.7, 
                 max_tokens=500
@@ -432,12 +221,95 @@ class DungeonMasterAgent:
                 "type": "chat_complete",
                 "message": full_response
             })
-
+            
         except Exception as e:
-            logger.error(f"Error streaming chat response: {str(e)}")
+            logger.error(f"Error streaming AI response: {str(e)}")
             await self._send_chat_message(websocket, {
                 "type": "chat_error",
                 "message": f"Failed to generate response: {str(e)}"
+            })
+
+    def _process_input_fallback(
+        self, user_input: str, context: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Process input in fallback mode with basic responses."""
+        logger.info("DM processing input in fallback mode")
+        
+        try:
+            # Simple keyword-based responses
+            input_lower = user_input.lower()
+            
+            # Handle dice rolls
+            if any(dice in input_lower for dice in ["roll", "d4", "d6", "d8", "d10", "d12", "d20", "d100"]):
+                dice_result = self._handle_fallback_dice_roll(user_input)
+                return {
+                    "message": f"You roll the dice: {dice_result.get('details', 'Dice rolled')}",
+                    "dice_result": dice_result,
+                    "visuals": [],
+                    "state_updates": {"last_action": user_input},
+                    "combat_updates": None
+                }
+            
+            # Basic response patterns
+            if any(word in input_lower for word in ["attack", "fight", "combat", "sword", "weapon"]):
+                message = "You engage in combat! Your weapon gleams as you prepare to strike. Roll for your attack!"
+            elif any(word in input_lower for word in ["explore", "look", "search", "investigate"]):
+                message = "You carefully explore the area, taking note of interesting details and potential secrets."
+            elif any(word in input_lower for word in ["talk", "speak", "say", "ask", "tell"]):
+                message = "Your words carry weight in this moment. The conversation develops based on your approach."
+            elif any(word in input_lower for word in ["inventory", "equipment", "items", "gear"]):
+                message = "You check your belongings and assess your available resources."
+            else:
+                message = f"You {user_input.lower()}. The world responds to your actions, and the adventure continues."
+            
+            return {
+                "message": message,
+                "visuals": [],
+                "state_updates": {"last_action": user_input},
+                "combat_updates": None,
+                "fallback_mode": True
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in fallback processing: {str(e)}")
+            return {
+                "message": "The adventure continues, though the path ahead is uncertain.",
+                "visuals": [],
+                "state_updates": {},
+                "combat_updates": None,
+                "fallback_mode": True,
+                "error": str(e)
+            }
+
+    async def _process_input_stream_fallback(
+        self, user_input: str, context: Dict[str, Any]
+    ) -> None:
+        """Process input in fallback mode with streaming simulation."""
+        websocket = context.get("websocket")
+        if not websocket:
+            return
+            
+        logger.info("DM processing streaming input in fallback mode")
+        
+        try:
+            # Simulate typing
+            await self._send_chat_message(websocket, {
+                "type": "chat_typing",
+                "message": "Preparing response..."
+            })
+            
+            # Get basic response
+            result = self._process_input_fallback(user_input, context)
+            response_text = result.get("message", "The adventure continues...")
+            
+            # Stream the response word by word
+            await self._simulate_streaming_response(response_text, websocket)
+            
+        except Exception as e:
+            logger.error(f"Error in fallback streaming: {str(e)}")
+            await self._send_chat_message(websocket, {
+                "type": "chat_error",
+                "message": "The adventure continues, though the path is unclear."
             })
 
     async def _simulate_streaming_response(self, response_text: str, websocket) -> None:
@@ -474,209 +346,9 @@ class DungeonMasterAgent:
     async def _send_chat_message(self, websocket, message: Dict[str, Any]) -> None:
         """Send a message via WebSocket."""
         try:
-            import json
             await websocket.send_text(json.dumps(message))
         except Exception as e:
             logger.error(f"Error sending chat message: {str(e)}")
-
-    async def process_input(
-        self, user_input: str, context: Dict[str, Any] | None = None
-    ) -> Dict[str, Any]:
-        """
-        Process user input and coordinate responses from specialized agents.
-
-        Args:
-            user_input: The player's input text
-            context: Additional context information (game state, etc.)
-
-        Returns:
-            Dict[str, Any]: The response data including messages and any updates
-        """
-        if not context:
-            context = {}
-
-        logger.info(f"Processing player input: {user_input}")
-
-        # Check if we're in fallback mode
-        if getattr(self, '_fallback_mode', False):
-            return await self._process_input_fallback(user_input, context)
-
-        try:
-            # Analyze the input type to determine which agents to invoke
-            input_type, input_details = await self._analyze_input(user_input, context)
-
-            # Prepare response object
-            response = {
-                "message": "",
-                "narration": "",
-                "state_updates": {},
-                "visuals": [],
-                "combat_updates": None,
-            }
-
-            # Route to appropriate agents based on input type
-            if input_type == "narrative":
-                # Handle narrative input with Narrator agent
-                narrator_agent = get_narrator()
-                narrative_result = await narrator_agent.process_action(
-                    user_input, context
-                )
-                response["message"] = narrative_result.get("description", "")
-                response["state_updates"] = narrative_result.get("state_updates", {})
-
-                # Generate scene illustration if significant
-                if narrative_result.get("significant_moment", False):
-                    artist_agent = get_artist()
-                    scene_art = await artist_agent.illustrate_scene(
-                        narrative_result.get("scene_context", {})
-                    )
-                    response["visuals"].append(scene_art)
-
-            elif input_type == "character":
-                # Handle character-related input with Scribe agent
-                scribe_agent = get_scribe()
-                character_id = context.get("character_id")
-                if character_id:
-                    character_result = await scribe_agent.update_character(
-                        character_id, input_details
-                    )
-                    response["message"] = "Your character has been updated."
-                    response["state_updates"] = {"character": character_result}
-                else:
-                    response["message"] = "No character ID provided for update."
-
-            elif input_type == "combat":
-                # Combat functionality is temporarily disabled
-                response["message"] = "Combat functionality is temporarily disabled."
-
-                # Commented out due to missing combat agent implementation
-                # Handle combat input with Combat MC agent
-                # if context.get("combat_state") == "active":
-                #     combat_mc_agent = get_combat_mc()
-                #     combat_result = await combat_mc_agent.process_combat_action(
-                #         user_input,
-                #         context.get("combat_id"),
-                #         context.get("character_id")
-                #     )
-                #     response["message"] = combat_result.get("description", "")
-                #     response["combat_updates"] = combat_result.get("updates", {})
-                #
-                #     # Update battle map if needed
-                #     if "map_id" in context:
-                #         combat_cartographer_agent = get_combat_cartographer()
-                #         updated_map = await combat_cartographer_agent.update_map_with_combat_state(
-                #             context["map_id"],
-                #             combat_result.get("updates", {})
-                #         )
-                #         response["visuals"].append(updated_map)
-                # else:
-                #     # Initiate combat if needed
-                #     combat_context = {
-                #         "location": context.get("location", "unknown"),
-                #         "encounter_type": input_details.get("encounter_type", "random")
-                #     }
-                #     combat_mc_agent = get_combat_mc()
-                #     encounter = await combat_mc_agent.create_encounter(
-                #         {"members": [{"id": context.get("character_id")}]},
-                #         combat_context
-                #     )
-                #
-                #     # Generate battle map
-                #     combat_cartographer_agent = get_combat_cartographer()
-                #     battle_map = await combat_cartographer_agent.generate_battle_map(
-                #         combat_context,
-                #         encounter
-                #     )
-                #
-                #     response["message"] = "Combat has begun! Roll for initiative!"
-                #     response["combat_updates"] = encounter
-                #     response["visuals"].append(battle_map)
-
-            # If no input type was matched, provide generic response
-            if not response["message"]:
-                response["message"] = (
-                    f"I understand your request '{user_input}'. How would you like to proceed?"
-                )
-
-            return response
-
-        except Exception as e:
-            logger.error(f"Error processing input: {str(e)}")
-            return {
-                "message": "I'm sorry, I encountered an issue processing your request. Please try again.",
-                "visuals": [],
-                "state_updates": {},
-                "combat_updates": None,
-                "error": str(e),
-            }
-
-    async def _process_input_fallback(
-        self, user_input: str, context: Dict[str, Any]
-    ) -> Dict[str, Any]:
-        """Process input in fallback mode with basic functionality."""
-        logger.info("Processing input in fallback mode")
-        
-        try:
-            # Check for dice rolls first
-            input_lower = user_input.lower()
-            if any(dice in input_lower for dice in ["roll", "d4", "d6", "d8", "d10", "d12", "d20", "d100"]):
-                dice_result = self._handle_fallback_dice_roll(user_input)
-                return {
-                    "message": dice_result.get("details", "Dice rolled"),
-                    "dice_result": dice_result,
-                    "state_updates": {},
-                    "visuals": [],
-                    "combat_updates": None
-                }
-            
-            # Use the full input analysis even in fallback mode (just without AI)
-            input_type, input_details = await self._analyze_input(user_input, context)
-            
-            # Generate appropriate response based on input type
-            if input_type == "combat":
-                action_type = input_details.get("action_type", "combat_general")
-                if action_type == "spell_casting":
-                    message = "You focus your magical energy and cast your spell!"
-                elif action_type == "physical_attack":
-                    message = "You strike with precision and force!"
-                else:
-                    message = "The battle intensifies as combat unfolds!"
-                message += f" You attempt to {user_input.lower()}."
-                
-            elif input_type == "character":
-                message = "You manage your character's capabilities and equipment."
-                
-            elif input_type == "narrative":
-                action_type = input_details.get("action_type", "exploration")
-                if action_type == "social_interaction":
-                    message = "The conversation develops as you engage with others. You try to communicate your intentions."
-                elif action_type == "movement":
-                    message = "You move carefully through the environment, taking in your new surroundings."
-                else:
-                    message = "You explore the area around you, alert for anything of interest. You carefully examine your surroundings."
-            else:
-                # Default response
-                message = f"The adventure continues as you take action: {user_input}"
-            
-            return {
-                "message": message,
-                "narration": f"In this moment of adventure, {message.lower()}",
-                "state_updates": {"last_action": user_input},
-                "visuals": [],
-                "combat_updates": None,
-                "fallback_mode": True
-            }
-            
-        except Exception as e:
-            logger.error(f"Error in fallback processing: {str(e)}")
-            return {
-                "message": "The adventure continues, though the path is unclear.",
-                "error": f"Fallback processing failed: {str(e)}",
-                "state_updates": {},
-                "visuals": [],
-                "combat_updates": None,
-                "fallback_mode": True
-            }
 
     def _handle_fallback_dice_roll(self, user_input: str) -> Dict[str, Any]:
         """Handle dice rolling in fallback mode."""
@@ -705,211 +377,34 @@ class DungeonMasterAgent:
         # Default to d20 if no specific dice found
         return self._fallback_dice_roll("1d20")
 
-    async def _analyze_input(
-        self, user_input: str, context: Dict[str, Any]
-    ) -> Tuple[str, Dict[str, Any]]:
-        """
-        Analyze user input to determine its type and extract relevant details.
-
-        Args:
-            user_input: The player's input text
-            context: Current game context
-
-        Returns:
-            Tuple[str, Dict[str, Any]]: Input type and extracted details
-        """
-        # Skip AI analysis if in fallback mode or if Azure OpenAI is not available
-        if not getattr(self, '_fallback_mode', True):
-            try:
-                # Enhanced input analysis using Azure OpenAI for better intent recognition
-                from app.azure_openai_client import AzureOpenAIClient
-
-                try:
-                    openai_client = AzureOpenAIClient()
-                except Exception as client_error:
-                    # If client creation fails, fall back to keyword analysis
-                    logger.warning(
-                        f"Azure OpenAI client creation failed: {str(client_error)}, using keyword-based approach"
-                    )
-                    raise ValueError("Azure OpenAI not available") from client_error
-
-                # Prepare analysis prompt for the AI
-                analysis_prompt = f"""
-                Analyze the following D&D player input and classify it into one of these categories:
-                - "combat" (fighting, attacking, casting spells, initiative, combat actions)
-                - "character" (inventory management, leveling up, equipment, abilities, character sheet updates)
-                - "narrative" (exploration, roleplay, story actions, talking to NPCs)
-
-                Player input: "{user_input}"
-                Current context: {context.get("location", "unknown location")}
-
-                Respond with JSON format:
-                {{"category": "combat|character|narrative", "action_type": "specific_action", "confidence": 0.8}}
-                """
-
-                messages = [
-                    {
-                        "role": "system",
-                        "content": "You are a D&D game assistant that analyzes player intent. Always respond with valid JSON.",
-                    },
-                    {"role": "user", "content": analysis_prompt},
-                ]
-
-                # Get AI analysis
-                response = await openai_client.chat_completion(
-                    messages, max_tokens=150, temperature=0.3
-                )
-
-                # Parse AI response
-                import json
-
-                try:
-                    analysis = json.loads(response.strip())
-                    category = analysis.get("category", "narrative")
-                    action_type = analysis.get("action_type", "general")
-                    confidence = analysis.get("confidence", 0.5)
-
-                    # If confidence is too low, fall back to keyword analysis
-                    if confidence < 0.6:
-                        raise ValueError("Low confidence, using fallback")
-
-                    return category, {
-                        "action_type": action_type,
-                        "confidence": confidence,
-                        "method": "ai_analysis",
-                    }
-
-                except (json.JSONDecodeError, ValueError):
-                    # Fall back to keyword analysis if AI parsing fails
-                    logger.warning(
-                        "AI analysis failed, falling back to keyword-based approach"
-                    )
-
-            except Exception as e:
-                logger.warning(
-                    f"Enhanced input analysis failed: {str(e)}, using keyword-based approach"
-                )
-
-        # Fallback: Enhanced keyword-based approach with better patterns
-        input_lower = user_input.lower()
-
-        # Combat indicators with more comprehensive patterns
-        combat_keywords = [
-            "attack",
-            "fight",
-            "cast spell",
-            "initiative",
-            "roll",
-            "hit",
-            "damage",
-            "sword",
-            "bow",
-            "magic",
-            "spell",
-            "fireball",
-            "heal",
-            "defend",
-            "dodge",
-            "weapon",
-            "armor class",
-            "saving throw",
-            "d20",
-            "strike",
-            "shoot",
-        ]
-        if any(term in input_lower for term in combat_keywords):
-            # Determine specific combat action type
-            if any(
-                term in input_lower for term in ["cast", "spell", "magic", "fireball"]
-            ):
-                action_type = "spell_casting"
-            elif any(
-                term in input_lower
-                for term in ["attack", "hit", "strike", "sword", "bow"]
-            ):
-                action_type = "physical_attack"
-            elif any(term in input_lower for term in ["roll", "d20", "saving throw"]):
-                action_type = "dice_roll"
-            else:
-                action_type = "combat_general"
-            return "combat", {"action_type": action_type, "method": "keyword_analysis"}
-
-        # Character management indicators
-        character_keywords = [
-            "inventory",
-            "equip",
-            "level up",
-            "spell",
-            "ability",
-            "stats",
-            "character sheet",
-            "equipment",
-            "items",
-            "backpack",
-            "armor",
-            "experience",
-            "skills",
-            "proficiency",
-        ]
-        if any(term in input_lower for term in character_keywords):
-            # Determine specific character action type
-            if any(
-                term in input_lower
-                for term in ["inventory", "items", "equipment", "equip"]
-            ):
-                action_type = "inventory_management"
-            elif any(
-                term in input_lower for term in ["level up", "experience", "stats"]
-            ):
-                action_type = "character_advancement"
-            elif any(term in input_lower for term in ["spell", "ability", "skills"]):
-                action_type = "ability_management"
-            else:
-                action_type = "character_general"
-            return "character", {
-                "action_type": action_type,
-                "method": "keyword_analysis",
+    def _fallback_dice_roll(self, dice_notation: str) -> Dict[str, Any]:
+        """Simple dice rolling for fallback mode."""
+        import re
+        
+        try:
+            # Parse dice notation (e.g., "2d6+3", "1d20")
+            match = re.match(r"(\d+)?d(\d+)([+-]\d+)?", dice_notation.lower())
+            if not match:
+                return {"error": f"Invalid dice notation: {dice_notation}"}
+            
+            num_dice = int(match.group(1)) if match.group(1) else 1
+            die_size = int(match.group(2))
+            modifier = int(match.group(3)) if match.group(3) else 0
+            
+            # Roll the dice
+            rolls = [random.randint(1, die_size) for _ in range(num_dice)]
+            total = sum(rolls) + modifier
+            
+            return {
+                "notation": dice_notation,
+                "rolls": rolls,
+                "modifier": modifier,
+                "total": total,
+                "details": f"Rolled {rolls} + {modifier} = {total}"
             }
-
-        # Movement and exploration indicators
-        movement_keywords = [
-            "go",
-            "move",
-            "walk",
-            "run",
-            "enter",
-            "exit",
-            "north",
-            "south",
-            "east",
-            "west",
-        ]
-        if any(term in input_lower for term in movement_keywords):
-            return "narrative", {
-                "action_type": "movement",
-                "method": "keyword_analysis",
-            }
-
-        # Social interaction indicators
-        social_keywords = [
-            "talk",
-            "speak",
-            "say",
-            "tell",
-            "ask",
-            "persuade",
-            "intimidate",
-            "deceive",
-        ]
-        if any(term in input_lower for term in social_keywords):
-            return "narrative", {
-                "action_type": "social_interaction",
-                "method": "keyword_analysis",
-            }
-
-        # Default to narrative with general exploration
-        return "narrative", {"action_type": "exploration", "method": "keyword_analysis"}
-
+            
+        except Exception as e:
+            return {"error": f"Error rolling dice: {str(e)}"}
 
 # Lazy singleton instance
 _dungeon_master = None
