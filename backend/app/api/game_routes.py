@@ -148,17 +148,9 @@ async def get_character(character_id: str, config: ConfigDep):
 
 
 @router.post("/campaign", response_model=Campaign)
-async def create_campaign(campaign_data: CreateCampaignRequest, config: ConfigDep):
+async def create_campaign(campaign_data: CreateCampaignRequest):
     """Create a new campaign."""
     try:
-        # Check if Azure OpenAI is configured
-        if not config.is_azure_openai_configured():
-            raise HTTPException(
-                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail="Azure OpenAI configuration is missing or invalid. "
-                       "This agentic demo requires proper Azure OpenAI setup."
-            )
-        
         campaign = campaign_service.create_campaign(campaign_data)
         return campaign
     except HTTPException:
