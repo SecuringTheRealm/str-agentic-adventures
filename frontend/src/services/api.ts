@@ -3,82 +3,6 @@ import axios from "axios";
 import { Configuration, GameApi } from "../api-client";
 import { getApiBaseUrl } from "../utils/urls";
 
-// Enhanced error class for API errors
-export class APIError extends Error {
-  public status?: number;
-  public details?: string;
-
-  constructor(message: string, status?: number, details?: string) {
-    super(message);
-    this.name = 'APIError';
-    this.status = status;
-    this.details = details;
-  }
-}
-
-// Utility function to parse API errors and provide better error messages
-const parseAPIError = (error: any): APIError => {
-  if (error.response) {
-    const status = error.response.status;
-    const details = error.response.data?.detail || error.response.statusText;
-    
-    if (status === 503) {
-      if (details?.includes('Azure OpenAI configuration')) {
-        return new APIError(
-          'Azure OpenAI configuration is required. Please contact your administrator to set up the required Azure OpenAI credentials.',
-          status,
-          details
-        );
-      }
-      return new APIError(
-        'Service temporarily unavailable. Please try again later.',
-        status,
-        details
-      );
-    }
-    
-    if (status === 404) {
-      return new APIError('Resource not found.', status, details);
-    }
-    
-    if (status === 400) {
-      return new APIError(
-        details || 'Invalid request. Please check your input and try again.',
-        status,
-        details
-      );
-    }
-    
-    if (status >= 500) {
-      return new APIError(
-        'Server error occurred. Please try again later.',
-        status,
-        details
-      );
-    }
-    
-    return new APIError(
-      details || 'An error occurred while processing your request.',
-      status,
-      details
-    );
-  }
-  
-  if (error.request) {
-    return new APIError(
-      'Unable to connect to the server. Please check your internet connection and try again.',
-      0,
-      'Network error'
-    );
-  }
-  
-  return new APIError(
-    error.message || 'An unexpected error occurred.',
-    undefined,
-    error.toString()
-  );
-};
-
 // Create configuration for the generated API client
 const configuration = new Configuration({
   basePath: getApiBaseUrl(),
@@ -115,127 +39,71 @@ export interface InventoryItem {
 
 // Wrapper functions to maintain compatibility with existing frontend code
 export const createCharacter = async (characterData: import("../api-client").CreateCharacterRequest) => {
-  try {
-    const response = await gameApi.createCharacterApiGameCharacterPost(characterData);
-    return response.data;
-  } catch (error) {
-    throw parseAPIError(error);
-  }
+  const response = await gameApi.createCharacterApiGameCharacterPost(characterData);
+  return response.data;
 };
 
 export const getCharacter = async (characterId: string) => {
-  try {
-    const response = await gameApi.getCharacterApiGameCharacterCharacterIdGet(characterId);
-    return response.data;
-  } catch (error) {
-    throw parseAPIError(error);
-  }
+  const response = await gameApi.getCharacterApiGameCharacterCharacterIdGet(characterId);
+  return response.data;
 };
 
 export const sendPlayerInput = async (input: import("../api-client").PlayerInput) => {
-  try {
-    const response = await gameApi.processPlayerInputApiGameInputPost(input);
-    return response.data;
-  } catch (error) {
-    throw parseAPIError(error);
-  }
+  const response = await gameApi.processPlayerInputApiGameInputPost(input);
+  return response.data;
 };
 
 export const createCampaign = async (campaignData: import("../api-client").CreateCampaignRequest) => {
-  try {
-    const response = await gameApi.createCampaignApiGameCampaignPost(campaignData);
-    return response.data;
-  } catch (error) {
-    throw parseAPIError(error);
-  }
+  const response = await gameApi.createCampaignApiGameCampaignPost(campaignData);
+  return response.data;
 };
 
 export const getCampaigns = async () => {
-  try {
-    const response = await gameApi.listCampaignsApiGameCampaignsGet();
-    return response.data;
-  } catch (error) {
-    throw parseAPIError(error);
-  }
+  const response = await gameApi.listCampaignsApiGameCampaignsGet();
+  return response.data;
 };
 
 export const getCampaign = async (campaignId: string) => {
-  try {
-    const response = await gameApi.getCampaignApiGameCampaignCampaignIdGet(campaignId);
-    return response.data;
-  } catch (error) {
-    throw parseAPIError(error);
-  }
+  const response = await gameApi.getCampaignApiGameCampaignCampaignIdGet(campaignId);
+  return response.data;
 };
 
 export const updateCampaign = async (campaignId: string, updates: import("../api-client").CampaignUpdateRequest) => {
-  try {
-    const response = await gameApi.updateCampaignApiGameCampaignCampaignIdPut(campaignId, updates);
-    return response.data;
-  } catch (error) {
-    throw parseAPIError(error);
-  }
+  const response = await gameApi.updateCampaignApiGameCampaignCampaignIdPut(campaignId, updates);
+  return response.data;
 };
 
 export const cloneCampaign = async (cloneData: import("../api-client").CloneCampaignRequest) => {
-  try {
-    const response = await gameApi.cloneCampaignApiGameCampaignClonePost(cloneData);
-    return response.data;
-  } catch (error) {
-    throw parseAPIError(error);
-  }
+  const response = await gameApi.cloneCampaignApiGameCampaignClonePost(cloneData);
+  return response.data;
 };
 
 export const deleteCampaign = async (campaignId: string) => {
-  try {
-    const response = await gameApi.deleteCampaignApiGameCampaignCampaignIdDelete(campaignId);
-    return response.data;
-  } catch (error) {
-    throw parseAPIError(error);
-  }
+  const response = await gameApi.deleteCampaignApiGameCampaignCampaignIdDelete(campaignId);
+  return response.data;
 };
 
 export const getCampaignTemplates = async () => {
-  try {
-    const response = await gameApi.getCampaignTemplatesApiGameCampaignTemplatesGet();
-    return response.data;
-  } catch (error) {
-    throw parseAPIError(error);
-  }
+  const response = await gameApi.getCampaignTemplatesApiGameCampaignTemplatesGet();
+  return response.data;
 };
 
 export const getAIAssistance = async (request: import("../api-client").AIAssistanceRequest) => {
-  try {
-    const response = await gameApi.getAiAssistanceApiGameCampaignAiAssistPost(request);
-    return response.data;
-  } catch (error) {
-    throw parseAPIError(error);
-  }
+  const response = await gameApi.getAiAssistanceApiGameCampaignAiAssistPost(request);
+  return response.data;
 };
 
 export const generateAIContent = async (request: import("../api-client").AIContentGenerationRequest) => {
-  try {
-    const response = await gameApi.generateAiContentApiGameCampaignAiGeneratePost(request);
-    return response.data;
-  } catch (error) {
-    throw parseAPIError(error);
-  }
+  const response = await gameApi.generateAiContentApiGameCampaignAiGeneratePost(request);
+  return response.data;
 };
 
 export const generateImage = async (imageRequest: Record<string, unknown>) => {
-  try {
-    const response = await gameApi.generateImageApiGameGenerateImagePost(imageRequest);
-    return response.data;
-  } catch (error) {
-    throw parseAPIError(error);
-  }
+  const response = await gameApi.generateImageApiGameGenerateImagePost(imageRequest);
+  return response.data;
 };
 
 export const generateBattleMap = async (mapRequest: Record<string, unknown>) => {
-  try {
-    const response = await gameApi.generateBattleMapApiGameBattleMapPost(mapRequest);
-    return response.data;
-  } catch (error) {
-    throw parseAPIError(error);
-  }
+  const response = await gameApi.generateBattleMapApiGameBattleMapPost(mapRequest);
+  return response.data;
 };

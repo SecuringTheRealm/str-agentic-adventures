@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Campaign, getCampaignTemplates, cloneCampaign, APIError } from '../services/api';
+import { Campaign, getCampaignTemplates, cloneCampaign } from '../services/api';
 import styles from './CampaignGallery.module.css';
 
 interface CampaignGalleryProps {
@@ -14,25 +14,16 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
   const [templates, setTemplates] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [errorDetails, setErrorDetails] = useState<string | null>(null);
   const [cloning, setCloning] = useState<string | null>(null);
 
   useEffect(() => {
     const loadTemplates = async () => {
       try {
         setLoading(true);
-        setError(null);
-        setErrorDetails(null);
         const templateData = await getCampaignTemplates();
-        setTemplates(templateData.templates || []);
+        setTemplates(templateData);
       } catch (err) {
-        if (err instanceof APIError) {
-          setError(err.message);
-          setErrorDetails(err.details || null);
-        } else {
-          setError('Failed to load campaign templates');
-          setErrorDetails(null);
-        }
+        setError('Failed to load campaign templates');
         console.error('Error loading templates:', err);
       } finally {
         setLoading(false);
@@ -45,21 +36,13 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
   const handleSelectTemplate = async (template: Campaign) => {
     try {
       setCloning(template.id!);
-      setError(null);
-      setErrorDetails(null);
       const clonedCampaign = await cloneCampaign({
         template_id: template.id!,
         new_name: `${template.name} (My Campaign)`
       });
       onCampaignSelected(clonedCampaign);
     } catch (err) {
-      if (err instanceof APIError) {
-        setError(err.message);
-        setErrorDetails(err.details || null);
-      } else {
-        setError('Failed to clone campaign template');
-        setErrorDetails(null);
-      }
+      setError('Failed to clone campaign template');
       console.error('Error cloning template:', err);
     } finally {
       setCloning(null);
@@ -81,20 +64,7 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
         <div className={styles.errorMessage}>
           <h3>Error Loading Templates</h3>
           <p>{error}</p>
-          {errorDetails && (
-            <details className={styles.errorDetails}>
-              <summary>Technical Details</summary>
-              <p>{errorDetails}</p>
-            </details>
-          )}
-          <div className={styles.errorActions}>
-            <button onClick={() => window.location.reload()}>Try Again</button>
-            {errorDetails?.includes('Azure OpenAI') && (
-              <button onClick={onCreateCustom} className={styles.alternativeAction}>
-                Create Custom Campaign Instead
-              </button>
-            )}
-          </div>
+          <button onClick={() => window.location.reload()}>Try Again</button>
         </div>
       </div>
     );

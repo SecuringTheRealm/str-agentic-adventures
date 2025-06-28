@@ -282,49 +282,6 @@
   background: #c53030;
 }
 
-.errorDetails {
-  margin-top: 1rem;
-  padding: 0.75rem;
-  background: rgba(229, 62, 62, 0.1);
-  border: 1px solid rgba(229, 62, 62, 0.3);
-  border-radius: 4px;
-  font-size: 0.875rem;
-}
-
-.errorDetails summary {
-  cursor: pointer;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-  color: #c53030;
-}
-
-.errorDetails summary:hover {
-  color: #e53e3e;
-}
-
-.errorDetails p {
-  margin: 0.5rem 0 0 0;
-  color: #666;
-  font-family: monospace;
-  font-size: 0.8rem;
-  line-height: 1.4;
-}
-
-.errorActions {
-  display: flex;
-  gap: 1rem;
-  margin-top: 1rem;
-  flex-wrap: wrap;
-}
-
-.alternativeAction {
-  background: #3182ce !important;
-}
-
-.alternativeAction:hover {
-  background: #2c5aa0 !important;
-}
-
 .noTemplates {
   text-align: center;
   padding: 3rem 1rem;
