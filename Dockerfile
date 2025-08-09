@@ -4,18 +4,20 @@ FROM python:3.12-slim
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies and uv
 RUN apt-get update && apt-get install -y \
     gcc \
-    && rm -rf /var/lib/apt/lists/*
+    curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install --no-cache-dir uv
 
-# Copy requirements file for initial dependency installation 
-COPY backend/requirements.txt ./requirements.txt
+# Copy pyproject.toml and uv.lock for dependency caching
+COPY pyproject.toml uv.lock ./
 
-# Install Python dependencies using pip for now (can be updated to use uv later)
-RUN pip install --no-cache-dir -r requirements.txt
+# Install production dependencies using uv
+RUN uv sync --frozen --no-dev
 
-# Copy Makefile for build commands (when available in container)
+# Copy Makefile for build commands
 COPY Makefile ./
 
 # Copy application code
@@ -30,7 +32,7 @@ ENV PYTHONUNBUFFERED=1
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:8000/health')" || exit 1
+    CMD uv run python -c "import requests; requests.get('http://localhost:8000/health')" || exit 1
 
-# Use python directly for now (can be updated to use make when uv is available in container)
-CMD ["python", "-m", "backend.app.main"]
+# Use make to run the application
+CMD ["make", "run"]
