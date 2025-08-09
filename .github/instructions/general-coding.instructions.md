@@ -19,8 +19,9 @@ applyTo: "**"
 ## Required before each commit
 
 - Run formatting and linting checks
-- Ensure all tests pass
-- Update documentation as needed
+- Ensure all tests pass (investigate and fix code issues, don't just rewrite tests)
+- Clean up any legacy files (*.old, *.backup) and generated database files
+- Update documentation as needed in proper `docs/` subdirectories
 - Update the ADR files for any architectural decisions, if applicable - add new ADRs as needed, and update existing ones
 - Add new ADRs to the ADR index
 - Do not edit the ADR template
@@ -29,6 +30,9 @@ applyTo: "**"
 
 1. Maintain existing code structure and organization
 2. Use consistent coding styles and patterns
+3. Make minimal changes to achieve the goal - avoid unnecessary modifications
+4. Remove legacy and orphaned files rather than leaving them as placeholders
+5. Prevent binary files and database files from being committed to version control
 
 ## Writing and labelling guidelines
 
@@ -82,3 +86,18 @@ applyTo: "**"
 
 - Answer all questions in the style of a friendly colleague, using informal language.
 - Answer all questions in less than 1000 characters, and words of no more than 12 characters.
+
+## File and Code Management
+
+### Legacy File Cleanup
+
+- **Remove orphaned legacy files** - Do not leave old files as placeholders (e.g., *.old, *.backup)
+- Clean up legacy files once new implementation is in place (they remain in git history if needed)
+- Check for and remove any generated binaries, caches, or database files before committing
+
+### Binary and Database File Prevention
+
+- **Never commit binary files** or database files (*.db, *.sqlite, SQLite files) to version control
+- Use `.gitignore` to prevent accidental commits of generated files
+- Remove any generated database files during development and testing
+- Focus on source code and configuration, not generated artifacts
