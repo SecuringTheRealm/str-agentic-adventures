@@ -1,0 +1,85 @@
+# Exclude development and build artifacts
+.git
+.gitignore
+.github
+.vscode
+.idea
+
+# Python artifacts
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.pytest_cache
+.coverage
+htmlcov/
+.tox/
+.cache
+nosetests.xml
+coverage.xml
+*.log
+
+# Virtual environments (we build our own)
+venv/
+env/
+ENV/
+
+# Frontend build artifacts
+frontend/
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Documentation (keep README.md)
+docs/
+
+# Infrastructure
+infra/
+*.bicep
+
+# Azure and deployment files
+azure.yaml
+.azure/
+copilot-setup-steps.yml
+
+# Scripts and demos
+scripts/
+demo_*.py
+test_*.py
+narrative_*.py
+
+# Database files
+*.db
+*.sqlite
+
+# Environment files
+.env
+.env.*
+
+# Temporary files
+tmp/
+temp/
+.tmp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+
+# Backup files
+*.bak
+*.backup
+
+# Log files
+logs/
+*.log
+
+# Alternative Dockerfiles (keep only the optimized one)
+Dockerfile.*
