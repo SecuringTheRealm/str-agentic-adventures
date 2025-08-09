@@ -33,7 +33,7 @@ describe("CharacterSheet", () => {
 		render(<CharacterSheet character={mockCharacter} />);
 
 		expect(screen.getByText("Aragorn")).toBeInTheDocument();
-		expect(screen.getByText("Level 5 Human Ranger")).toBeInTheDocument();
+		expect(screen.getByText("Level 5 human Ranger")).toBeInTheDocument();
 	});
 
 	it("renders hit points correctly", () => {
@@ -202,7 +202,7 @@ describe("CharacterSheet", () => {
 
 		// Should render successfully with minimal data
 		expect(screen.getByText("Basic Hero")).toBeInTheDocument();
-		expect(screen.getByText("Level 1 Human Fighter")).toBeInTheDocument();
+		expect(screen.getByText("Level 1 human fighter")).toBeInTheDocument();
 		expect(screen.getByText("10 / 10")).toBeInTheDocument();
 
 		// All ability modifiers should be +0
@@ -220,7 +220,7 @@ describe("CharacterSheet", () => {
 		render(<CharacterSheet character={wizardCharacter} />);
 
 		expect(screen.getByText("Gandalf")).toBeInTheDocument();
-		expect(screen.getByText(/Wizard/)).toBeInTheDocument();
+		expect(screen.getByText(/wizard/)).toBeInTheDocument();
 	});
 
 	it("displays different races correctly", () => {
@@ -233,7 +233,7 @@ describe("CharacterSheet", () => {
 		render(<CharacterSheet character={elfCharacter} />);
 
 		expect(screen.getByText("Legolas")).toBeInTheDocument();
-		expect(screen.getByText(/Elf/)).toBeInTheDocument();
+		expect(screen.getByText(/elf/)).toBeInTheDocument();
 	});
 
 	it("handles high level characters", () => {

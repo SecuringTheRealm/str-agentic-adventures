@@ -4,32 +4,39 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { DefaultApi, Configuration } from '../api-client';
+import { DefaultApi, GameApi, Configuration } from '../api-client';
 import { CharacterSheet, CreateCharacterRequest, Race, CharacterClass } from '../api-client';
+import { createCharacter, createCampaign } from './api';
 
 // Mock axios to avoid actual HTTP calls in tests
 vi.mock('axios');
 
 describe('OpenAPI Generated Client Integration', () => {
-  let apiClient: DefaultApi;
+  let defaultApiClient: DefaultApi;
+  let gameApiClient: GameApi;
 
   beforeEach(() => {
     // Create API client with test configuration
     const config = new Configuration({
       basePath: 'http://localhost:8000',
     });
-    apiClient = new DefaultApi(config);
+    defaultApiClient = new DefaultApi(config);
+    gameApiClient = new GameApi(config);
   });
 
   describe('API Client Setup', () => {
     it('should create API client instance', () => {
-      expect(apiClient).toBeDefined();
-      expect(apiClient).toBeInstanceOf(DefaultApi);
+      expect(defaultApiClient).toBeDefined();
+      expect(defaultApiClient).toBeInstanceOf(DefaultApi);
+      expect(gameApiClient).toBeDefined();
+      expect(gameApiClient).toBeInstanceOf(GameApi);
     });
 
     it('should have configuration set', () => {
-      expect(apiClient.configuration).toBeDefined();
-      expect(apiClient.configuration.basePath).toBe('http://localhost:8000');
+      expect(defaultApiClient.configuration).toBeDefined();
+      expect(gameApiClient.configuration).toBeDefined();
+      expect(defaultApiClient.configuration.basePath).toBe('http://localhost:8000');
+      expect(gameApiClient.configuration.basePath).toBe('http://localhost:8000');
     });
   });
 
@@ -107,66 +114,60 @@ describe('OpenAPI Generated Client Integration', () => {
 
   describe('API Methods Availability', () => {
     it('should have character creation method', () => {
-      expect(apiClient.apiGameCharacterPost).toBeDefined();
-      expect(typeof apiClient.apiGameCharacterPost).toBe('function');
+      expect(gameApiClient.createCharacterApiGameCharacterPost).toBeDefined();
+      expect(typeof gameApiClient.createCharacterApiGameCharacterPost).toBe('function');
     });
 
     it('should have character retrieval method', () => {
-      expect(apiClient.apiGameCharacterCharacterIdGet).toBeDefined();
-      expect(typeof apiClient.apiGameCharacterCharacterIdGet).toBe('function');
+      expect(gameApiClient.getCharacterApiGameCharacterCharacterIdGet).toBeDefined();
+      expect(typeof gameApiClient.getCharacterApiGameCharacterCharacterIdGet).toBe('function');
     });
 
     it('should have campaign creation method', () => {
-      expect(apiClient.apiGameCampaignPost).toBeDefined();
-      expect(typeof apiClient.apiGameCampaignPost).toBe('function');
+      expect(gameApiClient.createCampaignApiGameCampaignPost).toBeDefined();
+      expect(typeof gameApiClient.createCampaignApiGameCampaignPost).toBe('function');
     });
 
     it('should have player input method', () => {
-      expect(apiClient.apiGameInputPost).toBeDefined();
-      expect(typeof apiClient.apiGameInputPost).toBe('function');
+      expect(gameApiClient.processPlayerInputApiGameInputPost).toBeDefined();
+      expect(typeof gameApiClient.processPlayerInputApiGameInputPost).toBe('function');
     });
 
     it('should have health check method', () => {
-      expect(apiClient.healthHealthGet).toBeDefined();
-      expect(typeof apiClient.healthHealthGet).toBe('function');
+      expect(defaultApiClient.healthCheckHealthGet).toBeDefined();
+      expect(typeof defaultApiClient.healthCheckHealthGet).toBe('function');
     });
   });
 
   describe('Client Generation Validation', () => {
     it('should have all exported types from api-client', () => {
       // Import the main exports to ensure they exist
-      const { DefaultApi, Configuration } = require('../api-client');
-      
+      // Use ES modules instead of require for consistency
       expect(DefaultApi).toBeDefined();
+      expect(GameApi).toBeDefined();
       expect(Configuration).toBeDefined();
       
       // Check that we can create instances
       const config = new Configuration();
-      const api = new DefaultApi(config);
+      const defaultApi = new DefaultApi(config);
+      const gameApi = new GameApi(config);
       
       expect(config).toBeInstanceOf(Configuration);
-      expect(api).toBeInstanceOf(DefaultApi);
+      expect(defaultApi).toBeInstanceOf(DefaultApi);
+      expect(gameApi).toBeInstanceOf(GameApi);
     });
 
     it('should have type definitions for all models', () => {
       // These imports should not throw if the types are properly generated
-      const types = require('../api-client');
+      // Test that key enum types are available (interfaces are only available at compile time)
       
-      const expectedTypes = [
-        'CharacterSheet',
-        'CreateCharacterRequest', 
-        'CreateCampaignRequest',
-        'Campaign',
-        'PlayerInput',
-        'GameResponse',
-        'Race',
-        'CharacterClass',
-        'Abilities'
-      ];
-
-      for (const typeName of expectedTypes) {
-        expect(types[typeName]).toBeDefined();
-      }
+      // These should be imported at the top of the file and be defined
+      expect(Race).toBeDefined();
+      expect(CharacterClass).toBeDefined();
+      
+      // Test that enum values are correct
+      expect(Race.Human).toBeDefined();
+      expect(CharacterClass.Fighter).toBeDefined();
     });
 
     it('should have consistent field naming with backend', () => {
@@ -196,8 +197,6 @@ describe('OpenAPI Generated Client Integration', () => {
   describe('Backward Compatibility', () => {
     it('should maintain compatibility with legacy frontend code', () => {
       // Test that the wrapper in api.ts maintains backward compatibility
-      const { createCharacter, createCampaign } = require('./api');
-      
       expect(createCharacter).toBeDefined();
       expect(typeof createCharacter).toBe('function');
       
@@ -210,10 +209,10 @@ describe('OpenAPI Generated Client Integration', () => {
     it('should handle API errors gracefully', async () => {
       // Mock a failed response
       const mockError = new Error('Network error');
-      vi.spyOn(apiClient, 'apiGameCharacterPost').mockRejectedValue(mockError);
+      vi.spyOn(gameApiClient, 'createCharacterApiGameCharacterPost').mockRejectedValue(mockError);
 
       try {
-        await apiClient.apiGameCharacterPost({
+        await gameApiClient.createCharacterApiGameCharacterPost({
           name: 'Test',
           race: Race.Human,
           characterClass: CharacterClass.Fighter,

@@ -15,10 +15,10 @@ const httpToWs = (url: string): string => {
 };
 
 /**
- * Get the API base URL with /api suffix
+ * Get the API base URL without /api suffix for OpenAPI client
  */
 export const getApiBaseUrl = (): string => {
-  return `${getBaseUrl()}/api`;
+  return getBaseUrl();
 };
 
 /**
