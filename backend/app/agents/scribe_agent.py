@@ -321,55 +321,127 @@ class ScribeAgent:
         """
         try:
             import uuid
+            from app.srd_data import (
+                apply_racial_ability_bonuses,
+                get_racial_speed,
+                get_class_hit_die,
+                get_class_saving_throws,
+                get_class_features,
+                get_racial_traits,
+                get_background_info,
+            )
 
             character_id = character_data.get(
                 "id", f"character_{str(uuid.uuid4())[:8]}"
             )
 
+            race = character_data.get("race", "human").lower()
+            character_class = character_data.get("class", "fighter").lower()
+            background = character_data.get("background", "").lower()
+            level = character_data.get("level", 1)
+
+            # Get base abilities from input
+            base_abilities = {
+                "strength": character_data.get("strength", 10),
+                "dexterity": character_data.get("dexterity", 10),
+                "constitution": character_data.get("constitution", 10),
+                "intelligence": character_data.get("intelligence", 10),
+                "wisdom": character_data.get("wisdom", 10),
+                "charisma": character_data.get("charisma", 10),
+            }
+
+            # Apply racial ability bonuses
+            final_abilities = apply_racial_ability_bonuses(base_abilities, race)
+
+            # Get racial speed
+            speed = get_racial_speed(race)
+
+            # Get class hit die
+            hit_die = get_class_hit_die(character_class)
+
+            # Get class saving throw proficiencies
+            saving_throw_proficiencies = get_class_saving_throws(character_class)
+
+            # Calculate initial hit points (class hit die max + CON modifier)
+            constitution_modifier = (final_abilities["constitution"] - 10) // 2
+            hit_die_max = int(hit_die.split("d")[1])  # Extract max from "1d10" -> 10
+            initial_hp = hit_die_max + constitution_modifier
+
             # Create basic character sheet structure
             character_sheet = {
                 "id": character_id,
                 "name": character_data.get("name", "Unnamed Adventurer"),
-                "race": character_data.get("race", "Human"),
-                "character_class": character_data.get("class", "Fighter"),
-                "level": character_data.get("level", 1),
+                "race": race,
+                "character_class": character_class,
+                "background": background if background else None,
+                "level": level,
                 "experience": character_data.get("experience", 0),
-                "abilities": {
-                    "strength": character_data.get("strength", 10),
-                    "dexterity": character_data.get("dexterity", 10),
-                    "constitution": character_data.get("constitution", 10),
-                    "intelligence": character_data.get("intelligence", 10),
-                    "wisdom": character_data.get("wisdom", 10),
-                    "charisma": character_data.get("charisma", 10),
-                },
+                "abilities": final_abilities,
                 "hit_points": {
-                    "current": character_data.get("hitPoints", 10),
-                    "maximum": character_data.get("hitPoints", 10),
+                    "current": initial_hp,
+                    "maximum": initial_hp,
                 },
+                "armor_class": 10 + ((final_abilities["dexterity"] - 10) // 2),
+                "speed": speed,
                 "proficiency_bonus": 2,
                 "ability_score_improvements_used": 0,
+                "hit_dice": hit_die,
+                "saving_throw_proficiencies": saving_throw_proficiencies,
+                "skills": {},
+                "features": [],
                 "inventory": [],
                 "equipment": {},
+                "backstory": character_data.get("backstory", ""),
             }
 
-            # Set hit dice based on class
-            class_hit_dice = {
-                "barbarian": "1d12",
-                "fighter": "1d10",
-                "paladin": "1d10",
-                "ranger": "1d10",
-                "bard": "1d8",
-                "cleric": "1d8",
-                "druid": "1d8",
-                "monk": "1d8",
-                "rogue": "1d8",
-                "warlock": "1d8",
-                "sorcerer": "1d6",
-                "wizard": "1d6",
-            }
-            character_sheet["hit_dice"] = class_hit_dice.get(
-                character_sheet["character_class"].lower(), "1d8"
-            )
+            # Add background skill proficiencies if background is specified
+            if background:
+                background_info = get_background_info(background)
+                if background_info:
+                    # Add background skill proficiencies
+                    skill_proficiencies = background_info.get("skill_proficiencies", [])
+                    for skill in skill_proficiencies:
+                        character_sheet["skills"][skill] = True
+
+                    # Add background feature as a feature
+                    feature = background_info.get("feature", {})
+                    if feature:
+                        character_sheet["features"].append(
+                            {
+                                "name": feature["name"],
+                                "description": feature["description"],
+                                "type": "background",
+                                "source": "background",
+                                "level_gained": 1,
+                            }
+                        )
+
+            # Add level 1 class features
+            level_1_features = get_class_features(character_class, 1)
+            for feature in level_1_features:
+                character_sheet["features"].append(
+                    {
+                        "name": feature["name"],
+                        "description": feature["description"],
+                        "type": feature["type"],
+                        "source": "class",
+                        "level_gained": 1,
+                    }
+                )
+
+            # Add racial traits as features
+            racial_data = get_racial_traits(race)
+            racial_traits = racial_data.get("traits", [])
+            for trait in racial_traits:
+                character_sheet["features"].append(
+                    {
+                        "name": trait["name"],
+                        "description": trait["description"],
+                        "type": "racial",
+                        "source": "race",
+                        "level_gained": 1,
+                    }
+                )
 
             # Store character in database
             with next(get_session()) as db:
@@ -383,7 +455,7 @@ class ScribeAgent:
 
         except Exception as e:
             logger.error(f"Error creating character: {str(e)}")
-            return {"error": "Failed to create character"}
+            return {"error": f"Failed to create character: {str(e)}"}
 
     async def update_character(
         self, character_id: str, updates: dict[str, Any]
@@ -1023,6 +1095,29 @@ class ScribeAgent:
                     features_gained.append(
                         "Ability Score Improvement Available (not used)"
                     )
+
+            # Add class features for the new level
+            from app.srd_data import get_class_features
+
+            character_class = character.get("character_class", "fighter")
+            level_features = get_class_features(character_class, new_level)
+
+            # Initialize features list if it doesn't exist
+            if "features" not in character:
+                character["features"] = []
+
+            # Add new class features
+            for feature in level_features:
+                character["features"].append(
+                    {
+                        "name": feature["name"],
+                        "description": feature["description"],
+                        "type": feature["type"],
+                        "source": "class",
+                        "level_gained": new_level,
+                    }
+                )
+                features_gained.append(f"Class Feature: {feature['name']}")
 
             # Update character
             character["level"] = new_level

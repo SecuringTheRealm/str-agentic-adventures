@@ -1,0 +1,214 @@
+{
+  "human": {
+    "ability_score_increases": {
+      "strength": 1,
+      "dexterity": 1,
+      "constitution": 1,
+      "intelligence": 1,
+      "wisdom": 1,
+      "charisma": 1
+    },
+    "size": "medium",
+    "speed": 30,
+    "languages": ["common"],
+    "traits": [
+      {
+        "name": "Extra Language",
+        "description": "You can speak, read, and write one extra language of your choice."
+      },
+      {
+        "name": "Extra Skill",
+        "description": "You gain proficiency in one skill of your choice."
+      }
+    ]
+  },
+  "elf": {
+    "ability_score_increases": {
+      "dexterity": 2
+    },
+    "size": "medium",
+    "speed": 30,
+    "languages": ["common", "elvish"],
+    "traits": [
+      {
+        "name": "Darkvision",
+        "description": "You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light. You can't discern color in darkness, only shades of gray."
+      },
+      {
+        "name": "Keen Senses",
+        "description": "You have proficiency in the Perception skill."
+      },
+      {
+        "name": "Fey Ancestry",
+        "description": "You have advantage on saving throws against being charmed, and magic can't put you to sleep."
+      },
+      {
+        "name": "Trance",
+        "description": "Elves don't need to sleep. Instead, they meditate deeply, remaining semiconscious, for 4 hours a day. After resting in this way, you gain the same benefit that a human does from 8 hours of sleep."
+      }
+    ],
+    "weapon_proficiencies": ["longsword", "shortbow", "longbow", "shortsword"]
+  },
+  "dwarf": {
+    "ability_score_increases": {
+      "constitution": 2
+    },
+    "size": "medium",
+    "speed": 25,
+    "languages": ["common", "dwarvish"],
+    "traits": [
+      {
+        "name": "Darkvision",
+        "description": "You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light. You can't discern color in darkness, only shades of gray."
+      },
+      {
+        "name": "Dwarven Resilience",
+        "description": "You have advantage on saving throws against poison, and you have resistance against poison damage."
+      },
+      {
+        "name": "Dwarven Combat Training",
+        "description": "You have proficiency with battleaxes, handaxes, light hammers, and warhammers."
+      },
+      {
+        "name": "Stonecunning",
+        "description": "Whenever you make an Intelligence (History) check related to the origin of stonework, you are considered proficient in the History skill and add double your proficiency bonus to the check, instead of your normal proficiency bonus."
+      }
+    ],
+    "weapon_proficiencies": ["battleaxe", "handaxe", "light_hammer", "warhammer"],
+    "tool_proficiencies": ["smith_tools", "brewers_supplies", "masons_tools"]
+  },
+  "halfling": {
+    "ability_score_increases": {
+      "dexterity": 2
+    },
+    "size": "small",
+    "speed": 25,
+    "languages": ["common", "halfling"],
+    "traits": [
+      {
+        "name": "Lucky",
+        "description": "When you roll a 1 on the d20 for an attack roll, ability check, or saving throw, you can reroll the die and must use the new roll."
+      },
+      {
+        "name": "Brave",
+        "description": "You have advantage on saving throws against being frightened."
+      },
+      {
+        "name": "Halfling Nimbleness",
+        "description": "You can move through the space of any creature that is of a size larger than yours."
+      }
+    ]
+  },
+  "dragonborn": {
+    "ability_score_increases": {
+      "strength": 2,
+      "charisma": 1
+    },
+    "size": "medium",
+    "speed": 30,
+    "languages": ["common", "draconic"],
+    "traits": [
+      {
+        "name": "Draconic Ancestry",
+        "description": "You have draconic ancestry. Choose one type of dragon from the Draconic Ancestry table. Your breath weapon and damage resistance are determined by the dragon type."
+      },
+      {
+        "name": "Breath Weapon",
+        "description": "You can use your action to exhale destructive energy. Your draconic ancestry determines the size, shape, and damage type of the exhalation. When you use your breath weapon, each creature in the area of the exhalation must make a saving throw, the type of which is determined by your draconic ancestry. The DC for this saving throw equals 8 + your Constitution modifier + your proficiency bonus. A creature takes 2d6 damage on a failed save, and half as much damage on a successful one. The damage increases to 3d6 at 6th level, 4d6 at 11th level, and 5d6 at 16th level. After you use your breath weapon, you can't use it again until you complete a short or long rest."
+      },
+      {
+        "name": "Damage Resistance",
+        "description": "You have resistance to the damage type associated with your draconic ancestry."
+      }
+    ]
+  },
+  "gnome": {
+    "ability_score_increases": {
+      "intelligence": 2
+    },
+    "size": "small",
+    "speed": 25,
+    "languages": ["common", "gnomish"],
+    "traits": [
+      {
+        "name": "Darkvision",
+        "description": "You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light. You can't discern color in darkness, only shades of gray."
+      },
+      {
+        "name": "Gnome Cunning",
+        "description": "You have advantage on all Intelligence, Wisdom, and Charisma saving throws against magic."
+      }
+    ]
+  },
+  "half-elf": {
+    "ability_score_increases": {
+      "charisma": 2
+    },
+    "ability_score_choices": 2,
+    "size": "medium",
+    "speed": 30,
+    "languages": ["common", "elvish"],
+    "traits": [
+      {
+        "name": "Darkvision",
+        "description": "You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light. You can't discern color in darkness, only shades of gray."
+      },
+      {
+        "name": "Fey Ancestry",
+        "description": "You have advantage on saving throws against being charmed, and magic can't put you to sleep."
+      },
+      {
+        "name": "Extra Language",
+        "description": "You can speak, read, and write one extra language of your choice."
+      }
+    ],
+    "skill_choices": 2
+  },
+  "half-orc": {
+    "ability_score_increases": {
+      "strength": 2,
+      "constitution": 1
+    },
+    "size": "medium",
+    "speed": 30,
+    "languages": ["common", "orc"],
+    "traits": [
+      {
+        "name": "Darkvision",
+        "description": "You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light. You can't discern color in darkness, only shades of gray."
+      },
+      {
+        "name": "Relentless Endurance",
+        "description": "When you are reduced to 0 hit points but not killed outright, you can drop to 1 hit point instead. You can't use this feature again until you finish a long rest."
+      },
+      {
+        "name": "Savage Attacks",
+        "description": "When you score a critical hit with a melee weapon attack, you can roll one of the weapon's damage dice one additional time and add it to the extra damage of the critical hit."
+      }
+    ],
+    "skill_proficiencies": ["intimidation"]
+  },
+  "tiefling": {
+    "ability_score_increases": {
+      "intelligence": 1,
+      "charisma": 2
+    },
+    "size": "medium",
+    "speed": 30,
+    "languages": ["common", "infernal"],
+    "traits": [
+      {
+        "name": "Darkvision",
+        "description": "You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light. You can't discern color in darkness, only shades of gray."
+      },
+      {
+        "name": "Hellish Resistance",
+        "description": "You have resistance to fire damage."
+      },
+      {
+        "name": "Infernal Legacy",
+        "description": "You know the thaumaturgy cantrip. When you reach 3rd level, you can cast the hellish rebuke spell as a 2nd-level spell once with this trait and regain the ability to do so when you finish a long rest. When you reach 5th level, you can cast the darkness spell once with this trait and regain the ability to do so when you finish a long rest. Charisma is your spellcasting ability for these spells."
+      }
+    ]
+  }
+}
