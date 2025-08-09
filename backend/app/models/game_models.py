@@ -1,11 +1,13 @@
 """
 Data models for the AI Dungeon Master application.
 """
+
 from pydantic import BaseModel, Field
 from typing import Dict, List, Optional, Any
 from enum import Enum
 from datetime import datetime
 import uuid
+
 
 # Enum definitions
 class CharacterClass(str, Enum):
@@ -22,6 +24,7 @@ class CharacterClass(str, Enum):
     SORCERER = "sorcerer"
     BARBARIAN = "barbarian"
 
+
 class Race(str, Enum):
     HUMAN = "human"
     ELF = "elf"
@@ -33,6 +36,7 @@ class Race(str, Enum):
     DRAGONBORN = "dragonborn"
     TIEFLING = "tiefling"
 
+
 class Ability(str, Enum):
     STRENGTH = "strength"
     DEXTERITY = "dexterity"
@@ -41,10 +45,12 @@ class Ability(str, Enum):
     WISDOM = "wisdom"
     CHARISMA = "charisma"
 
+
 class CombatState(str, Enum):
     READY = "ready"
     ACTIVE = "active"
     COMPLETED = "completed"
+
 
 # Base models
 class Abilities(BaseModel):
@@ -55,9 +61,11 @@ class Abilities(BaseModel):
     wisdom: int = 10
     charisma: int = 10
 
+
 class HitPoints(BaseModel):
     current: int
     maximum: int
+
 
 class Item(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -68,6 +76,7 @@ class Item(BaseModel):
     value: Optional[int] = None  # Value in gold pieces
     properties: Optional[Dict[str, Any]] = None
 
+
 class ItemRarity(str, Enum):
     COMMON = "common"
     UNCOMMON = "uncommon"
@@ -75,6 +84,7 @@ class ItemRarity(str, Enum):
     VERY_RARE = "very_rare"
     LEGENDARY = "legendary"
     ARTIFACT = "artifact"
+
 
 class ItemType(str, Enum):
     WEAPON = "weapon"
@@ -86,6 +96,7 @@ class ItemType(str, Enum):
     RING = "ring"
     AMULET = "amulet"
     WONDROUS = "wondrous"
+
 
 class Equipment(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -104,6 +115,7 @@ class Equipment(BaseModel):
     armor_class: Optional[int] = None  # For armor/shields
     properties: List[str] = []  # e.g., ["finesse", "light", "versatile"]
 
+
 class EquipmentSlot(str, Enum):
     MAIN_HAND = "main_hand"
     OFF_HAND = "off_hand"
@@ -118,15 +130,18 @@ class EquipmentSlot(str, Enum):
     NECK = "neck"
     CLOAK = "cloak"
 
+
 class EquippedItem(BaseModel):
     equipment_id: str
     slot: EquipmentSlot
     attuned: bool = False
 
+
 class InventorySlot(BaseModel):
     item_id: str
     quantity: int
     equipped_slots: List[EquipmentSlot] = []  # Which slots this item is equipped in
+
 
 class Spell(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -141,14 +156,16 @@ class Spell(BaseModel):
     requires_concentration: bool = False
     available_classes: List[str] = []  # Classes that can learn this spell
 
+
 class SpellSlot(BaseModel):
     level: int
     total: int
     used: int = 0
-    
+
     @property
     def remaining(self) -> int:
         return max(0, self.total - self.used)
+
 
 class SpellCasting(BaseModel):
     spellcasting_ability: str  # The ability used for spellcasting (e.g., "intelligence", "wisdom", "charisma")
@@ -159,13 +176,15 @@ class SpellCasting(BaseModel):
     prepared_spells: List[str] = []  # Subset of known spells that are prepared
     cantrips_known: List[str] = []  # Cantrip IDs
     concentration_spell: Optional[str] = None  # Currently concentrating spell ID
-    
+
+
 class ConcentrationSpell(BaseModel):
     spell_id: str
     character_id: str
     started_at: datetime = Field(default_factory=datetime.now)
     duration_rounds: Optional[int] = None
     save_dc: int = 10  # Base concentration DC
+
 
 class CharacterSheet(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -191,13 +210,17 @@ class CharacterSheet(BaseModel):
     backstory: Optional[str] = None
     # Progression tracking
     ability_score_improvements_used: int = 0
-    hit_dice: str = "1d8"  # Class-specific hit dice (e.g., "1d8" for rogues, "1d10" for fighters)
+    hit_dice: str = (
+        "1d8"  # Class-specific hit dice (e.g., "1d8" for rogues, "1d10" for fighters)
+    )
+
 
 class CombatParticipant(BaseModel):
     id: str
     name: str
     initiative: int
     type: str  # "player" or "enemy"
+
 
 class Enemy(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -209,6 +232,7 @@ class Enemy(BaseModel):
     abilities: Optional[Abilities] = None
     armor_class: int = 10
 
+
 class CombatEncounter(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     status: CombatState = CombatState.READY
@@ -218,21 +242,24 @@ class CombatEncounter(BaseModel):
     turn_order: List[CombatParticipant] = []
     narrative_context: Dict[str, Any] = {}
 
+
 # NPC System Models
 class NPCPersonality(BaseModel):
     traits: List[str] = []  # Personality traits
     ideals: List[str] = []  # Core beliefs
-    bonds: List[str] = []   # Important connections
-    flaws: List[str] = []   # Character flaws
+    bonds: List[str] = []  # Important connections
+    flaws: List[str] = []  # Character flaws
     mannerisms: List[str] = []  # Speech patterns, habits
     appearance: Optional[str] = None
     motivations: List[str] = []
+
 
 class NPCRelationship(BaseModel):
     character_id: str
     relationship_type: str  # "friend", "enemy", "neutral", "ally", "rival"
     trust_level: int = 0  # -100 to 100
     notes: Optional[str] = None
+
 
 class NPCInteraction(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -244,6 +271,7 @@ class NPCInteraction(BaseModel):
     outcome: Optional[str] = None
     relationship_change: int = 0  # Change in trust/reputation
 
+
 class NPC(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str
@@ -253,31 +281,32 @@ class NPC(BaseModel):
     occupation: Optional[str] = None
     location: Optional[str] = None
     campaign_id: str
-    
+
     # Personality and behavior
     personality: NPCPersonality = NPCPersonality()
     voice_description: Optional[str] = None
-    
+
     # Game mechanics
     level: int = 1
     abilities: Optional[Abilities] = None
     hit_points: Optional[HitPoints] = None
     armor_class: Optional[int] = None
     skills: Dict[str, int] = {}  # Skill bonuses
-    
+
     # Relationships and interactions
     relationships: List[NPCRelationship] = []
     interaction_history: List[str] = []  # List of interaction IDs
-    
+
     # Story relevance
     importance: str = "minor"  # "minor", "major", "critical"
     story_role: Optional[str] = None  # "merchant", "quest_giver", "antagonist", etc.
     quest_involvement: List[str] = []  # Quest IDs
-    
+
     # Status
     is_alive: bool = True
     current_mood: str = "neutral"  # "friendly", "hostile", "neutral", "suspicious"
     notes: Optional[str] = None
+
 
 class Campaign(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -303,6 +332,7 @@ class Campaign(BaseModel):
     plot_hooks: List[str] = []
     key_npcs: List[str] = []
 
+
 # Request/Response models
 class CreateCharacterRequest(BaseModel):
     name: str
@@ -311,10 +341,14 @@ class CreateCharacterRequest(BaseModel):
     abilities: Abilities
     backstory: Optional[str] = None
 
+
 class LevelUpRequest(BaseModel):
     character_id: str
-    ability_improvements: Optional[Dict[str, int]] = None  # {"strength": 1, "dexterity": 1} for +2 ASI
+    ability_improvements: Optional[Dict[str, int]] = (
+        None  # {"strength": 1, "dexterity": 1} for +2 ASI
+    )
     feat_choice: Optional[str] = None  # Name of feat if chosen instead of ASI
+
 
 class LevelUpResponse(BaseModel):
     success: bool
@@ -325,10 +359,12 @@ class LevelUpResponse(BaseModel):
     features_gained: List[str]
     message: str
 
+
 class PlayerInput(BaseModel):
-    message: str
-    character_id: str
-    campaign_id: str
+    message: str = Field(min_length=1)
+    character_id: str = Field(min_length=1)
+    campaign_id: str = Field(min_length=1)
+
 
 class GameResponse(BaseModel):
     message: str
@@ -336,12 +372,14 @@ class GameResponse(BaseModel):
     state_updates: Dict[str, Any] = {}
     combat_updates: Optional[Dict[str, Any]] = None
 
+
 class CreateCampaignRequest(BaseModel):
     name: str
-    setting: str 
+    setting: str
     tone: Optional[str] = "heroic"
     homebrew_rules: Optional[List[str]] = []
     description: Optional[str] = None
+
 
 class CampaignUpdateRequest(BaseModel):
     name: Optional[str] = None
@@ -351,22 +389,27 @@ class CampaignUpdateRequest(BaseModel):
     homebrew_rules: Optional[List[str]] = None
     world_description: Optional[str] = None
 
+
 class CloneCampaignRequest(BaseModel):
     template_id: str
     new_name: Optional[str] = None
 
+
 class CampaignListResponse(BaseModel):
     campaigns: List[Campaign]
     templates: List[Campaign]
+
 
 class AIAssistanceRequest(BaseModel):
     text: str
     context_type: str  # "setting", "description", "plot_hook", etc.
     campaign_tone: Optional[str] = "heroic"
 
+
 class AIAssistanceResponse(BaseModel):
     suggestions: List[str]
     enhanced_text: Optional[str] = None
+
 
 class AIContentGenerationRequest(BaseModel):
     suggestion: str  # The specific suggestion to generate content for
@@ -374,18 +417,22 @@ class AIContentGenerationRequest(BaseModel):
     context_type: str  # "setting", "description", "plot_hook", etc.
     campaign_tone: Optional[str] = "heroic"
 
+
 class AIContentGenerationResponse(BaseModel):
     generated_content: str
     success: bool
     error: Optional[str] = None
 
+
 class GenerateImageRequest(BaseModel):
     image_type: str  # "character_portrait", "scene_illustration", "item_visualization"
     details: Dict[str, Any]
 
+
 class BattleMapRequest(BaseModel):
     environment: Dict[str, Any]
     combat_context: Optional[Dict[str, Any]] = None
+
 
 # Narrative Generation Models
 class NarrativeChoice(BaseModel):
@@ -395,6 +442,7 @@ class NarrativeChoice(BaseModel):
     consequences: Dict[str, Any] = {}
     requirements: Dict[str, Any] = {}  # Conditions that must be met to show this choice
     weight: float = 1.0  # Probability weight for random selection
+
 
 class PlotPoint(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -407,6 +455,7 @@ class PlotPoint(BaseModel):
     outcomes: Dict[str, Any] = {}  # Results when this plot point is completed
     importance: int = 5  # 1-10 scale
     estimated_duration: Optional[int] = None  # Expected number of scenes/sessions
+
 
 class StoryArc(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -421,17 +470,21 @@ class StoryArc(BaseModel):
     estimated_length: Optional[int] = None  # Expected number of sessions
     player_choices: List[str] = []  # NarrativeChoice IDs that influenced this arc
 
+
 class NarrativeState(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     campaign_id: str
     current_scene: Optional[str] = None
     active_story_arcs: List[str] = []  # StoryArc IDs
-    completed_story_arcs: List[str] = []  # StoryArc IDs  
+    completed_story_arcs: List[str] = []  # StoryArc IDs
     pending_choices: List[str] = []  # NarrativeChoice IDs available to players
     narrative_flags: Dict[str, Any] = {}  # Story flags and variables
-    character_relationships: Dict[str, Dict[str, Any]] = {}  # Character interaction history
+    character_relationships: Dict[
+        str, Dict[str, Any]
+    ] = {}  # Character interaction history
     world_state: Dict[str, Any] = {}  # Current state of locations, factions, etc.
     last_updated: datetime = Field(default_factory=datetime.now)
+
 
 class NarrativeEvent(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -446,10 +499,12 @@ class NarrativeEvent(BaseModel):
     story_arc_id: Optional[str] = None
     plot_point_id: Optional[str] = None
 
+
 class SpellAttackBonusRequest(BaseModel):
     character_class: CharacterClass
     level: int
     spellcasting_ability_score: int
+
 
 # Spell-related request and response models
 class ManageSpellsRequest(BaseModel):
@@ -457,11 +512,13 @@ class ManageSpellsRequest(BaseModel):
     action: str  # "learn", "forget", "prepare", "unprepare"
     spell_ids: List[str]
 
+
 class ManageSpellSlotsRequest(BaseModel):
     character_id: str
     action: str  # "use", "recover", "set"
     slot_level: int
     count: Optional[int] = 1
+
 
 class CastSpellRequest(BaseModel):
     combat_id: str
@@ -471,10 +528,12 @@ class CastSpellRequest(BaseModel):
     target_ids: Optional[List[str]] = []
     spell_attack_roll: Optional[int] = None
 
+
 class SpellListRequest(BaseModel):
     character_class: Optional[CharacterClass] = None
     spell_level: Optional[int] = None
     school: Optional[str] = None
+
 
 class ConcentrationRequest(BaseModel):
     character_id: str
@@ -482,9 +541,11 @@ class ConcentrationRequest(BaseModel):
     spell_id: Optional[str] = None
     damage_taken: Optional[int] = None
 
+
 class SpellListResponse(BaseModel):
     spells: List[Spell]
     total_count: int
+
 
 class SpellCastingResponse(BaseModel):
     success: bool
@@ -493,12 +554,14 @@ class SpellCastingResponse(BaseModel):
     concentration_broken: bool = False
     slot_used: bool = False
 
+
 class ConcentrationCheckResponse(BaseModel):
     success: bool
     concentration_maintained: bool
     dc: int
     roll_result: Optional[int] = None
     spell_ended: bool = False
+
 
 # Inventory-related request and response models
 class ManageEquipmentRequest(BaseModel):
@@ -507,13 +570,16 @@ class ManageEquipmentRequest(BaseModel):
     equipment_id: str
     slot: Optional[EquipmentSlot] = None
 
+
 class EncumbranceRequest(BaseModel):
     character_id: str
+
 
 class MagicalEffectsRequest(BaseModel):
     character_id: str
     item_id: str
     action: str  # "apply", "remove"
+
 
 class ItemCatalogRequest(BaseModel):
     item_type: Optional[ItemType] = None
@@ -521,11 +587,13 @@ class ItemCatalogRequest(BaseModel):
     min_value: Optional[int] = None
     max_value: Optional[int] = None
 
+
 class EquipmentResponse(BaseModel):
     success: bool
     message: str
     stat_changes: Dict[str, int] = {}
     armor_class_change: Optional[int] = None
+
 
 class EncumbranceResponse(BaseModel):
     character_id: str
@@ -534,15 +602,18 @@ class EncumbranceResponse(BaseModel):
     encumbrance_level: str  # "unencumbered", "encumbered", "heavily_encumbered"
     speed_penalty: int = 0
 
+
 class ItemCatalogResponse(BaseModel):
     items: List[Equipment]
     total_count: int
+
 
 class MagicalEffectsResponse(BaseModel):
     success: bool
     message: str
     active_effects: List[str]
     stat_modifiers: Dict[str, int]
+
 
 # NPC-related request and response models
 class CreateNPCRequest(BaseModel):
@@ -556,12 +627,14 @@ class CreateNPCRequest(BaseModel):
     importance: str = "minor"
     story_role: Optional[str] = None
 
+
 class UpdateNPCRequest(BaseModel):
     name: Optional[str] = None
     occupation: Optional[str] = None
     location: Optional[str] = None
     current_mood: Optional[str] = None
     notes: Optional[str] = None
+
 
 class NPCInteractionRequest(BaseModel):
     npc_id: str
@@ -571,23 +644,28 @@ class NPCInteractionRequest(BaseModel):
     outcome: Optional[str] = None
     relationship_change: int = 0
 
+
 class GenerateNPCStatsRequest(BaseModel):
     npc_id: str
     level: Optional[int] = None
     role: str = "civilian"  # "civilian", "guard", "soldier", "spellcaster", "rogue"
 
+
 class NPCPersonalityRequest(BaseModel):
     npc_id: str
+
 
 class NPCListResponse(BaseModel):
     npcs: List[NPC]
     total_count: int
+
 
 class NPCInteractionResponse(BaseModel):
     success: bool
     message: str
     interaction_id: str
     new_relationship_level: Optional[int] = None
+
 
 class NPCStatsResponse(BaseModel):
     success: bool
