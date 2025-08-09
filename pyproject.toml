@@ -45,6 +45,8 @@ dependencies = [
 dev = [
     "ruff>=0.1.5",
     "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-factoryboy>=2.6.0",
     "httpx>=0.24.1",
 ]
 
@@ -61,6 +63,8 @@ build-backend = "hatchling.build"
 dev-dependencies = [
     "ruff>=0.1.5",
     "pytest>=7.4.0", 
+    "pytest-asyncio>=0.21.0",
+    "pytest-factoryboy>=2.6.0",
     "httpx>=0.24.1",
 ]
 
@@ -100,11 +104,13 @@ testpaths = ["backend/tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
+asyncio_mode = "auto"
 addopts = [
     "-v",
     "--tb=short",
     "--strict-markers",
     "--strict-config",
+    "--durations=10",
 ]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",

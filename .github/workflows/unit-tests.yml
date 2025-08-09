@@ -1,0 +1,112 @@
+---
+name: Fast Unit Tests
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+jobs:
+  # Job to detect which files have changed
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      backend: ${{ steps.filter.outputs.backend }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Check for file changes
+      uses: dorny/paths-filter@v3
+      id: filter
+      with:
+        filters: |
+          frontend:
+            - 'frontend/**'
+          backend:
+            - 'backend/**'
+
+  frontend-unit-tests:
+    runs-on: ubuntu-latest
+    needs: changes
+    if: ${{ needs.changes.outputs.frontend == 'true' }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Install frontend dependencies
+      run: |
+        cd frontend
+        npm ci --legacy-peer-deps
+
+    - name: Run frontend unit tests (fast)
+      run: |
+        cd frontend
+        npm test -- --run --reporter=verbose
+
+    - name: Build frontend
+      run: |
+        cd frontend
+        npm run build
+
+  backend-unit-tests:
+    runs-on: ubuntu-latest
+    needs: changes
+    if: ${{ needs.changes.outputs.backend == 'true' }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+        cache-dependency-path: requirements.txt
+
+    - name: Install backend dependencies
+      run: |
+        pip install -r requirements.txt
+
+    - name: Run backend unit tests (fast)
+      run: |
+        cd backend
+        python -m pytest tests/ -m "unit or not slow" --durations=10 -v
+
+    - name: Run backend linting
+      run: |
+        cd backend
+        python -c "
+        import ast
+        import os
+        import sys
+
+        # Simple syntax check instead of ruff
+        python_files = []
+        for root, dirs, files in os.walk('app'):
+            for file in files:
+                if file.endswith('.py'):
+                    python_files.append(os.path.join(root, file))
+
+        for file_path in python_files:
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    ast.parse(f.read())
+                print(f'✅ {file_path} syntax valid')
+            except SyntaxError as e:
+                print(f'❌ {file_path} syntax error: {e}')
+                sys.exit(1)
+
+        print('✅ All Python files have valid syntax')
+        "
