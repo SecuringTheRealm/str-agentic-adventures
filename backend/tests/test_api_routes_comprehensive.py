@@ -2,11 +2,12 @@
 Comprehensive API route tests with proper error handling and edge cases.
 """
 
-import sys
 import os
+import sys
+from unittest.mock import AsyncMock, Mock, patch
+
 import httpx
 from fastapi.testclient import TestClient
-from unittest.mock import patch, Mock, AsyncMock
 
 # Add the backend directory to Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -15,7 +16,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 class TestAPIRouteValidation:
     """Test API route input validation and error handling."""
 
-    def test_character_creation_validation(self):
+    def test_character_creation_validation(self) -> None:
         """Test character creation endpoint validation."""
         from app.main import app
 
@@ -41,7 +42,7 @@ class TestAPIRouteValidation:
                 f"Should reject invalid request: {invalid_request}"
             )
 
-    def test_character_creation_with_valid_data(self):
+    def test_character_creation_with_valid_data(self) -> None:
         """Test character creation with valid data and mocked agent."""
         with patch("app.agents.scribe_agent.get_scribe") as mock_get_scribe:
             # Mock successful character creation
@@ -99,7 +100,7 @@ class TestAPIRouteValidation:
                 # If agent dependencies are missing, expect proper error handling
                 assert response.status_code in [500, 503]
 
-    def test_campaign_creation_validation(self):
+    def test_campaign_creation_validation(self) -> None:
         """Test campaign creation endpoint validation."""
         from app.main import app
 
@@ -120,7 +121,7 @@ class TestAPIRouteValidation:
                 f"Should reject invalid request: {invalid_request}"
             )
 
-    def test_player_input_validation(self):
+    def test_player_input_validation(self) -> None:
         """Test player input endpoint validation."""
         from app.main import app
 
@@ -157,7 +158,7 @@ class TestAPIRouteValidation:
 class TestAPIRouteErrorHandling:
     """Test API route error handling scenarios."""
 
-    def test_character_creation_agent_error(self):
+    def test_character_creation_agent_error(self) -> None:
         """Test character creation when agent returns error."""
         with patch("app.agents.scribe_agent.get_scribe") as mock_get_scribe:
             # Mock agent returning error
@@ -197,7 +198,7 @@ class TestAPIRouteErrorHandling:
                 # If dependencies missing, should handle gracefully
                 assert response.status_code in [500, 503]
 
-    def test_character_creation_agent_exception(self):
+    def test_character_creation_agent_exception(self) -> None:
         """Test character creation when agent raises exception."""
         with patch("app.agents.scribe_agent.get_scribe") as mock_get_scribe:
             # Mock agent raising exception
@@ -233,7 +234,7 @@ class TestAPIRouteErrorHandling:
             assert "detail" in data
             assert "Failed to create character" in data["detail"]
 
-    def test_campaign_creation_missing_dependencies(self):
+    def test_campaign_creation_missing_dependencies(self) -> None:
         """Test campaign creation with missing Azure dependencies."""
         # Clear Azure environment variables temporarily
         import os
@@ -275,7 +276,7 @@ class TestAPIRouteErrorHandling:
 class TestAPIRouteDataTransformation:
     """Test API route data transformation between API and agents."""
 
-    def test_character_class_field_transformation(self):
+    def test_character_class_field_transformation(self) -> None:
         """Test that character_class is properly transformed to class for agents."""
         with patch("app.agents.scribe_agent.get_scribe") as mock_get_scribe:
             mock_scribe = Mock()
@@ -319,7 +320,7 @@ class TestAPIRouteDataTransformation:
                     "character_class" not in call_args
                 )  # Should not have original field
 
-    def test_homebrew_rules_array_transformation(self):
+    def test_homebrew_rules_array_transformation(self) -> None:
         """Test that homebrew rules string is properly split into array."""
         with patch("app.agents.dungeon_master_agent.get_dungeon_master") as mock_get_dm:
             mock_dm = Mock()
@@ -360,7 +361,7 @@ class TestAPIRouteDataTransformation:
 class TestAPIRoutePerformance:
     """Test API route performance and timeout handling."""
 
-    def test_character_creation_timeout_handling(self):
+    def test_character_creation_timeout_handling(self) -> None:
         """Test character creation handles agent timeouts."""
         with patch("app.agents.scribe_agent.get_scribe") as mock_get_scribe:
             # Mock agent that takes too long
@@ -409,7 +410,7 @@ class TestAPIRoutePerformance:
 class TestAPIRouteSecurity:
     """Test API route security considerations."""
 
-    def test_large_payload_handling(self):
+    def test_large_payload_handling(self) -> None:
         """Test API handles unreasonably large payloads."""
         from app.main import app
 
@@ -438,7 +439,7 @@ class TestAPIRouteSecurity:
         # Should handle large payload gracefully (either accept or reject with appropriate error)
         assert response.status_code in [200, 413, 422, 500]
 
-    def test_malformed_json_handling(self):
+    def test_malformed_json_handling(self) -> None:
         """Test API handles malformed JSON."""
         from app.main import app
 
@@ -454,7 +455,7 @@ class TestAPIRouteSecurity:
         # Should reject with appropriate error
         assert response.status_code == 422
 
-    def test_sql_injection_protection(self):
+    def test_sql_injection_protection(self) -> None:
         """Test API protects against SQL injection attempts."""
         from app.main import app
 

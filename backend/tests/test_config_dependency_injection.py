@@ -2,18 +2,17 @@
 Tests for improved configuration handling via dependency injection.
 """
 
-import pytest
-from fastapi.testclient import TestClient
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from app.config import Settings, get_config
 from app.main import app
+from fastapi.testclient import TestClient
 
 
 class TestConfigurationDependencyInjection:
     """Test configuration dependency injection."""
 
-    def test_character_creation_with_valid_config(self, client_with_config):
+    def test_character_creation_with_valid_config(self, client_with_config) -> None:
         """Test character creation with valid configuration."""
         with patch("app.api.game_routes.get_scribe") as mock_get_scribe:
             # Mock the scribe agent to avoid kernel initialization
@@ -67,7 +66,7 @@ class TestConfigurationDependencyInjection:
             assert response.status_code == 200
             assert mock_get_scribe.called
 
-    def test_character_creation_with_missing_config(self, client_with_missing_config):
+    def test_character_creation_with_missing_config(self, client_with_missing_config) -> None:
         """Test character creation with missing Azure OpenAI configuration."""
         character_data = {
             "name": "Test Character",
@@ -92,7 +91,7 @@ class TestConfigurationDependencyInjection:
         assert response.status_code == 503
         assert "Azure OpenAI configuration" in response.json().get("detail", "")
 
-    def test_campaign_creation_with_valid_config(self, client_with_config):
+    def test_campaign_creation_with_valid_config(self, client_with_config) -> None:
         """Test campaign creation with valid configuration."""
         with patch(
             "app.services.campaign_service.campaign_service.create_campaign"
@@ -119,7 +118,7 @@ class TestConfigurationDependencyInjection:
 
     def test_campaign_creation_with_missing_config(
         self, client_with_missing_config, campaign_factory
-    ):
+    ) -> None:
         """Test campaign creation with missing Azure OpenAI configuration."""
         # Use factory instead of hand-crafted dictionary
         campaign_data = campaign_factory()
@@ -132,7 +131,7 @@ class TestConfigurationDependencyInjection:
         assert response.status_code == 503
         assert "Azure OpenAI configuration" in response.json().get("detail", "")
 
-    def test_config_dependency_injection_works(self):
+    def test_config_dependency_injection_works(self) -> None:
         """Test that configuration dependency injection is functioning."""
         test_config = Settings(
             azure_openai_endpoint="https://test.example.com",
@@ -201,7 +200,7 @@ class TestConfigurationDependencyInjection:
             # Clean up
             app.dependency_overrides.clear()
 
-    def test_get_character_with_valid_config(self, client_with_config):
+    def test_get_character_with_valid_config(self, client_with_config) -> None:
         """Test get character with valid configuration."""
         with patch("app.api.game_routes.get_scribe") as mock_get_scribe:
             mock_scribe = MagicMock()
@@ -223,7 +222,7 @@ class TestConfigurationDependencyInjection:
             assert response.status_code == 200
             assert mock_get_scribe.called
 
-    def test_get_character_with_missing_config(self, client_with_missing_config):
+    def test_get_character_with_missing_config(self, client_with_missing_config) -> None:
         """Test get character with missing Azure OpenAI configuration."""
         response = client_with_missing_config.get("/api/game/character/char_123")
 

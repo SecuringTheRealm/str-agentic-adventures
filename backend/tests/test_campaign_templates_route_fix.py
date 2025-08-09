@@ -1,9 +1,8 @@
 """Test campaign templates route ordering fix."""
 
 import pytest
-from fastapi.testclient import TestClient
-
 from app.main import app
+from fastapi.testclient import TestClient
 
 
 class TestCampaignTemplatesRouteOrdering:
@@ -14,7 +13,7 @@ class TestCampaignTemplatesRouteOrdering:
         """Create a test client for the FastAPI app."""
         return TestClient(app)
 
-    def test_campaign_templates_route_works(self, client):
+    def test_campaign_templates_route_works(self, client) -> None:
         """Test that /campaign/templates returns templates successfully."""
         response = client.get("/api/game/campaign/templates")
 
@@ -36,7 +35,7 @@ class TestCampaignTemplatesRouteOrdering:
             assert "is_template" in template
             assert template["is_template"] is True
 
-    def test_campaign_id_route_still_works(self, client):
+    def test_campaign_id_route_still_works(self, client) -> None:
         """Test that parameterized campaign route still works for actual IDs."""
         # First get a template ID
         templates_response = client.get("/api/game/campaign/templates")
@@ -57,7 +56,7 @@ class TestCampaignTemplatesRouteOrdering:
         assert campaign["id"] == template_id
         assert campaign["is_template"] is True
 
-    def test_nonexistent_campaign_returns_404(self, client):
+    def test_nonexistent_campaign_returns_404(self, client) -> None:
         """Test that non-existent campaign ID returns 404."""
         fake_id = "00000000-0000-0000-0000-000000000000"
         response = client.get(f"/api/game/campaign/{fake_id}")
@@ -69,7 +68,7 @@ class TestCampaignTemplatesRouteOrdering:
         assert "detail" in error
         assert fake_id in error["detail"]
 
-    def test_templates_word_not_treated_as_campaign_id(self, client):
+    def test_templates_word_not_treated_as_campaign_id(self, client) -> None:
         """Test that 'templates' is not treated as a campaign ID."""
         # This is the core test - before our fix, this would return 404 with
         # "Campaign templates not found" because 'templates' was treated as campaign_id

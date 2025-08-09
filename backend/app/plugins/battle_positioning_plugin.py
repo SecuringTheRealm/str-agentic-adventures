@@ -5,7 +5,7 @@ This plugin provides battle positioning capabilities for combat encounters.
 
 import logging
 import re
-from typing import Dict, Any, List
+from typing import Any
 
 from semantic_kernel.functions import kernel_function
 
@@ -18,7 +18,7 @@ class BattlePositioningPlugin:
     Handles unit placement, formation management, and strategic positioning.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the battle positioning plugin."""
         self.formation_templates = {}
         self.positioning_history = []
@@ -32,7 +32,7 @@ class BattlePositioningPlugin:
         party_composition: str,
         map_layout: str,
         tactical_objectives: str = "balanced",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Calculate optimal starting positions for combat units.
 
@@ -89,7 +89,7 @@ class BattlePositioningPlugin:
         current_positions: str,
         combat_state: str,
         tactical_situation: str = "standard",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Recommend formation adjustments based on current combat state.
 
@@ -145,7 +145,7 @@ class BattlePositioningPlugin:
         unit_types: str,
         formation_goal: str = "standard",
         threat_level: str = "medium",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Optimize spacing between units for maximum effectiveness.
 
@@ -184,7 +184,7 @@ class BattlePositioningPlugin:
                 "error": f"Spacing optimization failed: {str(e)}",
             }
 
-    def _parse_party_composition(self, party_composition: str) -> List[Dict[str, Any]]:
+    def _parse_party_composition(self, party_composition: str) -> list[dict[str, Any]]:
         """Parse party composition into individual units."""
         units = []
 
@@ -225,7 +225,7 @@ class BattlePositioningPlugin:
 
         return units
 
-    def _parse_map_layout(self, map_layout: str) -> Dict[str, Any]:
+    def _parse_map_layout(self, map_layout: str) -> dict[str, Any]:
         """Parse map layout to extract tactical features."""
         layout_lower = map_layout.lower()
 
@@ -255,8 +255,8 @@ class BattlePositioningPlugin:
         return features
 
     def _calculate_unit_positions(
-        self, party_units: List[Dict], map_features: Dict, objectives: str
-    ) -> List[Dict[str, Any]]:
+        self, party_units: list[dict], map_features: dict, objectives: str
+    ) -> list[dict[str, Any]]:
         """Calculate specific positions for each unit."""
         positions = []
 
@@ -318,8 +318,8 @@ class BattlePositioningPlugin:
         return positions
 
     def _select_optimal_formation(
-        self, party_units: List[Dict], objectives: str
-    ) -> Dict[str, Any]:
+        self, party_units: list[dict], objectives: str
+    ) -> dict[str, Any]:
         """Select the most appropriate formation for the party."""
         formation_types = {
             "line_formation": {
@@ -351,14 +351,13 @@ class BattlePositioningPlugin:
         # Select based on objectives and party composition
         if objectives == "offensive":
             return formation_types["wedge_formation"]
-        elif objectives == "defensive":
+        if objectives == "defensive":
             return formation_types["circular_formation"]
-        else:
-            return formation_types["staggered_formation"]
+        return formation_types["staggered_formation"]
 
     def _explain_positioning_decisions(
-        self, party_units: List[Dict], map_features: Dict
-    ) -> List[str]:
+        self, party_units: list[dict], map_features: dict
+    ) -> list[str]:
         """Explain the reasoning behind positioning decisions."""
         explanations = []
 
@@ -391,8 +390,8 @@ class BattlePositioningPlugin:
         return explanations
 
     def _generate_alternative_setups(
-        self, party_units: List[Dict], map_features: Dict
-    ) -> List[Dict[str, Any]]:
+        self, party_units: list[dict], map_features: dict
+    ) -> list[dict[str, Any]]:
         """Generate alternative positioning setups."""
         alternatives = []
 
@@ -423,8 +422,8 @@ class BattlePositioningPlugin:
         return alternatives
 
     def _analyze_positioning_factors(
-        self, map_features: Dict, objectives: str
-    ) -> Dict[str, Any]:
+        self, map_features: dict, objectives: str
+    ) -> dict[str, Any]:
         """Analyze factors affecting positioning decisions."""
         return {
             "map_constraints": list(map_features.keys()),
@@ -433,7 +432,7 @@ class BattlePositioningPlugin:
             "opportunity_factors": self._identify_opportunities(map_features),
         }
 
-    def _determine_tactical_priorities(self, objectives: str) -> List[str]:
+    def _determine_tactical_priorities(self, objectives: str) -> list[str]:
         """Determine tactical priorities based on objectives."""
         priority_map = {
             "offensive": [
@@ -446,7 +445,7 @@ class BattlePositioningPlugin:
         }
         return priority_map.get(objectives, priority_map["balanced"])
 
-    def _identify_risk_factors(self, map_features: Dict) -> List[str]:
+    def _identify_risk_factors(self, map_features: dict) -> list[str]:
         """Identify positioning risk factors."""
         risks = []
 
@@ -459,7 +458,7 @@ class BattlePositioningPlugin:
 
         return risks
 
-    def _identify_opportunities(self, map_features: Dict) -> List[str]:
+    def _identify_opportunities(self, map_features: dict) -> list[str]:
         """Identify positioning opportunities."""
         opportunities = []
 
@@ -472,7 +471,7 @@ class BattlePositioningPlugin:
 
         return opportunities
 
-    def _parse_current_positions(self, current_positions: str) -> Dict[str, Any]:
+    def _parse_current_positions(self, current_positions: str) -> dict[str, Any]:
         """Parse current unit positions."""
         # Simplified parsing - would be more sophisticated in practice
 
@@ -535,7 +534,7 @@ class BattlePositioningPlugin:
 
         return result
 
-    def _analyze_combat_state(self, combat_state: str) -> Dict[str, Any]:
+    def _analyze_combat_state(self, combat_state: str) -> dict[str, Any]:
         """Analyze current combat state."""
         return {
             "threat_level": "medium",
@@ -545,8 +544,8 @@ class BattlePositioningPlugin:
         }
 
     def _identify_immediate_adjustments(
-        self, positions: Dict, state_analysis: Dict
-    ) -> List[Dict[str, Any]]:
+        self, positions: dict, state_analysis: dict
+    ) -> list[dict[str, Any]]:
         """Identify adjustments needed immediately."""
         return [
             {
@@ -562,22 +561,21 @@ class BattlePositioningPlugin:
         ]
 
     def _recommend_formation_changes(
-        self, positions: Dict, tactical_situation: str
-    ) -> List[str]:
+        self, positions: dict, tactical_situation: str
+    ) -> list[str]:
         """Recommend formation changes based on tactical situation."""
         if tactical_situation == "disadvantage":
             return [
                 "Contract formation for mutual support",
                 "Prepare defensive positions",
             ]
-        elif tactical_situation == "advantage":
+        if tactical_situation == "advantage":
             return ["Extend formation to exploit advantage", "Prepare for pursuit"]
-        else:
-            return ["Maintain current formation", "Be ready to adapt"]
+        return ["Maintain current formation", "Be ready to adapt"]
 
     def _identify_priority_repositioning(
-        self, positions: Dict, state_analysis: Dict
-    ) -> List[Dict[str, Any]]:
+        self, positions: dict, state_analysis: dict
+    ) -> list[dict[str, Any]]:
         """Identify units that should be repositioned as priority."""
         return [
             {
@@ -587,7 +585,7 @@ class BattlePositioningPlugin:
             }
         ]
 
-    def _plan_coordinated_movement(self, positions: Dict) -> Dict[str, Any]:
+    def _plan_coordinated_movement(self, positions: dict) -> dict[str, Any]:
         """Plan coordinated movement to maintain formation."""
         return {
             "movement_sequence": ["tanks_first", "then_support", "finally_ranged"],
@@ -596,8 +594,8 @@ class BattlePositioningPlugin:
         }
 
     def _prepare_contingency_positions(
-        self, positions: Dict, state_analysis: Dict
-    ) -> List[Dict[str, Any]]:
+        self, positions: dict, state_analysis: dict
+    ) -> list[dict[str, Any]]:
         """Prepare contingency positions for various scenarios."""
         return [
             {
@@ -607,7 +605,7 @@ class BattlePositioningPlugin:
             {"scenario": "ally_casualty", "response": "close_formation_gaps"},
         ]
 
-    def _assess_adjustment_urgency(self, state_analysis: Dict) -> str:
+    def _assess_adjustment_urgency(self, state_analysis: dict) -> str:
         """Assess how urgently adjustments are needed."""
         threat_level = state_analysis.get("threat_level", "medium")
 
@@ -622,7 +620,7 @@ class BattlePositioningPlugin:
 
     def _calculate_optimal_spacing(
         self, unit_types: str, formation_goal: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Calculate optimal spacing between units."""
         spacing_guidelines = {
             "tight": {"melee": 5, "ranged": 10, "caster": 15},
@@ -632,7 +630,7 @@ class BattlePositioningPlugin:
 
         return spacing_guidelines.get(formation_goal, spacing_guidelines["standard"])
 
-    def _establish_cohesion_guidelines(self, unit_types: str) -> List[str]:
+    def _establish_cohesion_guidelines(self, unit_types: str) -> list[str]:
         """Establish guidelines for maintaining formation cohesion."""
         return [
             "Maintain visual contact between adjacent units",
@@ -641,7 +639,7 @@ class BattlePositioningPlugin:
             "Establish fallback positions in case of formation break",
         ]
 
-    def _adjust_for_threat_level(self, threat_level: str) -> Dict[str, Any]:
+    def _adjust_for_threat_level(self, threat_level: str) -> dict[str, Any]:
         """Adjust spacing based on threat level."""
         adjustments = {
             "low": {"spacing_modifier": 1.0, "notes": "Standard spacing maintained"},
@@ -661,7 +659,7 @@ class BattlePositioningPlugin:
 
         return adjustments.get(threat_level, adjustments["medium"])
 
-    def _define_spacing_principles(self, formation_goal: str) -> List[str]:
+    def _define_spacing_principles(self, formation_goal: str) -> list[str]:
         """Define core principles for unit spacing."""
         principles = {
             "tight": [
@@ -685,7 +683,7 @@ class BattlePositioningPlugin:
 
     def _maintain_formation_integrity(
         self, unit_types: str, formation_goal: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Guidelines for maintaining formation integrity."""
         return {
             "communication_methods": [

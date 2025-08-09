@@ -2,16 +2,16 @@
 Tests for the inventory management system in ScribeAgent.
 """
 
-import pytest
-from unittest.mock import Mock, patch, AsyncMock
-import asyncio
 import uuid
+from unittest.mock import AsyncMock, Mock
+
+import pytest
 
 
 class TestInventorySystem:
     """Test class for inventory management functionality."""
 
-    def test_inventory_structure(self):
+    def test_inventory_structure(self) -> None:
         """Test that items have the correct structure."""
         # Test basic item structure
         item = {
@@ -36,12 +36,12 @@ class TestInventorySystem:
         assert "rarity" in item
 
         # Verify data types
-        assert isinstance(item["weight"], (int, float))
+        assert isinstance(item["weight"], int | float)
         assert isinstance(item["quantity"], int)
         assert isinstance(item["magical"], bool)
         assert isinstance(item["effects"], dict)
 
-    def test_magical_item_structure(self):
+    def test_magical_item_structure(self) -> None:
         """Test that magical items have proper effect structure."""
         magical_item = {
             "id": f"item_{str(uuid.uuid4())[:8]}",
@@ -60,7 +60,7 @@ class TestInventorySystem:
         assert "strength" in magical_item["effects"]
         assert magical_item["effects"]["strength"] == 2
 
-    def test_equipment_slots(self):
+    def test_equipment_slots(self) -> None:
         """Test equipment slot validation."""
         # Test slot mapping without importing the full agent
         slot_mapping = {
@@ -91,7 +91,7 @@ class TestInventorySystem:
         assert "ring1" in slot_mapping["ring"]
         assert "ring2" in slot_mapping["ring"]
 
-    def test_encumbrance_calculation(self):
+    def test_encumbrance_calculation(self) -> None:
         """Test encumbrance calculation logic."""
         # Test character with 15 strength
         strength = 15
@@ -110,7 +110,7 @@ class TestInventorySystem:
         heavy_weight = carrying_capacity + 1  # 226 lbs
         assert heavy_weight > carrying_capacity
 
-    def test_item_stacking_logic(self):
+    def test_item_stacking_logic(self) -> None:
         """Test that items stack correctly."""
         # Create base item
         base_item = {
@@ -142,7 +142,7 @@ class TestInventorySystem:
         expected_quantity = item1["quantity"] + item2["quantity"]
         assert expected_quantity == 5
 
-    def test_magical_item_no_stacking(self):
+    def test_magical_item_no_stacking(self) -> None:
         """Test that magical items don't stack."""
         magical_item = {"name": "Potion of Healing", "type": "potion", "magical": True}
 
@@ -150,7 +150,7 @@ class TestInventorySystem:
         assert magical_item.get("magical", False) is True
 
     @pytest.mark.anyio("asyncio")
-    async def test_inventory_crud_interface(self):
+    async def test_inventory_crud_interface(self) -> None:
         """Test the expected interface for inventory CRUD operations."""
         # Mock the ScribeAgent methods
         mock_scribe = Mock()
@@ -232,7 +232,7 @@ class TestInventorySystem:
         )
 
     @pytest.mark.anyio("asyncio")
-    async def test_equipment_interface(self):
+    async def test_equipment_interface(self) -> None:
         """Test the expected interface for equipment operations."""
         # Mock the ScribeAgent equipment methods
         mock_scribe = Mock()
@@ -293,7 +293,7 @@ class TestInventorySystem:
         mock_scribe.unequip_item.assert_called_once_with("char_123", "main_hand")
 
     @pytest.mark.anyio("asyncio")
-    async def test_encumbrance_interface(self):
+    async def test_encumbrance_interface(self) -> None:
         """Test the expected interface for encumbrance calculations."""
         mock_scribe = Mock()
 
@@ -320,7 +320,7 @@ class TestInventorySystem:
         mock_scribe.calculate_encumbrance.assert_called_once_with("char_123")
 
     @pytest.mark.anyio("asyncio")
-    async def test_item_effects_interface(self):
+    async def test_item_effects_interface(self) -> None:
         """Test the expected interface for item effect calculations."""
         mock_scribe = Mock()
 

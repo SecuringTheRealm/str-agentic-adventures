@@ -3,11 +3,11 @@ Scribe Agent - Manages character sheets and game data.
 """
 
 import logging
-from typing import Any, Dict, Optional
+from typing import Any
 
-from app.kernel_setup import kernel_manager
 from app.database import get_session, init_db
-from app.models.db_models import Character, NPC, NPCInteraction, Spell
+from app.kernel_setup import kernel_manager
+from app.models.db_models import NPC, Character, NPCInteraction
 
 logger = logging.getLogger(__name__)
 
@@ -18,26 +18,26 @@ class ScribeAgent:
     This agent is responsible for tracking and updating structured game data.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the Scribe agent with its own kernel instance."""
         self.kernel = kernel_manager.create_kernel()
         init_db()
         self._register_skills()
 
     @property
-    def characters(self) -> Dict[str, Any]:
+    def characters(self) -> dict[str, Any]:
         """Return all characters from the database."""
         with next(get_session()) as db:
             return {c.id: c.data for c in db.query(Character).all()}
 
     @property
-    def npcs(self) -> Dict[str, Any]:
+    def npcs(self) -> dict[str, Any]:
         """Return NPCs from the database."""
         with next(get_session()) as db:
             npcs = db.query(NPC).all()
             return {npc.id: npc.data for npc in npcs}
 
-    def create_npc(self, npc_data: Dict[str, Any]) -> Dict[str, Any]:
+    def create_npc(self, npc_data: dict[str, Any]) -> dict[str, Any]:
         """Create a new NPC with personality generation."""
         import random
         import uuid
@@ -113,7 +113,7 @@ class ScribeAgent:
 
     def update_npc_relationship(
         self, npc_id: str, character_id: str, change: int
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Update relationship between NPC and character."""
         with next(get_session()) as db:
             # Get current NPC and relationship data
@@ -144,7 +144,7 @@ class ScribeAgent:
                 "change": change,
             }
 
-    def log_npc_interaction(self, interaction_data: Dict[str, Any]) -> str:
+    def log_npc_interaction(self, interaction_data: dict[str, Any]) -> str:
         """Log an interaction with an NPC."""
         import uuid
         from datetime import datetime
@@ -171,7 +171,7 @@ class ScribeAgent:
 
         return interaction_id
 
-    def generate_npc_stats(self, npc_id: str, level: int, role: str) -> Dict[str, Any]:
+    def generate_npc_stats(self, npc_id: str, level: int, role: str) -> dict[str, Any]:
         """Generate combat stats for an NPC."""
         import random
 
@@ -214,7 +214,7 @@ class ScribeAgent:
         }
 
     @property
-    def inventory(self) -> Dict[str, Any]:
+    def inventory(self) -> dict[str, Any]:
         """Return all inventories from all characters."""
         try:
             with next(get_session()) as db:
@@ -224,7 +224,7 @@ class ScribeAgent:
             logger.error(f"Error retrieving inventory data: {str(e)}")
             return {}
 
-    def _register_skills(self):
+    def _register_skills(self) -> None:
         """Register necessary skills for the Scribe agent."""
         from semantic_kernel import kernel_function
 
@@ -309,7 +309,7 @@ class ScribeAgent:
             logger.warning(f"Could not register Scribe NPC skills: {str(e)}")
             # Continue without skills registration - fallback behavior
 
-    async def create_character(self, character_data: Dict[str, Any]) -> Dict[str, Any]:
+    async def create_character(self, character_data: dict[str, Any]) -> dict[str, Any]:
         """
         Create a new character sheet based on provided data.
 
@@ -386,8 +386,8 @@ class ScribeAgent:
             return {"error": "Failed to create character"}
 
     async def update_character(
-        self, character_id: str, updates: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, character_id: str, updates: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Update an existing character sheet.
 
@@ -407,7 +407,7 @@ class ScribeAgent:
 
             # Apply updates (simplified for now)
             for key, value in updates.items():
-                if key in character and not key == "id":  # Don't allow changing the ID
+                if key in character and key != "id":  # Don't allow changing the ID
                     character[key] = value
 
                 db_character.data = character
@@ -418,7 +418,7 @@ class ScribeAgent:
             logger.error(f"Error updating character: {str(e)}")
             return {"error": "Failed to update character"}
 
-    async def get_character(self, character_id: str) -> Optional[Dict[str, Any]]:
+    async def get_character(self, character_id: str) -> dict[str, Any] | None:
         """
         Retrieve a character sheet by ID.
 
@@ -433,8 +433,8 @@ class ScribeAgent:
             return db_character.data if db_character else None
 
     async def add_to_inventory(
-        self, character_id: str, item: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, character_id: str, item: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Add an item to a character's inventory.
 
@@ -501,7 +501,7 @@ class ScribeAgent:
             logger.error(f"Error adding to inventory: {str(e)}")
             return {"error": "Failed to add item to inventory"}
 
-    async def get_inventory(self, character_id: str) -> Dict[str, Any]:
+    async def get_inventory(self, character_id: str) -> dict[str, Any]:
         """
         Get a character's inventory.
 
@@ -540,7 +540,7 @@ class ScribeAgent:
 
     async def remove_from_inventory(
         self, character_id: str, item_id: str, quantity: int = 1
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Remove items from a character's inventory.
 
@@ -601,8 +601,8 @@ class ScribeAgent:
             return {"error": "Failed to remove item from inventory"}
 
     async def update_inventory_item(
-        self, character_id: str, item_id: str, updates: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, character_id: str, item_id: str, updates: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Update an item in a character's inventory.
 
@@ -652,7 +652,7 @@ class ScribeAgent:
 
     async def equip_item(
         self, character_id: str, item_id: str, slot: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Equip an item from inventory to an equipment slot.
 
@@ -741,7 +741,7 @@ class ScribeAgent:
         }
         return slot_mapping.get(item_type.lower(), [])
 
-    async def unequip_item(self, character_id: str, slot: str) -> Dict[str, Any]:
+    async def unequip_item(self, character_id: str, slot: str) -> dict[str, Any]:
         """
         Unequip an item from an equipment slot back to inventory.
 
@@ -790,7 +790,7 @@ class ScribeAgent:
             logger.error(f"Error unequipping item: {str(e)}")
             return {"error": "Failed to unequip item"}
 
-    async def calculate_encumbrance(self, character_id: str) -> Dict[str, Any]:
+    async def calculate_encumbrance(self, character_id: str) -> dict[str, Any]:
         """
         Calculate a character's current encumbrance.
 
@@ -856,7 +856,7 @@ class ScribeAgent:
             logger.error(f"Error calculating encumbrance: {str(e)}")
             return {"error": "Failed to calculate encumbrance"}
 
-    async def apply_item_effects(self, character_id: str) -> Dict[str, Any]:
+    async def apply_item_effects(self, character_id: str) -> dict[str, Any]:
         """
         Calculate the total effects of all equipped items on character stats.
 
@@ -892,12 +892,12 @@ class ScribeAgent:
                 }
 
                 # Apply effects from each equipped item
-                for slot, item in equipment.items():
+                for _slot, item in equipment.items():
                     effects = item.get("effects", {})
 
                     # Apply stat bonuses
                     for stat, bonus in effects.items():
-                        if stat in stat_modifiers and isinstance(bonus, (int, float)):
+                        if stat in stat_modifiers and isinstance(bonus, int | float):
                             stat_modifiers[stat] += bonus
                         elif stat == "saving_throws" and isinstance(bonus, dict):
                             for save_type, save_bonus in bonus.items():
@@ -918,9 +918,9 @@ class ScribeAgent:
     async def level_up_character(
         self,
         character_id: str,
-        ability_improvements: Dict[str, int] | None = None,
+        ability_improvements: dict[str, int] | None = None,
         use_average_hp: bool = True,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Level up a character if they have enough experience.
 
@@ -1067,7 +1067,7 @@ class ScribeAgent:
 
     async def award_experience(
         self, character_id: str, experience_points: int
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Award experience points to a character.
 

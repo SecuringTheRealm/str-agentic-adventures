@@ -3,19 +3,20 @@ Narrative Generation Plugin for the Semantic Kernel.
 This plugin provides dynamic storyline generation and branching narrative capabilities.
 """
 
-import logging
-from typing import Dict, Any, List
-import json
 import datetime
+import json
+import logging
 import random
+from typing import Any
 
 from semantic_kernel.functions import kernel_function
+
 from app.models.game_models import (
-    StoryArc,
-    PlotPoint,
     NarrativeChoice,
-    NarrativeState,
     NarrativeEvent,
+    NarrativeState,
+    PlotPoint,
+    StoryArc,
 )
 
 logger = logging.getLogger(__name__)
@@ -27,7 +28,7 @@ class NarrativeGenerationPlugin:
     Manages story arcs, plot points, player choices, and narrative state tracking.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the narrative generation plugin."""
         # In-memory storage for narrative elements
         # In a production system, this would use a persistent store
@@ -39,7 +40,7 @@ class NarrativeGenerationPlugin:
         self.choice_templates = self._initialize_choice_templates()
         self.plot_templates = self._initialize_plot_templates()
 
-    def _initialize_choice_templates(self) -> Dict[str, Dict[str, Any]]:
+    def _initialize_choice_templates(self) -> dict[str, dict[str, Any]]:
         """Initialize templates for common narrative choices."""
         return {
             "exploration": {
@@ -86,7 +87,7 @@ class NarrativeGenerationPlugin:
             },
         }
 
-    def _initialize_plot_templates(self) -> Dict[str, Dict[str, Any]]:
+    def _initialize_plot_templates(self) -> dict[str, dict[str, Any]]:
         """Initialize templates for common plot point types."""
         return {
             "introduction": {
@@ -133,7 +134,7 @@ class NarrativeGenerationPlugin:
         arc_type: str = "main",
         themes: str = "",
         character_ids: str = "",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Create a new story arc with associated plot points.
 
@@ -191,7 +192,7 @@ class NarrativeGenerationPlugin:
         context: str = "",
         choice_type: str = "general",
         num_choices: int = 3,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate narrative choices for a given situation.
 
@@ -260,7 +261,7 @@ class NarrativeGenerationPlugin:
         campaign_id: str,
         character_id: str = "",
         additional_context: str = "",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Process a player's narrative choice and apply consequences.
 
@@ -328,7 +329,7 @@ class NarrativeGenerationPlugin:
     )
     def advance_narrative(
         self, campaign_id: str, current_situation: str = "", trigger_data: str = ""
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Advance the narrative by checking plot point triggers and updating story state.
 
@@ -405,7 +406,7 @@ class NarrativeGenerationPlugin:
         description="Get the current narrative state for a campaign.",
         name="get_narrative_state",
     )
-    def get_narrative_state(self, campaign_id: str) -> Dict[str, Any]:
+    def get_narrative_state(self, campaign_id: str) -> dict[str, Any]:
         """
         Get the current narrative state for a campaign.
 
@@ -468,7 +469,7 @@ class NarrativeGenerationPlugin:
                 "message": f"Failed to get narrative state: {str(e)}",
             }
 
-    def _generate_initial_plot_points(self, story_arc: StoryArc) -> List[PlotPoint]:
+    def _generate_initial_plot_points(self, story_arc: StoryArc) -> list[PlotPoint]:
         """Generate initial plot points for a story arc based on its type."""
         plot_points = []
 
@@ -507,7 +508,7 @@ class NarrativeGenerationPlugin:
         choice: NarrativeChoice,
         narrative_state: NarrativeState,
         character_id: str,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Apply the consequences of a narrative choice to the story state."""
         outcomes = {}
 
@@ -536,9 +537,9 @@ class NarrativeGenerationPlugin:
     def _check_plot_point_triggers(
         self,
         story_arc: StoryArc,
-        triggers: Dict[str, Any],
+        triggers: dict[str, Any],
         narrative_state: NarrativeState,
-    ) -> Dict[str, List]:
+    ) -> dict[str, list]:
         """Check if any plot points in the story arc should be activated or completed."""
         activated = []
         completed = []
@@ -577,7 +578,7 @@ class NarrativeGenerationPlugin:
         return {"activated": activated, "completed": completed}
 
     def _check_triggers(
-        self, plot_triggers: Dict[str, Any], current_triggers: Dict[str, Any]
+        self, plot_triggers: dict[str, Any], current_triggers: dict[str, Any]
     ) -> bool:
         """Check if plot point triggers are satisfied."""
         if not plot_triggers:
@@ -611,11 +612,11 @@ class NarrativeGenerationPlugin:
         # Check specific completion criteria based on plot type
         if plot_type == "quest":
             return self._check_quest_completion(plot_point, narrative_state)
-        elif plot_type == "encounter":
+        if plot_type == "encounter":
             return self._check_encounter_completion(plot_point, narrative_state)
-        elif plot_type == "exploration":
+        if plot_type == "exploration":
             return self._check_exploration_completion(plot_point, narrative_state)
-        elif plot_type == "social":
+        if plot_type == "social":
             return self._check_social_completion(plot_point, narrative_state)
 
         # Fallback: Check if enough narrative events have occurred for this plot point
@@ -625,7 +626,7 @@ class NarrativeGenerationPlugin:
 
         return len(related_events) >= completion_requirements.get("min_events", 3)
 
-    def _get_completion_requirements(self, plot_type: str) -> Dict[str, Any]:
+    def _get_completion_requirements(self, plot_type: str) -> dict[str, Any]:
         """Get completion requirements for different plot types."""
         requirements = {
             "quest": {

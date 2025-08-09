@@ -9,9 +9,10 @@ available, importing this module will raise an ImportError.
 """
 
 try:
+    import uuid
+
     import factory
     from factory import fuzzy
-    import uuid
 except ImportError as e:
     raise ImportError(
         "factory_boy is required for test factories. "

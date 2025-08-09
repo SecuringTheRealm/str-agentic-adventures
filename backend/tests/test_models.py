@@ -2,57 +2,57 @@
 Tests for Pydantic models validation and serialization.
 """
 
-import pytest
-import sys
 import os
+import sys
+
+import pytest
 
 # Add the backend directory to Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from pydantic import ValidationError
-
 from app.models.game_models import (
-    CharacterClass,
-    Race,
-    Ability,
-    CombatState,
     Abilities,
+    Ability,
+    BattleMapRequest,
+    Campaign,
+    CharacterClass,
+    CharacterSheet,
+    CombatState,
+    CreateCampaignRequest,
+    CreateCharacterRequest,
+    GameResponse,
+    GenerateImageRequest,
     HitPoints,
     Item,
-    Spell,
-    CharacterSheet,
-    CreateCharacterRequest,
     PlayerInput,
-    GameResponse,
-    Campaign,
-    CreateCampaignRequest,
-    GenerateImageRequest,
-    BattleMapRequest,
+    Race,
+    Spell,
 )
+from pydantic import ValidationError
 
 
 class TestEnums:
     """Test class for enum models."""
 
-    def test_character_class_enum(self):
+    def test_character_class_enum(self) -> None:
         """Test CharacterClass enum values."""
         assert CharacterClass.FIGHTER == "fighter"
         assert CharacterClass.WIZARD == "wizard"
         assert CharacterClass.ROGUE == "rogue"
 
-    def test_race_enum(self):
+    def test_race_enum(self) -> None:
         """Test Race enum values."""
         assert Race.HUMAN == "human"
         assert Race.ELF == "elf"
         assert Race.DWARF == "dwarf"
 
-    def test_ability_enum(self):
+    def test_ability_enum(self) -> None:
         """Test Ability enum values."""
         assert Ability.STRENGTH == "strength"
         assert Ability.DEXTERITY == "dexterity"
         assert Ability.CONSTITUTION == "constitution"
 
-    def test_combat_state_enum(self):
+    def test_combat_state_enum(self) -> None:
         """Test CombatState enum values."""
         assert CombatState.READY == "ready"
         assert CombatState.ACTIVE == "active"
@@ -62,7 +62,7 @@ class TestEnums:
 class TestAbilities:
     """Test class for Abilities model."""
 
-    def test_abilities_default_values(self):
+    def test_abilities_default_values(self) -> None:
         """Test that Abilities model has correct default values."""
         abilities = Abilities()
 
@@ -73,7 +73,7 @@ class TestAbilities:
         assert abilities.wisdom == 10
         assert abilities.charisma == 10
 
-    def test_abilities_custom_values(self):
+    def test_abilities_custom_values(self) -> None:
         """Test Abilities model with custom values."""
         abilities = Abilities(
             strength=16,
@@ -95,14 +95,14 @@ class TestAbilities:
 class TestHitPoints:
     """Test class for HitPoints model."""
 
-    def test_hit_points_valid(self):
+    def test_hit_points_valid(self) -> None:
         """Test valid HitPoints creation."""
         hp = HitPoints(current=25, maximum=30)
 
         assert hp.current == 25
         assert hp.maximum == 30
 
-    def test_hit_points_validation(self):
+    def test_hit_points_validation(self) -> None:
         """Test HitPoints validation."""
         # Test that both fields are required
         with pytest.raises(ValidationError):
@@ -112,7 +112,7 @@ class TestHitPoints:
 class TestItem:
     """Test class for Item model."""
 
-    def test_item_minimal(self):
+    def test_item_minimal(self) -> None:
         """Test Item creation with minimal required fields."""
         item = Item(name="Sword")
 
@@ -124,7 +124,7 @@ class TestItem:
         assert item.properties is None
         assert item.id is not None  # Auto-generated UUID
 
-    def test_item_full(self):
+    def test_item_full(self) -> None:
         """Test Item creation with all fields."""
         item = Item(
             name="Magic Sword",
@@ -148,7 +148,7 @@ class TestItem:
 class TestSpell:
     """Test class for Spell model."""
 
-    def test_spell_creation(self):
+    def test_spell_creation(self) -> None:
         """Test Spell model creation."""
         spell = Spell(
             name="Fireball",
@@ -175,7 +175,7 @@ class TestSpell:
 class TestCharacterSheet:
     """Test class for CharacterSheet model."""
 
-    def test_character_sheet_minimal(self):
+    def test_character_sheet_minimal(self) -> None:
         """Test CharacterSheet creation with minimal required fields."""
         abilities = Abilities(strength=16, dexterity=14, constitution=15)
         hit_points = HitPoints(current=10, maximum=10)
@@ -198,7 +198,7 @@ class TestCharacterSheet:
         assert character.proficiency_bonus == 2  # Default value
         assert character.id is not None  # Auto-generated UUID
 
-    def test_character_sheet_validation_error(self):
+    def test_character_sheet_validation_error(self) -> None:
         """Test CharacterSheet validation with missing required fields."""
         with pytest.raises(ValidationError):
             # Test missing required fields - passing no arguments should raise ValidationError
@@ -213,7 +213,7 @@ class TestCharacterSheet:
 class TestCreateCharacterRequest:
     """Test class for CreateCharacterRequest model."""
 
-    def test_create_character_request_valid(self):
+    def test_create_character_request_valid(self) -> None:
         """Test valid CreateCharacterRequest."""
         abilities = Abilities(strength=16, dexterity=14, constitution=15)
 
@@ -231,7 +231,7 @@ class TestCreateCharacterRequest:
         assert request.abilities.strength == 16
         assert request.backstory == "A brave warrior"
 
-    def test_create_character_request_without_backstory(self):
+    def test_create_character_request_without_backstory(self) -> None:
         """Test CreateCharacterRequest without optional backstory."""
         abilities = Abilities()
 
@@ -248,7 +248,7 @@ class TestCreateCharacterRequest:
 class TestPlayerInput:
     """Test class for PlayerInput model."""
 
-    def test_player_input_valid(self):
+    def test_player_input_valid(self) -> None:
         """Test valid PlayerInput creation."""
         player_input = PlayerInput(
             message="I want to explore the forest",
@@ -260,7 +260,7 @@ class TestPlayerInput:
         assert player_input.character_id == "char_123"
         assert player_input.campaign_id == "camp_456"
 
-    def test_player_input_validation_error(self):
+    def test_player_input_validation_error(self) -> None:
         """Test PlayerInput validation with invalid types."""
         with pytest.raises(ValidationError):
             PlayerInput(
@@ -273,7 +273,7 @@ class TestPlayerInput:
 class TestGameResponse:
     """Test class for GameResponse model."""
 
-    def test_game_response_minimal(self):
+    def test_game_response_minimal(self) -> None:
         """Test GameResponse with minimal required fields."""
         response = GameResponse(message="You see a dark forest ahead.")
 
@@ -282,7 +282,7 @@ class TestGameResponse:
         assert response.state_updates == {}  # Default empty dict
         assert response.combat_updates is None  # Default None
 
-    def test_game_response_full(self):
+    def test_game_response_full(self) -> None:
         """Test GameResponse with all fields."""
         response = GameResponse(
             message="Combat begins!",
@@ -301,7 +301,7 @@ class TestGameResponse:
 class TestCampaign:
     """Test class for Campaign model."""
 
-    def test_campaign_creation(self):
+    def test_campaign_creation(self) -> None:
         """Test Campaign model creation."""
         campaign = Campaign(name="Test Campaign", setting="Fantasy", tone="heroic")
 
@@ -318,7 +318,7 @@ class TestCampaign:
 class TestCreateCampaignRequest:
     """Test class for CreateCampaignRequest model."""
 
-    def test_create_campaign_request_minimal(self):
+    def test_create_campaign_request_minimal(self) -> None:
         """Test CreateCampaignRequest with minimal fields."""
         request = CreateCampaignRequest(name="Test Campaign", setting="Fantasy World")
 
@@ -327,7 +327,7 @@ class TestCreateCampaignRequest:
         assert request.tone == "heroic"  # Default value
         assert request.homebrew_rules == []  # Default value
 
-    def test_create_campaign_request_full(self):
+    def test_create_campaign_request_full(self) -> None:
         """Test CreateCampaignRequest with all fields."""
         request = CreateCampaignRequest(
             name="Dark Campaign",
@@ -345,7 +345,7 @@ class TestCreateCampaignRequest:
 class TestGenerateImageRequest:
     """Test class for GenerateImageRequest model."""
 
-    def test_generate_image_request(self):
+    def test_generate_image_request(self) -> None:
         """Test GenerateImageRequest creation."""
         request = GenerateImageRequest(
             image_type="character_portrait", details={"name": "Hero", "race": "human"}
@@ -359,7 +359,7 @@ class TestGenerateImageRequest:
 class TestBattleMapRequest:
     """Test class for BattleMapRequest model."""
 
-    def test_battle_map_request_minimal(self):
+    def test_battle_map_request_minimal(self) -> None:
         """Test BattleMapRequest with minimal fields."""
         request = BattleMapRequest(environment={"terrain": "forest", "size": "medium"})
 
@@ -367,7 +367,7 @@ class TestBattleMapRequest:
         assert request.environment["size"] == "medium"
         assert request.combat_context is None  # Default value
 
-    def test_battle_map_request_full(self):
+    def test_battle_map_request_full(self) -> None:
         """Test BattleMapRequest with all fields."""
         request = BattleMapRequest(
             environment={"terrain": "forest", "size": "medium"},
@@ -383,7 +383,7 @@ class TestBattleMapRequest:
 class TestValidationEdgeCases:
     """Test edge cases and boundary conditions for model validation."""
 
-    def test_abilities_boundary_values(self):
+    def test_abilities_boundary_values(self) -> None:
         """Test abilities with boundary values."""
         # Test minimum values
         abilities = Abilities(
@@ -407,7 +407,7 @@ class TestValidationEdgeCases:
         )
         assert abilities.strength == 30
 
-    def test_hit_points_edge_cases(self):
+    def test_hit_points_edge_cases(self) -> None:
         """Test hit points edge cases."""
         # Test zero current HP (unconscious/dead)
         hp = HitPoints(current=0, maximum=30)
@@ -418,7 +418,7 @@ class TestValidationEdgeCases:
         hp = HitPoints(current=50, maximum=50)
         assert hp.current == hp.maximum
 
-    def test_character_sheet_with_optional_fields(self):
+    def test_character_sheet_with_optional_fields(self) -> None:
         """Test character sheet with various optional field combinations."""
         abilities = Abilities()
         hit_points = HitPoints(current=10, maximum=10)
@@ -440,7 +440,7 @@ class TestValidationEdgeCases:
         assert character.inventory == []
         assert character.spells == []
 
-    def test_item_properties_edge_cases(self):
+    def test_item_properties_edge_cases(self) -> None:
         """Test item model with various property combinations."""
         # Test item with complex properties
         item = Item(
@@ -459,7 +459,7 @@ class TestValidationEdgeCases:
         assert item.properties["cursed"] is False
         assert len(item.properties["special_abilities"]) == 2
 
-    def test_spell_level_validation(self):
+    def test_spell_level_validation(self) -> None:
         """Test spell level constraints."""
         # Test cantrip (level 0)
         spell = Spell(
@@ -487,7 +487,7 @@ class TestValidationEdgeCases:
         )
         assert spell.level == 9
 
-    def test_campaign_state_transitions(self):
+    def test_campaign_state_transitions(self) -> None:
         """Test campaign state management."""
         campaign = Campaign(
             name="Test Campaign", setting="Test Setting", state="created"
@@ -500,7 +500,7 @@ class TestValidationEdgeCases:
             campaign = Campaign(name="Test", setting="Test", state=state)
             assert campaign.state == state
 
-    def test_player_input_message_lengths(self):
+    def test_player_input_message_lengths(self) -> None:
         """Test player input with various message lengths."""
         # Test short message
         player_input = PlayerInput(
@@ -515,7 +515,7 @@ class TestValidationEdgeCases:
         )
         assert len(player_input.message) > 500
 
-    def test_game_response_with_complex_data(self):
+    def test_game_response_with_complex_data(self) -> None:
         """Test game response with complex state updates."""
         response = GameResponse(
             message="Combat round complete!",
@@ -543,7 +543,7 @@ class TestValidationEdgeCases:
         assert response.combat_updates["round"] == 3
         assert "poisoned" in response.combat_updates["conditions"]["player1"]
 
-    def test_enum_case_sensitivity(self):
+    def test_enum_case_sensitivity(self) -> None:
         """Test that enums handle case correctly."""
         # These should work with exact case
         assert CharacterClass.FIGHTER == "fighter"

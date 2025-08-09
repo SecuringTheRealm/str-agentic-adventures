@@ -2,31 +2,29 @@
 Test configuration and utilities for improved configuration handling.
 """
 
-import pytest
-from unittest.mock import patch
-from fastapi.testclient import TestClient
-from fastapi import FastAPI
 
-from app.config import Settings, set_settings, get_config
+import pytest
+from app.config import Settings, get_config
 from app.main import app
+from fastapi.testclient import TestClient
 
 # Import factories for use in tests (gracefully handle missing dependencies)
 try:
     from .factories import (
-        CharacterFactory,
-        FighterCharacterFactory,
-        WizardCharacterFactory,
-        CampaignFactory,
-        CombatEncounterFactory,
         AttackActionFactory,
+        CampaignFactory,
+        CharacterFactory,
+        CombatEncounterFactory,
+        FighterCharacterFactory,
+        SavingThrowActionFactory,
+        SkillCheckActionFactory,
         SpellAttackActionFactory,
         SpellDamageActionFactory,
-        SkillCheckActionFactory,
-        SavingThrowActionFactory,
+        WizardCharacterFactory,
     )
 
     _FACTORIES_AVAILABLE = True
-except ImportError as e:
+except ImportError:
     # factory_boy not available in this environment
     _FACTORIES_AVAILABLE = False
     # Create dummy factories for graceful degradation

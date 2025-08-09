@@ -5,15 +5,15 @@ Tests the complete flow from frontend API to DALL-E generation.
 """
 
 import asyncio
-import sys
 import os
-from unittest.mock import patch, Mock, AsyncMock
+import sys
+from unittest.mock import AsyncMock, Mock, patch
 
 # Add the app directory to the Python path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "app"))
 
 
-async def test_end_to_end_image_generation():
+async def test_end_to_end_image_generation() -> bool | None:
     """Test the complete image generation flow."""
     print("🎯 Testing End-to-End Image Generation Flow...")
     print("=" * 50)

@@ -4,18 +4,19 @@ This demonstrates how to update existing tests that patch os.environ.
 """
 
 import os
-import pytest
-from unittest.mock import patch, MagicMock
-from fastapi.testclient import TestClient
+from unittest.mock import MagicMock, patch
 
 from app.config import Settings, get_config
 from app.main import app
+from fastapi.testclient import TestClient
+
+from .factories import create_standard_fighter
 
 
 class TestMigrationExample:
     """Examples showing how to migrate from os.environ patching to dependency injection."""
 
-    def test_old_pattern_os_environ_patching(self):
+    def test_old_pattern_os_environ_patching(self) -> None:
         """
         OLD PATTERN: Direct os.environ manipulation (problematic).
 
@@ -90,7 +91,7 @@ class TestMigrationExample:
             if original_key:
                 os.environ["AZURE_OPENAI_API_KEY"] = original_key
 
-    def test_new_pattern_dependency_injection(self):
+    def test_new_pattern_dependency_injection(self) -> None:
         """
         NEW PATTERN: Use FastAPI dependency override (recommended).
 
@@ -162,7 +163,7 @@ class TestMigrationExample:
             # Clean up - simple and reliable
             app.dependency_overrides.clear()
 
-    def test_new_pattern_with_fixtures(self, client_with_missing_config):
+    def test_new_pattern_with_fixtures(self, client_with_missing_config) -> None:
         """
         NEW PATTERN: Use pytest fixtures for even cleaner tests.
 
@@ -172,13 +173,13 @@ class TestMigrationExample:
             mock_scribe = MagicMock()
 
             async def mock_create_character(*args, **kwargs):
-                return fighter_character_factory()
+                return create_standard_fighter()
 
             mock_scribe.create_character = mock_create_character
             mock_get_scribe.return_value = mock_scribe
 
             # Use factory for request data too
-            character_data = fighter_character_factory()
+            character_data = create_standard_fighter()
             response = client_with_missing_config.post(
                 "/api/game/character",
                 json={
@@ -192,7 +193,7 @@ class TestMigrationExample:
             # Should return 503 due to missing configuration
             assert response.status_code == 503
 
-    def test_migration_benefits_demonstration(self):
+    def test_migration_benefits_demonstration(self) -> None:
         """
         Demonstrate the benefits of the new pattern.
         """

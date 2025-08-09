@@ -2,31 +2,29 @@
 API integration tests to verify frontend-backend compatibility.
 """
 
-import pytest
-import sys
 import os
-import json
+import sys
 
 # Add the backend directory to Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.models.game_models import (
-    CharacterSheet,
-    CreateCharacterRequest,
-    PlayerInput,
-    GameResponse,
-    Campaign,
-    CreateCampaignRequest,
-    Race,
-    CharacterClass,
     Abilities,
+    Campaign,
+    CharacterClass,
+    CharacterSheet,
+    CreateCampaignRequest,
+    CreateCharacterRequest,
+    GameResponse,
+    PlayerInput,
+    Race,
 )
 
 
 class TestAPICompatibility:
     """Test API compatibility between frontend and backend."""
 
-    def test_character_creation_compatibility(self):
+    def test_character_creation_compatibility(self) -> None:
         """Test that character creation request/response models are compatible."""
         # Test frontend request format
         frontend_request = {
@@ -97,7 +95,7 @@ class TestAPICompatibility:
         assert "current" in response_dict["hit_points"]
         assert "maximum" in response_dict["hit_points"]
 
-    def test_campaign_creation_compatibility(self):
+    def test_campaign_creation_compatibility(self) -> None:
         """Test that campaign creation request/response models are compatible."""
         # Test frontend request format
         frontend_request = {
@@ -140,7 +138,7 @@ class TestAPICompatibility:
         for field in expected_fields:
             assert field in response_dict, f"Missing field {field} in campaign response"
 
-    def test_player_input_compatibility(self):
+    def test_player_input_compatibility(self) -> None:
         """Test that player input request/response models are compatible."""
         # Test frontend request format
         frontend_request = {
@@ -179,7 +177,7 @@ class TestAPICompatibility:
         if response_dict["combat_updates"]:
             assert "status" in response_dict["combat_updates"]
 
-    def test_field_naming_consistency(self):
+    def test_field_naming_consistency(self) -> None:
         """Test that field naming is consistent between frontend and backend."""
         # Create a character to test field names
         character = CharacterSheet(

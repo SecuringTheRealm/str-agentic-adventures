@@ -2,9 +2,9 @@
 Tests for the plugin-based combat action processing implementation.
 """
 
+from unittest.mock import Mock
+
 import pytest
-import sys
-from unittest.mock import Mock, MagicMock
 
 # We need to avoid importing CombatMCAgent directly as it triggers Azure config
 # Instead, we'll test the methods in isolation
@@ -14,7 +14,7 @@ from app.plugins.rules_engine_plugin import RulesEnginePlugin
 class TestCombatActionProcessing:
     """Test the new plugin-based combat action processing functionality."""
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Set up test fixtures."""
         # Create a real rules engine plugin
         self.rules_plugin = RulesEnginePlugin()
@@ -43,7 +43,7 @@ class TestCombatActionProcessing:
         # Test the methods directly without importing the class
         self.setup_methods()
 
-    def setup_methods(self):
+    def setup_methods(self) -> None:
         """Setup the methods we want to test by extracting them from the module."""
         # Since we can't import CombatMCAgent, let's test plugin functions directly
         # and create simple wrapper methods
@@ -70,40 +70,39 @@ class TestCombatActionProcessing:
                     return self._process_attack_action(
                         action_data, result, rules_plugin
                     )
-                elif action_type == "spell_attack":
+                if action_type == "spell_attack":
                     return self._process_spell_attack_action(
                         action_data, result, rules_plugin
                     )
-                elif action_type == "spell_damage":
+                if action_type == "spell_damage":
                     return self._process_spell_damage_action(
                         action_data, result, rules_plugin
                     )
-                elif action_type == "spell_healing":
+                if action_type == "spell_healing":
                     return self._process_spell_healing_action(
                         action_data, result, rules_plugin
                     )
-                elif action_type == "skill_check":
+                if action_type == "skill_check":
                     return self._process_skill_check_action(
                         action_data, result, rules_plugin
                     )
-                elif action_type == "saving_throw":
+                if action_type == "saving_throw":
                     return self._process_saving_throw_action(
                         action_data, result, rules_plugin
                     )
-                elif action_type in ["move", "dash", "dodge", "hide", "help", "ready"]:
+                if action_type in ["move", "dash", "dodge", "hide", "help", "ready"]:
                     return self._process_movement_or_simple_action(action_data, result)
-                elif action_type in ["grapple", "shove"]:
+                if action_type in ["grapple", "shove"]:
                     return self._process_contested_action(
                         action_data, result, rules_plugin
                     )
-                else:
-                    result.update(
-                        {
-                            "success": True,
-                            "message": f"Plugin mode: {action_type} action processed",
-                        }
-                    )
-                    return result
+                result.update(
+                    {
+                        "success": True,
+                        "message": f"Plugin mode: {action_type} action processed",
+                    }
+                )
+                return result
 
             except Exception as e:
                 result["message"] = f"Error processing {action_type} action: {str(e)}"
@@ -539,7 +538,7 @@ class TestCombatActionProcessing:
 
         self.agent.process_combat_action = mock_process_combat_action
 
-    def test_basic_attack_action(self):
+    def test_basic_attack_action(self) -> None:
         """Test processing a basic attack action."""
         action_data = {
             "type": "attack",
@@ -567,7 +566,7 @@ class TestCombatActionProcessing:
         else:
             assert "Attack misses" in result["message"]
 
-    def test_spell_attack_action(self):
+    def test_spell_attack_action(self) -> None:
         """Test processing a spell attack action."""
         action_data = {
             "type": "spell_attack",
@@ -590,7 +589,7 @@ class TestCombatActionProcessing:
         assert "attack_roll" in result
         assert "spell_attack_bonus" in result
 
-    def test_spell_damage_action(self):
+    def test_spell_damage_action(self) -> None:
         """Test processing a spell damage action (like fireball)."""
         action_data = {
             "type": "spell_damage",
@@ -609,7 +608,7 @@ class TestCombatActionProcessing:
         assert "fire" in result["message"]
         assert "3 target(s)" in result["message"]
 
-    def test_spell_healing_action(self):
+    def test_spell_healing_action(self) -> None:
         """Test processing a spell healing action."""
         action_data = {
             "type": "spell_healing",
@@ -627,7 +626,7 @@ class TestCombatActionProcessing:
         assert result["healing"] >= 5  # Minimum healing from 2d8+3
         assert "healing_detail" in result
 
-    def test_skill_check_action(self):
+    def test_skill_check_action(self) -> None:
         """Test processing a skill check action."""
         action_data = {
             "type": "skill_check",
@@ -646,7 +645,7 @@ class TestCombatActionProcessing:
         assert result["dc"] == 15
         assert "vs DC 15" in result["message"]
 
-    def test_saving_throw_action(self):
+    def test_saving_throw_action(self) -> None:
         """Test processing a saving throw action."""
         action_data = {
             "type": "saving_throw",
@@ -665,7 +664,7 @@ class TestCombatActionProcessing:
         assert result["save_result"]["save_dc"] == 16
         assert "vs DC 16" in result["message"]
 
-    def test_movement_actions(self):
+    def test_movement_actions(self) -> None:
         """Test processing movement and simple actions."""
         # Test move action
         move_data = {
@@ -695,7 +694,7 @@ class TestCombatActionProcessing:
         assert result["success"] is True
         assert "disadvantage" in result["message"]
 
-    def test_contested_actions(self):
+    def test_contested_actions(self) -> None:
         """Test processing contested actions like grapple and shove."""
         action_data = {
             "type": "grapple",
@@ -717,7 +716,7 @@ class TestCombatActionProcessing:
         assert "defender_check" in result
         assert "attacker" in result["message"] and "defender" in result["message"]
 
-    def test_hide_action_with_stealth_check(self):
+    def test_hide_action_with_stealth_check(self) -> None:
         """Test hide action which should trigger a stealth check."""
         action_data = {
             "type": "hide",
@@ -735,7 +734,7 @@ class TestCombatActionProcessing:
         assert "roll" in result
         assert result["dc"] == 13
 
-    def test_invalid_encounter(self):
+    def test_invalid_encounter(self) -> None:
         """Test processing action for non-existent encounter."""
         action_data = {"type": "attack", "actor_id": "player1", "target_id": "enemy1"}
 
@@ -743,7 +742,7 @@ class TestCombatActionProcessing:
         assert "error" in result
         assert "not found" in result["error"]
 
-    def test_inactive_encounter(self):
+    def test_inactive_encounter(self) -> None:
         """Test processing action for inactive encounter."""
         self.test_encounter["status"] = "completed"
 
@@ -753,7 +752,7 @@ class TestCombatActionProcessing:
         assert "error" in result
         assert "not currently active" in result["error"]
 
-    def test_unknown_action_type(self):
+    def test_unknown_action_type(self) -> None:
         """Test processing an unknown action type."""
         action_data = {"type": "unknown_action", "actor_id": "player1"}
 

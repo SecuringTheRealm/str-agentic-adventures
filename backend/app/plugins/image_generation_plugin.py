@@ -4,9 +4,10 @@ This plugin provides core image generation capabilities using Azure OpenAI DALL-
 """
 
 import logging
-from typing import Dict, Any
+from typing import Any
 
 from semantic_kernel.functions import kernel_function
+
 from app.azure_openai_client import AzureOpenAIClient
 
 logger = logging.getLogger(__name__)
@@ -18,7 +19,7 @@ class ImageGenerationPlugin:
     Handles prompt optimization, image generation parameters, and result processing.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the image generation plugin."""
         self.azure_client = AzureOpenAIClient()
         # Store generation history for consistency tracking
@@ -34,7 +35,7 @@ class ImageGenerationPlugin:
         size: str = "1024x1024",
         quality: str = "standard",
         style: str = "vivid",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate an image using Azure OpenAI DALL-E.
 
@@ -89,7 +90,7 @@ class ImageGenerationPlugin:
     )
     def optimize_prompt(
         self, prompt: str, art_style: str = "fantasy", context: str = "RPG"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Optimize a text prompt for better image generation results.
 
@@ -123,7 +124,7 @@ class ImageGenerationPlugin:
         description="Get generation history for analysis and consistency tracking.",
         name="get_generation_history",
     )
-    def get_generation_history(self, limit: int = 10) -> Dict[str, Any]:
+    def get_generation_history(self, limit: int = 10) -> dict[str, Any]:
         """
         Get recent image generation history.
 

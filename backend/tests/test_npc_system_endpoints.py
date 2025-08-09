@@ -3,8 +3,8 @@ Tests for the NPC system API endpoints.
 """
 
 import pytest
-from fastapi.testclient import TestClient
 from app.main import app
+from fastapi.testclient import TestClient
 
 
 class TestNPCSystemEndpoints:
@@ -15,7 +15,7 @@ class TestNPCSystemEndpoints:
         """Create test client."""
         return TestClient(app)
 
-    def test_create_campaign_npc(self, client):
+    def test_create_campaign_npc(self, client) -> None:
         """Test creating a campaign NPC."""
         campaign_id = "test_campaign_123"
         request_data = {
@@ -56,7 +56,7 @@ class TestNPCSystemEndpoints:
         assert "hit_points" in data
         assert "armor_class" in data
 
-    def test_create_npc_minimal_data(self, client):
+    def test_create_npc_minimal_data(self, client) -> None:
         """Test creating NPC with minimal required data."""
         campaign_id = "test_campaign_123"
         request_data = {"campaign_id": campaign_id, "name": "Simple Guard"}
@@ -73,7 +73,7 @@ class TestNPCSystemEndpoints:
         assert "id" in data
         assert "personality" in data
 
-    def test_get_npc_personality(self, client):
+    def test_get_npc_personality(self, client) -> None:
         """Test getting NPC personality."""
         npc_id = "test_npc_123"
 
@@ -95,7 +95,7 @@ class TestNPCSystemEndpoints:
         assert isinstance(data["traits"], list)
         assert isinstance(data["ideals"], list)
 
-    def test_log_npc_interaction(self, client):
+    def test_log_npc_interaction(self, client) -> None:
         """Test logging NPC interaction."""
         npc_id = "test_npc_123"
         request_data = {
@@ -118,7 +118,7 @@ class TestNPCSystemEndpoints:
         assert isinstance(data["new_relationship_level"], int)
         assert -100 <= data["new_relationship_level"] <= 100
 
-    def test_log_npc_interaction_party(self, client):
+    def test_log_npc_interaction_party(self, client) -> None:
         """Test logging NPC interaction with entire party."""
         npc_id = "test_npc_123"
         request_data = {
@@ -136,7 +136,7 @@ class TestNPCSystemEndpoints:
         assert data["success"] is True
         assert "interaction_id" in data
 
-    def test_generate_npc_stats_civilian(self, client):
+    def test_generate_npc_stats_civilian(self, client) -> None:
         """Test generating civilian NPC stats."""
         npc_id = "test_npc_123"
         request_data = {"npc_id": npc_id, "level": 1, "role": "civilian"}
@@ -177,7 +177,7 @@ class TestNPCSystemEndpoints:
             assert isinstance(abilities[ability], int)
             assert 6 <= abilities[ability] <= 20  # Reasonable ability score range
 
-    def test_generate_npc_stats_guard(self, client):
+    def test_generate_npc_stats_guard(self, client) -> None:
         """Test generating guard NPC stats."""
         npc_id = "test_npc_123"
         request_data = {"npc_id": npc_id, "level": 2, "role": "guard"}
@@ -195,7 +195,7 @@ class TestNPCSystemEndpoints:
         assert stats["armor_class"] >= 14  # Guards should have better AC than civilians
         assert stats["hit_points"]["maximum"] > 4  # Guards should have more HP
 
-    def test_generate_npc_stats_spellcaster(self, client):
+    def test_generate_npc_stats_spellcaster(self, client) -> None:
         """Test generating spellcaster NPC stats."""
         npc_id = "test_npc_123"
         request_data = {"npc_id": npc_id, "level": 3, "role": "spellcaster"}
@@ -214,7 +214,7 @@ class TestNPCSystemEndpoints:
         abilities = stats["abilities"]
         assert abilities["intelligence"] >= 12 or abilities["wisdom"] >= 12
 
-    def test_generate_npc_stats_default_level(self, client):
+    def test_generate_npc_stats_default_level(self, client) -> None:
         """Test generating NPC stats with default level."""
         npc_id = "test_npc_123"
         request_data = {"npc_id": npc_id, "role": "soldier"}
@@ -230,7 +230,7 @@ class TestNPCSystemEndpoints:
         assert stats["level"] == 1  # Default level
         assert stats["role"] == "soldier"
 
-    def test_generate_npc_stats_high_level(self, client):
+    def test_generate_npc_stats_high_level(self, client) -> None:
         """Test generating high-level NPC stats."""
         npc_id = "test_npc_123"
         request_data = {"npc_id": npc_id, "level": 10, "role": "soldier"}
@@ -247,7 +247,7 @@ class TestNPCSystemEndpoints:
         assert stats["proficiency_bonus"] >= 4  # High level = higher proficiency
         assert stats["hit_points"]["maximum"] >= 20  # Should have more HP at high level
 
-    def test_npc_personality_structure(self, client):
+    def test_npc_personality_structure(self, client) -> None:
         """Test that NPC personality has proper structure."""
         npc_id = "test_npc_123"
 
@@ -273,9 +273,9 @@ class TestNPCSystemEndpoints:
         optional_fields = ["appearance"]
         for field in optional_fields:
             if field in data:
-                assert isinstance(data[field], (str, type(None)))
+                assert isinstance(data[field], str | type(None))
 
-    def test_interaction_relationship_bounds(self, client):
+    def test_interaction_relationship_bounds(self, client) -> None:
         """Test that relationship levels stay within bounds."""
         npc_id = "test_npc_123"
 
@@ -294,7 +294,7 @@ class TestNPCSystemEndpoints:
         assert data["success"] is True
         assert -100 <= data["new_relationship_level"] <= 100  # Should be clamped
 
-    def test_npc_creation_personality_generation(self, client):
+    def test_npc_creation_personality_generation(self, client) -> None:
         """Test that created NPCs have diverse personalities."""
         campaign_id = "test_campaign_123"
 

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Literal
+from typing import Any, Literal
 
 from openai import AsyncAzureOpenAI
 from tenacity import retry, stop_after_attempt, wait_exponential
@@ -25,7 +25,7 @@ class AzureOpenAIClient:
     )
     async def chat_completion(
         self,
-        messages: List[Dict[str, str]],
+        messages: list[dict[str, str]],
         deployment: str | None = None,
         **kwargs: Any,
     ) -> str:
@@ -46,7 +46,7 @@ class AzureOpenAIClient:
 
     async def chat_completion_stream(
         self,
-        messages: List[Dict[str, str]],
+        messages: list[dict[str, str]],
         deployment: str | None = None,
         **kwargs: Any,
     ):
@@ -82,7 +82,7 @@ class AzureOpenAIClient:
         style: Literal["vivid", "natural"] = "vivid",
         deployment: str | None = None,
         **kwargs: Any,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Generate an image using Azure OpenAI DALL-E."""
         deployment_name = deployment or settings.azure_openai_dalle_deployment
         try:
@@ -107,11 +107,10 @@ class AzureOpenAIClient:
                     "quality": quality,
                     "style": style,
                 }
-            else:
-                return {
-                    "success": False,
-                    "error": "No image data returned from Azure OpenAI",
-                }
+            return {
+                "success": False,
+                "error": "No image data returned from Azure OpenAI",
+            }
 
         except Exception as e:
             return {"success": False, "error": f"Failed to generate image: {str(e)}"}

@@ -3,9 +3,9 @@ Art Style Analysis Plugin for the Semantic Kernel.
 This plugin provides art style analysis and consistency tracking capabilities.
 """
 
-import logging
-from typing import Dict, Any, List
 import json
+import logging
+from typing import Any
 
 from semantic_kernel.functions import kernel_function
 
@@ -18,7 +18,7 @@ class ArtStyleAnalysisPlugin:
     Analyzes generated artwork for style consistency and provides recommendations.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the art style analysis plugin."""
         # Track style patterns and consistency
         self.style_profiles = {}
@@ -31,7 +31,7 @@ class ArtStyleAnalysisPlugin:
     )
     def analyze_art_style(
         self, image_description: str, prompt: str, art_metadata: str = ""
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Analyze the art style characteristics of a generated image.
 
@@ -90,7 +90,7 @@ class ArtStyleAnalysisPlugin:
     )
     def check_style_consistency(
         self, image_group: str = "current_session", threshold: float = 0.7
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Check style consistency across multiple generated images.
 
@@ -156,7 +156,7 @@ class ArtStyleAnalysisPlugin:
     )
     def create_style_profile(
         self, profile_name: str, style_description: str, reference_images: str = ""
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Create a style profile for maintaining consistency.
 
@@ -213,7 +213,7 @@ class ArtStyleAnalysisPlugin:
     )
     def get_style_recommendations(
         self, target_style: str = "", current_prompt: str = ""
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Get recommendations for maintaining style consistency.
 
@@ -262,8 +262,8 @@ class ArtStyleAnalysisPlugin:
             }
 
     def _extract_style_characteristics(
-        self, description: str, prompt: str, metadata: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, description: str, prompt: str, metadata: dict[str, Any]
+    ) -> dict[str, Any]:
         """Extract style characteristics from image data."""
         characteristics = {
             "art_medium": self._detect_art_medium(description, prompt),
@@ -288,16 +288,15 @@ class ArtStyleAnalysisPlugin:
 
         if any(term in text for term in ["digital", "cgi", "3d"]):
             return "digital"
-        elif any(term in text for term in ["oil", "painting", "painted"]):
+        if any(term in text for term in ["oil", "painting", "painted"]):
             return "oil_painting"
-        elif any(term in text for term in ["watercolor", "wash"]):
+        if any(term in text for term in ["watercolor", "wash"]):
             return "watercolor"
-        elif any(term in text for term in ["pencil", "sketch", "drawn"]):
+        if any(term in text for term in ["pencil", "sketch", "drawn"]):
             return "pencil"
-        elif any(term in text for term in ["ink", "pen"]):
+        if any(term in text for term in ["ink", "pen"]):
             return "ink"
-        else:
-            return "mixed_media"
+        return "mixed_media"
 
     def _detect_color_palette(self, description: str, prompt: str) -> str:
         """Detect the color palette from description and prompt."""
@@ -305,18 +304,17 @@ class ArtStyleAnalysisPlugin:
 
         if any(term in text for term in ["vibrant", "bright", "colorful"]):
             return "vibrant"
-        elif any(term in text for term in ["muted", "subdued", "pastel"]):
+        if any(term in text for term in ["muted", "subdued", "pastel"]):
             return "muted"
-        elif any(
+        if any(
             term in text for term in ["monochrome", "black and white", "grayscale"]
         ):
             return "monochrome"
-        elif any(term in text for term in ["warm", "orange", "red", "yellow"]):
+        if any(term in text for term in ["warm", "orange", "red", "yellow"]):
             return "warm"
-        elif any(term in text for term in ["cool", "blue", "purple", "green"]):
+        if any(term in text for term in ["cool", "blue", "purple", "green"]):
             return "cool"
-        else:
-            return "balanced"
+        return "balanced"
 
     def _detect_lighting_style(self, description: str, prompt: str) -> str:
         """Detect the lighting style from description and prompt."""
@@ -324,16 +322,15 @@ class ArtStyleAnalysisPlugin:
 
         if any(term in text for term in ["dramatic", "harsh", "strong shadows"]):
             return "dramatic"
-        elif any(term in text for term in ["soft", "diffused", "gentle"]):
+        if any(term in text for term in ["soft", "diffused", "gentle"]):
             return "soft"
-        elif any(term in text for term in ["atmospheric", "mood", "ambient"]):
+        if any(term in text for term in ["atmospheric", "mood", "ambient"]):
             return "atmospheric"
-        elif any(term in text for term in ["studio", "professional", "even"]):
+        if any(term in text for term in ["studio", "professional", "even"]):
             return "studio"
-        else:
-            return "natural"
+        return "natural"
 
-    def _categorize_style(self, characteristics: Dict[str, Any]) -> str:
+    def _categorize_style(self, characteristics: dict[str, Any]) -> str:
         """Categorize the overall art style."""
         medium = characteristics.get("art_medium", "")
         lighting = characteristics.get("lighting_style", "")
@@ -341,16 +338,15 @@ class ArtStyleAnalysisPlugin:
 
         if medium == "digital" and lighting == "dramatic":
             return "fantasy_digital"
-        elif medium == "oil_painting" and palette == "warm":
+        if medium == "oil_painting" and palette == "warm":
             return "classical_painting"
-        elif medium == "digital" and lighting == "soft":
+        if medium == "digital" and lighting == "soft":
             return "contemporary_digital"
-        elif medium == "watercolor":
+        if medium == "watercolor":
             return "impressionist"
-        else:
-            return "mixed_style"
+        return "mixed_style"
 
-    def _calculate_consistency_score(self, analyses: List[Dict[str, Any]]) -> float:
+    def _calculate_consistency_score(self, analyses: list[dict[str, Any]]) -> float:
         """Calculate style consistency score across analyses."""
         if len(analyses) < 2:
             return 1.0
@@ -364,7 +360,7 @@ class ArtStyleAnalysisPlugin:
 
             # Calculate similarity for each characteristic
             similarities = []
-            for key in current.keys():
+            for key in current:
                 if key in next_analysis:
                     if current[key] == next_analysis[key]:
                         similarities.append(1.0)
@@ -383,8 +379,8 @@ class ArtStyleAnalysisPlugin:
         )
 
     def _identify_inconsistencies(
-        self, analyses: List[Dict[str, Any]], threshold: float
-    ) -> List[Dict[str, Any]]:
+        self, analyses: list[dict[str, Any]], threshold: float
+    ) -> list[dict[str, Any]]:
         """Identify style inconsistencies."""
         inconsistencies = []
 
@@ -417,8 +413,8 @@ class ArtStyleAnalysisPlugin:
         return inconsistencies
 
     def _generate_consistency_recommendations(
-        self, inconsistencies: List[Dict[str, Any]]
-    ) -> List[str]:
+        self, inconsistencies: list[dict[str, Any]]
+    ) -> list[str]:
         """Generate recommendations based on inconsistencies."""
         recommendations = []
 
@@ -448,7 +444,7 @@ class ArtStyleAnalysisPlugin:
 
         return recommendations
 
-    def _calculate_confidence(self, characteristics: Dict[str, Any]) -> float:
+    def _calculate_confidence(self, characteristics: dict[str, Any]) -> float:
         """Calculate confidence score for style analysis."""
         # Simple confidence based on number of detected characteristics
         detected_chars = sum(
@@ -457,7 +453,7 @@ class ArtStyleAnalysisPlugin:
         total_chars = len(characteristics)
         return detected_chars / total_chars if total_chars > 0 else 0.0
 
-    def _generate_style_tags(self, characteristics: Dict[str, Any]) -> List[str]:
+    def _generate_style_tags(self, characteristics: dict[str, Any]) -> list[str]:
         """Generate style tags from characteristics."""
         tags = []
         for key, value in characteristics.items():
@@ -465,13 +461,13 @@ class ArtStyleAnalysisPlugin:
                 tags.append(f"{key}:{value}")
         return tags
 
-    def _extract_style_from_description(self, description: str) -> Dict[str, Any]:
+    def _extract_style_from_description(self, description: str) -> dict[str, Any]:
         """Extract style characteristics from text description."""
         return self._extract_style_characteristics(description, description, {})
 
     def _get_profile_recommendations(
-        self, profile: Dict[str, Any], prompt: str
-    ) -> List[str]:
+        self, profile: dict[str, Any], prompt: str
+    ) -> list[str]:
         """Get recommendations based on style profile."""
         recommendations = []
         characteristics = profile.get("characteristics", {})
@@ -484,7 +480,7 @@ class ArtStyleAnalysisPlugin:
 
         return recommendations
 
-    def _get_history_recommendations(self, prompt: str) -> List[str]:
+    def _get_history_recommendations(self, prompt: str) -> list[str]:
         """Get recommendations based on style history."""
         recommendations = []
 
@@ -500,8 +496,8 @@ class ArtStyleAnalysisPlugin:
         return recommendations
 
     def _find_common_characteristics(
-        self, analyses: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+        self, analyses: list[dict[str, Any]]
+    ) -> dict[str, Any]:
         """Find common characteristics across analyses."""
         common = {}
 
@@ -523,7 +519,7 @@ class ArtStyleAnalysisPlugin:
 
         return result
 
-    def _get_general_recommendations(self, prompt: str) -> List[str]:
+    def _get_general_recommendations(self, prompt: str) -> list[str]:
         """Get general style recommendations."""
         return [
             "Include specific art style keywords in prompt for consistency",
@@ -537,14 +533,13 @@ class ArtStyleAnalysisPlugin:
 
         if any(term in text for term in ["close-up", "portrait", "headshot"]):
             return "close_up"
-        elif any(term in text for term in ["wide", "landscape", "panoramic"]):
+        if any(term in text for term in ["wide", "landscape", "panoramic"]):
             return "wide_shot"
-        elif any(term in text for term in ["centered", "symmetrical"]):
+        if any(term in text for term in ["centered", "symmetrical"]):
             return "centered"
-        elif any(term in text for term in ["dynamic", "action", "movement"]):
+        if any(term in text for term in ["dynamic", "action", "movement"]):
             return "dynamic"
-        else:
-            return "standard"
+        return "standard"
 
     def _detect_detail_level(self, description: str, prompt: str) -> str:
         """Detect detail level from description and prompt."""
@@ -552,10 +547,9 @@ class ArtStyleAnalysisPlugin:
 
         if any(term in text for term in ["highly detailed", "intricate", "complex"]):
             return "high"
-        elif any(term in text for term in ["simple", "minimalist", "clean"]):
+        if any(term in text for term in ["simple", "minimalist", "clean"]):
             return "low"
-        else:
-            return "medium"
+        return "medium"
 
     def _detect_artistic_movement(self, description: str, prompt: str) -> str:
         """Detect artistic movement from description and prompt."""
@@ -563,14 +557,13 @@ class ArtStyleAnalysisPlugin:
 
         if any(term in text for term in ["realistic", "photorealistic"]):
             return "realism"
-        elif any(term in text for term in ["impressionist", "impressionism"]):
+        if any(term in text for term in ["impressionist", "impressionism"]):
             return "impressionism"
-        elif any(term in text for term in ["abstract", "cubist"]):
+        if any(term in text for term in ["abstract", "cubist"]):
             return "abstract"
-        elif any(term in text for term in ["surreal", "surrealism"]):
+        if any(term in text for term in ["surreal", "surrealism"]):
             return "surrealism"
-        else:
-            return "contemporary"
+        return "contemporary"
 
     def _get_timestamp(self) -> str:
         """Get current timestamp as ISO string."""

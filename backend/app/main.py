@@ -2,19 +2,19 @@
 Main FastAPI application to serve the AI Dungeon Master backend.
 """
 
+import logging
+import os
+
+import uvicorn
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import uvicorn
-import os
-import logging
-from dotenv import load_dotenv
 
 # Local imports
-from app.api import game_routes
-from app.api import websocket_routes
+from app.api import game_routes, websocket_routes
+from app.config import init_settings
 from app.database import init_db
 from app.services.campaign_service import campaign_service
-from app.config import init_settings
 
 # Load environment variables
 load_dotenv()
@@ -45,7 +45,7 @@ app.add_middleware(
 
 # Initialize database and create templates on startup
 @app.on_event("startup")
-async def startup_event():
+async def startup_event() -> None:
     """Initialize database and create default templates."""
     logger.info("Initializing configuration...")
     init_settings()  # Load configuration once at startup

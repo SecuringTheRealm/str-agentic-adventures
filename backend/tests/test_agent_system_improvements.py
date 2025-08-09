@@ -2,8 +2,9 @@
 Tests for agent system improvements, particularly fallback behavior.
 """
 
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
 
 
 class TestAgentSystemImprovements:
@@ -24,7 +25,7 @@ class TestAgentSystemImprovements:
 
             return agent
 
-    def test_fallback_initialization(self, dm_agent_mock):
+    def test_fallback_initialization(self, dm_agent_mock) -> None:
         """Test that fallback components are properly initialized."""
         # Trigger fallback initialization
         dm_agent_mock._initialize_fallback_components()
@@ -40,7 +41,7 @@ class TestAgentSystemImprovements:
         assert "d20" in dm_agent_mock._fallback_dice
         assert callable(dm_agent_mock._fallback_dice["d20"])
 
-    def test_fallback_dice_roll(self, dm_agent_mock):
+    def test_fallback_dice_roll(self, dm_agent_mock) -> None:
         """Test fallback dice rolling functionality."""
         dm_agent_mock._initialize_fallback_components()
 
@@ -53,7 +54,7 @@ class TestAgentSystemImprovements:
         assert 1 <= result["rolls"][0] <= 20
         assert result["total"] == result["rolls"][0]
 
-    def test_fallback_dice_roll_with_modifier(self, dm_agent_mock):
+    def test_fallback_dice_roll_with_modifier(self, dm_agent_mock) -> None:
         """Test fallback dice rolling with modifiers."""
         dm_agent_mock._initialize_fallback_components()
 
@@ -68,7 +69,7 @@ class TestAgentSystemImprovements:
         assert result["modifier"] == -2
         assert result["total"] == result["rolls"][0] - 2
 
-    def test_fallback_multiple_dice(self, dm_agent_mock):
+    def test_fallback_multiple_dice(self, dm_agent_mock) -> None:
         """Test fallback rolling multiple dice."""
         dm_agent_mock._initialize_fallback_components()
 
@@ -77,7 +78,7 @@ class TestAgentSystemImprovements:
         assert all(1 <= roll <= 6 for roll in result["rolls"])
         assert result["total"] == sum(result["rolls"])
 
-    def test_fallback_invalid_dice_notation(self, dm_agent_mock):
+    def test_fallback_invalid_dice_notation(self, dm_agent_mock) -> None:
         """Test fallback handling of invalid dice notation."""
         dm_agent_mock._initialize_fallback_components()
 
@@ -85,7 +86,7 @@ class TestAgentSystemImprovements:
         assert "error" in result
         assert "Invalid dice notation" in result["error"]
 
-    def test_fallback_generate_response(self, dm_agent_mock):
+    def test_fallback_generate_response(self, dm_agent_mock) -> None:
         """Test fallback response generation."""
         dm_agent_mock._initialize_fallback_components()
 
@@ -103,7 +104,7 @@ class TestAgentSystemImprovements:
         assert len(default_response) > 0
 
     @pytest.mark.anyio("asyncio")
-    async def test_fallback_input_processing(self, dm_agent_mock):
+    async def test_fallback_input_processing(self, dm_agent_mock) -> None:
         """Test input processing in fallback mode."""
         dm_agent_mock._initialize_fallback_components()
         dm_agent_mock._fallback_mode = True
@@ -116,7 +117,7 @@ class TestAgentSystemImprovements:
         assert result.get("fallback_mode") is True
 
     @pytest.mark.anyio("asyncio")
-    async def test_fallback_dice_input_processing(self, dm_agent_mock):
+    async def test_fallback_dice_input_processing(self, dm_agent_mock) -> None:
         """Test dice roll input processing in fallback mode."""
         dm_agent_mock._initialize_fallback_components()
         dm_agent_mock._fallback_mode = True
@@ -128,7 +129,7 @@ class TestAgentSystemImprovements:
         assert "rolls" in result["dice_result"]
 
     @pytest.mark.anyio("asyncio")
-    async def test_fallback_combat_input_processing(self, dm_agent_mock):
+    async def test_fallback_combat_input_processing(self, dm_agent_mock) -> None:
         """Test combat input processing in fallback mode."""
         dm_agent_mock._initialize_fallback_components()
         dm_agent_mock._fallback_mode = True
@@ -141,7 +142,7 @@ class TestAgentSystemImprovements:
             or "attempt" in result["message"].lower()
         )
 
-    def test_handle_fallback_dice_roll_extraction(self, dm_agent_mock):
+    def test_handle_fallback_dice_roll_extraction(self, dm_agent_mock) -> None:
         """Test extraction of dice notation from user input."""
         dm_agent_mock._initialize_fallback_components()
 
@@ -159,7 +160,7 @@ class TestAgentSystemImprovements:
             assert "total" in result
             assert len(result["rolls"]) > 0
 
-    def test_fallback_campaign_templates(self, dm_agent_mock):
+    def test_fallback_campaign_templates(self, dm_agent_mock) -> None:
         """Test that fallback campaign templates are properly structured."""
         dm_agent_mock._initialize_fallback_components()
 
@@ -168,7 +169,7 @@ class TestAgentSystemImprovements:
         assert "modern" in templates
         assert "sci-fi" in templates
 
-        for template_name, template_data in templates.items():
+        for _template_name, template_data in templates.items():
             assert "setting" in template_data
             assert "themes" in template_data
             assert "locations" in template_data
@@ -178,7 +179,7 @@ class TestAgentSystemImprovements:
             assert isinstance(template_data["npcs"], list)
 
     @pytest.mark.anyio("asyncio")
-    async def test_fallback_error_handling(self, dm_agent_mock):
+    async def test_fallback_error_handling(self, dm_agent_mock) -> None:
         """Test error handling in fallback mode."""
         dm_agent_mock._initialize_fallback_components()
         dm_agent_mock._fallback_mode = True
@@ -188,7 +189,7 @@ class TestAgentSystemImprovements:
         assert "message" in result
         # Should not raise an exception and should provide some response
 
-    def test_dice_roll_bounds_checking(self, dm_agent_mock):
+    def test_dice_roll_bounds_checking(self, dm_agent_mock) -> None:
         """Test that dice rolls stay within expected bounds."""
         dm_agent_mock._initialize_fallback_components()
 
@@ -202,7 +203,7 @@ class TestAgentSystemImprovements:
             assert all(1 <= roll <= 6 for roll in result["rolls"])
             assert 2 <= result["total"] <= 12
 
-    def test_fallback_mode_detection(self, dm_agent_mock):
+    def test_fallback_mode_detection(self, dm_agent_mock) -> None:
         """Test that fallback mode is properly detected."""
         # Initially not in fallback mode
         assert not getattr(dm_agent_mock, "_fallback_mode", False)
@@ -213,7 +214,7 @@ class TestAgentSystemImprovements:
         # Should now be in fallback mode
         assert dm_agent_mock._fallback_mode is True
 
-    def test_dice_notation_parsing(self, dm_agent_mock):
+    def test_dice_notation_parsing(self, dm_agent_mock) -> None:
         """Test parsing of different dice notation formats."""
         dm_agent_mock._initialize_fallback_components()
 

@@ -3,10 +3,11 @@ Configuration for the backend application.
 """
 
 import os
-from typing import Optional, Annotated
-from pydantic_settings import BaseSettings
+from typing import Annotated
+
 from dotenv import load_dotenv
 from fastapi import Depends
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
@@ -54,7 +55,7 @@ class Settings(BaseSettings):
 
 
 # Global configuration instance - initialized at startup
-_settings: Optional[Settings] = None
+_settings: Settings | None = None
 
 
 def init_settings() -> Settings:
@@ -63,8 +64,7 @@ def init_settings() -> Settings:
     load_dotenv()
 
     try:
-        settings = Settings()
-        return settings
+        return Settings()
     except Exception as e:
         # Check if this is due to missing Azure OpenAI configuration
         error_msg = str(e)
@@ -76,9 +76,8 @@ def init_settings() -> Settings:
                 "AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_API_KEY, "
                 "AZURE_OPENAI_CHAT_DEPLOYMENT, AZURE_OPENAI_EMBEDDING_DEPLOYMENT"
             ) from e
-        else:
-            # Re-raise original error for non-Azure OpenAI issues
-            raise
+        # Re-raise original error for non-Azure OpenAI issues
+        raise
 
 
 def get_settings() -> Settings:
@@ -102,7 +101,7 @@ class SettingsProxy:
     def __getattr__(self, name):
         return getattr(get_settings(), name)
 
-    def __setattr__(self, name, value):
+    def __setattr__(self, name, value) -> None:
         return setattr(get_settings(), name, value)
 
 

@@ -2,8 +2,9 @@
 Test integration of concentration spells with the spell casting system.
 """
 
-import pytest
 from unittest.mock import Mock, patch
+
+import pytest
 from app.api.game_routes import cast_spell_in_combat
 from app.models.game_models import CastSpellRequest
 
@@ -53,7 +54,7 @@ class TestConcentrationSpellIntegration:
     @pytest.mark.asyncio
     async def test_concentration_spell_starts_concentration(
         self, concentration_spell_data, cast_spell_request
-    ):
+    ) -> None:
         """Test that casting a concentration spell starts concentration."""
         with (
             patch("app.api.game_routes._get_spell_data") as mock_get_spell,
@@ -95,7 +96,7 @@ class TestConcentrationSpellIntegration:
     @pytest.mark.asyncio
     async def test_non_concentration_spell_no_concentration_started(
         self, non_concentration_spell_data, cast_spell_request
-    ):
+    ) -> None:
         """Test that casting a non-concentration spell doesn't start concentration."""
         cast_spell_request.spell_id = "magic_missile"
 
@@ -130,7 +131,7 @@ class TestConcentrationSpellIntegration:
     @pytest.mark.asyncio
     async def test_concentration_spell_breaks_existing_concentration(
         self, concentration_spell_data, cast_spell_request
-    ):
+    ) -> None:
         """Test that casting a concentration spell when already concentrating breaks the old concentration."""
         with (
             patch("app.api.game_routes._get_spell_data") as mock_get_spell,
@@ -171,7 +172,7 @@ class TestConcentrationSpellIntegration:
     @pytest.mark.asyncio
     async def test_concentration_spell_failure_doesnt_break_cast(
         self, concentration_spell_data, cast_spell_request
-    ):
+    ) -> None:
         """Test that concentration failure doesn't prevent spell from being cast."""
         with (
             patch("app.api.game_routes._get_spell_data") as mock_get_spell,

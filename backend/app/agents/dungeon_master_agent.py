@@ -5,11 +5,11 @@ This is a ground-up rebuild focusing on a simple AI approach using system prompt
 to meet PRD requirements, replacing the complex multi-agent orchestration.
 """
 
+import json
 import logging
 import random
-import json
 import re
-from typing import Dict, Any, List, Tuple
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +24,7 @@ class DungeonMasterAgent:
     complex agent coordination.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the Dungeon Master agent."""
         self._fallback_mode = False
         self.openai_client = None
@@ -55,7 +55,7 @@ class DungeonMasterAgent:
         # Fallback components are initialized lazily
         self._fallback_initialized = False
 
-    def _get_dm_system_prompt(self, context: Dict[str, Any]) -> str:
+    def _get_dm_system_prompt(self, context: dict[str, Any]) -> str:
         """
         Generate a comprehensive system prompt that embodies the Dungeon Master role
         as specified in the PRD, replacing complex agent coordination.
@@ -65,7 +65,7 @@ class DungeonMasterAgent:
             character_info = f"The player character is {context.get('character_name', 'an adventurer')}, "
             character_info += f"a level {context.get('character_level', '1')} {context.get('character_class', 'fighter')}. "
 
-        system_prompt = f"""You are an expert Dungeon Master for D&D 5e. You are the primary orchestrator of the tabletop RPG experience, responsible for:
+        return f"""You are an expert Dungeon Master for D&D 5e. You are the primary orchestrator of the tabletop RPG experience, responsible for:
 
 - Managing player interactions and conversation flow
 - Coordinating narrative, combat, and character management aspects
@@ -87,11 +87,10 @@ Your responses should:
 
 Always respond as a helpful, creative DM who wants players to have an exciting adventure. Keep responses focused and not overly long. You are the single point of coordination for the entire game experience."""
 
-        return system_prompt
 
     async def process_input(
-        self, user_input: str, context: Dict[str, Any] = None
-    ) -> Dict[str, Any]:
+        self, user_input: str, context: dict[str, Any] = None
+    ) -> dict[str, Any]:
         """
         Process user input using a simple AI approach with system prompts.
 
@@ -131,7 +130,7 @@ Always respond as a helpful, creative DM who wants players to have an exciting a
             )
 
             # Structure the response in the expected format
-            response = {
+            return {
                 "message": ai_response.strip()
                 if ai_response
                 else "The adventure continues...",
@@ -140,7 +139,6 @@ Always respond as a helpful, creative DM who wants players to have an exciting a
                 "combat_updates": None,
             }
 
-            return response
 
         except Exception as e:
             logger.error(f"Error in DM processing: {str(e)}")
@@ -148,7 +146,7 @@ Always respond as a helpful, creative DM who wants players to have an exciting a
             return self._process_input_fallback(user_input, context)
 
     async def process_input_stream(
-        self, user_input: str, context: Dict[str, Any] = None
+        self, user_input: str, context: dict[str, Any] = None
     ) -> None:
         """
         Process user input with streaming responses via WebSocket.
@@ -209,7 +207,7 @@ Always respond as a helpful, creative DM who wants players to have an exciting a
             )
 
     async def _stream_ai_response(
-        self, messages: List[Dict[str, str]], websocket
+        self, messages: list[dict[str, str]], websocket
     ) -> None:
         """Stream AI response using Azure OpenAI."""
         try:
@@ -293,7 +291,7 @@ Always respond as a helpful, creative DM who wants players to have an exciting a
 
         self._fallback_initialized = True
 
-    def _fallback_dice_roll(self, notation: str) -> Dict[str, Any]:
+    def _fallback_dice_roll(self, notation: str) -> dict[str, Any]:
         """Roll dice based on notation like '2d6+1'."""
         match = re.fullmatch(r"(\d*)d(\d+)([+-]\d+)?", notation.strip())
         if not match:
@@ -318,7 +316,7 @@ Always respond as a helpful, creative DM who wants players to have an exciting a
             context, self._fallback_responses["default"]
         )
 
-    def _handle_fallback_dice_roll(self, text: str) -> Dict[str, Any]:
+    def _handle_fallback_dice_roll(self, text: str) -> dict[str, Any]:
         """Extract dice notation from text and roll."""
         self._initialize_fallback_components()
         match = re.search(r"(\d*d\d+(?:[+-]\d+)?)", text)
@@ -327,8 +325,8 @@ Always respond as a helpful, creative DM who wants players to have an exciting a
         return self._fallback_dice_roll(match.group(1))
 
     async def _process_input_fallback(
-        self, user_input: str, context: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, user_input: str, context: dict[str, Any]
+    ) -> dict[str, Any]:
         """Process player input without external services."""
         self._initialize_fallback_components()
 
@@ -364,7 +362,7 @@ Always respond as a helpful, creative DM who wants players to have an exciting a
         return response
 
     async def _process_input_stream_fallback(
-        self, user_input: str, context: Dict[str, Any]
+        self, user_input: str, context: dict[str, Any]
     ) -> None:
         """Stream fallback response over WebSocket."""
         websocket = context.get("websocket")
@@ -376,7 +374,7 @@ Always respond as a helpful, creative DM who wants players to have an exciting a
             json.dumps({"type": "chat_complete", "message": result["message"]})
         )
 
-    async def _send_chat_message(self, websocket, message: Dict[str, Any]) -> None:
+    async def _send_chat_message(self, websocket, message: dict[str, Any]) -> None:
         """Send a message through the WebSocket."""
         try:
             await websocket.send_text(json.dumps(message))

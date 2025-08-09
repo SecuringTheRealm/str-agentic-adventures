@@ -2,7 +2,6 @@
 Tests to validate ADR compliance and implementation status.
 """
 
-import pytest
 import os
 import sys
 from pathlib import Path
@@ -14,7 +13,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 class TestADRCompliance:
     """Test ADR implementation compliance."""
 
-    def test_adr_0001_semantic_kernel_implementation(self):
+    def test_adr_0001_semantic_kernel_implementation(self) -> None:
         """Test that ADR 0001 (Semantic Kernel) is implemented."""
         # Test that kernel setup exists
         assert Path("backend/app/kernel_setup.py").exists(), (
@@ -22,7 +21,7 @@ class TestADRCompliance:
         )
 
         # Test that the file contains actual implementation
-        with open("backend/app/kernel_setup.py", "r") as f:
+        with open("backend/app/kernel_setup.py") as f:
             content = f.read()
             assert "KernelManager" in content, (
                 "KernelManager class should be implemented"
@@ -37,7 +36,7 @@ class TestADRCompliance:
                 "Azure embedding service should be present"
             )
 
-    def test_adr_0002_multi_agent_architecture(self):
+    def test_adr_0002_multi_agent_architecture(self) -> None:
         """Test that ADR 0002 (Multi-Agent Architecture) is implemented."""
         # Test that all required agents exist
         agents_path = Path("backend/app/agents")
@@ -57,7 +56,7 @@ class TestADRCompliance:
             assert agent_path.exists(), f"Agent {agent_file} should exist"
 
             # Test that each agent has actual implementation
-            with open(agent_path, "r") as f:
+            with open(agent_path) as f:
                 content = f.read()
                 assert "class " in content, (
                     f"Agent {agent_file} should contain a class definition"
@@ -68,7 +67,7 @@ class TestADRCompliance:
                     or "openai_client" in content
                 ), f"Agent {agent_file} should integrate with Semantic Kernel or OpenAI"
 
-    def test_adr_0003_data_storage_implementation(self):
+    def test_adr_0003_data_storage_implementation(self) -> None:
         """Test that ADR 0003 (Data Storage Strategy) is implemented."""
         # Test that database setup exists
         assert Path("backend/app/database.py").exists(), (
@@ -76,7 +75,7 @@ class TestADRCompliance:
         )
 
         # Test database configuration
-        with open("backend/app/database.py", "r") as f:
+        with open("backend/app/database.py") as f:
             content = f.read()
             assert "SQLAlchemy" in content or "sqlalchemy" in content, (
                 "SQLAlchemy should be configured"
@@ -91,12 +90,12 @@ class TestADRCompliance:
             "Database models should exist"
         )
 
-        with open("backend/app/models/db_models.py", "r") as f:
+        with open("backend/app/models/db_models.py") as f:
             content = f.read()
             assert "class Character" in content, "Character model should be implemented"
             assert "Base" in content, "SQLAlchemy Base should be used"
 
-    def test_adr_0004_frontend_architecture(self):
+    def test_adr_0004_frontend_architecture(self) -> None:
         """Test that ADR 0004 (React TypeScript Frontend) is implemented."""
         frontend_path = Path("frontend")
 
@@ -119,7 +118,7 @@ class TestADRCompliance:
         components_path = src_path / "components"
         assert components_path.exists(), "Components directory should exist"
 
-    def test_adr_0005_azure_openai_integration(self):
+    def test_adr_0005_azure_openai_integration(self) -> None:
         """Test that ADR 0005 (Azure OpenAI Integration) is implemented."""
         # Test that Azure OpenAI client exists
         assert Path("backend/app/azure_openai_client.py").exists(), (
@@ -127,7 +126,7 @@ class TestADRCompliance:
         )
 
         # Test client implementation
-        with open("backend/app/azure_openai_client.py", "r") as f:
+        with open("backend/app/azure_openai_client.py") as f:
             content = f.read()
             assert "class AzureOpenAIClient" in content, (
                 "AzureOpenAIClient class should be implemented"
@@ -142,7 +141,7 @@ class TestADRCompliance:
         # Test configuration exists
         assert Path("backend/app/config.py").exists(), "Configuration file should exist"
 
-        with open("backend/app/config.py", "r") as f:
+        with open("backend/app/config.py") as f:
             content = f.read()
             assert "azure_openai" in content.lower(), (
                 "Azure OpenAI configuration should be present"
@@ -151,25 +150,25 @@ class TestADRCompliance:
                 "Azure OpenAI endpoint configuration should exist"
             )
 
-    def test_adr_0006_character_progression_exists(self):
+    def test_adr_0006_character_progression_exists(self) -> None:
         """Test that ADR 0006 (D&D 5e Character Progression) exists."""
         adr_path = Path("docs/adr/0006-dnd-5e-character-progression-system.md")
         assert adr_path.exists(), "ADR 0006 file should exist"
 
-        with open(adr_path, "r") as f:
+        with open(adr_path) as f:
             content = f.read()
             assert "Character Progression" in content, (
                 "ADR should be about character progression"
             )
             assert "status: accepted" in content.lower(), "ADR should be accepted"
 
-    def test_agent_database_integration(self):
+    def test_agent_database_integration(self) -> None:
         """Test that agents are integrated with persistent storage."""
         # Test ScribeAgent uses database
         scribe_path = Path("backend/app/agents/scribe_agent.py")
         assert scribe_path.exists(), "ScribeAgent should exist"
 
-        with open(scribe_path, "r") as f:
+        with open(scribe_path) as f:
             content = f.read()
             assert "get_session" in content, "ScribeAgent should use database sessions"
             assert "Character" in content, "ScribeAgent should use Character model"
@@ -177,7 +176,7 @@ class TestADRCompliance:
                 "ScribeAgent should perform database operations"
             )
 
-    def test_comprehensive_adr_coverage(self):
+    def test_comprehensive_adr_coverage(self) -> None:
         """Test that all ADRs have corresponding implementations."""
         adr_directory = Path("docs/adr")
         assert adr_directory.exists(), "ADR directory should exist"
@@ -193,6 +192,6 @@ class TestADRCompliance:
         index_path = adr_directory / "index.md"
         assert index_path.exists(), "ADR index should exist"
 
-        with open(index_path, "r") as f:
+        with open(index_path) as f:
             content = f.read()
             assert "0006" in content, "ADR index should reference ADR 0006"

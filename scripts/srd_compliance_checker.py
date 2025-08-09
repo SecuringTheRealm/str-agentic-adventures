@@ -6,11 +6,10 @@ Parses the D&D 5e SRD document to extract rules and verify implementation compli
 
 import re
 from pathlib import Path
-from typing import Dict, List, Set
 
 
 class SRDRulesChecker:
-    def __init__(self, srd_path: str, repo_root: str):
+    def __init__(self, srd_path: str, repo_root: str) -> None:
         self.srd_path = Path(srd_path)
         self.repo_root = Path(repo_root)
         self.rules_found = {
@@ -25,11 +24,11 @@ class SRDRulesChecker:
             "magic_items": [],
         }
 
-    def parse_srd(self):
+    def parse_srd(self) -> None:
         """Parse the SRD document to extract rules and content."""
         print("📖 Parsing SRD document...")
 
-        with open(self.srd_path, "r", encoding="utf-8") as f:
+        with open(self.srd_path, encoding="utf-8") as f:
             content = f.read()
 
         # Extract spells
@@ -54,7 +53,7 @@ class SRDRulesChecker:
             f"✅ Parsed SRD: Found {sum(len(rules) for rules in self.rules_found.values())} rule elements"
         )
 
-    def _extract_spells(self, content: str):
+    def _extract_spells(self, content: str) -> None:
         """Extract spell names and details from SRD."""
         # Look for spell sections
         spell_pattern = r"(?:^|\n)#+\s*([A-Z][a-zA-Z\s\']+)\s*\n.*?(?:\*\*Level.*?\*\*|\*\*School.*?\*\*)"
@@ -94,7 +93,7 @@ class SRDRulesChecker:
 
         self.rules_found["spells"] = spell_list[:100]  # Limit for demo
 
-    def _extract_classes(self, content: str):
+    def _extract_classes(self, content: str) -> None:
         """Extract character class information."""
         # Look for class sections
         class_pattern = r"## ([A-Z][a-z]+)\s*\n.*?(?=## [A-Z]|$)"
@@ -119,7 +118,7 @@ class SRDRulesChecker:
         found_classes = [cls for cls in classes if cls in known_classes]
         self.rules_found["classes"] = found_classes
 
-    def _extract_races(self, content: str):
+    def _extract_races(self, content: str) -> None:
         """Extract character race information."""
         # Look for race sections
         race_pattern = (
@@ -149,7 +148,7 @@ class SRDRulesChecker:
         ]
         self.rules_found["races"] = found_races[:20]  # Limit for demo
 
-    def _extract_equipment(self, content: str):
+    def _extract_equipment(self, content: str) -> None:
         """Extract equipment and weapon information."""
         # Look for equipment tables and weapon entries
         equipment_pattern = r"\|\s*([A-Z][a-zA-Z\s]+)\s*\|\s*\d+\s*(?:gp|sp|cp)"
@@ -157,7 +156,7 @@ class SRDRulesChecker:
 
         self.rules_found["equipment"] = list(set(equipment))[:50]  # Limit for demo
 
-    def _extract_combat_rules(self, content: str):
+    def _extract_combat_rules(self, content: str) -> None:
         """Extract combat-related rules."""
         combat_sections = [
             "Attack Rolls",
@@ -177,7 +176,7 @@ class SRDRulesChecker:
 
         self.rules_found["combat_rules"] = found_rules
 
-    def _extract_conditions(self, content: str):
+    def _extract_conditions(self, content: str) -> None:
         """Extract status conditions."""
         conditions = [
             "Blinded",
@@ -203,7 +202,7 @@ class SRDRulesChecker:
 
         self.rules_found["conditions"] = found_conditions
 
-    def check_implementation_compliance(self) -> Dict[str, Dict[str, any]]:
+    def check_implementation_compliance(self) -> dict[str, dict[str, any]]:
         """Check if SRD rules are implemented in the codebase."""
         print("🔍 Checking implementation compliance...")
 
@@ -226,7 +225,7 @@ class SRDRulesChecker:
 
         return compliance_report
 
-    def _check_spell_compliance(self) -> Dict[str, any]:
+    def _check_spell_compliance(self) -> dict[str, any]:
         """Check if spells are implemented."""
         # Look for spell implementations in code
         spell_files = list(self.repo_root.glob("**/*spell*.py")) + list(
@@ -236,7 +235,7 @@ class SRDRulesChecker:
         implemented_spells = set()
         for file_path in spell_files:
             try:
-                with open(file_path, "r", encoding="utf-8") as f:
+                with open(file_path, encoding="utf-8") as f:
                     content = f.read().lower()
                     for spell in self.rules_found["spells"]:
                         if (
@@ -261,7 +260,7 @@ class SRDRulesChecker:
             ],  # Show first 10 missing
         }
 
-    def _check_class_compliance(self) -> Dict[str, any]:
+    def _check_class_compliance(self) -> dict[str, any]:
         """Check if character classes are implemented."""
         # Look for class implementations
         class_files = list(self.repo_root.glob("**/*class*.py")) + list(
@@ -271,7 +270,7 @@ class SRDRulesChecker:
         implemented_classes = set()
         for file_path in class_files:
             try:
-                with open(file_path, "r", encoding="utf-8") as f:
+                with open(file_path, encoding="utf-8") as f:
                     content = f.read().lower()
                     for char_class in self.rules_found["classes"]:
                         if char_class.lower() in content:
@@ -291,7 +290,7 @@ class SRDRulesChecker:
             "missing": list(set(self.rules_found["classes"]) - implemented_classes),
         }
 
-    def _check_race_compliance(self) -> Dict[str, any]:
+    def _check_race_compliance(self) -> dict[str, any]:
         """Check if character races are implemented."""
         race_files = list(self.repo_root.glob("**/*race*.py")) + list(
             self.repo_root.glob("**/*character*.py")
@@ -300,7 +299,7 @@ class SRDRulesChecker:
         implemented_races = set()
         for file_path in race_files:
             try:
-                with open(file_path, "r", encoding="utf-8") as f:
+                with open(file_path, encoding="utf-8") as f:
                     content = f.read().lower()
                     for race in self.rules_found["races"]:
                         if race.lower() in content:
@@ -320,7 +319,7 @@ class SRDRulesChecker:
             "missing": list(set(self.rules_found["races"]) - implemented_races)[:10],
         }
 
-    def _check_equipment_compliance(self) -> Dict[str, any]:
+    def _check_equipment_compliance(self) -> dict[str, any]:
         """Check if equipment is implemented."""
         equipment_files = (
             list(self.repo_root.glob("**/*equipment*.py"))
@@ -331,7 +330,7 @@ class SRDRulesChecker:
         implemented_equipment = set()
         for file_path in equipment_files:
             try:
-                with open(file_path, "r", encoding="utf-8") as f:
+                with open(file_path, encoding="utf-8") as f:
                     content = f.read().lower()
                     for item in self.rules_found["equipment"]:
                         if item.lower() in content:
@@ -353,7 +352,7 @@ class SRDRulesChecker:
             ],
         }
 
-    def _check_combat_compliance(self) -> Dict[str, any]:
+    def _check_combat_compliance(self) -> dict[str, any]:
         """Check if combat rules are implemented."""
         combat_files = (
             list(self.repo_root.glob("**/*combat*.py"))
@@ -364,7 +363,7 @@ class SRDRulesChecker:
         implemented_rules = set()
         for file_path in combat_files:
             try:
-                with open(file_path, "r", encoding="utf-8") as f:
+                with open(file_path, encoding="utf-8") as f:
                     content = f.read().lower()
                     for rule in self.rules_found["combat_rules"]:
                         if (
@@ -387,7 +386,7 @@ class SRDRulesChecker:
             "missing": list(set(self.rules_found["combat_rules"]) - implemented_rules),
         }
 
-    def generate_compliance_report(self, compliance_data: Dict) -> str:
+    def generate_compliance_report(self, compliance_data: dict) -> str:
         """Generate a comprehensive compliance report."""
         report = []
         report.append("# SRD 5.2.1 Rules Compliance Report")
@@ -424,7 +423,7 @@ class SRDRulesChecker:
         return "\n".join(report)
 
 
-def main():
+def main() -> None:
     """Main function to run SRD compliance checking."""
     repo_root = "/home/runner/work/str-agentic-adventures/str-agentic-adventures"
     srd_path = f"{repo_root}/docs/reference/srd-5.2.1.md"

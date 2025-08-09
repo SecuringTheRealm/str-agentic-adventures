@@ -4,9 +4,10 @@ This plugin provides scene illustration and composition capabilities for RPG env
 """
 
 import logging
-from typing import Dict, Any, List
+from typing import Any
 
 from semantic_kernel.functions import kernel_function
+
 from app.azure_openai_client import AzureOpenAIClient
 
 logger = logging.getLogger(__name__)
@@ -18,7 +19,7 @@ class SceneCompositionPlugin:
     Creates detailed environmental scenes, locations, and atmospheric illustrations.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the scene composition plugin."""
         self.azure_client = AzureOpenAIClient()
         self.scene_library = {}
@@ -38,7 +39,7 @@ class SceneCompositionPlugin:
         mood: str = "neutral",
         notable_elements: str = "",
         characters_present: str = "",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate a detailed scene illustration.
 
@@ -116,12 +117,11 @@ class SceneCompositionPlugin:
                         "elements_count": len(elements),
                     },
                 }
-            else:
-                return {
-                    "status": "error",
-                    "scene_id": scene_id,
-                    "error": result.get("error", "Scene generation failed"),
-                }
+            return {
+                "status": "error",
+                "scene_id": scene_id,
+                "error": result.get("error", "Scene generation failed"),
+            }
 
         except Exception as e:
             logger.error(f"Error illustrating scene: {str(e)}")
@@ -139,7 +139,7 @@ class SceneCompositionPlugin:
         key_features: str = "",
         lighting_notes: str = "",
         composition_style: str = "",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Create a location template for consistent scene generation.
 
@@ -197,7 +197,7 @@ class SceneCompositionPlugin:
         base_scene_id: str,
         variation_type: str = "lighting",
         variation_description: str = "",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate a scene variation with different conditions.
 
@@ -252,11 +252,10 @@ class SceneCompositionPlugin:
                     "prompt_used": variation_prompt,
                     "location_name": base_scene["location_name"],
                 }
-            else:
-                return {
-                    "status": "error",
-                    "error": result.get("error", "Scene variation generation failed"),
-                }
+            return {
+                "status": "error",
+                "error": result.get("error", "Scene variation generation failed"),
+            }
 
         except Exception as e:
             logger.error(f"Error generating scene variation: {str(e)}")
@@ -275,7 +274,7 @@ class SceneCompositionPlugin:
         scale: str = "wide",
         focus_point: str = "",
         story_context: str = "",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Create a cinematic establishing shot for a location.
 
@@ -336,11 +335,10 @@ class SceneCompositionPlugin:
                     "prompt_used": prompt,
                     "composition_notes": self._analyze_composition(scale, focus_point),
                 }
-            else:
-                return {
-                    "status": "error",
-                    "error": result.get("error", "Establishing shot generation failed"),
-                }
+            return {
+                "status": "error",
+                "error": result.get("error", "Establishing shot generation failed"),
+            }
 
         except Exception as e:
             logger.error(f"Error creating establishing shot: {str(e)}")
@@ -359,7 +357,7 @@ class SceneCompositionPlugin:
         terrain_type: str = "mixed",
         tactical_elements: str = "",
         scale_reference: str = "grid",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate a battle map overview for tactical combat.
 
@@ -417,11 +415,10 @@ class SceneCompositionPlugin:
                         terrain_type, elements
                     ),
                 }
-            else:
-                return {
-                    "status": "error",
-                    "error": result.get("error", "Battle map generation failed"),
-                }
+            return {
+                "status": "error",
+                "error": result.get("error", "Battle map generation failed"),
+            }
 
         except Exception as e:
             logger.error(f"Error generating battle map: {str(e)}")
@@ -434,7 +431,7 @@ class SceneCompositionPlugin:
         description="Get composition analysis and recommendations for scenes.",
         name="analyze_scene_composition",
     )
-    def analyze_scene_composition(self, scene_id: str) -> Dict[str, Any]:
+    def analyze_scene_composition(self, scene_id: str) -> dict[str, Any]:
         """
         Analyze scene composition and provide recommendations.
 
@@ -477,8 +474,8 @@ class SceneCompositionPlugin:
         time: str,
         weather: str,
         mood: str,
-        elements: List[str],
-        characters: List[str],
+        elements: list[str],
+        characters: list[str],
     ) -> str:
         """Build a comprehensive scene prompt."""
         # Start with location description
@@ -514,7 +511,7 @@ class SceneCompositionPlugin:
         return prompt
 
     def _build_variation_prompt(
-        self, base_scene: Dict[str, Any], var_type: str, description: str
+        self, base_scene: dict[str, Any], var_type: str, description: str
     ) -> str:
         """Build a variation prompt based on base scene."""
         base_prompt = base_scene["generation_prompt"]
@@ -577,7 +574,7 @@ class SceneCompositionPlugin:
         return prompt
 
     def _build_battle_map_prompt(
-        self, battlefield: str, terrain: str, elements: List[str], scale: str
+        self, battlefield: str, terrain: str, elements: list[str], scale: str
     ) -> str:
         """Build a battle map prompt."""
         prompt = f"Tactical battle map of {battlefield}, {terrain} terrain"
@@ -612,7 +609,7 @@ class SceneCompositionPlugin:
 
         return styles.get(location_type, "Balanced composition with clear focal points")
 
-    def _analyze_composition(self, scale: str, focus: str) -> List[str]:
+    def _analyze_composition(self, scale: str, focus: str) -> list[str]:
         """Analyze composition based on scale and focus."""
         notes = []
 
@@ -631,7 +628,7 @@ class SceneCompositionPlugin:
 
         return notes
 
-    def _generate_tactical_notes(self, terrain: str, elements: List[str]) -> List[str]:
+    def _generate_tactical_notes(self, terrain: str, elements: list[str]) -> list[str]:
         """Generate tactical notes for battle map."""
         notes = []
 
@@ -682,7 +679,7 @@ class SceneCompositionPlugin:
 
         return notes
 
-    def _analyze_scene_elements(self, scene: Dict[str, Any]) -> Dict[str, Any]:
+    def _analyze_scene_elements(self, scene: dict[str, Any]) -> dict[str, Any]:
         """Analyze compositional elements of a scene."""
         return {
             "location_type": scene["location_type"],
@@ -695,21 +692,20 @@ class SceneCompositionPlugin:
             },
         }
 
-    def _analyze_lighting(self, scene: Dict[str, Any]) -> Dict[str, str]:
+    def _analyze_lighting(self, scene: dict[str, Any]) -> dict[str, str]:
         """Analyze lighting characteristics."""
         time = scene["time_of_day"]
         weather = scene["weather"]
 
-        lighting_analysis = {
+        return {
             "primary_source": self._get_primary_light_source(time, weather),
             "direction": self._get_light_direction(time),
             "quality": self._get_light_quality(time, weather),
             "mood_impact": self._get_lighting_mood_impact(time, weather),
         }
 
-        return lighting_analysis
 
-    def _analyze_depth(self, scene: Dict[str, Any]) -> Dict[str, str]:
+    def _analyze_depth(self, scene: dict[str, Any]) -> dict[str, str]:
         """Analyze depth composition."""
         return {
             "foreground": "Elements closest to viewer",
@@ -718,7 +714,7 @@ class SceneCompositionPlugin:
             "depth_technique": self._get_depth_technique(scene["location_type"]),
         }
 
-    def _identify_focal_points(self, scene: Dict[str, Any]) -> List[str]:
+    def _identify_focal_points(self, scene: dict[str, Any]) -> list[str]:
         """Identify main focal points in the scene."""
         focal_points = []
 
@@ -739,7 +735,7 @@ class SceneCompositionPlugin:
 
         return focal_points[:3]  # Limit to 3 main focal points
 
-    def _generate_composition_recommendations(self, scene: Dict[str, Any]) -> List[str]:
+    def _generate_composition_recommendations(self, scene: dict[str, Any]) -> list[str]:
         """Generate composition improvement recommendations."""
         recommendations = []
 
@@ -772,12 +768,11 @@ class SceneCompositionPlugin:
         """Determine primary light source."""
         if time == "night":
             return "Moonlight or artificial sources"
-        elif time == "dawn" or time == "dusk":
+        if time == "dawn" or time == "dusk":
             return "Low-angle sunlight"
-        elif weather == "stormy":
+        if weather == "stormy":
             return "Diffused sunlight through clouds"
-        else:
-            return "Direct sunlight"
+        return "Direct sunlight"
 
     def _get_light_direction(self, time: str) -> str:
         """Determine light direction."""
@@ -793,25 +788,23 @@ class SceneCompositionPlugin:
         """Determine light quality."""
         if weather == "stormy":
             return "Dramatic and harsh"
-        elif time == "dawn" or time == "dusk":
+        if time == "dawn" or time == "dusk":
             return "Warm and golden"
-        elif time == "night":
+        if time == "night":
             return "Cool and mysterious"
-        else:
-            return "Bright and natural"
+        return "Bright and natural"
 
     def _get_lighting_mood_impact(self, time: str, weather: str) -> str:
         """Determine lighting mood impact."""
         if time == "night":
             return "Creates mystery and tension"
-        elif weather == "stormy":
+        if weather == "stormy":
             return "Adds drama and conflict"
-        elif time == "dawn":
+        if time == "dawn":
             return "Suggests hope and new beginnings"
-        elif time == "dusk":
+        if time == "dusk":
             return "Creates contemplative atmosphere"
-        else:
-            return "Provides clear, neutral illumination"
+        return "Provides clear, neutral illumination"
 
     def _get_depth_technique(self, location_type: str) -> str:
         """Get appropriate depth technique for location."""

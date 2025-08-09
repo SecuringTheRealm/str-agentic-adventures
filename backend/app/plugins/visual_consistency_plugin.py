@@ -3,9 +3,9 @@ Visual Consistency Plugin for the Semantic Kernel.
 This plugin ensures visual consistency across generated artwork in campaigns.
 """
 
-import logging
-from typing import Dict, Any, List
 import json
+import logging
+from typing import Any
 
 from semantic_kernel.functions import kernel_function
 
@@ -18,7 +18,7 @@ class VisualConsistencyPlugin:
     Manages visual themes, character appearance consistency, and world-building coherence.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the visual consistency plugin."""
         # Track visual elements for consistency
         self.character_visual_profiles = {}
@@ -36,7 +36,7 @@ class VisualConsistencyPlugin:
         character_name: str,
         visual_description: str,
         reference_art: str = "",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Create a visual consistency profile for a character.
 
@@ -97,7 +97,7 @@ class VisualConsistencyPlugin:
     )
     def validate_character_consistency(
         self, character_id: str, new_description: str, generation_prompt: str = ""
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Validate visual consistency for a character portrait.
 
@@ -174,7 +174,7 @@ class VisualConsistencyPlugin:
         theme_name: str,
         theme_description: str,
         style_guidelines: str = "",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Create a visual theme for a campaign or world.
 
@@ -237,7 +237,7 @@ class VisualConsistencyPlugin:
     )
     def validate_world_consistency(
         self, theme_id: str, content_description: str, content_type: str = "scene"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Validate visual consistency with world theme.
 
@@ -309,7 +309,7 @@ class VisualConsistencyPlugin:
         description="Get consistency report for a campaign.",
         name="get_campaign_consistency_report",
     )
-    def get_campaign_consistency_report(self, campaign_id: str) -> Dict[str, Any]:
+    def get_campaign_consistency_report(self, campaign_id: str) -> dict[str, Any]:
         """
         Get a comprehensive consistency report for a campaign.
 
@@ -321,7 +321,7 @@ class VisualConsistencyPlugin:
         """
         try:
             # Get campaign context if exists
-            campaign_context = self.campaign_visual_contexts.get(campaign_id, {})
+            self.campaign_visual_contexts.get(campaign_id, {})
 
             # Analyze character consistency
             character_analysis = self._analyze_character_consistency(campaign_id)
@@ -368,7 +368,7 @@ class VisualConsistencyPlugin:
                 "error": f"Consistency report generation failed: {str(e)}",
             }
 
-    def _extract_visual_elements(self, description: str) -> Dict[str, Any]:
+    def _extract_visual_elements(self, description: str) -> dict[str, Any]:
         """Extract visual elements from description."""
         elements = {
             "colors": self._extract_colors(description),
@@ -381,7 +381,7 @@ class VisualConsistencyPlugin:
 
         return {k: v for k, v in elements.items() if v}
 
-    def _extract_colors(self, description: str) -> List[str]:
+    def _extract_colors(self, description: str) -> list[str]:
         """Extract color information from description."""
         colors = []
         color_terms = [
@@ -414,7 +414,7 @@ class VisualConsistencyPlugin:
 
         return colors
 
-    def _extract_physical_features(self, description: str) -> List[str]:
+    def _extract_physical_features(self, description: str) -> list[str]:
         """Extract physical features from description."""
         features = []
         feature_terms = [
@@ -444,7 +444,7 @@ class VisualConsistencyPlugin:
 
         return features
 
-    def _extract_clothing_armor(self, description: str) -> List[str]:
+    def _extract_clothing_armor(self, description: str) -> list[str]:
         """Extract clothing and armor information."""
         items = []
         clothing_terms = [
@@ -472,7 +472,7 @@ class VisualConsistencyPlugin:
 
         return items
 
-    def _extract_accessories(self, description: str) -> List[str]:
+    def _extract_accessories(self, description: str) -> list[str]:
         """Extract accessories from description."""
         accessories = []
         accessory_terms = [
@@ -497,7 +497,7 @@ class VisualConsistencyPlugin:
 
         return accessories
 
-    def _extract_pose_expression(self, description: str) -> List[str]:
+    def _extract_pose_expression(self, description: str) -> list[str]:
         """Extract pose and expression information."""
         poses = []
         pose_terms = [
@@ -520,7 +520,7 @@ class VisualConsistencyPlugin:
 
         return poses
 
-    def _extract_environment(self, description: str) -> List[str]:
+    def _extract_environment(self, description: str) -> list[str]:
         """Extract environment elements."""
         environment = []
         env_terms = [
@@ -543,7 +543,7 @@ class VisualConsistencyPlugin:
 
         return environment
 
-    def _extract_theme_elements(self, description: str) -> Dict[str, Any]:
+    def _extract_theme_elements(self, description: str) -> dict[str, Any]:
         """Extract theme elements from description."""
         return {
             "genre": self._detect_genre(description),
@@ -559,14 +559,13 @@ class VisualConsistencyPlugin:
 
         if any(term in desc_lower for term in ["fantasy", "magic", "dragon", "wizard"]):
             return "fantasy"
-        elif any(term in desc_lower for term in ["sci-fi", "space", "robot", "future"]):
+        if any(term in desc_lower for term in ["sci-fi", "space", "robot", "future"]):
             return "science_fiction"
-        elif any(term in desc_lower for term in ["medieval", "knight", "castle"]):
+        if any(term in desc_lower for term in ["medieval", "knight", "castle"]):
             return "medieval"
-        elif any(term in desc_lower for term in ["modern", "contemporary", "city"]):
+        if any(term in desc_lower for term in ["modern", "contemporary", "city"]):
             return "modern"
-        else:
-            return "generic"
+        return "generic"
 
     def _detect_setting(self, description: str) -> str:
         """Detect setting from description."""
@@ -574,14 +573,13 @@ class VisualConsistencyPlugin:
 
         if any(term in desc_lower for term in ["urban", "city", "street"]):
             return "urban"
-        elif any(term in desc_lower for term in ["wilderness", "forest", "nature"]):
+        if any(term in desc_lower for term in ["wilderness", "forest", "nature"]):
             return "wilderness"
-        elif any(term in desc_lower for term in ["dungeon", "underground", "cave"]):
+        if any(term in desc_lower for term in ["dungeon", "underground", "cave"]):
             return "underground"
-        elif any(term in desc_lower for term in ["indoor", "building", "interior"]):
+        if any(term in desc_lower for term in ["indoor", "building", "interior"]):
             return "indoor"
-        else:
-            return "outdoor"
+        return "outdoor"
 
     def _detect_mood(self, description: str) -> str:
         """Detect mood from description."""
@@ -589,14 +587,13 @@ class VisualConsistencyPlugin:
 
         if any(term in desc_lower for term in ["dark", "gloomy", "ominous"]):
             return "dark"
-        elif any(term in desc_lower for term in ["bright", "cheerful", "happy"]):
+        if any(term in desc_lower for term in ["bright", "cheerful", "happy"]):
             return "bright"
-        elif any(term in desc_lower for term in ["mysterious", "eerie", "haunting"]):
+        if any(term in desc_lower for term in ["mysterious", "eerie", "haunting"]):
             return "mysterious"
-        elif any(term in desc_lower for term in ["epic", "heroic", "grand"]):
+        if any(term in desc_lower for term in ["epic", "heroic", "grand"]):
             return "epic"
-        else:
-            return "neutral"
+        return "neutral"
 
     def _detect_technology_level(self, description: str) -> str:
         """Detect technology level from description."""
@@ -604,20 +601,19 @@ class VisualConsistencyPlugin:
 
         if any(term in desc_lower for term in ["primitive", "stone", "tribal"]):
             return "primitive"
-        elif any(term in desc_lower for term in ["medieval", "sword", "armor"]):
+        if any(term in desc_lower for term in ["medieval", "sword", "armor"]):
             return "medieval"
-        elif any(term in desc_lower for term in ["renaissance", "gunpowder"]):
+        if any(term in desc_lower for term in ["renaissance", "gunpowder"]):
             return "renaissance"
-        elif any(term in desc_lower for term in ["industrial", "steam", "machine"]):
+        if any(term in desc_lower for term in ["industrial", "steam", "machine"]):
             return "industrial"
-        elif any(term in desc_lower for term in ["modern", "contemporary"]):
+        if any(term in desc_lower for term in ["modern", "contemporary"]):
             return "modern"
-        elif any(term in desc_lower for term in ["futuristic", "advanced", "sci-fi"]):
+        if any(term in desc_lower for term in ["futuristic", "advanced", "sci-fi"]):
             return "futuristic"
-        else:
-            return "mixed"
+        return "mixed"
 
-    def _detect_magical_elements(self, description: str) -> List[str]:
+    def _detect_magical_elements(self, description: str) -> list[str]:
         """Detect magical elements from description."""
         magical = []
         magic_terms = [
@@ -640,7 +636,7 @@ class VisualConsistencyPlugin:
 
         return magical
 
-    def _generate_consistency_rules(self, visual_elements: Dict[str, Any]) -> List[str]:
+    def _generate_consistency_rules(self, visual_elements: dict[str, Any]) -> list[str]:
         """Generate consistency rules from visual elements."""
         rules = []
 
@@ -662,7 +658,7 @@ class VisualConsistencyPlugin:
         return rules
 
     def _calculate_consistency_score(
-        self, profile_elements: Dict[str, Any], new_elements: Dict[str, Any]
+        self, profile_elements: dict[str, Any], new_elements: dict[str, Any]
     ) -> float:
         """Calculate consistency score between profile and new elements."""
         if not profile_elements or not new_elements:
@@ -670,7 +666,7 @@ class VisualConsistencyPlugin:
 
         scores = []
 
-        for category in profile_elements.keys():
+        for category in profile_elements:
             if category in new_elements:
                 profile_items = (
                     set(profile_elements[category])
@@ -695,8 +691,8 @@ class VisualConsistencyPlugin:
         return sum(scores) / len(scores) if scores else 0.0
 
     def _check_consistency_violations(
-        self, profile: Dict[str, Any], new_elements: Dict[str, Any], prompt: str
-    ) -> List[Dict[str, Any]]:
+        self, profile: dict[str, Any], new_elements: dict[str, Any], prompt: str
+    ) -> list[dict[str, Any]]:
         """Check for consistency violations."""
         violations = []
         rules = profile.get("consistency_rules", [])
@@ -714,7 +710,7 @@ class VisualConsistencyPlugin:
 
         return violations
 
-    def _violates_rule(self, rule: str, elements: Dict[str, Any], prompt: str) -> bool:
+    def _violates_rule(self, rule: str, elements: dict[str, Any], prompt: str) -> bool:
         """Check if elements violate a specific rule."""
         # Simple rule checking - could be enhanced with more sophisticated logic
         rule_lower = rule.lower()
@@ -735,8 +731,8 @@ class VisualConsistencyPlugin:
         return False
 
     def _generate_consistency_recommendations(
-        self, profile: Dict[str, Any], violations: List[Dict[str, Any]]
-    ) -> List[str]:
+        self, profile: dict[str, Any], violations: list[dict[str, Any]]
+    ) -> list[str]:
         """Generate recommendations for maintaining consistency."""
         recommendations = []
 
@@ -750,7 +746,7 @@ class VisualConsistencyPlugin:
 
         return recommendations
 
-    def _generate_theme_requirements(self, theme_elements: Dict[str, Any]) -> List[str]:
+    def _generate_theme_requirements(self, theme_elements: dict[str, Any]) -> list[str]:
         """Generate theme consistency requirements."""
         requirements = []
 
@@ -768,14 +764,14 @@ class VisualConsistencyPlugin:
         return requirements
 
     def _calculate_theme_consistency(
-        self, theme_elements: Dict[str, Any], content_elements: Dict[str, Any]
+        self, theme_elements: dict[str, Any], content_elements: dict[str, Any]
     ) -> float:
         """Calculate consistency with theme."""
         # Simple theme consistency calculation
         matches = 0
         total = 0
 
-        for key in theme_elements.keys():
+        for key in theme_elements:
             if key in content_elements:
                 total += 1
                 if theme_elements[key] == content_elements.get(key):
@@ -784,8 +780,8 @@ class VisualConsistencyPlugin:
         return matches / total if total > 0 else 0.0
 
     def _check_theme_violations(
-        self, theme: Dict[str, Any], elements: Dict[str, Any], content_type: str
-    ) -> List[Dict[str, Any]]:
+        self, theme: dict[str, Any], elements: dict[str, Any], content_type: str
+    ) -> list[dict[str, Any]]:
         """Check for theme violations."""
         violations = []
         requirements = theme.get("consistency_requirements", [])
@@ -803,7 +799,7 @@ class VisualConsistencyPlugin:
         return violations
 
     def _violates_theme_requirement(
-        self, requirement: str, elements: Dict[str, Any]
+        self, requirement: str, elements: dict[str, Any]
     ) -> bool:
         """Check if elements violate theme requirement."""
         # Simple requirement checking
@@ -812,14 +808,11 @@ class VisualConsistencyPlugin:
 
         if "fantasy" in req_lower and "fantasy" not in elements_text:
             return True
-        if "dark" in req_lower and "dark" not in elements_text:
-            return True
-
-        return False
+        return bool("dark" in req_lower and "dark" not in elements_text)
 
     def _calculate_theme_adherence(
-        self, theme: Dict[str, Any], elements: Dict[str, Any]
-    ) -> Dict[str, float]:
+        self, theme: dict[str, Any], elements: dict[str, Any]
+    ) -> dict[str, float]:
         """Calculate theme adherence metrics."""
         return {
             "genre_adherence": 0.8,  # Placeholder calculation
@@ -828,8 +821,8 @@ class VisualConsistencyPlugin:
         }
 
     def _generate_theme_recommendations(
-        self, theme: Dict[str, Any], violations: List[Dict[str, Any]]
-    ) -> List[str]:
+        self, theme: dict[str, Any], violations: list[dict[str, Any]]
+    ) -> list[str]:
         """Generate theme consistency recommendations."""
         recommendations = []
 
@@ -843,11 +836,11 @@ class VisualConsistencyPlugin:
 
         return recommendations
 
-    def _analyze_character_consistency(self, campaign_id: str) -> Dict[str, Any]:
+    def _analyze_character_consistency(self, campaign_id: str) -> dict[str, Any]:
         """Analyze character consistency for campaign."""
         profiles = []
         for char_id, profile in self.character_visual_profiles.items():
-            if campaign_id in char_id or True:  # Simple campaign association
+            if True:  # Simple campaign association
                 profiles.append(
                     {
                         "character_id": char_id,
@@ -868,11 +861,11 @@ class VisualConsistencyPlugin:
             "total_violations": sum(p["violation_count"] for p in profiles),
         }
 
-    def _analyze_theme_consistency(self, campaign_id: str) -> Dict[str, Any]:
+    def _analyze_theme_consistency(self, campaign_id: str) -> dict[str, Any]:
         """Analyze theme consistency for campaign."""
         themes = []
         for theme_id, theme in self.world_visual_themes.items():
-            if campaign_id in theme_id or True:  # Simple campaign association
+            if True:  # Simple campaign association
                 themes.append(
                     {
                         "theme_id": theme_id,
@@ -892,7 +885,7 @@ class VisualConsistencyPlugin:
             "total_usage": sum(t["usage_count"] for t in themes),
         }
 
-    def _calculate_character_consistency_score(self, profile: Dict[str, Any]) -> float:
+    def _calculate_character_consistency_score(self, profile: dict[str, Any]) -> float:
         """Calculate consistency score for character profile."""
         history = profile.get("violation_history", [])
         if not history:
@@ -901,7 +894,7 @@ class VisualConsistencyPlugin:
         scores = [h.get("consistency_score", 0.0) for h in history]
         return sum(scores) / len(scores) if scores else 0.0
 
-    def _calculate_theme_consistency_score(self, theme: Dict[str, Any]) -> float:
+    def _calculate_theme_consistency_score(self, theme: dict[str, Any]) -> float:
         """Calculate consistency score for theme."""
         content = theme.get("associated_content", [])
         if not content:
@@ -911,7 +904,7 @@ class VisualConsistencyPlugin:
         return sum(scores) / len(scores) if scores else 0.0
 
     def _calculate_overall_consistency(
-        self, character_analysis: Dict[str, Any], theme_analysis: Dict[str, Any]
+        self, character_analysis: dict[str, Any], theme_analysis: dict[str, Any]
     ) -> float:
         """Calculate overall consistency score."""
         char_score = character_analysis.get("average_score", 0.0)
@@ -920,8 +913,8 @@ class VisualConsistencyPlugin:
         return (char_score + theme_score) / 2.0
 
     def _generate_campaign_recommendations(
-        self, character_analysis: Dict[str, Any], theme_analysis: Dict[str, Any]
-    ) -> List[str]:
+        self, character_analysis: dict[str, Any], theme_analysis: dict[str, Any]
+    ) -> list[str]:
         """Generate campaign-wide recommendations."""
         recommendations = []
 
@@ -937,8 +930,8 @@ class VisualConsistencyPlugin:
         return recommendations
 
     def _update_profile_elements(
-        self, profile: Dict[str, Any], new_elements: Dict[str, Any]
-    ):
+        self, profile: dict[str, Any], new_elements: dict[str, Any]
+    ) -> None:
         """Update profile with new consistent elements."""
         for category, elements in new_elements.items():
             if category in profile["visual_elements"]:

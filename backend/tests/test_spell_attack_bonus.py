@@ -2,8 +2,9 @@
 Test spell attack bonus endpoint.
 """
 
-import sys
 import os
+import sys
+
 from fastapi.testclient import TestClient
 
 # Add the backend directory to Python path
@@ -13,7 +14,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 class TestSpellAttackBonusEndpoint:
     """Test the spell attack bonus calculation endpoint."""
 
-    def test_spell_attack_bonus_valid_wizard(self):
+    def test_spell_attack_bonus_valid_wizard(self) -> None:
         """Test spell attack bonus calculation for a wizard."""
         from app.main import app
 
@@ -38,7 +39,7 @@ class TestSpellAttackBonusEndpoint:
         assert data["proficiency_bonus"] == 3  # Level 5 = +3 proficiency
         assert data["spell_attack_bonus"] == 6  # 3 + 3 = 6
 
-    def test_spell_attack_bonus_valid_cleric(self):
+    def test_spell_attack_bonus_valid_cleric(self) -> None:
         """Test spell attack bonus calculation for a cleric."""
         from app.main import app
 
@@ -63,7 +64,7 @@ class TestSpellAttackBonusEndpoint:
         assert data["proficiency_bonus"] == 2  # Level 1 = +2 proficiency
         assert data["spell_attack_bonus"] == 4  # 2 + 2 = 4
 
-    def test_spell_attack_bonus_valid_sorcerer(self):
+    def test_spell_attack_bonus_valid_sorcerer(self) -> None:
         """Test spell attack bonus calculation for a sorcerer."""
         from app.main import app
 
@@ -88,7 +89,7 @@ class TestSpellAttackBonusEndpoint:
         assert data["proficiency_bonus"] == 6  # Level 17 = +6 proficiency
         assert data["spell_attack_bonus"] == 11  # 5 + 6 = 11
 
-    def test_spell_attack_bonus_invalid_class(self):
+    def test_spell_attack_bonus_invalid_class(self) -> None:
         """Test spell attack bonus with non-spellcasting class."""
         from app.main import app
 
@@ -105,7 +106,7 @@ class TestSpellAttackBonusEndpoint:
         assert response.status_code == 400
         assert "not a spellcasting class" in response.json()["detail"]
 
-    def test_spell_attack_bonus_invalid_request(self):
+    def test_spell_attack_bonus_invalid_request(self) -> None:
         """Test spell attack bonus with invalid request data."""
         from app.main import app
 
@@ -129,7 +130,7 @@ class TestSpellAttackBonusEndpoint:
                 f"Should reject invalid request: {invalid_request}"
             )
 
-    def test_spell_attack_bonus_ability_modifier_calculation(self):
+    def test_spell_attack_bonus_ability_modifier_calculation(self) -> None:
         """Test ability modifier calculation edge cases."""
         from app.main import app
 
@@ -161,7 +162,7 @@ class TestSpellAttackBonusEndpoint:
                 f"got {data['ability_modifier']}"
             )
 
-    def test_spell_attack_bonus_proficiency_levels(self):
+    def test_spell_attack_bonus_proficiency_levels(self) -> None:
         """Test proficiency bonus at different levels."""
         from app.main import app
 

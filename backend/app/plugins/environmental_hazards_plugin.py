@@ -4,7 +4,7 @@ This plugin provides environmental hazard assessment and management for combat e
 """
 
 import logging
-from typing import Dict, Any, List
+from typing import Any
 
 from semantic_kernel.functions import kernel_function
 
@@ -17,7 +17,7 @@ class EnvironmentalHazardsPlugin:
     Identifies, analyzes, and provides mitigation strategies for environmental dangers.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the environmental hazards plugin."""
         self.hazard_database = {}
         self.mitigation_strategies = {}
@@ -28,7 +28,7 @@ class EnvironmentalHazardsPlugin:
     )
     def identify_environmental_hazards(
         self, environment_description: str, weather_conditions: str = "normal"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Identify and assess environmental hazards in the combat area.
 
@@ -80,7 +80,7 @@ class EnvironmentalHazardsPlugin:
         hazard_types: str,
         party_capabilities: str = "standard",
         urgency_level: str = "medium",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Provide comprehensive hazard mitigation strategies.
 
@@ -128,7 +128,7 @@ class EnvironmentalHazardsPlugin:
         current_hazards: str,
         combat_round: int = 1,
         environmental_changes: str = "",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Monitor dynamic hazards and provide real-time hazard updates.
 
@@ -171,7 +171,7 @@ class EnvironmentalHazardsPlugin:
 
     def _scan_for_hazards(
         self, environment_description: str, weather_conditions: str
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Scan environment description for potential hazards."""
         hazards = []
         env_lower = environment_description.lower()
@@ -267,7 +267,7 @@ class EnvironmentalHazardsPlugin:
 
     def _identify_weather_hazards(
         self, weather_conditions: str
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Identify hazards specifically caused by weather."""
         weather_hazards = []
 
@@ -301,7 +301,7 @@ class EnvironmentalHazardsPlugin:
 
         return weather_hazards
 
-    def _assess_hazard_severity(self, hazards: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def _assess_hazard_severity(self, hazards: list[dict[str, Any]]) -> dict[str, Any]:
         """Assess overall severity of identified hazards."""
         if not hazards:
             return {"overall": "none", "breakdown": {}}
@@ -339,7 +339,7 @@ class EnvironmentalHazardsPlugin:
             "hazard_count": len(hazards),
         }
 
-    def _map_affected_areas(self, hazards: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def _map_affected_areas(self, hazards: list[dict[str, Any]]) -> dict[str, Any]:
         """Map areas affected by each hazard."""
         affected_areas = {}
 
@@ -355,7 +355,7 @@ class EnvironmentalHazardsPlugin:
 
         return affected_areas
 
-    def _estimate_hazard_coverage(self, hazard: Dict[str, Any]) -> str:
+    def _estimate_hazard_coverage(self, hazard: dict[str, Any]) -> str:
         """Estimate how much area a hazard covers."""
         coverage_map = {
             "fire": "expanding_area",
@@ -368,7 +368,7 @@ class EnvironmentalHazardsPlugin:
         }
         return coverage_map.get(hazard["name"], "localized")
 
-    def _determine_spread_pattern(self, hazard: Dict[str, Any]) -> str:
+    def _determine_spread_pattern(self, hazard: dict[str, Any]) -> str:
         """Determine how a hazard spreads over time."""
         if hazard.get("spread_potential"):
             spread_patterns = {
@@ -380,7 +380,7 @@ class EnvironmentalHazardsPlugin:
             return spread_patterns.get(hazard["name"], "contained")
         return "static"
 
-    def _identify_safe_zones(self, hazard: Dict[str, Any]) -> List[str]:
+    def _identify_safe_zones(self, hazard: dict[str, Any]) -> list[str]:
         """Identify areas safe from the hazard."""
         safe_zone_map = {
             "fire": ["water_areas", "stone_surfaces", "fire_resistant_areas"],
@@ -392,7 +392,7 @@ class EnvironmentalHazardsPlugin:
         }
         return safe_zone_map.get(hazard["name"], ["retreat_to_safe_distance"])
 
-    def _assess_entry_risk(self, hazard: Dict[str, Any]) -> str:
+    def _assess_entry_risk(self, hazard: dict[str, Any]) -> str:
         """Assess risk level for entering hazard areas."""
         risk_levels = {
             "low": ["ice"],
@@ -407,8 +407,8 @@ class EnvironmentalHazardsPlugin:
         return "medium"
 
     def _analyze_temporal_factors(
-        self, hazards: List[Dict[str, Any]], weather_conditions: str
-    ) -> Dict[str, Any]:
+        self, hazards: list[dict[str, Any]], weather_conditions: str
+    ) -> dict[str, Any]:
         """Analyze how hazards change over time."""
         return {
             "time_sensitive_hazards": [
@@ -422,8 +422,8 @@ class EnvironmentalHazardsPlugin:
         }
 
     def _analyze_hazard_interactions(
-        self, hazards: List[Dict[str, Any]]
-    ) -> List[Dict[str, Any]]:
+        self, hazards: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
         """Analyze how hazards might interact with each other."""
         interactions = []
         hazard_names = [h["name"] for h in hazards]
@@ -451,8 +451,8 @@ class EnvironmentalHazardsPlugin:
         return interactions
 
     def _suggest_initial_mitigation(
-        self, hazards: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+        self, hazards: list[dict[str, Any]]
+    ) -> dict[str, Any]:
         """Suggest initial mitigation strategies."""
         mitigation_suggestions = {}
 
@@ -463,7 +463,7 @@ class EnvironmentalHazardsPlugin:
 
         return mitigation_suggestions
 
-    def _get_basic_mitigation(self, hazard_name: str) -> List[str]:
+    def _get_basic_mitigation(self, hazard_name: str) -> list[str]:
         """Get basic mitigation strategies for a hazard type."""
         mitigation_map = {
             "fire": [
@@ -486,7 +486,7 @@ class EnvironmentalHazardsPlugin:
 
     def _generate_immediate_actions(
         self, hazard_types: str, urgency_level: str
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Generate immediate actions for hazard mitigation."""
         actions = []
 
@@ -529,7 +529,7 @@ class EnvironmentalHazardsPlugin:
 
         return actions
 
-    def _determine_equipment_needs(self, hazard_types: str) -> Dict[str, List[str]]:
+    def _determine_equipment_needs(self, hazard_types: str) -> dict[str, list[str]]:
         """Determine equipment needed for hazard mitigation."""
         equipment_needs = {"essential": [], "recommended": [], "optional": []}
 
@@ -561,7 +561,7 @@ class EnvironmentalHazardsPlugin:
 
     def _suggest_magical_solutions(
         self, hazard_types: str, party_capabilities: str
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Suggest magical solutions for hazard mitigation."""
         magical_solutions = []
 
@@ -601,7 +601,7 @@ class EnvironmentalHazardsPlugin:
 
         return magical_solutions
 
-    def _recommend_tactical_adjustments(self, hazard_types: str) -> List[str]:
+    def _recommend_tactical_adjustments(self, hazard_types: str) -> list[str]:
         """Recommend tactical adjustments for dealing with hazards."""
         adjustments = []
 
@@ -620,7 +620,7 @@ class EnvironmentalHazardsPlugin:
 
         return list(set(adjustments))  # Remove duplicates
 
-    def _establish_safety_protocols(self, hazard_types: str) -> Dict[str, List[str]]:
+    def _establish_safety_protocols(self, hazard_types: str) -> dict[str, list[str]]:
         """Establish safety protocols for hazard management."""
         return {
             "communication": ["establish_warning_signals", "maintain_visual_contact"],
@@ -629,7 +629,7 @@ class EnvironmentalHazardsPlugin:
             "equipment": ["regular_equipment_checks", "backup_safety_gear"],
         }
 
-    def _develop_contingency_plans(self, hazard_types: str) -> List[Dict[str, Any]]:
+    def _develop_contingency_plans(self, hazard_types: str) -> list[dict[str, Any]]:
         """Develop contingency plans for worst-case scenarios."""
         return [
             {
@@ -648,7 +648,7 @@ class EnvironmentalHazardsPlugin:
 
     def _track_hazard_evolution(
         self, current_hazards: str, combat_round: int
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Track how hazards evolve over time."""
         return {
             "spreading_hazards": ["fire", "poison_gas"],
@@ -660,7 +660,7 @@ class EnvironmentalHazardsPlugin:
             },
         }
 
-    def _detect_new_hazards(self, environmental_changes: str) -> List[Dict[str, Any]]:
+    def _detect_new_hazards(self, environmental_changes: str) -> list[dict[str, Any]]:
         """Detect new hazards created by environmental changes."""
         new_hazards = []
 
@@ -688,7 +688,7 @@ class EnvironmentalHazardsPlugin:
 
     def _predict_hazard_changes(
         self, current_hazards: str, combat_round: int
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Predict future hazard changes."""
         predictions = []
 
@@ -707,7 +707,7 @@ class EnvironmentalHazardsPlugin:
 
     def _generate_timing_alerts(
         self, current_hazards: str, combat_round: int
-    ) -> List[str]:
+    ) -> list[str]:
         """Generate timing-based alerts for hazard management."""
         alerts = []
 
@@ -720,7 +720,7 @@ class EnvironmentalHazardsPlugin:
 
         return alerts
 
-    def _assess_escalation_risk(self, current_hazards: str) -> Dict[str, Any]:
+    def _assess_escalation_risk(self, current_hazards: str) -> dict[str, Any]:
         """Assess risk of hazard escalation."""
         return {
             "escalation_probability": "medium",
@@ -731,7 +731,7 @@ class EnvironmentalHazardsPlugin:
 
     def _update_mitigation_strategies(
         self, current_hazards: str, combat_round: int
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Update mitigation strategies based on current situation."""
         return {
             "priority_changes": "focus_on_spreading_hazards",
@@ -741,8 +741,8 @@ class EnvironmentalHazardsPlugin:
         }
 
     def _assess_escalation_timeline(
-        self, hazards: List[Dict[str, Any]]
-    ) -> Dict[str, str]:
+        self, hazards: list[dict[str, Any]]
+    ) -> dict[str, str]:
         """Assess timeline for hazard escalation."""
         timeline = {}
         for hazard in hazards:
@@ -753,8 +753,8 @@ class EnvironmentalHazardsPlugin:
         return timeline
 
     def _estimate_resolution_time(
-        self, hazards: List[Dict[str, Any]]
-    ) -> Dict[str, str]:
+        self, hazards: list[dict[str, Any]]
+    ) -> dict[str, str]:
         """Estimate time needed to resolve each hazard."""
         resolution_times = {}
         for hazard in hazards:

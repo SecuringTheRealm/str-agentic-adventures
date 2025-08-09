@@ -5,11 +5,12 @@ and integrate with AI agent functionality.
 """
 
 import asyncio
+
 from app.plugins.narrative_generation_plugin import NarrativeGenerationPlugin
 from app.plugins.narrative_memory_plugin import NarrativeMemoryPlugin
 
 
-async def demonstrate_narrative_system():
+async def demonstrate_narrative_system() -> None:
     """
     Demonstrate the complete narrative generation system workflow.
     """
@@ -145,7 +146,7 @@ async def demonstrate_narrative_system():
     print("✓ Memory integration for narrative continuity")
 
 
-async def demonstrate_narrator_agent_integration():
+async def demonstrate_narrator_agent_integration() -> None:
     """
     Demonstrate how the narrator agent integrates with the narrative system.
     """
@@ -195,7 +196,7 @@ async def demonstrate_narrator_agent_integration():
         print(f"⚠️  Full narrator agent demo requires proper Semantic Kernel setup: {e}")
 
 
-def demonstrate_branching_narratives():
+def demonstrate_branching_narratives() -> None:
     """
     Show how the system handles complex branching narratives.
     """
@@ -249,7 +250,7 @@ def demonstrate_branching_narratives():
 
 if __name__ == "__main__":
 
-    async def main():
+    async def main() -> None:
         await demonstrate_narrative_system()
         await demonstrate_narrator_agent_integration()
         demonstrate_branching_narratives()

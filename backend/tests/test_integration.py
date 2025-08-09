@@ -2,9 +2,10 @@
 Simple integration tests focusing on testable components.
 """
 
-import pytest
-import sys
 import os
+import sys
+
+import pytest
 
 # Add the backend directory to Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -13,9 +14,9 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 class TestSimpleIntegration:
     """Test simple integration scenarios."""
 
-    def test_can_import_models(self):
+    def test_can_import_models(self) -> None:
         """Test that we can import and use the models."""
-        from app.models.game_models import CharacterClass, Race, Abilities
+        from app.models.game_models import Abilities, CharacterClass, Race
 
         # Test that enums work
         assert CharacterClass.FIGHTER == "fighter"
@@ -26,17 +27,17 @@ class TestSimpleIntegration:
         assert abilities.strength == 16
         assert abilities.dexterity == 14
 
-    def test_request_response_model_compatibility(self):
+    def test_request_response_model_compatibility(self) -> None:
         """Test that request and response models are compatible."""
         from app.models.game_models import (
-            CreateCharacterRequest,
-            PlayerInput,
-            GameResponse,
-            CreateCampaignRequest,
-            Campaign,
             Abilities,
-            Race,
+            Campaign,
             CharacterClass,
+            CreateCampaignRequest,
+            CreateCharacterRequest,
+            GameResponse,
+            PlayerInput,
+            Race,
         )
 
         # Test character request -> response compatibility
@@ -77,14 +78,14 @@ class TestSimpleIntegration:
         assert camp_request.name == campaign.name
         assert camp_request.setting == campaign.setting
 
-    def test_data_validation_works(self):
+    def test_data_validation_works(self) -> None:
         """Test that pydantic validation works correctly."""
         from app.models.game_models import (
+            Abilities,
+            CharacterClass,
             CreateCharacterRequest,
             PlayerInput,
-            Abilities,
             Race,
-            CharacterClass,
         )
         from pydantic import ValidationError
 
@@ -113,9 +114,9 @@ class TestSimpleIntegration:
                 # Missing required character_id and campaign_id
             )
 
-    def test_uuid_generation_works(self):
+    def test_uuid_generation_works(self) -> None:
         """Test that UUID generation works for models."""
-        from app.models.game_models import Item, Campaign
+        from app.models.game_models import Campaign, Item
 
         # Test multiple items get different UUIDs
         item1 = Item(name="Sword")
@@ -133,9 +134,9 @@ class TestSimpleIntegration:
         assert len(campaign1.id) > 0
         assert len(campaign2.id) > 0
 
-    def test_enum_string_values(self):
+    def test_enum_string_values(self) -> None:
         """Test that all enums have correct string values."""
-        from app.models.game_models import CharacterClass, Race, Ability, CombatState
+        from app.models.game_models import Ability, CharacterClass, CombatState, Race
 
         # Test character classes
         assert CharacterClass.FIGHTER.value == "fighter"
@@ -157,14 +158,14 @@ class TestSimpleIntegration:
         assert CombatState.ACTIVE.value == "active"
         assert CombatState.COMPLETED.value == "completed"
 
-    def test_model_serialization(self):
+    def test_model_serialization(self) -> None:
         """Test that models can be serialized to/from dictionaries."""
         from app.models.game_models import (
             Abilities,
+            CharacterClass,
             CreateCharacterRequest,
             GameResponse,
             Race,
-            CharacterClass,
         )
 
         # Test abilities serialization
@@ -203,14 +204,14 @@ class TestSimpleIntegration:
         assert response_dict["state_updates"]["location"] == "tavern"
         assert response_dict["state_updates"]["gold"] == 100
 
-    def test_default_values_work(self):
+    def test_default_values_work(self) -> None:
         """Test that default values are properly set on models."""
         from app.models.game_models import (
             Abilities,
-            Item,
-            GameResponse,
-            CreateCampaignRequest,
             Campaign,
+            CreateCampaignRequest,
+            GameResponse,
+            Item,
         )
 
         # Test abilities defaults

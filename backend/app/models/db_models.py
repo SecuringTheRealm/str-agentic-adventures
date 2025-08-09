@@ -2,17 +2,18 @@
 
 from __future__ import annotations
 
-from sqlalchemy import (
-    Column,
-    JSON,
-    String,
-    Boolean,
-    DateTime,
-    Text,
-    Integer,
-    ForeignKey,
-)
 from datetime import datetime
+
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+)
 
 from app.database import Base
 

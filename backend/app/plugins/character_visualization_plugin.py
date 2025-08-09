@@ -4,9 +4,10 @@ This plugin provides specialized character portrait generation and visualization
 """
 
 import logging
-from typing import Dict, Any, List
+from typing import Any
 
 from semantic_kernel.functions import kernel_function
+
 from app.azure_openai_client import AzureOpenAIClient
 
 logger = logging.getLogger(__name__)
@@ -18,7 +19,7 @@ class CharacterVisualizationPlugin:
     Focuses on creating detailed, consistent character portraits for RPG characters.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the character visualization plugin."""
         self.azure_client = AzureOpenAIClient()
         self.character_portraits = {}
@@ -37,7 +38,7 @@ class CharacterVisualizationPlugin:
         physical_description: str = "",
         equipment: str = "",
         personality_traits: str = "",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate a detailed character portrait.
 
@@ -105,12 +106,11 @@ class CharacterVisualizationPlugin:
                         "gender": gender,
                     },
                 }
-            else:
-                return {
-                    "status": "error",
-                    "character_id": character_id,
-                    "error": result.get("error", "Portrait generation failed"),
-                }
+            return {
+                "status": "error",
+                "character_id": character_id,
+                "error": result.get("error", "Portrait generation failed"),
+            }
 
         except Exception as e:
             logger.error(f"Error generating character portrait: {str(e)}")
@@ -129,7 +129,7 @@ class CharacterVisualizationPlugin:
         variation_type: str = "combat",
         scenario_description: str = "",
         mood: str = "determined",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate a character portrait variation for different scenarios.
 
@@ -186,11 +186,10 @@ class CharacterVisualizationPlugin:
                     "prompt_used": variation_prompt,
                     "base_character_id": character_id,
                 }
-            else:
-                return {
-                    "status": "error",
-                    "error": result.get("error", "Variation generation failed"),
-                }
+            return {
+                "status": "error",
+                "error": result.get("error", "Variation generation failed"),
+            }
 
         except Exception as e:
             logger.error(f"Error generating character variation: {str(e)}")
@@ -209,7 +208,7 @@ class CharacterVisualizationPlugin:
         group_name: str = "Adventure Party",
         scene_setting: str = "tavern",
         interaction: str = "standing together",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate a group portrait with multiple characters.
 
@@ -280,11 +279,10 @@ class CharacterVisualizationPlugin:
                     "prompt_used": group_prompt,
                     "scene_setting": scene_setting,
                 }
-            else:
-                return {
-                    "status": "error",
-                    "error": result.get("error", "Group portrait generation failed"),
-                }
+            return {
+                "status": "error",
+                "error": result.get("error", "Group portrait generation failed"),
+            }
 
         except Exception as e:
             logger.error(f"Error generating group portrait: {str(e)}")
@@ -297,7 +295,7 @@ class CharacterVisualizationPlugin:
         description="Get character portrait gallery for a character.",
         name="get_character_gallery",
     )
-    def get_character_gallery(self, character_id: str) -> Dict[str, Any]:
+    def get_character_gallery(self, character_id: str) -> dict[str, Any]:
         """
         Get all portraits and variations for a character.
 
@@ -355,7 +353,7 @@ class CharacterVisualizationPlugin:
     )
     def generate_expression_study(
         self, character_id: str, expressions: str = "happy,sad,angry,surprised"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate a character expression study showing different emotions.
 
@@ -402,7 +400,7 @@ class CharacterVisualizationPlugin:
 
             # Create study data
             study_id = f"{character_id}_expressions"
-            study_data = {
+            {
                 "study_id": study_id,
                 "character_id": character_id,
                 "character_name": base_character["character_name"],
@@ -479,7 +477,7 @@ class CharacterVisualizationPlugin:
 
     def _build_variation_prompt(
         self,
-        base_character: Dict[str, Any],
+        base_character: dict[str, Any],
         variation_type: str,
         scenario: str,
         mood: str,
@@ -522,7 +520,7 @@ class CharacterVisualizationPlugin:
 
     def _build_group_prompt(
         self,
-        characters: List[Dict[str, Any]],
+        characters: list[dict[str, Any]],
         group_name: str,
         setting: str,
         interaction: str,
@@ -557,7 +555,7 @@ class CharacterVisualizationPlugin:
         return prompt
 
     def _build_expression_prompt(
-        self, character: Dict[str, Any], expression: str
+        self, character: dict[str, Any], expression: str
     ) -> str:
         """Build an expression study prompt."""
         base_desc = f"Close-up portrait of {character['character_name']}, a {character['race']} {character['character_class']}"

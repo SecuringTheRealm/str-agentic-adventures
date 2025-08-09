@@ -3,7 +3,7 @@ Combat Cartographer Agent - Generates tactical battle maps for combat encounters
 """
 
 import logging
-from typing import Dict, Any, Optional
+from typing import Any
 
 from app.azure_openai_client import AzureOpenAIClient
 from app.kernel_setup import kernel_manager
@@ -17,7 +17,7 @@ class CombatCartographerAgent:
     This agent is responsible for generating visual representations of combat environments.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the Combat Cartographer agent with its own kernel instance."""
         self.kernel = kernel_manager.create_kernel()
         self.azure_client = AzureOpenAIClient()
@@ -26,17 +26,17 @@ class CombatCartographerAgent:
         # Store map references
         self.battle_maps = {}
 
-    def _register_skills(self):
+    def _register_skills(self) -> None:
         """Register necessary skills for the Combat Cartographer agent."""
         try:
             # Import combat cartographer-specific plugins
-            from app.plugins.map_generation_plugin import MapGenerationPlugin
-            from app.plugins.tactical_analysis_plugin import TacticalAnalysisPlugin
-            from app.plugins.terrain_assessment_plugin import TerrainAssessmentPlugin
             from app.plugins.battle_positioning_plugin import BattlePositioningPlugin
             from app.plugins.environmental_hazards_plugin import (
                 EnvironmentalHazardsPlugin,
             )
+            from app.plugins.map_generation_plugin import MapGenerationPlugin
+            from app.plugins.tactical_analysis_plugin import TacticalAnalysisPlugin
+            from app.plugins.terrain_assessment_plugin import TerrainAssessmentPlugin
 
             # Define plugin configuration: (PluginClass, attribute_name, skill_name)
             plugins_config = [
@@ -74,9 +74,9 @@ class CombatCartographerAgent:
 
     async def generate_battle_map(
         self,
-        environment_context: Dict[str, Any],
-        combat_context: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        environment_context: dict[str, Any],
+        combat_context: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """
         Generate a battle map based on environment context and combat requirements.
 
@@ -164,8 +164,8 @@ class CombatCartographerAgent:
             return {"error": "Failed to generate battle map"}
 
     async def update_map_with_combat_state(
-        self, map_id: str, combat_state: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, map_id: str, combat_state: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Update an existing battle map with current combat state (positions, etc.).
 
@@ -272,7 +272,7 @@ class CombatCartographerAgent:
             logger.error(f"Error updating battle map: {str(e)}")
             return {"error": "Failed to update battle map"}
 
-    def _calculate_map_stats(self, battle_map: Dict[str, Any]) -> Dict[str, Any]:
+    def _calculate_map_stats(self, battle_map: dict[str, Any]) -> dict[str, Any]:
         """
         Calculate tactical statistics for the battle map.
 

@@ -8,12 +8,11 @@ Classifies and analyzes all comments in the repository into:
 
 import os
 import re
-from typing import Dict, List, Tuple
 from pathlib import Path
 
 
 class CommentClassifier:
-    def __init__(self, repo_root: str):
+    def __init__(self, repo_root: str) -> None:
         self.repo_root = Path(repo_root)
         self.future_work_patterns = [
             r"(?i)in a real implementation",
@@ -43,12 +42,12 @@ class CommentClassifier:
 
         self.results = {"documentation": [], "future_work": [], "regular": []}
 
-    def scan_file(self, file_path: Path) -> List[Tuple[str, int, str, str]]:
+    def scan_file(self, file_path: Path) -> list[tuple[str, int, str, str]]:
         """Scan a file and return classified comments."""
         comments = []
 
         try:
-            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+            with open(file_path, encoding="utf-8", errors="ignore") as f:
                 lines = f.readlines()
 
             for line_num, line in enumerate(lines, 1):
@@ -77,14 +76,14 @@ class CommentClassifier:
             # Python comments
             if line.startswith("#"):
                 return line[1:].strip()
-            elif '"""' in line or "'''" in line:
+            if '"""' in line or "'''" in line:
                 return line  # Docstring
 
         elif file_extension in [".ts", ".tsx", ".js", ".jsx"]:
             # JavaScript/TypeScript comments
             if line.startswith("//"):
                 return line[2:].strip()
-            elif line.startswith("/*") or line.startswith("*"):
+            if line.startswith("/*") or line.startswith("*"):
                 return line.lstrip("/*").lstrip("*").strip()
 
         elif file_extension in [".md"]:
@@ -123,7 +122,7 @@ class CommentClassifier:
 
         return "regular"
 
-    def scan_repository(self):
+    def scan_repository(self) -> None:
         """Scan the entire repository for comments."""
         file_extensions = [".py", ".ts", ".tsx", ".js", ".jsx", ".md"]
         exclude_dirs = {
@@ -162,7 +161,7 @@ class CommentClassifier:
 
         # Summary
         total_comments = sum(len(self.results[category]) for category in self.results)
-        report.append(f"## Summary")
+        report.append("## Summary")
         report.append(f"- **Total Comments Found**: {total_comments}")
         report.append(
             f"- **Documentation Comments**: {len(self.results['documentation'])}"
@@ -199,9 +198,9 @@ class CommentClassifier:
         report.append("-" * 40)
 
         if self.results["documentation"]:
-            doc_files = set(
+            doc_files = {
                 comment["file"] for comment in self.results["documentation"]
-            )
+            }
             report.append(f"Found documentation comments in {len(doc_files)} files:")
             for file_path in sorted(doc_files):
                 count = len(
@@ -218,7 +217,7 @@ class CommentClassifier:
         report.append("-" * 25)
 
         if self.results["regular"]:
-            regular_files = set(comment["file"] for comment in self.results["regular"])
+            regular_files = {comment["file"] for comment in self.results["regular"]}
             report.append(f"Found regular comments in {len(regular_files)} files:")
             for file_path in sorted(regular_files):
                 count = len(
@@ -231,7 +230,7 @@ class CommentClassifier:
         return "\n".join(report)
 
 
-def main():
+def main() -> None:
     """Main function to run the comment classification."""
     repo_root = os.path.dirname(os.path.abspath(__file__))
 

@@ -1,19 +1,17 @@
 """Campaign service for managing campaign operations."""
 
-from typing import Dict, List, Optional, Any
-from datetime import datetime
 import uuid
-import json
+from datetime import datetime
+from typing import Any
 
-from sqlalchemy.orm import Session
 from sqlalchemy import or_
 
+from app.database import get_session
 from app.models.db_models import Campaign as CampaignDB
 from app.models.game_models import Campaign, CreateCampaignRequest
-from app.database import get_session
 
 
-def campaign_to_dict(campaign: Campaign) -> Dict[str, Any]:
+def campaign_to_dict(campaign: Campaign) -> dict[str, Any]:
     """Convert Campaign object to JSON-serializable dict."""
     data = campaign.model_dump()
     # Convert datetime to ISO string
@@ -22,7 +20,7 @@ def campaign_to_dict(campaign: Campaign) -> Dict[str, Any]:
     return data
 
 
-def dict_to_campaign(data: Dict[str, Any]) -> Campaign:
+def dict_to_campaign(data: dict[str, Any]) -> Campaign:
     """Convert dict back to Campaign object."""
     # Convert ISO string back to datetime if needed
     if "created_at" in data and isinstance(data["created_at"], str):
@@ -36,7 +34,7 @@ def dict_to_campaign(data: Dict[str, Any]) -> Campaign:
 class CampaignService:
     """Service for campaign management operations."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the campaign service."""
         pass
 
@@ -75,7 +73,7 @@ class CampaignService:
 
         return campaign
 
-    def get_campaign(self, campaign_id: str) -> Optional[Campaign]:
+    def get_campaign(self, campaign_id: str) -> Campaign | None:
         """Retrieve a campaign by ID."""
         with next(get_session()) as db:
             db_campaign = (
@@ -87,16 +85,16 @@ class CampaignService:
 
     def list_campaigns(
         self, include_templates: bool = True, include_custom: bool = True
-    ) -> List[Campaign]:
+    ) -> list[Campaign]:
         """List campaigns based on filters."""
         with next(get_session()) as db:
             query = db.query(CampaignDB)
 
             conditions = []
             if include_templates:
-                conditions.append(CampaignDB.is_template == True)
+                conditions.append(CampaignDB.is_template)
             if include_custom:
-                conditions.append(CampaignDB.is_custom == True)
+                conditions.append(CampaignDB.is_custom)
 
             if conditions:
                 query = query.filter(or_(*conditions))
@@ -110,11 +108,11 @@ class CampaignService:
 
             return campaigns
 
-    def get_templates(self) -> List[Campaign]:
+    def get_templates(self) -> list[Campaign]:
         """Get pre-built campaign templates."""
         with next(get_session()) as db:
             db_campaigns = (
-                db.query(CampaignDB).filter(CampaignDB.is_template == True).all()
+                db.query(CampaignDB).filter(CampaignDB.is_template).all()
             )
 
             campaigns = []
@@ -125,8 +123,8 @@ class CampaignService:
             return campaigns
 
     def clone_campaign(
-        self, template_id: str, new_name: Optional[str] = None
-    ) -> Optional[Campaign]:
+        self, template_id: str, new_name: str | None = None
+    ) -> Campaign | None:
         """Clone a template campaign for customization."""
         template = self.get_campaign(template_id)
         if not template:
@@ -172,8 +170,8 @@ class CampaignService:
         return cloned_campaign
 
     def update_campaign(
-        self, campaign_id: str, updates: Dict[str, Any]
-    ) -> Optional[Campaign]:
+        self, campaign_id: str, updates: dict[str, Any]
+    ) -> Campaign | None:
         """Update an existing campaign."""
         with next(get_session()) as db:
             db_campaign = (
@@ -228,8 +226,7 @@ class CampaignService:
                 db.query(CampaignDB)
                 .filter(
                     CampaignDB.id == campaign_id,
-                    CampaignDB.is_template
-                    == False,  # Only allow deletion of non-templates
+                    not CampaignDB.is_template,  # Only allow deletion of non-templates
                 )
                 .first()
             )
@@ -240,7 +237,7 @@ class CampaignService:
                 return True
             return False
 
-    def create_template_campaigns(self):
+    def create_template_campaigns(self) -> None:
         """Create default template campaigns if they don't exist."""
         templates = [
             {
@@ -354,7 +351,7 @@ class CampaignService:
                     db.query(CampaignDB)
                     .filter(
                         CampaignDB.name == template_data["name"],
-                        CampaignDB.is_template == True,
+                        CampaignDB.is_template,
                     )
                     .first()
                 )

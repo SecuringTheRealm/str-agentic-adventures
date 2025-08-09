@@ -2,13 +2,13 @@
 Tests for the enhanced campaign creation and gameplay features.
 """
 
+
 import pytest
-from typing import List, Dict, Any
 
 
 # Copy the functions locally to avoid import issues
 async def generate_world_description(
-    name: str, setting: str, tone: str, homebrew_rules: List[str]
+    name: str, setting: str, tone: str, homebrew_rules: list[str]
 ) -> str:
     """Generate a world description for the campaign."""
     descriptions = {
@@ -41,7 +41,7 @@ async def generate_world_description(
     return base_description
 
 
-def generate_major_locations(setting: str) -> List[Dict[str, str]]:
+def generate_major_locations(setting: str) -> list[dict[str, str]]:
     """Generate major locations for the campaign world."""
     locations = {
         "fantasy": [
@@ -82,7 +82,7 @@ def generate_major_locations(setting: str) -> List[Dict[str, str]]:
     return locations.get(setting, [])
 
 
-def generate_notable_npcs(setting: str, tone: str) -> List[Dict[str, str]]:
+def generate_notable_npcs(setting: str, tone: str) -> list[dict[str, str]]:
     """Generate notable NPCs for the campaign."""
     npcs = [
         {
@@ -122,24 +122,22 @@ def generate_notable_npcs(setting: str, tone: str) -> List[Dict[str, str]]:
     return npcs
 
 
-def generate_plot_hooks(setting: str, tone: str) -> List[str]:
+def generate_plot_hooks(setting: str, tone: str) -> list[str]:
     """Generate plot hooks for the campaign."""
-    hooks = [
+    return [
         "Ancient artifacts have been stolen from the museum, and the thieves left behind only cryptic symbols.",
         "Strange disappearances plague the local area, and survivors speak of shadowy figures in the night.",
         "A powerful ally has gone missing, and their last known location was a dangerous territory.",
     ]
-    return hooks
 
 
-def generate_world_lore(setting: str) -> List[str]:
+def generate_world_lore(setting: str) -> list[str]:
     """Generate world lore elements."""
-    lore = [
+    return [
         "Long ago, a great cataclysm reshaped the world, leaving scars that still influence events today.",
         "An ancient prophecy speaks of heroes who will arise in the realm's darkest hour.",
         "Hidden throughout the world are artifacts of immense power, sought by many but understood by few.",
     ]
-    return lore
 
 
 def generate_opening_scene(session_type: str) -> str:
@@ -152,7 +150,7 @@ def generate_opening_scene(session_type: str) -> str:
     return scenes.get(session_type, "Your adventure begins...")
 
 
-def generate_available_actions(session_type: str) -> List[str]:
+def generate_available_actions(session_type: str) -> list[str]:
     """Generate available actions for a session type."""
     actions = {
         "exploration": [
@@ -182,7 +180,7 @@ class TestCampaignGeneration:
     """Test campaign and world generation functionality."""
 
     @pytest.mark.asyncio
-    async def test_generate_world_description_fantasy(self):
+    async def test_generate_world_description_fantasy(self) -> None:
         """Test fantasy world description generation."""
         description = await generate_world_description(
             "Test Realm", "fantasy", "heroic", []
@@ -193,7 +191,7 @@ class TestCampaignGeneration:
         assert "heroes" in description.lower()
 
     @pytest.mark.asyncio
-    async def test_generate_world_description_with_homebrew(self):
+    async def test_generate_world_description_with_homebrew(self) -> None:
         """Test world description with homebrew rules."""
         homebrew_rules = ["Magic is rare", "Dragons rule the skies"]
         description = await generate_world_description(
@@ -205,7 +203,7 @@ class TestCampaignGeneration:
         assert "Dragons rule the skies" in description
         assert "dark forces" in description.lower()
 
-    def test_generate_major_locations_fantasy(self):
+    def test_generate_major_locations_fantasy(self) -> None:
         """Test fantasy location generation."""
         locations = generate_major_locations("fantasy")
 
@@ -220,12 +218,12 @@ class TestCampaignGeneration:
         assert "Goldenheart City" in location_names
         assert "The Whispering Woods" in location_names
 
-    def test_generate_major_locations_unknown_setting(self):
+    def test_generate_major_locations_unknown_setting(self) -> None:
         """Test location generation for unknown setting."""
         locations = generate_major_locations("unknown_setting")
         assert locations == []
 
-    def test_generate_notable_npcs(self):
+    def test_generate_notable_npcs(self) -> None:
         """Test NPC generation."""
         npcs = generate_notable_npcs("fantasy", "heroic")
 
@@ -239,21 +237,21 @@ class TestCampaignGeneration:
         assert "Sage Meridian" in npc_names
         assert "Captain Redhawk" in npc_names
 
-    def test_generate_notable_npcs_dark_tone(self):
+    def test_generate_notable_npcs_dark_tone(self) -> None:
         """Test NPC generation with dark tone."""
         npcs = generate_notable_npcs("fantasy", "dark")
 
         npc_names = [npc["name"] for npc in npcs]
         assert "Lord Malachar" in npc_names
 
-    def test_generate_notable_npcs_comedic_tone(self):
+    def test_generate_notable_npcs_comedic_tone(self) -> None:
         """Test NPC generation with comedic tone."""
         npcs = generate_notable_npcs("fantasy", "comedic")
 
         npc_names = [npc["name"] for npc in npcs]
         assert "Bumblethorne the Accident-Prone" in npc_names
 
-    def test_generate_plot_hooks(self):
+    def test_generate_plot_hooks(self) -> None:
         """Test plot hook generation."""
         hooks = generate_plot_hooks("fantasy", "heroic")
 
@@ -261,7 +259,7 @@ class TestCampaignGeneration:
         assert all(isinstance(hook, str) for hook in hooks)
         assert all(len(hook) > 10 for hook in hooks)  # Meaningful hooks
 
-    def test_generate_world_lore(self):
+    def test_generate_world_lore(self) -> None:
         """Test world lore generation."""
         lore = generate_world_lore("fantasy")
 
@@ -275,7 +273,7 @@ class TestCampaignGeneration:
 class TestGameplayMechanics:
     """Test gameplay loop and session management."""
 
-    def test_generate_opening_scene(self):
+    def test_generate_opening_scene(self) -> None:
         """Test opening scene generation."""
         exploration_scene = generate_opening_scene("exploration")
         combat_scene = generate_opening_scene("combat")
@@ -287,7 +285,7 @@ class TestGameplayMechanics:
         assert "tavern" in social_scene.lower()
         assert "adventure begins" in unknown_scene.lower()
 
-    def test_generate_available_actions(self):
+    def test_generate_available_actions(self) -> None:
         """Test available actions generation."""
         exploration_actions = generate_available_actions("exploration")
         combat_actions = generate_available_actions("combat")
@@ -314,7 +312,7 @@ class TestGameplayMechanics:
 class TestDiceIntegration:
     """Test dice system integration with character sheets."""
 
-    def test_dice_api_endpoint_format(self):
+    def test_dice_api_endpoint_format(self) -> None:
         """Test that dice API endpoints follow expected format."""
         # This would test the actual API endpoints if we had a test client
         # For now, we'll test the underlying functionality
@@ -335,7 +333,7 @@ class TestDiceIntegration:
         assert result["character_bonus"] == 6  # STR mod (3) + proficiency (3)
         assert result["total"] == result["rolls"][0] + 6
 
-    def test_roll_history_functionality(self):
+    def test_roll_history_functionality(self) -> None:
         """Test roll history tracking."""
         from app.plugins.rules_engine_plugin import RulesEnginePlugin
 
