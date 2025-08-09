@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Campaign, getCampaignTemplates, cloneCampaign } from '../services/api';
+import { Campaign, getCampaignTemplates, getCampaignTemplatesWithRetry, cloneCampaign } from '../services/api';
+import { logApiConfiguration, testApiConnectivity, validateApiUrl } from '../utils/api-debug';
+import { getApiBaseUrl } from '../utils/urls';
 import styles from './CampaignGallery.module.css';
 
 interface CampaignGalleryProps {
@@ -15,16 +17,74 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cloning, setCloning] = useState<string | null>(null);
+  const [debugInfo, setDebugInfo] = useState<string | null>(null);
 
   useEffect(() => {
     const loadTemplates = async () => {
       try {
         setLoading(true);
-        const templateData = await getCampaignTemplates();
+        setError(null);
+        setDebugInfo(null);
+
+        // Log API configuration for debugging
+        logApiConfiguration();
+
+        // Validate API URL configuration
+        const baseUrl = getApiBaseUrl();
+        const validation = validateApiUrl(baseUrl);
+        
+        if (!validation.isValid) {
+          const errorMsg = `API URL configuration error: ${validation.issues.join(', ')}`;
+          console.error(errorMsg);
+          setError(errorMsg);
+          setDebugInfo(`Base URL: ${baseUrl}`);
+          return;
+        }
+
+        // Test API connectivity in development or when explicitly debugging
+        if (process.env.NODE_ENV === 'development') {
+          const isConnected = await testApiConnectivity(baseUrl);
+          if (!isConnected) {
+            setError('Cannot connect to the backend API. Please ensure the backend server is running.');
+            setDebugInfo(`Attempted to connect to: ${baseUrl}`);
+            return;
+          }
+        }
+
+        // Load templates with retry logic for production reliability
+        const isProduction = process.env.NODE_ENV === 'production';
+        const templateData = isProduction 
+          ? await getCampaignTemplatesWithRetry()
+          : await getCampaignTemplates();
         setTemplates(templateData);
-      } catch (err) {
-        setError('Failed to load campaign templates');
+
+        if (templateData.length === 0) {
+          setDebugInfo('API call succeeded but returned no templates. Check if the backend has seeded template data.');
+        }
+
+      } catch (err: any) {
         console.error('Error loading templates:', err);
+        
+        // Provide detailed error information for debugging
+        let errorMessage = 'Failed to load campaign templates';
+        let debugMessage = '';
+
+        if (err.response) {
+          // HTTP error response
+          errorMessage = `HTTP ${err.response.status}: ${err.response.statusText}`;
+          debugMessage = `URL: ${err.config?.url || 'Unknown'}\nResponse: ${JSON.stringify(err.response.data, null, 2)}`;
+        } else if (err.request) {
+          // Network error
+          errorMessage = 'Network error - cannot reach the backend server';
+          debugMessage = `URL: ${err.config?.url || 'Unknown'}\nError: ${err.message}`;
+        } else {
+          // Other error
+          errorMessage = err.message || errorMessage;
+          debugMessage = `Error type: ${err.name || 'Unknown'}\nStack: ${err.stack || 'No stack trace'}`;
+        }
+
+        setError(errorMessage);
+        setDebugInfo(debugMessage);
       } finally {
         setLoading(false);
       }
@@ -64,7 +124,27 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
         <div className={styles.errorMessage}>
           <h3>Error Loading Templates</h3>
           <p>{error}</p>
-          <button onClick={() => window.location.reload()}>Try Again</button>
+          {debugInfo && (
+            <details style={{ marginTop: '1rem', fontSize: '0.9rem' }}>
+              <summary>Debug Information</summary>
+              <pre style={{ whiteSpace: 'pre-wrap', background: '#f5f5f5', padding: '1rem', margin: '0.5rem 0' }}>
+                {debugInfo}
+              </pre>
+            </details>
+          )}
+          <div style={{ marginTop: '1rem' }}>
+            <button onClick={() => window.location.reload()}>Try Again</button>
+            <button 
+              onClick={() => {
+                setError(null);
+                setDebugInfo(null);
+                window.location.reload();
+              }}
+              style={{ marginLeft: '0.5rem' }}
+            >
+              Reload Page
+            </button>
+          </div>
         </div>
       </div>
     );

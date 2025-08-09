@@ -19,6 +19,38 @@ export const apiClient = axios.create({
   },
 });
 
+// Add response interceptor for better error handling in production
+try {
+  if (apiClient?.interceptors) {
+    apiClient.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        // Add context to errors for better debugging
+        if (error.response) {
+          console.error('API Error Response:', {
+            status: error.response.status,
+            statusText: error.response.statusText,
+            url: error.config?.url,
+            data: error.response.data
+          });
+        } else if (error.request) {
+          console.error('API Network Error:', {
+            url: error.config?.url,
+            message: error.message,
+            baseURL: apiClient.defaults?.baseURL
+          });
+        }
+        return Promise.reject(error);
+      }
+    );
+  }
+} catch (error) {
+  // Ignore interceptor setup errors in test environment
+  if (process.env.NODE_ENV !== 'test') {
+    console.warn('Failed to setup API interceptors:', error);
+  }
+}
+
 // Export all types from the generated client
 export * from "../api-client";
 
@@ -86,6 +118,49 @@ export const deleteCampaign = async (campaignId: string) => {
 export const getCampaignTemplates = async () => {
   const response = await gameApi.getCampaignTemplatesApiGameCampaignTemplatesGet();
   return response.data;
+};
+
+/**
+ * Retry wrapper for API calls to handle temporary failures
+ */
+const retryApiCall = async <T>(
+  apiCall: () => Promise<T>,
+  retries: number = 3,
+  initialDelay: number = 1000
+): Promise<T> => {
+  const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+  
+  let lastError: any;
+  
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      return await apiCall();
+    } catch (error: any) {
+      lastError = error;
+      
+      // Don't retry on client errors (4xx), only server errors (5xx) and network errors
+      if (error.response && error.response.status >= 400 && error.response.status < 500) {
+        throw error;
+      }
+      
+      if (attempt === retries) {
+        break;
+      }
+      
+      const delayMs = initialDelay * Math.pow(2, attempt - 1);
+      console.warn(`API call failed (attempt ${attempt}/${retries}), retrying in ${delayMs}ms...`, error.message);
+      await sleep(delayMs);
+    }
+  }
+  
+  throw lastError || new Error('All retry attempts failed');
+};
+
+/**
+ * Get campaign templates with retry logic for production reliability
+ */
+export const getCampaignTemplatesWithRetry = async () => {
+  return retryApiCall(() => getCampaignTemplates(), 3, 1000);
 };
 
 export const getAIAssistance = async (request: import("../api-client").AIAssistanceRequest) => {

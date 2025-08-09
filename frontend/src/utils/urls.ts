@@ -4,7 +4,10 @@
 
 // Get the base URL from environment, defaulting to localhost
 const getBaseUrl = (): string => {
-  return process.env.REACT_APP_API_URL || 'http://localhost:8000';
+  const url = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+  
+  // Remove trailing slash to ensure consistent URL construction
+  return url.replace(/\/+$/, '');
 };
 
 // Convert HTTP URLs to WebSocket URLs
