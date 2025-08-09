@@ -1463,10 +1463,10 @@ async def get_spell_list(
     """Get available spells by class and level."""
     try:
         from app.srd_data import load_spells
-        
+
         # Load spells from SRD data
         spell_data = load_spells()
-        
+
         # Convert to Spell objects
         spells = []
         for spell_dict in spell_data:
@@ -1481,7 +1481,7 @@ async def get_spell_list(
                 duration=spell_dict.get("duration", ""),
                 description=spell_dict.get("description", ""),
                 requires_concentration=spell_dict.get("requires_concentration", False),
-                available_classes=spell_dict.get("available_classes", [])
+                available_classes=spell_dict.get("available_classes", []),
             )
             spells.append(spell)
 

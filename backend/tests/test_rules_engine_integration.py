@@ -349,7 +349,7 @@ class TestConcentrationTracking:
 class TestSpellEffectResolution:
     """Test spell effect resolution system."""
 
-    @pytest.mark.integration 
+    @pytest.mark.integration
     def setup_method(self) -> None:
         """Set up test fixtures."""
         self.plugin = RulesEnginePlugin()

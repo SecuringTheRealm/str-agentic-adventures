@@ -328,6 +328,7 @@ class ScribeAgent:
                 get_class_saving_throws,
                 get_class_features,
                 get_racial_traits,
+                get_background_info,
             )
 
             character_id = character_data.get(
@@ -336,6 +337,7 @@ class ScribeAgent:
 
             race = character_data.get("race", "human").lower()
             character_class = character_data.get("class", "fighter").lower()
+            background = character_data.get("background", "").lower()
             level = character_data.get("level", 1)
 
             # Get base abilities from input
@@ -371,6 +373,7 @@ class ScribeAgent:
                 "name": character_data.get("name", "Unnamed Adventurer"),
                 "race": race,
                 "character_class": character_class,
+                "background": background if background else None,
                 "level": level,
                 "experience": character_data.get("experience", 0),
                 "abilities": final_abilities,
@@ -391,28 +394,52 @@ class ScribeAgent:
                 "backstory": character_data.get("backstory", ""),
             }
 
+            # Add background skill proficiencies if background is specified
+            if background:
+                background_info = get_background_info(background)
+                if background_info:
+                    # Add background skill proficiencies
+                    skill_proficiencies = background_info.get("skill_proficiencies", [])
+                    for skill in skill_proficiencies:
+                        character_sheet["skills"][skill] = True
+                    
+                    # Add background feature as a feature
+                    feature = background_info.get("feature", {})
+                    if feature:
+                        character_sheet["features"].append({
+                            "name": feature["name"],
+                            "description": feature["description"],
+                            "type": "background",
+                            "source": "background",
+                            "level_gained": 1
+                        })
+
             # Add level 1 class features
             level_1_features = get_class_features(character_class, 1)
             for feature in level_1_features:
-                character_sheet["features"].append({
-                    "name": feature["name"],
-                    "description": feature["description"],
-                    "type": feature["type"],
-                    "source": "class",
-                    "level_gained": 1
-                })
+                character_sheet["features"].append(
+                    {
+                        "name": feature["name"],
+                        "description": feature["description"],
+                        "type": feature["type"],
+                        "source": "class",
+                        "level_gained": 1,
+                    }
+                )
 
             # Add racial traits as features
             racial_data = get_racial_traits(race)
             racial_traits = racial_data.get("traits", [])
             for trait in racial_traits:
-                character_sheet["features"].append({
-                    "name": trait["name"],
-                    "description": trait["description"],
-                    "type": "racial",
-                    "source": "race",
-                    "level_gained": 1
-                })
+                character_sheet["features"].append(
+                    {
+                        "name": trait["name"],
+                        "description": trait["description"],
+                        "type": "racial",
+                        "source": "race",
+                        "level_gained": 1,
+                    }
+                )
 
             # Store character in database
             with next(get_session()) as db:
@@ -1069,23 +1096,25 @@ class ScribeAgent:
 
             # Add class features for the new level
             from app.srd_data import get_class_features
-            
+
             character_class = character.get("character_class", "fighter")
             level_features = get_class_features(character_class, new_level)
-            
+
             # Initialize features list if it doesn't exist
             if "features" not in character:
                 character["features"] = []
-            
+
             # Add new class features
             for feature in level_features:
-                character["features"].append({
-                    "name": feature["name"],
-                    "description": feature["description"],
-                    "type": feature["type"],
-                    "source": "class",
-                    "level_gained": new_level
-                })
+                character["features"].append(
+                    {
+                        "name": feature["name"],
+                        "description": feature["description"],
+                        "type": feature["type"],
+                        "source": "class",
+                        "level_gained": new_level,
+                    }
+                )
                 features_gained.append(f"Class Feature: {feature['name']}")
 
             # Update character
