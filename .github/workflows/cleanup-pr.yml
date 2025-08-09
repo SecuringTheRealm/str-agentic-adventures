@@ -75,3 +75,39 @@ jobs:
           ${{ github.event.pull_request.merged && '✅ **Merged**: Changes are now available in the main branch' || '❌ **Closed**: No changes were merged' }}
 
           > **Note**: Manual cleanup may be required if resources were deployed.
+
+    - name: Comment on PR (Partial Cleanup)
+      if: needs.cleanup-pr.outputs.cleanup-status == 'partial'
+      uses: peter-evans/create-or-update-comment@v4
+      with:
+        issue-number: ${{ github.event.pull_request.number }}
+        body: |
+          ## ⚠️ PR Environment Cleanup Partially Completed
+
+          The temporary environment cleanup encountered some issues and may not be fully complete.
+
+          ### Environment URLs (may still exist):
+          - **Frontend**: ${{ needs.cleanup-pr.outputs.frontend-uri || 'Not available' }}
+          - **Backend API**: ${{ needs.cleanup-pr.outputs.backend-uri || 'Not available' }}
+
+          ${{ github.event.pull_request.merged && '✅ **Merged**: Changes are now available in the main branch' || '❌ **Closed**: No changes were merged' }}
+
+          > **⚠️ Warning**: Some Azure resources may still exist and require manual cleanup. Please check the [workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.
+
+    - name: Comment on PR (Failed Cleanup)
+      if: needs.cleanup-pr.outputs.cleanup-status == 'failed'
+      uses: peter-evans/create-or-update-comment@v4
+      with:
+        issue-number: ${{ github.event.pull_request.number }}
+        body: |
+          ## ❌ PR Environment Cleanup Failed
+
+          The temporary environment cleanup failed and resources may still exist in Azure.
+
+          ### Environment URLs (likely still active):
+          - **Frontend**: ${{ needs.cleanup-pr.outputs.frontend-uri || 'Not available' }}
+          - **Backend API**: ${{ needs.cleanup-pr.outputs.backend-uri || 'Not available' }}
+
+          ${{ github.event.pull_request.merged && '✅ **Merged**: Changes are now available in the main branch' || '❌ **Closed**: No changes were merged' }}
+
+          > **❌ Action Required**: Manual cleanup of Azure resources is required. Please check the [workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details and clean up the resource group `${{ github.event.pull_request.number }}` manually.

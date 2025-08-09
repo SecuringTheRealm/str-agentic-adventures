@@ -188,9 +188,68 @@ jobs:
           fi
         timeout-minutes: 5
 
+      - name: Explicit Static Web App cleanup
+        id: static-webapp-cleanup
+        if: steps.check-secrets.outputs.secrets-available == 'true' && steps.get-env-info.outputs.environment-exists == 'true'
+        run: |
+          RESOURCE_GROUP="${{ inputs.resource-group-name }}"
+          FRONTEND_APP_PREFIX="${{ inputs.environment-name }}-frontend-"
+
+          echo "Checking for Static Web Apps to cleanup..."
+          echo "Resource Group: $RESOURCE_GROUP"
+          echo "App Name Prefix: $FRONTEND_APP_PREFIX"
+
+          # Find all Static Web Apps with the prefix
+          SWA_NAMES=$(az staticwebapp list --resource-group "$RESOURCE_GROUP" --query "[?starts_with(name, '$FRONTEND_APP_PREFIX')].name" --output tsv 2>/dev/null || echo "")
+
+          if [ -n "$SWA_NAMES" ]; then
+            echo "Found Static Web Apps to delete:"
+            echo "$SWA_NAMES"
+
+            # Delete each Static Web App
+            while IFS= read -r SWA_NAME; do
+              if [ -n "$SWA_NAME" ] && [ "$SWA_NAME" != "null" ]; then
+                echo "Deleting Static Web App: $SWA_NAME"
+                az staticwebapp delete --name "$SWA_NAME" --resource-group "$RESOURCE_GROUP" --yes --no-wait
+                
+                # Wait a moment between deletions
+                sleep 5
+              fi
+            done <<< "$SWA_NAMES"
+
+            echo "Static Web App deletion initiated"
+
+            # Wait for deletions to complete (with timeout)
+            TIMEOUT=300  # 5 minutes
+            ELAPSED=0
+            while true; do
+              REMAINING_SWAS=$(az staticwebapp list --resource-group "$RESOURCE_GROUP" --query "[?starts_with(name, '$FRONTEND_APP_PREFIX')].name" --output tsv 2>/dev/null || echo "")
+              
+              if [ -z "$REMAINING_SWAS" ]; then
+                echo "All Static Web Apps successfully deleted"
+                break
+              fi
+              
+              if [ $ELAPSED -ge $TIMEOUT ]; then
+                echo "::warning::Timeout waiting for Static Web App deletion. Remaining apps:"
+                echo "$REMAINING_SWAS"
+                echo "::warning::Proceeding with stack cleanup..."
+                break
+              fi
+              
+              echo "Waiting for Static Web App deletion... ($ELAPSED/$TIMEOUT seconds)"
+              echo "Remaining apps: $(echo "$REMAINING_SWAS" | tr '\n' ' ')"
+              sleep 15
+              ELAPSED=$((ELAPSED + 15))
+            done
+          else
+            echo "No Static Web Apps found with prefix $FRONTEND_APP_PREFIX"
+          fi
+        timeout-minutes: 8
+
       - name: Cleanup deployment stack
         id: cleanup-stack
-        if: steps.check-secrets.outputs.secrets-available == 'true' && steps.manual-cleanup.outcome == 'success'
+        if: steps.check-secrets.outputs.secrets-available == 'true' && steps.manual-cleanup.outcome == 'success' && steps.static-webapp-cleanup.outcome == 'success'
         run: |
           STACK_NAME="${{ inputs.stack-name }}"
           LOCATION="${{ inputs.location }}"
@@ -256,11 +315,101 @@ jobs:
           fi
         timeout-minutes: 15
 
+      - name: Verify resource group cleanup
+        id: verify-cleanup
+        if: steps.check-secrets.outputs.secrets-available == 'true' && steps.cleanup-stack.outcome == 'success'
+        run: |
+          RESOURCE_GROUP="${{ inputs.resource-group-name }}"
+          
+          echo "Verifying complete cleanup of resource group: $RESOURCE_GROUP"
+          
+          # Wait a bit for final cleanup operations to complete
+          sleep 30
+          
+          # Check if resource group still exists
+          if az group show --name "$RESOURCE_GROUP" >/dev/null 2>&1; then
+            echo "Resource group still exists. Checking for remaining resources..."
+            
+            # List remaining resources in the group
+            REMAINING_RESOURCES=$(az resource list --resource-group "$RESOURCE_GROUP" --query "[].{name:name,type:type}" --output table 2>/dev/null || echo "")
+            
+            if [ -n "$REMAINING_RESOURCES" ]; then
+              echo "::warning::Found remaining resources in resource group:"
+              echo "$REMAINING_RESOURCES"
+              
+              # Attempt manual deletion of specific resource types that might cause issues
+              echo "Attempting to delete remaining resources..."
+              
+              # Delete any remaining Static Web Apps
+              REMAINING_SWAS=$(az staticwebapp list --resource-group "$RESOURCE_GROUP" --query "[].name" --output tsv 2>/dev/null || echo "")
+              if [ -n "$REMAINING_SWAS" ]; then
+                echo "Deleting remaining Static Web Apps..."
+                while IFS= read -r SWA_NAME; do
+                  if [ -n "$SWA_NAME" ]; then
+                    echo "Force deleting Static Web App: $SWA_NAME"
+                    az staticwebapp delete --name "$SWA_NAME" --resource-group "$RESOURCE_GROUP" --yes
+                  fi
+                done <<< "$REMAINING_SWAS"
+              fi
+              
+              # Delete any remaining container apps
+              REMAINING_APPS=$(az containerapp list --resource-group "$RESOURCE_GROUP" --query "[].name" --output tsv 2>/dev/null || echo "")
+              if [ -n "$REMAINING_APPS" ]; then
+                echo "Deleting remaining container apps..."
+                while IFS= read -r APP_NAME; do
+                  if [ -n "$APP_NAME" ]; then
+                    echo "Force deleting container app: $APP_NAME"
+                    az containerapp delete --name "$APP_NAME" --resource-group "$RESOURCE_GROUP" --yes
+                  fi
+                done <<< "$REMAINING_APPS"
+              fi
+              
+              # Wait for deletions to process
+              sleep 60
+            fi
+            
+            # Final attempt to delete the resource group
+            echo "Attempting final resource group deletion..."
+            if az group delete --name "$RESOURCE_GROUP" --yes --no-wait 2>/dev/null; then
+              echo "Final resource group deletion initiated"
+              
+              # Wait for resource group deletion (with timeout)
+              TIMEOUT=300  # 5 minutes
+              ELAPSED=0
+              while az group show --name "$RESOURCE_GROUP" >/dev/null 2>&1; do
+                if [ $ELAPSED -ge $TIMEOUT ]; then
+                  echo "::error::Timeout waiting for resource group deletion"
+                  echo "cleanup-status=incomplete" >> $GITHUB_OUTPUT
+                  exit 0  # Don't fail the workflow, just report incomplete cleanup
+                fi
+                echo "Waiting for resource group deletion... ($ELAPSED/$TIMEOUT seconds)"
+                sleep 15
+                ELAPSED=$((ELAPSED + 15))
+              done
+              
+              echo "Resource group successfully deleted"
+              echo "cleanup-status=complete" >> $GITHUB_OUTPUT
+            else
+              echo "::error::Failed to initiate resource group deletion"
+              echo "cleanup-status=failed" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "Resource group already deleted by stack cleanup"
+            echo "cleanup-status=complete" >> $GITHUB_OUTPUT
+          fi
+        timeout-minutes: 10
+
       - name: Set cleanup status
         id: set-cleanup-status
         if: steps.check-secrets.outputs.secrets-available == 'true'
         run: |
-          if [ "${{ steps.manual-cleanup.outcome }}" == "success" ] && [ "${{ steps.cleanup-stack.outcome }}" == "success" ]; then
+          if [ "${{ steps.verify-cleanup.outputs.cleanup-status }}" == "complete" ]; then
+            echo "cleanup-status=success" >> $GITHUB_OUTPUT
+            echo "Environment cleanup completed successfully"
+          elif [ "${{ steps.verify-cleanup.outputs.cleanup-status }}" == "incomplete" ]; then
+            echo "cleanup-status=partial" >> $GITHUB_OUTPUT
+            echo "Environment cleanup partially completed - some resources may remain"
+          elif [ "${{ steps.manual-cleanup.outcome }}" == "success" ] && [ "${{ steps.static-webapp-cleanup.outcome }}" == "success" ] && [ "${{ steps.cleanup-stack.outcome }}" == "success" ]; then
             echo "cleanup-status=success" >> $GITHUB_OUTPUT
             echo "Environment cleanup completed successfully"
           elif [ "${{ steps.check-secrets.outputs.secrets-available }}" == "false" ]; then
