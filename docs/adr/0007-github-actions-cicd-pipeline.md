@@ -19,13 +19,13 @@ As the project has evolved, the CI/CD requirements have expanded beyond basic te
 
 ## Decision
 
-We will implement a comprehensive GitHub Actions-based CI/CD pipeline that:
+We will implement a comprehensive GitHub Actions-based CI/CD pipeline using specialized workflows:
 
-1. **Intelligent Change Detection**: Uses path-based filtering to only run relevant jobs when specific code areas change
-2. **Continuous Integration**: Runs on pull requests and main branch pushes with comprehensive testing
-3. **Frontend Testing**: Runs Vitest tests for all React components and utilities with build validation
-4. **Backend Testing**: Runs extensive test suite including structure validation, API compatibility, end-to-end workflows, and ADR compliance
-5. **Integration Validation**: Ensures frontend-backend API compatibility and cross-component validation
+1. **Targeted Test Workflows**: Separate workflows for unit tests (PR feedback), integration tests, and E2E tests with optimized triggers
+2. **Intelligent Change Detection**: Uses path-based filtering to only run relevant jobs when specific code areas change
+3. **Fast Unit Testing**: Runs on pull requests for rapid feedback with unit tests and build validation
+4. **Comprehensive Integration Testing**: Runs on main branch and nightly schedule for thorough validation
+5. **End-to-End Testing**: Runs full user workflow tests on main branch and nightly schedule
 6. **Automated Deployment**: Full deployment automation to Azure with infrastructure provisioning
 7. **PR Environment Management**: Creates temporary Azure environments for each pull request
 8. **Environment Cleanup**: Automatically removes PR environments when pull requests are closed
@@ -33,21 +33,29 @@ We will implement a comprehensive GitHub Actions-based CI/CD pipeline that:
 ### Pipeline Structure
 
 ```yaml
-# CI Pipeline (ci.yml)
-- Change Detection Job: Determines which components have changed (frontend/backend/integration)
-- Frontend Tests Job: Node.js 18, npm ci --legacy-peer-deps, vitest --run, npm build
+# Unit Tests Pipeline (unit-tests.yml)
+- Change Detection Job: Determines which components have changed (frontend/backend)
+- Frontend Unit Tests Job: Node.js 20, npm ci --legacy-peer-deps, vitest --run, npm build
   - Conditional execution: only runs when frontend/ changes
-- Backend Tests Job: Python 3.12, comprehensive test suite including:
+- Backend Unit Tests Job: Python 3.12, fast unit tests including:
   - Structure validation and syntax checking
-  - API compatibility and mapping tests  
-  - End-to-end workflow testing
-  - Component integration testing
-  - ADR compliance validation
-  - Custom test execution without external dependencies
+  - Unit-marked tests for rapid feedback
+  - Basic API compatibility checks
   - Conditional execution: only runs when backend/ changes
-- Integration Check Job: Cross-component validation when both frontend and backend change
-  - Waits for frontend and backend jobs to complete
-  - Validates API model compatibility
+
+# Integration Tests Pipeline (integration-tests.yml)  
+- Triggers: main branch pushes, nightly schedule, manual dispatch
+- Backend Integration Tests Job: Python 3.12, comprehensive testing including:
+  - Integration-marked and slow tests
+  - Cross-component validation
+- Performance regression checks and compatibility validation
+
+# E2E Tests Pipeline (e2e-tests.yml)
+- Triggers: main branch pushes, nightly schedule, manual dispatch
+- Frontend E2E Tests Job: Full end-to-end user workflow testing
+  - Playwright browser automation
+  - Backend and frontend server coordination
+  - Complete user journey validation
 
 # Deployment Pipeline (deploy-production.yml)
 - Production Deployment: Triggered by pushes to main branch
@@ -70,17 +78,23 @@ We will implement a comprehensive GitHub Actions-based CI/CD pipeline that:
 
 ### Test Strategy
 
-- **Frontend**: Component tests with Vitest, API integration tests, build validation, TypeScript compilation
-- **Backend**: Comprehensive test suite (62+ tests) covering:
+- **Fast Unit Tests (PR Feedback)**: Unit tests, component tests, and build validation for rapid feedback on pull requests
+- **Backend Unit Tests**: Fast test suite covering:
   - Pydantic model validation and serialization
-  - Agent interface contracts and mocking
+  - Agent interface contracts and mocking  
+  - Basic API compatibility
+  - Project structure validation and Python syntax checking
+- **Integration Tests (Main Branch)**: Comprehensive test suite covering:
   - API compatibility between frontend and backend
   - End-to-end workflow testing (character creation, campaign creation, player input, image generation)
   - Component integration testing (API routes, model field consistency, agent integration)
-  - Project structure validation and Python syntax checking
+  - Performance regression checks
   - ADR implementation compliance verification
-- **Integration**: Cross-component API mapping validation, model compatibility checks
-- **Deployment**: Infrastructure validation, application health checks, deployment verification
+- **E2E Tests (Main Branch)**: Full user journey testing:
+  - Browser automation with Playwright
+  - Complete frontend-backend integration
+  - Real user workflow simulation
+- **Deployment Validation**: Infrastructure validation, application health checks, deployment verification
 
 ### Deployment Strategy
 
@@ -157,7 +171,9 @@ This ADR addresses the integration review requirement for ensuring "GitHub actio
 - ✅ Infrastructure as Code with Azure Bicep deployment stacks
 
 **Workflow Files**:
-- `.github/workflows/ci.yml`: Main CI pipeline with testing and validation
+- `.github/workflows/unit-tests.yml`: Fast unit tests for PR feedback and validation
+- `.github/workflows/integration-tests.yml`: Comprehensive integration testing for main branch
+- `.github/workflows/e2e-tests.yml`: End-to-end testing for main branch and nightly validation
 - `.github/workflows/deploy-production.yml`: Production deployment automation  
 - `.github/workflows/deploy-pr.yml`: PR environment creation and deployment
 - `.github/workflows/cleanup-pr.yml`: Automatic PR environment cleanup
