@@ -103,7 +103,6 @@ The frontend expects the backend to be running on `http://localhost:8000` for lo
 
 ## Related Documentation
 - [Backend README](../backend/README.md)
-- [Project Status Report](../docs/project_status_report.md)
 - [Deployment Guide](../docs/deployment.md)
 
 ## Legacy Notes

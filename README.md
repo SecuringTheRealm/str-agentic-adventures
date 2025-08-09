@@ -14,7 +14,7 @@
 
 Secure the Realm democratizes access to high-quality tabletop roleplaying experiences. The platform removes the need for a human Dungeon Master while preserving the creativity, flexibility, and immersion of traditional games. Anyone can instantly jump into an adventure tailored to their preferences and available time. Specialized AI agents work together to deliver a seamless and visually rich experience that adapts to player choices.
 
-📋 **Project Status**: [View the comprehensive project status report](docs/project_status_report.md) for detailed implementation progress, feature completion status, and development roadmap.
+
 
 ## Background and Problem Statement
 
@@ -196,4 +196,4 @@ Validate the entire workflow:
 ./scripts/validate-openapi-client.sh
 ```
 
-See [OPENAPI_CLIENT.md](OPENAPI_CLIENT.md) for detailed documentation.
+See [docs/OPENAPI_CLIENT.md](docs/OPENAPI_CLIENT.md) for detailed documentation.
