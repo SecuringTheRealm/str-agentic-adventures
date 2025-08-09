@@ -30,6 +30,7 @@ This directory contains Architecture Decision Records (ADRs) for the Agentic Adv
 | 0011 | [OpenAPI Client Generation for Frontend-Backend Integration](0011-openapi-client-generation.md) | Accepted | 2025-01-29 | Generate TypeScript client from FastAPI OpenAPI schema to eliminate manual API type duplication |
 | 0012 | [FastAPI Lifespan Event Handler Migration](0012-fastapi-lifespan-migration.md) | Accepted | 2025-01-09 | Migration from deprecated on_event handlers to modern lifespan context manager |
 | 0013 | [CI Workflow Optimization for Reduced Duplication and CI Minutes](0013-ci-workflow-optimization.md) | Accepted | 2025-08-09 | Optimization of GitHub Actions workflows to reduce CI minutes usage and improve PR feedback loops |
+| 0014 | [Multi-Platform AI Instruction Architecture](0014-multi-platform-ai-instruction-architecture.md) | Accepted | 2025-01-27 | Hierarchical instruction structure supporting OpenAI Codex, GitHub Copilot Chat, coding agent, and code review |
 
 ## ADR Statuses
 
