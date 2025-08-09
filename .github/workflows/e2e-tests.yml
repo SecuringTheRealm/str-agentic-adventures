@@ -2,13 +2,13 @@
 name: E2E Tests
 
 on:
-  pull_request:
-    branches: [main]
   push:
     branches: [main]
   schedule:
     # Run nightly at 3 AM UTC to save runner minutes
     - cron: '0 3 * * *'
+  workflow_dispatch:
+    # Allow manual triggering for high-risk PRs
 
 jobs:
   # Job to detect which files have changed
@@ -36,7 +36,7 @@ jobs:
   frontend-e2e-tests:
     runs-on: ubuntu-latest
     needs: changes
-    if: ${{ needs.changes.outputs.e2e-relevant == 'true' || github.event_name == 'schedule' }}
+    if: ${{ needs.changes.outputs.e2e-relevant == 'true' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
 
     steps:
     - name: Checkout code

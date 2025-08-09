@@ -5,6 +5,8 @@ Structure validation tests that can run without external dependencies.
 import ast
 import os
 
+import pytest
+
 
 class TestProjectStructure:
     """Test project structure and syntax validation."""
@@ -21,6 +23,7 @@ class TestProjectStructure:
         # Return original path if neither exists (will fail appropriately)
         return path
 
+    @pytest.mark.unit
     def test_backend_file_structure(self) -> None:
         """Test that all required backend files exist."""
         required_files = [
@@ -63,6 +66,7 @@ class TestProjectStructure:
             "No dependency configuration found. Expected root pyproject.toml for UV-based project"
         )
 
+    @pytest.mark.unit
     def test_python_syntax_validation(self) -> None:
         """Test that all Python files have valid syntax."""
         python_files = []
@@ -101,6 +105,7 @@ class TestProjectStructure:
 
         assert len(syntax_errors) == 0, f"Syntax errors found: {syntax_errors}"
 
+    @pytest.mark.unit
     def test_api_endpoints_defined(self) -> None:
         """Test that required API endpoints are defined in route files."""
         route_file = self._resolve_backend_path("app/api/game_routes.py")
@@ -129,6 +134,7 @@ class TestProjectStructure:
 
         assert len(missing_endpoints) == 0, f"Missing endpoints: {missing_endpoints}"
 
+    @pytest.mark.unit
     def test_model_imports_structure(self) -> None:
         """Test that model imports are properly structured."""
         models_file = self._resolve_backend_path("app/models/game_models.py")
@@ -157,6 +163,7 @@ class TestProjectStructure:
 
         assert len(missing_models) == 0, f"Missing models: {missing_models}"
 
+    @pytest.mark.unit
     def test_requirements_file_exists(self) -> None:
         """Test that project dependencies are properly defined."""
         # Check for new root pyproject.toml first (preferred approach)
@@ -227,6 +234,7 @@ class TestProjectStructure:
 class TestFrontendBackendAPIMapping:
     """Test that frontend API calls map to backend endpoints."""
 
+    @pytest.mark.unit
     def test_api_url_mapping(self) -> None:
         """Test that frontend API URLs map correctly to backend routes."""
         # Read frontend API file
@@ -284,6 +292,7 @@ class TestFrontendBackendAPIMapping:
 
         assert len(missing_mappings) == 0, f"Missing API mappings: {missing_mappings}"
 
+    @pytest.mark.unit
     def test_api_base_url_consistency(self) -> None:
         """Test that API base URL is configured correctly."""
         frontend_api_file = "../frontend/src/services/api.ts"

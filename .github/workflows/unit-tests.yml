@@ -87,6 +87,12 @@ jobs:
         cd backend
         uv run python -m pytest tests/ -m "unit or not slow" --durations=10 -v
 
+    - name: Run backend structure validation (unit tests)
+      run: |
+        export PATH="$HOME/.local/bin:$PATH"
+        cd backend
+        uv run python -m pytest tests/test_structure_validation.py tests/test_end_to_end.py::TestComponentIntegration::test_api_route_coverage tests/test_end_to_end.py::TestComponentIntegration::test_model_field_consistency -m "unit" -v
+
     - name: Run backend linting
       run: |
         cd backend

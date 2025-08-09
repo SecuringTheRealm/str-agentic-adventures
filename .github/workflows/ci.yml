@@ -1,183 +1,30 @@
 ---
-name: CI
+name: CI (DEPRECATED)
+
+# This workflow has been deprecated in favor of dedicated test workflows:
+# - unit-tests.yml for fast PR feedback 
+# - integration-tests.yml for comprehensive testing on main branch
+# - e2e-tests.yml for end-to-end testing on main branch
+#
+# This workflow is kept for legacy compatibility but does minimal work
 
 on:
-  pull_request:
-    branches: [main, develop]
-  # Only run on pushes to main for release validation, not for all pushes
+  # Only run on main pushes for basic health check
   push:
     branches: [main]
 
 jobs:
-  # Job to detect which files have changed
-  changes:
+  health-check:
     runs-on: ubuntu-latest
-    outputs:
-      frontend: ${{ steps.filter.outputs.frontend }}
-      backend: ${{ steps.filter.outputs.backend }}
-      integration: ${{ steps.filter.outputs.integration }}
+    
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-
-    - name: Check for file changes
-      uses: dorny/paths-filter@v3
-      id: filter
-      with:
-        filters: |
-          frontend:
-            - 'frontend/**'
-          backend:
-            - 'backend/**'
-          integration:
-            - 'frontend/**'
-            - 'backend/**'
-
-  frontend-tests:
-    runs-on: ubuntu-latest
-    needs: changes
-    if: ${{ needs.changes.outputs.frontend == 'true' }}
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: frontend/package-lock.json
-
-    - name: Install frontend dependencies
+      
+    - name: Basic repository health check
       run: |
-        cd frontend
-        npm ci --legacy-peer-deps
-
-    - name: Run frontend tests
-      run: |
-        cd frontend
-        npm test -- --run
-
-    - name: Build frontend
-      run: |
-        cd frontend
-        npm run build
-
-  backend-tests:
-    runs-on: ubuntu-latest
-    needs: changes
-    if: ${{ needs.changes.outputs.backend == 'true' }}
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Setup Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.12'
-
-    - name: Install UV
-      run: curl -LsSf https://astral.sh/uv/install.sh | sh
-
-    - name: Install backend dependencies
-      run: |
-        export PATH="$HOME/.local/bin:$PATH"
-        uv sync
-
-    - name: Run backend tests
-      run: |
-        python -c "
-        import sys
-        sys.path.append('backend')
-        from backend.tests.test_structure_validation import TestProjectStructure, TestFrontendBackendAPIMapping
-        from backend.tests.test_end_to_end import TestEndToEndWorkflows, TestComponentIntegration
-
-        print('=== Running Backend Structure Tests ===')
-        test_structure = TestProjectStructure()
-        test_structure.test_backend_file_structure()
-        test_structure.test_python_syntax_validation()
-        test_structure.test_api_endpoints_defined()
-        test_structure.test_model_imports_structure()
-        test_structure.test_requirements_file_exists()
-
-        print('=== Running API Mapping Tests ===')
-        test_mapping = TestFrontendBackendAPIMapping()
-        test_mapping.test_api_url_mapping()
-        test_mapping.test_api_base_url_consistency()
-
-        print('=== Running End-to-End Tests ===')
-        test_workflows = TestEndToEndWorkflows()
-        test_workflows.test_character_creation_workflow()
-        test_workflows.test_campaign_creation_workflow()
-        test_workflows.test_player_input_workflow()
-        test_workflows.test_image_generation_workflow()
-
-        print('=== Running Component Integration Tests ===')
-        test_integration = TestComponentIntegration()
-        test_integration.test_api_route_coverage()
-        test_integration.test_model_field_consistency()
-        test_integration.test_agent_integration_points()
-
-        print('✅ All backend tests passed')
-        "
-
-    - name: Run backend linting
-      run: |
-        cd backend
-        python -c "
-        import ast
-        import os
-        import sys
-
-        # Simple syntax check instead of ruff
-        python_files = []
-        for root, dirs, files in os.walk('app'):
-            for file in files:
-                if file.endswith('.py'):
-                    python_files.append(os.path.join(root, file))
-
-        for file_path in python_files:
-            try:
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    ast.parse(f.read())
-                print(f'✅ {file_path} syntax valid')
-            except SyntaxError as e:
-                print(f'❌ {file_path} syntax error: {e}')
-                sys.exit(1)
-
-        print('✅ All Python files have valid syntax')
-        "
-
-  integration-check:
-    runs-on: ubuntu-latest
-    needs: [changes, frontend-tests, backend-tests]
-    if: ${{ always() && needs.changes.outputs.integration == 'true' && (needs.frontend-tests.result == 'success' || needs.frontend-tests.result == 'skipped') && (needs.backend-tests.result == 'success' || needs.backend-tests.result == 'skipped') }}
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Setup Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.12'
-
-    - name: Install UV
-      run: curl -LsSf https://astral.sh/uv/install.sh | sh
-
-    - name: Install backend dependencies
-      run: |
-        export PATH="$HOME/.local/bin:$PATH"
-        uv sync
-
-    - name: Check API compatibility
-      run: |
-        python -c "
-        import sys
-        sys.path.append('backend')
-        from backend.app.models.game_models import *
-        from backend.app.main import app
-        print('✅ Backend models and API routes compatible')
-        "
+        echo "✅ Repository structure looks good"
+        test -f pyproject.toml
+        test -d backend/app
+        test -d frontend/src
+        echo "✅ All basic files present"
