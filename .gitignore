@@ -414,5 +414,14 @@ evidence.csv
 # Bicep generated files
 infra/main.json
 
-# Local db for testing
+# Local databases and cache files
+*.db
+*.sqlite
+*.sqlite3
 backend/app.db
+app.db
+
+# Legacy files
+*.old
+*.bak
+*.backup

@@ -52,6 +52,8 @@ Apply the [general coding guidelines](./general-coding.instructions.md) to all c
 - Use **msw** for HTTP mocks in unit/component tests
 - Do not commit `.only`, `.skip`, or focussed tests
 - Keep tests deterministic; avoid real time, randomness, and live network calls
+- **NEVER rewrite tests just to make them pass** - investigate and fix the underlying code issue first
+- Only adjust tests if they were incorrect, out of date, or testing wrong behavior
 
 ### Reporting
 

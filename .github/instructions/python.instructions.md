@@ -57,6 +57,7 @@ All code must follow the [general coding guidelines](./general-coding.instructio
 - Integration tests for inter-agent workflows.
 - End-to-end tests for full pipelines.
 - Mock all external systems (Azure OpenAI, DBs, etc.).
+- **NEVER rewrite tests just to make them pass** - investigate and fix code issues first.
 
 ### AI Testing Patterns
 
@@ -64,6 +65,7 @@ All code must follow the [general coding guidelines](./general-coding.instructio
 - Include failure scenarios and edge cases.
 - Validate prompt outputs.
 - Benchmark agent response latency.
+- Test with mocked AI responses for consistency.
 
 ## Security and Configuration
 
