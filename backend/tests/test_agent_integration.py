@@ -7,10 +7,12 @@ import asyncio
 import os
 from unittest.mock import Mock, patch
 
+import pytest
 from app.agents.combat_mc_agent import CombatMCAgent
 from app.plugins.rules_engine_plugin import RulesEnginePlugin
 
 
+@pytest.mark.integration
 async def test_agent_integration() -> None:
     """Test that the CombatMCAgent can be created and used with mocked Azure dependencies."""
 

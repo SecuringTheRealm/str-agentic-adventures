@@ -349,6 +349,12 @@ class TestConcentrationTracking:
 class TestSpellEffectResolution:
     """Test spell effect resolution system."""
 
+    @pytest.mark.integration 
+    def setup_method(self) -> None:
+        """Set up test fixtures."""
+        self.plugin = RulesEnginePlugin()
+
+    @pytest.mark.integration
     def test_calculate_spell_save_dc(self) -> None:
         """Test spell save DC calculation."""
         # Test with standard spellcaster stats
