@@ -261,11 +261,13 @@ class TestPlayerInput:
         assert player_input.campaign_id == "camp_456"
 
     def test_player_input_validation_error(self):
-        """Test PlayerInput validation with missing fields."""
+        """Test PlayerInput validation with invalid types."""
         with pytest.raises(ValidationError):
             PlayerInput(
-                message="Hello", character_id="", campaign_id=""
-            )  # Empty required fields
+                message=123,  # Should be string
+                character_id="char_123", 
+                campaign_id="camp_456"
+            )
 
 
 class TestGameResponse:
