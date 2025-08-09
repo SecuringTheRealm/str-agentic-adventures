@@ -101,7 +101,7 @@ jobs:
       - name: Setup Node.js for frontend build
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: "20"
           cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
@@ -266,11 +266,24 @@ jobs:
           # Get Static Web App details
           RESOURCE_GROUP="${{ steps.infrastructure-deploy.outputs.AZURE_RESOURCE_GROUP }}"
 
-          # Use the actual Static Web App name from Bicep deployment output
-          SWA_NAME="${{ steps.infrastructure-deploy.outputs.AZURE_STATIC_WEB_APP_NAME }}"
-
-          echo "Deploying frontend to Static Web App: $SWA_NAME"
+          # Query for the actual Static Web App name (Azure adds unique suffix)
+          # The Bicep output name doesn't include the Azure-generated suffix
+          EXPECTED_SWA_PREFIX="${{ steps.infrastructure-deploy.outputs.AZURE_STATIC_WEB_APP_NAME }}"
+          
+          echo "Looking for Static Web App with prefix: $EXPECTED_SWA_PREFIX"
           echo "Resource Group: $RESOURCE_GROUP"
+
+          # Find the actual Static Web App name in the resource group
+          SWA_NAME=$(az staticwebapp list --resource-group "$RESOURCE_GROUP" --query "[?starts_with(name, '$EXPECTED_SWA_PREFIX')].name | [0]" --output tsv)
+
+          if [ -z "$SWA_NAME" ] || [ "$SWA_NAME" = "null" ]; then
+            echo "::warning::No Static Web App found with prefix $EXPECTED_SWA_PREFIX in resource group $RESOURCE_GROUP"
+            echo "Available Static Web Apps in resource group:"
+            az staticwebapp list --resource-group "$RESOURCE_GROUP" --query "[].name" --output table || echo "None found"
+            SWA_NAME="$EXPECTED_SWA_PREFIX"  # Fallback to original name
+          fi
+
+          echo "Using Static Web App name: $SWA_NAME"
 
           # Build frontend with backend URL
           cd frontend
@@ -285,6 +298,8 @@ jobs:
             DEPLOYMENT_TOKEN=$(az staticwebapp secrets list --name "$SWA_NAME" --resource-group "$RESOURCE_GROUP" --query "properties.apiKey" --output tsv 2>/dev/null || echo "")
             SWA_DEFAULT_HOSTNAME=$(az staticwebapp show --name "$SWA_NAME" --resource-group "$RESOURCE_GROUP" --query "defaultHostname" --output tsv)
             FRONTEND_URI="https://$SWA_DEFAULT_HOSTNAME"
+            echo "Successfully found Static Web App: $SWA_NAME"
+            echo "Frontend URI: $FRONTEND_URI"
           else
             echo "::warning::Static Web App $SWA_NAME not found in resource group $RESOURCE_GROUP"
             DEPLOYMENT_TOKEN=""
