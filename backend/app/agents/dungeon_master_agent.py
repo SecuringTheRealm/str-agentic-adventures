@@ -87,7 +87,6 @@ Your responses should:
 
 Always respond as a helpful, creative DM who wants players to have an exciting adventure. Keep responses focused and not overly long. You are the single point of coordination for the entire game experience."""
 
-
     async def process_input(
         self, user_input: str, context: dict[str, Any] = None
     ) -> dict[str, Any]:
@@ -138,7 +137,6 @@ Always respond as a helpful, creative DM who wants players to have an exciting a
                 "state_updates": {"last_action": user_input},
                 "combat_updates": None,
             }
-
 
         except Exception as e:
             logger.error(f"Error in DM processing: {str(e)}")

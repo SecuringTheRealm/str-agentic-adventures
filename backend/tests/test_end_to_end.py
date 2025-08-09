@@ -217,7 +217,9 @@ class TestComponentIntegration:
         # Read the game routes file with correct path
         routes_file = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            "app", "api", "game_routes.py"
+            "app",
+            "api",
+            "game_routes.py",
         )
         with open(routes_file) as f:
             routes_content = f.read()
@@ -245,7 +247,9 @@ class TestComponentIntegration:
         # Read the models file with correct path
         models_file = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            "app", "models", "game_models.py"
+            "app",
+            "models",
+            "game_models.py",
         )
         with open(models_file) as f:
             models_content = f.read()
@@ -279,7 +283,9 @@ class TestComponentIntegration:
         # Read the game routes file with correct path
         routes_file = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            "app", "api", "game_routes.py"
+            "app",
+            "api",
+            "game_routes.py",
         )
         with open(routes_file) as f:
             routes_content = f.read()

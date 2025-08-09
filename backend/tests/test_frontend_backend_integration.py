@@ -71,7 +71,9 @@ class TestFrontendBackendIntegration:
                 )
 
     @patch("app.agents.scribe_agent.get_scribe")
-    def test_character_creation_endpoint_compatibility(self, mock_scribe, client) -> None:
+    def test_character_creation_endpoint_compatibility(
+        self, mock_scribe, client
+    ) -> None:
         """Test character creation endpoint matches frontend expectations."""
         # Mock scribe agent response
         mock_scribe_instance = MagicMock()

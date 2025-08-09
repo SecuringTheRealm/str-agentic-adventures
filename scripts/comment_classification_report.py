@@ -198,9 +198,7 @@ class CommentClassifier:
         report.append("-" * 40)
 
         if self.results["documentation"]:
-            doc_files = {
-                comment["file"] for comment in self.results["documentation"]
-            }
+            doc_files = {comment["file"] for comment in self.results["documentation"]}
             report.append(f"Found documentation comments in {len(doc_files)} files:")
             for file_path in sorted(doc_files):
                 count = len(

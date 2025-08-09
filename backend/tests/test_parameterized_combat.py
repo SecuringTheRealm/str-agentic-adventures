@@ -223,7 +223,9 @@ class TestParameterizedCombatActions:
             (10, 1.0),  # Large encounter
         ],
     )
-    def test_combat_performance_scaling(self, encounter_size, expected_processing_time) -> None:
+    def test_combat_performance_scaling(
+        self, encounter_size, expected_processing_time
+    ) -> None:
         """Test that combat processing scales appropriately with encounter size."""
         # Create encounter with multiple enemies
         enemies = [{"id": f"enemy{i}", "type": "goblin"} for i in range(encounter_size)]

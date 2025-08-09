@@ -48,7 +48,11 @@ class TestProjectStructure:
         config_sources = []
 
         # Check for root pyproject.toml (primary UV configuration)
-        for pyproject_path in ["../pyproject.toml", "./pyproject.toml", "pyproject.toml"]:
+        for pyproject_path in [
+            "../pyproject.toml",
+            "./pyproject.toml",
+            "pyproject.toml",
+        ]:
             if os.path.exists(pyproject_path):
                 dependency_config_found = True
                 config_sources.append(f"root pyproject.toml ({pyproject_path})")
@@ -191,7 +195,9 @@ class TestProjectStructure:
             print(f"✅ Using {dependency_source} for dependency validation")
 
         if not dependency_source:
-            raise AssertionError("Neither root pyproject.toml nor backend requirements.txt found")
+            raise AssertionError(
+                "Neither root pyproject.toml nor backend requirements.txt found"
+            )
 
         # Critical dependencies for the project
         critical_deps = [

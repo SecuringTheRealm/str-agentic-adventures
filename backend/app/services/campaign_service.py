@@ -111,9 +111,7 @@ class CampaignService:
     def get_templates(self) -> list[Campaign]:
         """Get pre-built campaign templates."""
         with next(get_session()) as db:
-            db_campaigns = (
-                db.query(CampaignDB).filter(CampaignDB.is_template).all()
-            )
+            db_campaigns = db.query(CampaignDB).filter(CampaignDB.is_template).all()
 
             campaigns = []
             for db_campaign in db_campaigns:

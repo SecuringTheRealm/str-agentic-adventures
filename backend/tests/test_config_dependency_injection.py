@@ -66,7 +66,9 @@ class TestConfigurationDependencyInjection:
             assert response.status_code == 200
             assert mock_get_scribe.called
 
-    def test_character_creation_with_missing_config(self, client_with_missing_config) -> None:
+    def test_character_creation_with_missing_config(
+        self, client_with_missing_config
+    ) -> None:
         """Test character creation with missing Azure OpenAI configuration."""
         character_data = {
             "name": "Test Character",
@@ -222,7 +224,9 @@ class TestConfigurationDependencyInjection:
             assert response.status_code == 200
             assert mock_get_scribe.called
 
-    def test_get_character_with_missing_config(self, client_with_missing_config) -> None:
+    def test_get_character_with_missing_config(
+        self, client_with_missing_config
+    ) -> None:
         """Test get character with missing Azure OpenAI configuration."""
         response = client_with_missing_config.get("/api/game/character/char_123")
 

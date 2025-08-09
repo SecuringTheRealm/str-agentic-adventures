@@ -306,9 +306,7 @@ class ArtStyleAnalysisPlugin:
             return "vibrant"
         if any(term in text for term in ["muted", "subdued", "pastel"]):
             return "muted"
-        if any(
-            term in text for term in ["monochrome", "black and white", "grayscale"]
-        ):
+        if any(term in text for term in ["monochrome", "black and white", "grayscale"]):
             return "monochrome"
         if any(term in text for term in ["warm", "orange", "red", "yellow"]):
             return "warm"

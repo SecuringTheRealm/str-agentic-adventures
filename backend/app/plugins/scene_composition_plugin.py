@@ -704,7 +704,6 @@ class SceneCompositionPlugin:
             "mood_impact": self._get_lighting_mood_impact(time, weather),
         }
 
-
     def _analyze_depth(self, scene: dict[str, Any]) -> dict[str, str]:
         """Analyze depth composition."""
         return {

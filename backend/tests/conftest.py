@@ -2,7 +2,6 @@
 Test configuration and utilities for improved configuration handling.
 """
 
-
 import pytest
 from app.config import Settings, get_config
 from app.main import app

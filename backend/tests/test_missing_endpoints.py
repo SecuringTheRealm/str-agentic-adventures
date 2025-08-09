@@ -59,7 +59,6 @@ class TestFrontendBackendAPICompatibility:
         # Filter to only API paths
         return {call for call in api_calls if call.startswith("/api/")}
 
-
     def get_frontend_api_functions(self):
         """Extract API function calls from frontend services/api.ts."""
         frontend_api_path = (
