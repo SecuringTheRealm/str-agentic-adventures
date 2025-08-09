@@ -2,12 +2,14 @@
 Tests for the enhanced Rules Engine Plugin.
 """
 
+import pytest
 from app.plugins.rules_engine_plugin import RulesEnginePlugin
 
 
 class TestDiceRolling:
     """Test enhanced dice rolling functionality."""
 
+    @pytest.mark.unit
     def setup_method(self) -> None:
         """Set up test fixtures."""
         self.plugin = RulesEnginePlugin()

@@ -5,6 +5,8 @@ End-to-end integration tests to verify complete functionality.
 import os
 import sys
 
+import pytest
+
 # Add the backend directory to Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -12,6 +14,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 class TestEndToEndWorkflows:
     """Test complete workflows from request to response."""
 
+    @pytest.mark.integration
     def test_character_creation_workflow(self) -> None:
         """Test complete character creation workflow."""
         # This test validates the data flow works correctly
@@ -79,6 +82,7 @@ class TestEndToEndWorkflows:
             )
             print("✅ Character creation data structure validation passed")
 
+    @pytest.mark.integration
     def test_campaign_creation_workflow(self) -> None:
         """Test complete campaign creation workflow."""
         frontend_request = {
@@ -131,6 +135,7 @@ class TestEndToEndWorkflows:
             assert isinstance(frontend_request["homebrew_rules"], list)
             print("✅ Campaign creation data structure validation passed")
 
+    @pytest.mark.integration
     def test_player_input_workflow(self) -> None:
         """Test player input processing workflow."""
         frontend_request = {
@@ -174,6 +179,7 @@ class TestEndToEndWorkflows:
             assert "campaign_id" in frontend_request
             print("✅ Player input data structure validation passed")
 
+    @pytest.mark.integration
     def test_image_generation_workflow(self) -> None:
         """Test image generation workflow."""
         frontend_request = {
@@ -212,6 +218,7 @@ class TestEndToEndWorkflows:
 class TestComponentIntegration:
     """Test that different components work together correctly."""
 
+    @pytest.mark.unit
     def test_api_route_coverage(self) -> None:
         """Test that all frontend API calls have corresponding backend routes."""
         # Read the game routes file with correct path
@@ -242,6 +249,7 @@ class TestComponentIntegration:
         assert len(missing_routes) == 0, f"Missing critical routes: {missing_routes}"
         print("✅ All critical API routes are present")
 
+    @pytest.mark.unit
     def test_model_field_consistency(self) -> None:
         """Test that model fields are consistent across the application."""
         # Read the models file with correct path
@@ -278,6 +286,7 @@ class TestComponentIntegration:
                 else:
                     raise AssertionError(f"Missing required pattern: {field_pattern}")
 
+    @pytest.mark.integration
     def test_agent_integration_points(self) -> None:
         """Test that agents are properly integrated with the API layer."""
         # Read the game routes file with correct path

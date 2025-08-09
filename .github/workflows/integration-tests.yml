@@ -2,13 +2,13 @@
 name: Integration Tests
 
 on:
-  pull_request:
-    branches: [main]
   push:
     branches: [main]
   schedule:
     # Run nightly at 2 AM UTC to save runner minutes
     - cron: '0 2 * * *'
+  workflow_dispatch:
+    # Allow manual triggering for high-risk PRs
 
 jobs:
   # Job to detect which files have changed
@@ -35,7 +35,7 @@ jobs:
   backend-integration-tests:
     runs-on: ubuntu-latest
     needs: changes
-    if: ${{ needs.changes.outputs.backend == 'true' || github.event_name == 'schedule' }}
+    if: ${{ needs.changes.outputs.backend == 'true' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
 
     steps:
     - name: Checkout code
@@ -60,47 +60,10 @@ jobs:
         cd backend
         uv run python -m pytest tests/ -m "integration or slow" --durations=20 -v
 
-    - name: Run comprehensive backend tests
-      run: |
-        python -c "
-        import sys
-        sys.path.append('backend')
-        from backend.tests.test_structure_validation import TestProjectStructure, TestFrontendBackendAPIMapping
-        from backend.tests.test_end_to_end import TestEndToEndWorkflows, TestComponentIntegration
-
-        print('=== Running Backend Structure Tests ===')
-        test_structure = TestProjectStructure()
-        test_structure.test_backend_file_structure()
-        test_structure.test_python_syntax_validation()
-        test_structure.test_api_endpoints_defined()
-        test_structure.test_model_imports_structure()
-        test_structure.test_requirements_file_exists()
-
-        print('=== Running API Mapping Tests ===')
-        test_mapping = TestFrontendBackendAPIMapping()
-        test_mapping.test_api_url_mapping()
-        test_mapping.test_api_base_url_consistency()
-
-        print('=== Running End-to-End Tests ===')
-        test_workflows = TestEndToEndWorkflows()
-        test_workflows.test_character_creation_workflow()
-        test_workflows.test_campaign_creation_workflow()
-        test_workflows.test_player_input_workflow()
-        test_workflows.test_image_generation_workflow()
-
-        print('=== Running Component Integration Tests ===')
-        test_integration = TestComponentIntegration()
-        test_integration.test_api_route_coverage()
-        test_integration.test_model_field_consistency()
-        test_integration.test_agent_integration_points()
-
-        print('✅ All backend integration tests passed')
-        "
-
   cross-component-integration:
     runs-on: ubuntu-latest
     needs: [changes, backend-integration-tests]
-    if: ${{ always() && needs.changes.outputs.integration == 'true' && (needs.backend-integration-tests.result == 'success' || needs.backend-integration-tests.result == 'skipped') }}
+    if: ${{ always() && (needs.changes.outputs.integration == 'true' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && (needs.backend-integration-tests.result == 'success' || needs.backend-integration-tests.result == 'skipped') }}
 
     steps:
     - name: Checkout code
