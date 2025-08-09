@@ -2,6 +2,7 @@
 Example test showing migration from os.environ patching to dependency injection.
 This demonstrates how to update existing tests that patch os.environ.
 """
+
 import os
 import pytest
 from unittest.mock import patch, MagicMock
@@ -17,25 +18,26 @@ class TestMigrationExample:
     def test_old_pattern_os_environ_patching(self):
         """
         OLD PATTERN: Direct os.environ manipulation (problematic).
-        
+
         This is the pattern we're replacing - it's fragile and can cause issues.
         """
         # Save original values
         original_endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
         original_key = os.environ.get("AZURE_OPENAI_API_KEY")
-        
+
         # Modify environment
         if "AZURE_OPENAI_ENDPOINT" in os.environ:
             del os.environ["AZURE_OPENAI_ENDPOINT"]
         if "AZURE_OPENAI_API_KEY" in os.environ:
             del os.environ["AZURE_OPENAI_API_KEY"]
-            
+
         try:
             # Test with modified environment
             client = TestClient(app)
-            
+
             with patch("app.api.game_routes.get_scribe") as mock_get_scribe:
                 mock_scribe = MagicMock()
+
                 async def mock_create_character(*args, **kwargs):
                     return {
                         "id": "test",
@@ -43,22 +45,44 @@ class TestMigrationExample:
                         "race": "human",
                         "character_class": "fighter",
                         "level": 1,
-                        "abilities": {"strength": 16, "dexterity": 14, "constitution": 15, "intelligence": 12, "wisdom": 13, "charisma": 10},
+                        "abilities": {
+                            "strength": 16,
+                            "dexterity": 14,
+                            "constitution": 15,
+                            "intelligence": 12,
+                            "wisdom": 13,
+                            "charisma": 10,
+                        },
                         "hit_points": {"current": 10, "maximum": 10},
                         "armor_class": 15,
-                        "inventory": [], "features": [], "spells": []
+                        "inventory": [],
+                        "features": [],
+                        "spells": [],
                     }
+
                 mock_scribe.create_character = mock_create_character
                 mock_get_scribe.return_value = mock_scribe
-                
-                response = client.post("/api/game/character", json={
-                    "name": "Test", "race": "human", "character_class": "fighter",
-                    "abilities": {"strength": 16, "dexterity": 14, "constitution": 15, "intelligence": 12, "wisdom": 13, "charisma": 10}
-                })
-                
+
+                response = client.post(
+                    "/api/game/character",
+                    json={
+                        "name": "Test",
+                        "race": "human",
+                        "character_class": "fighter",
+                        "abilities": {
+                            "strength": 16,
+                            "dexterity": 14,
+                            "constitution": 15,
+                            "intelligence": 12,
+                            "wisdom": 13,
+                            "charisma": 10,
+                        },
+                    },
+                )
+
                 # Should return 503 due to missing configuration
                 assert response.status_code == 503
-                
+
         finally:
             # Restore environment - easy to forget and cause test pollution!
             if original_endpoint:
@@ -69,7 +93,7 @@ class TestMigrationExample:
     def test_new_pattern_dependency_injection(self):
         """
         NEW PATTERN: Use FastAPI dependency override (recommended).
-        
+
         This is cleaner, more reliable, and doesn't affect global state.
         """
         # Create test configuration
@@ -79,15 +103,16 @@ class TestMigrationExample:
             azure_openai_chat_deployment="",
             azure_openai_embedding_deployment="",
         )
-        
+
         # Override the dependency
         app.dependency_overrides[get_config] = lambda: missing_config
-        
+
         try:
             client = TestClient(app)
-            
+
             with patch("app.api.game_routes.get_scribe") as mock_get_scribe:
                 mock_scribe = MagicMock()
+
                 async def mock_create_character(*args, **kwargs):
                     return {
                         "id": "test",
@@ -95,22 +120,44 @@ class TestMigrationExample:
                         "race": "human",
                         "character_class": "fighter",
                         "level": 1,
-                        "abilities": {"strength": 16, "dexterity": 14, "constitution": 15, "intelligence": 12, "wisdom": 13, "charisma": 10},
+                        "abilities": {
+                            "strength": 16,
+                            "dexterity": 14,
+                            "constitution": 15,
+                            "intelligence": 12,
+                            "wisdom": 13,
+                            "charisma": 10,
+                        },
                         "hit_points": {"current": 10, "maximum": 10},
                         "armor_class": 15,
-                        "inventory": [], "features": [], "spells": []
+                        "inventory": [],
+                        "features": [],
+                        "spells": [],
                     }
+
                 mock_scribe.create_character = mock_create_character
                 mock_get_scribe.return_value = mock_scribe
-                
-                response = client.post("/api/game/character", json={
-                    "name": "Test", "race": "human", "character_class": "fighter",
-                    "abilities": {"strength": 16, "dexterity": 14, "constitution": 15, "intelligence": 12, "wisdom": 13, "charisma": 10}
-                })
-                
+
+                response = client.post(
+                    "/api/game/character",
+                    json={
+                        "name": "Test",
+                        "race": "human",
+                        "character_class": "fighter",
+                        "abilities": {
+                            "strength": 16,
+                            "dexterity": 14,
+                            "constitution": 15,
+                            "intelligence": 12,
+                            "wisdom": 13,
+                            "charisma": 10,
+                        },
+                    },
+                )
+
                 # Should return 503 due to missing configuration
                 assert response.status_code == 503
-                
+
         finally:
             # Clean up - simple and reliable
             app.dependency_overrides.clear()
@@ -118,25 +165,30 @@ class TestMigrationExample:
     def test_new_pattern_with_fixtures(self, client_with_missing_config):
         """
         NEW PATTERN: Use pytest fixtures for even cleaner tests.
-        
+
         This is the cleanest approach using the fixtures from conftest.py.
         """
         with patch("app.api.game_routes.get_scribe") as mock_get_scribe:
             mock_scribe = MagicMock()
+
             async def mock_create_character(*args, **kwargs):
                 return fighter_character_factory()
+
             mock_scribe.create_character = mock_create_character
             mock_get_scribe.return_value = mock_scribe
-            
+
             # Use factory for request data too
             character_data = fighter_character_factory()
-            response = client_with_missing_config.post("/api/game/character", json={
-                "name": character_data["name"], 
-                "race": character_data["race"], 
-                "character_class": character_data["character_class"],
-                "abilities": character_data["abilities"]
-            })
-            
+            response = client_with_missing_config.post(
+                "/api/game/character",
+                json={
+                    "name": character_data["name"],
+                    "race": character_data["race"],
+                    "character_class": character_data["character_class"],
+                    "abilities": character_data["abilities"],
+                },
+            )
+
             # Should return 503 due to missing configuration
             assert response.status_code == 503
 
@@ -151,48 +203,88 @@ class TestMigrationExample:
             azure_openai_chat_deployment="test-chat",
             azure_openai_embedding_deployment="test-embedding",
         )
-        
+
         invalid_config = Settings(
             azure_openai_endpoint="",
             azure_openai_api_key="",
             azure_openai_chat_deployment="",
             azure_openai_embedding_deployment="",
         )
-        
+
         # 2. Test with valid config
         app.dependency_overrides[get_config] = lambda: valid_config
         client = TestClient(app)
-        
+
         with patch("app.api.game_routes.get_scribe") as mock_get_scribe:
             mock_scribe = MagicMock()
+
             async def mock_create_character(*args, **kwargs):
                 return {
-                    "id": "test", "name": "Test", "race": "human", "character_class": "fighter", "level": 1,
-                    "abilities": {"strength": 16, "dexterity": 14, "constitution": 15, "intelligence": 12, "wisdom": 13, "charisma": 10},
-                    "hit_points": {"current": 10, "maximum": 10}, "armor_class": 15,
-                    "inventory": [], "features": [], "spells": []
+                    "id": "test",
+                    "name": "Test",
+                    "race": "human",
+                    "character_class": "fighter",
+                    "level": 1,
+                    "abilities": {
+                        "strength": 16,
+                        "dexterity": 14,
+                        "constitution": 15,
+                        "intelligence": 12,
+                        "wisdom": 13,
+                        "charisma": 10,
+                    },
+                    "hit_points": {"current": 10, "maximum": 10},
+                    "armor_class": 15,
+                    "inventory": [],
+                    "features": [],
+                    "spells": [],
                 }
+
             mock_scribe.create_character = mock_create_character
             mock_get_scribe.return_value = mock_scribe
-            
-            response = client.post("/api/game/character", json={
-                "name": "Test", "race": "human", "character_class": "fighter",
-                "abilities": {"strength": 16, "dexterity": 14, "constitution": 15, "intelligence": 12, "wisdom": 13, "charisma": 10}
-            })
+
+            response = client.post(
+                "/api/game/character",
+                json={
+                    "name": "Test",
+                    "race": "human",
+                    "character_class": "fighter",
+                    "abilities": {
+                        "strength": 16,
+                        "dexterity": 14,
+                        "constitution": 15,
+                        "intelligence": 12,
+                        "wisdom": 13,
+                        "charisma": 10,
+                    },
+                },
+            )
             assert response.status_code == 200
-        
+
         # 3. Switch to invalid config in the same test
         app.dependency_overrides[get_config] = lambda: invalid_config
-        
-        response = client.post("/api/game/character", json={
-            "name": "Test", "race": "human", "character_class": "fighter",
-            "abilities": {"strength": 16, "dexterity": 14, "constitution": 15, "intelligence": 12, "wisdom": 13, "charisma": 10}
-        })
+
+        response = client.post(
+            "/api/game/character",
+            json={
+                "name": "Test",
+                "race": "human",
+                "character_class": "fighter",
+                "abilities": {
+                    "strength": 16,
+                    "dexterity": 14,
+                    "constitution": 15,
+                    "intelligence": 12,
+                    "wisdom": 13,
+                    "charisma": 10,
+                },
+            },
+        )
         assert response.status_code == 503
-        
+
         # 4. Clean up
         app.dependency_overrides.clear()
-        
+
         # Benefits demonstrated:
         # - No global state pollution
         # - Easy to switch configurations within a test

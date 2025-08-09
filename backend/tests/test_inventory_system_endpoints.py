@@ -23,12 +23,14 @@ class TestInventorySystemEndpoints:
             "character_id": character_id,
             "action": "equip",
             "equipment_id": "plate_armor",
-            "slot": "chest"
+            "slot": "chest",
         }
-        
-        response = client.post(f"/api/game/character/{character_id}/equipment", json=request_data)
+
+        response = client.post(
+            f"/api/game/character/{character_id}/equipment", json=request_data
+        )
         assert response.status_code == 200
-        
+
         data = response.json()
         assert data["success"] is True
         assert "Successfully equipped" in data["message"]
@@ -42,12 +44,14 @@ class TestInventorySystemEndpoints:
             "character_id": character_id,
             "action": "unequip",
             "equipment_id": "plate_armor",
-            "slot": "chest"
+            "slot": "chest",
         }
-        
-        response = client.post(f"/api/game/character/{character_id}/equipment", json=request_data)
+
+        response = client.post(
+            f"/api/game/character/{character_id}/equipment", json=request_data
+        )
         assert response.status_code == 200
-        
+
         data = response.json()
         assert data["success"] is True
         assert "Successfully unequipped" in data["message"]
@@ -60,27 +64,33 @@ class TestInventorySystemEndpoints:
         request_data = {
             "character_id": character_id,
             "action": "invalid_action",
-            "equipment_id": "plate_armor"
+            "equipment_id": "plate_armor",
         }
-        
-        response = client.post(f"/api/game/character/{character_id}/equipment", json=request_data)
+
+        response = client.post(
+            f"/api/game/character/{character_id}/equipment", json=request_data
+        )
         assert response.status_code == 400
-        
+
         data = response.json()
         assert "Invalid action" in data["detail"]
 
     def test_get_encumbrance(self, client):
         """Test getting character encumbrance."""
         character_id = "test_char_123"
-        
+
         response = client.get(f"/api/game/character/{character_id}/encumbrance")
         assert response.status_code == 200
-        
+
         data = response.json()
         assert data["character_id"] == character_id
         assert "current_weight" in data
         assert "carrying_capacity" in data
-        assert data["encumbrance_level"] in ["unencumbered", "encumbered", "heavily_encumbered"]
+        assert data["encumbrance_level"] in [
+            "unencumbered",
+            "encumbered",
+            "heavily_encumbered",
+        ]
         assert "speed_penalty" in data
         assert isinstance(data["speed_penalty"], int)
 
@@ -89,12 +99,12 @@ class TestInventorySystemEndpoints:
         request_data = {
             "character_id": "test_char_123",
             "item_id": "cloak_of_elvenkind",
-            "action": "apply"
+            "action": "apply",
         }
-        
+
         response = client.post("/api/game/items/magical-effects", json=request_data)
         assert response.status_code == 200
-        
+
         data = response.json()
         assert data["success"] is True
         assert "Applied magical effects" in data["message"]
@@ -107,12 +117,12 @@ class TestInventorySystemEndpoints:
         request_data = {
             "character_id": "test_char_123",
             "item_id": "cloak_of_elvenkind",
-            "action": "remove"
+            "action": "remove",
         }
-        
+
         response = client.post("/api/game/items/magical-effects", json=request_data)
         assert response.status_code == 200
-        
+
         data = response.json()
         assert data["success"] is True
         assert "Removed magical effects" in data["message"]
@@ -124,12 +134,12 @@ class TestInventorySystemEndpoints:
         request_data = {
             "character_id": "test_char_123",
             "item_id": "cloak_of_elvenkind",
-            "action": "invalid_action"
+            "action": "invalid_action",
         }
-        
+
         response = client.post("/api/game/items/magical-effects", json=request_data)
         assert response.status_code == 400
-        
+
         data = response.json()
         assert "Invalid action" in data["detail"]
 
@@ -137,13 +147,13 @@ class TestInventorySystemEndpoints:
         """Test getting item catalog without filters."""
         response = client.get("/api/game/items/catalog")
         assert response.status_code == 200
-        
+
         data = response.json()
         assert "items" in data
         assert "total_count" in data
         assert len(data["items"]) == data["total_count"]
         assert data["total_count"] > 0
-        
+
         # Check that all items have required fields
         for item in data["items"]:
             assert "name" in item
@@ -154,10 +164,10 @@ class TestInventorySystemEndpoints:
         """Test getting item catalog filtered by item type."""
         response = client.get("/api/game/items/catalog?item_type=weapon")
         assert response.status_code == 200
-        
+
         data = response.json()
         assert "items" in data
-        
+
         # Check that all returned items are weapons
         for item in data["items"]:
             assert item["item_type"] == "weapon"
@@ -166,10 +176,10 @@ class TestInventorySystemEndpoints:
         """Test getting item catalog filtered by rarity."""
         response = client.get("/api/game/items/catalog?rarity=rare")
         assert response.status_code == 200
-        
+
         data = response.json()
         assert "items" in data
-        
+
         # Check that all returned items are rare
         for item in data["items"]:
             assert item["rarity"] == "rare"
@@ -178,10 +188,10 @@ class TestInventorySystemEndpoints:
         """Test getting item catalog filtered by value range."""
         response = client.get("/api/game/items/catalog?min_value=100&max_value=2000")
         assert response.status_code == 200
-        
+
         data = response.json()
         assert "items" in data
-        
+
         # Check that all returned items are within value range
         for item in data["items"]:
             if item["value"] is not None:
@@ -191,10 +201,10 @@ class TestInventorySystemEndpoints:
         """Test getting item catalog with multiple filters."""
         response = client.get("/api/game/items/catalog?item_type=armor&rarity=common")
         assert response.status_code == 200
-        
+
         data = response.json()
         assert "items" in data
-        
+
         # Check that all returned items match both filters
         for item in data["items"]:
             assert item["item_type"] == "armor"
@@ -204,25 +214,32 @@ class TestInventorySystemEndpoints:
         """Test that magical items have proper properties."""
         response = client.get("/api/game/items/catalog?rarity=rare")
         assert response.status_code == 200
-        
+
         data = response.json()
-        magical_items = [item for item in data["items"] if item.get("is_magical", False)]
-        
+        magical_items = [
+            item for item in data["items"] if item.get("is_magical", False)
+        ]
+
         for item in magical_items:
             assert item["is_magical"] is True
             # Magical items should typically require attunement or have special abilities
-            assert item.get("requires_attunement", False) or len(item.get("special_abilities", [])) > 0
+            assert (
+                item.get("requires_attunement", False)
+                or len(item.get("special_abilities", [])) > 0
+            )
 
     def test_equipment_with_stat_modifiers(self, client):
         """Test that equipment with stat modifiers is properly represented."""
         response = client.get("/api/game/items/catalog")
         assert response.status_code == 200
-        
+
         data = response.json()
-        items_with_modifiers = [item for item in data["items"] if item.get("stat_modifiers")]
-        
+        items_with_modifiers = [
+            item for item in data["items"] if item.get("stat_modifiers")
+        ]
+
         assert len(items_with_modifiers) > 0
-        
+
         for item in items_with_modifiers:
             assert isinstance(item["stat_modifiers"], dict)
             # Check that modifier values are integers

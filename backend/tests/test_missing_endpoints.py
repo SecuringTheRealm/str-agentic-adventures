@@ -262,16 +262,14 @@ class TestFrontendBackendAPICompatibility:
             assert hasattr(model_class, "model_json_schema"), (
                 f"{model_class.__name__} should have schema method"
             )
-            
+
             # Enhanced validation: Check schema structure
             schema = model_class.model_json_schema()
             assert "properties" in schema, (
                 f"{model_class.__name__} schema should have properties"
             )
-            assert "type" in schema, (
-                f"{model_class.__name__} schema should have type"
-            )
-            
+            assert "type" in schema, f"{model_class.__name__} schema should have type"
+
             # Validate schema can be serialized to JSON (important for TypeScript generation)
             try:
                 json.dumps(schema)
@@ -279,13 +277,16 @@ class TestFrontendBackendAPICompatibility:
                 raise AssertionError(
                     f"{model_class.__name__} schema is not JSON serializable: {e}"
                 )
-            
+
             # Check that all fields have proper type annotations
             type_hints = get_type_hints(model_class)
             for field_name in schema.get("properties", {}):
                 if hasattr(model_class, field_name):
                     # Ensure fields are properly annotated for TypeScript generation
-                    assert field_name in type_hints or (hasattr(model_class, '__annotations__') and field_name in model_class.__annotations__), (
+                    assert field_name in type_hints or (
+                        hasattr(model_class, "__annotations__")
+                        and field_name in model_class.__annotations__
+                    ), (
                         f"Field {field_name} in {model_class.__name__} should have type annotation"
                     )
 

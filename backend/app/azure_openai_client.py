@@ -60,13 +60,13 @@ class AzureOpenAIClient:
 
         # Force streaming to be enabled
         kwargs["stream"] = True
-        
+
         response = await self.client.chat.completions.create(
             model=deployment_name,
             messages=formatted_messages,
             **kwargs,
         )
-        
+
         async for chunk in response:
             if chunk.choices and chunk.choices[0].delta.content:
                 yield chunk.choices[0].delta.content

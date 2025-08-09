@@ -34,7 +34,9 @@ class CombatCartographerAgent:
             from app.plugins.tactical_analysis_plugin import TacticalAnalysisPlugin
             from app.plugins.terrain_assessment_plugin import TerrainAssessmentPlugin
             from app.plugins.battle_positioning_plugin import BattlePositioningPlugin
-            from app.plugins.environmental_hazards_plugin import EnvironmentalHazardsPlugin
+            from app.plugins.environmental_hazards_plugin import (
+                EnvironmentalHazardsPlugin,
+            )
 
             # Define plugin configuration: (PluginClass, attribute_name, skill_name)
             plugins_config = [
@@ -42,17 +44,21 @@ class CombatCartographerAgent:
                 (TacticalAnalysisPlugin, "tactical_analysis", "TacticalAnalysis"),
                 (TerrainAssessmentPlugin, "terrain_assessment", "TerrainAssessment"),
                 (BattlePositioningPlugin, "battle_positioning", "BattlePositioning"),
-                (EnvironmentalHazardsPlugin, "environmental_hazards", "EnvironmentalHazards"),
+                (
+                    EnvironmentalHazardsPlugin,
+                    "environmental_hazards",
+                    "EnvironmentalHazards",
+                ),
             ]
 
             # Register plugins using the configuration
             for plugin_class, attribute_name, skill_name in plugins_config:
                 # Create plugin instance
                 plugin_instance = plugin_class()
-                
+
                 # Register plugin with the kernel
                 self.kernel.add_plugin(plugin_instance, skill_name)
-                
+
                 # Store reference for direct access
                 setattr(self, attribute_name, plugin_instance)
 
@@ -61,7 +67,9 @@ class CombatCartographerAgent:
             logger.error(f"Error importing Combat Cartographer agent skills: {str(e)}")
             raise
         except (AttributeError, ValueError) as e:
-            logger.error(f"Error registering Combat Cartographer agent skills: {str(e)}")
+            logger.error(
+                f"Error registering Combat Cartographer agent skills: {str(e)}"
+            )
             raise
 
     async def generate_battle_map(
@@ -139,7 +147,7 @@ class CombatCartographerAgent:
                     "environment_context": environment_context,
                     "combat_context": combat_context,
                     "generation_details": {
-                        "size": size if size else "1024x1024", 
+                        "size": size if size else "1024x1024",
                         "quality": "standard",
                         "style": "placeholder",
                     },

@@ -13,6 +13,7 @@ class TestAIContentGeneration:
     def test_ai_content_generation_endpoint_exists(self):
         """Test that the AI content generation endpoint exists and returns proper structure."""
         from app.main import app
+
         client = TestClient(app)
 
         # Test with minimal valid request
@@ -20,13 +21,15 @@ class TestAIContentGeneration:
             "suggestion": "Expand on character motivations",
             "current_text": "The party enters a tavern.",
             "context_type": "description",
-            "campaign_tone": "heroic"
+            "campaign_tone": "heroic",
         }
 
         # This test focuses on endpoint structure, not Azure OpenAI functionality
-        with patch('app.azure_openai_client.AzureOpenAIClient') as mock_client_class:
+        with patch("app.azure_openai_client.AzureOpenAIClient") as mock_client_class:
             mock_client = AsyncMock()
-            mock_client.chat_completion = AsyncMock(return_value="Generated test content")
+            mock_client.chat_completion = AsyncMock(
+                return_value="Generated test content"
+            )
             mock_client_class.return_value = mock_client
 
             response = client.post("/api/game/campaign/ai-generate", json=request_data)
@@ -34,12 +37,12 @@ class TestAIContentGeneration:
             # Should return proper response structure
             assert response.status_code == 200
             data = response.json()
-            
+
             # Verify response structure
             assert "generated_content" in data
             assert "success" in data
             assert isinstance(data["success"], bool)
-            
+
             if data["success"]:
                 assert isinstance(data["generated_content"], str)
                 assert len(data["generated_content"]) > 0
@@ -49,23 +52,26 @@ class TestAIContentGeneration:
     def test_ai_content_generation_with_empty_text(self):
         """Test AI content generation with empty current text."""
         from app.main import app
+
         client = TestClient(app)
 
         request_data = {
             "suggestion": "Add environmental details",
             "current_text": "",
             "context_type": "setting",
-            "campaign_tone": "dark"
+            "campaign_tone": "dark",
         }
 
-        with patch('app.azure_openai_client.AzureOpenAIClient') as mock_client_class:
+        with patch("app.azure_openai_client.AzureOpenAIClient") as mock_client_class:
             mock_client = AsyncMock()
-            mock_client.chat_completion = AsyncMock(return_value="A dark forest shrouded in mist")
+            mock_client.chat_completion = AsyncMock(
+                return_value="A dark forest shrouded in mist"
+            )
             mock_client_class.return_value = mock_client
 
             response = client.post("/api/game/campaign/ai-generate", json=request_data)
             assert response.status_code == 200
-            
+
             data = response.json()
             assert "generated_content" in data
             assert "success" in data
@@ -73,24 +79,29 @@ class TestAIContentGeneration:
     def test_ai_content_generation_error_handling(self):
         """Test error handling when Azure OpenAI fails."""
         from app.main import app
+
         client = TestClient(app)
 
         request_data = {
             "suggestion": "Expand on character motivations",
             "current_text": "The party enters a tavern.",
             "context_type": "description",
-            "campaign_tone": "heroic"
+            "campaign_tone": "heroic",
         }
 
         # Mock Azure OpenAI to raise an exception
-        with patch('app.azure_openai_client.AzureOpenAIClient') as mock_client_class:
+        with patch("app.azure_openai_client.AzureOpenAIClient") as mock_client_class:
             mock_client = AsyncMock()
-            mock_client.chat_completion = AsyncMock(side_effect=Exception("Azure OpenAI error"))
+            mock_client.chat_completion = AsyncMock(
+                side_effect=Exception("Azure OpenAI error")
+            )
             mock_client_class.return_value = mock_client
 
             response = client.post("/api/game/campaign/ai-generate", json=request_data)
-            assert response.status_code == 200  # Should still return 200 with error in response
-            
+            assert (
+                response.status_code == 200
+            )  # Should still return 200 with error in response
+
             data = response.json()
             assert data["success"] is False
             assert "error" in data
@@ -99,6 +110,7 @@ class TestAIContentGeneration:
     def test_invalid_request_data(self):
         """Test with invalid request data."""
         from app.main import app
+
         client = TestClient(app)
 
         # Missing required fields

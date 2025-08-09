@@ -1,6 +1,7 @@
 """
 Test configuration and utilities for improved configuration handling.
 """
+
 import pytest
 from unittest.mock import patch
 from fastapi.testclient import TestClient
@@ -23,6 +24,7 @@ try:
         SkillCheckActionFactory,
         SavingThrowActionFactory,
     )
+
     _FACTORIES_AVAILABLE = True
 except ImportError as e:
     # factory_boy not available in this environment
@@ -56,7 +58,7 @@ def character_factory():
 
 @pytest.fixture
 def fighter_character_factory():
-    """Factory for creating fighter character data.""" 
+    """Factory for creating fighter character data."""
     if not _FACTORIES_AVAILABLE:
         pytest.skip("factory_boy not available in this environment")
     return FighterCharacterFactory
@@ -111,7 +113,7 @@ def create_test_config():
 
 @pytest.fixture
 def fighter_character_factory():
-    """Factory for creating fighter character data.""" 
+    """Factory for creating fighter character data."""
     if not _FACTORIES_AVAILABLE:
         pytest.skip("factory_boy not available in this environment")
     return FighterCharacterFactory
@@ -168,7 +170,7 @@ def spell_attack_action_factory():
         app_host="0.0.0.0",
         app_port=8000,
         app_debug=False,
-        app_log_level="INFO"
+        app_log_level="INFO",
     )
 
 
@@ -186,7 +188,7 @@ def create_test_config_missing_azure():
         app_host="0.0.0.0",
         app_port=8000,
         app_debug=False,
-        app_log_level="INFO"
+        app_log_level="INFO",
     )
 
 
@@ -228,6 +230,8 @@ def client_with_missing_config():
 
 def override_config_dependency(test_config: Settings):
     """Utility function to override config dependency for a specific test."""
+
     def override():
         return test_config
+
     return override
