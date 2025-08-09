@@ -3,14 +3,15 @@ Integration test for CombatMCAgent with mocked Azure dependencies.
 This tests the actual agent implementation without requiring Azure OpenAI configuration.
 """
 
-import os
 import asyncio
-from unittest.mock import patch, Mock
+import os
+from unittest.mock import Mock, patch
+
 from app.agents.combat_mc_agent import CombatMCAgent
 from app.plugins.rules_engine_plugin import RulesEnginePlugin
 
 
-async def test_agent_integration():
+async def test_agent_integration() -> None:
     """Test that the CombatMCAgent can be created and used with mocked Azure dependencies."""
 
     # Mock the Azure OpenAI configuration

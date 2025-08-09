@@ -3,59 +3,60 @@ API routes for the AI Dungeon Master application.
 """
 
 import logging
-from fastapi import APIRouter, HTTPException, status
-from typing import Dict, Any, List, Optional
 from datetime import datetime
+from typing import Any
 
+from fastapi import APIRouter, HTTPException, status
+
+from app.agents.artist_agent import get_artist
+from app.agents.combat_cartographer_agent import get_combat_cartographer
+from app.agents.dungeon_master_agent import get_dungeon_master
+from app.agents.scribe_agent import get_scribe
+from app.config import ConfigDep
 from app.models.game_models import (
-    CreateCharacterRequest,
-    PlayerInput,
-    GameResponse,
-    CharacterSheet,
-    LevelUpRequest,
-    SpellAttackBonusRequest,
-    CreateCampaignRequest,
-    CampaignUpdateRequest,
-    CloneCampaignRequest,
-    CampaignListResponse,
+    NPC,
     AIAssistanceRequest,
     AIAssistanceResponse,
     AIContentGenerationRequest,
     AIContentGenerationResponse,
     Campaign,
-    Spell,
-    CharacterClass,
-    ManageSpellsRequest,
-    ManageSpellSlotsRequest,
+    CampaignListResponse,
+    CampaignUpdateRequest,
     CastSpellRequest,
-    ConcentrationRequest,
-    SpellListResponse,
-    SpellCastingResponse,
+    CharacterClass,
+    CharacterSheet,
+    CloneCampaignRequest,
     ConcentrationCheckResponse,
-    Equipment,
-    ItemType,
-    ItemRarity,
-    ManageEquipmentRequest,
-    MagicalEffectsRequest,
-    EquipmentResponse,
-    EncumbranceResponse,
-    ItemCatalogResponse,
-    MagicalEffectsResponse,
-    NPC,
-    NPCPersonality,
-    NPCInteraction,
+    ConcentrationRequest,
+    CreateCampaignRequest,
+    CreateCharacterRequest,
     CreateNPCRequest,
-    NPCInteractionRequest,
+    EncumbranceResponse,
+    Equipment,
+    EquipmentResponse,
+    GameResponse,
     GenerateNPCStatsRequest,
+    ItemCatalogResponse,
+    ItemRarity,
+    ItemType,
+    LevelUpRequest,
+    MagicalEffectsRequest,
+    MagicalEffectsResponse,
+    ManageEquipmentRequest,
+    ManageSpellSlotsRequest,
+    ManageSpellsRequest,
+    NPCInteraction,
+    NPCInteractionRequest,
     NPCInteractionResponse,
+    NPCPersonality,
     NPCStatsResponse,
+    PlayerInput,
+    Spell,
+    SpellAttackBonusRequest,
+    SpellCastingResponse,
+    SpellListResponse,
 )
-from app.agents.dungeon_master_agent import get_dungeon_master
-from app.agents.scribe_agent import get_scribe
-from app.agents.combat_cartographer_agent import get_combat_cartographer
-from app.agents.artist_agent import get_artist
 from app.services.campaign_service import campaign_service
-from app.config import ConfigDep
 
 # Create a logger for this module
 logger = logging.getLogger(__name__)
@@ -100,14 +101,13 @@ async def create_character(character_data: CreateCharacterRequest, config: Confi
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=error_msg
             )
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Failed to create character: {str(e)}",
-            )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create character: {str(e)}",
+        )
 
 
-@router.get("/character/{character_id}", response_model=Dict[str, Any])
+@router.get("/character/{character_id}", response_model=dict[str, Any])
 async def get_character(character_id: str, config: ConfigDep):
     """Retrieve a character sheet by ID."""
     try:
@@ -138,11 +138,10 @@ async def get_character(character_id: str, config: ConfigDep):
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=error_msg
             )
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Failed to retrieve character: {str(e)}",
-            )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to retrieve character: {str(e)}",
+        )
 
     return character
 
@@ -158,8 +157,7 @@ async def create_campaign(campaign_data: CreateCampaignRequest):
                 detail="Azure OpenAI configuration is missing or invalid. "
                 "This agentic demo requires proper Azure OpenAI setup.",
             )
-        campaign = campaign_service.create_campaign(campaign_data)
-        return campaign
+        return campaign_service.create_campaign(campaign_data)
     except HTTPException:
         # Re-raise HTTPExceptions as-is
         raise
@@ -170,8 +168,7 @@ async def create_campaign(campaign_data: CreateCampaignRequest):
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=error_msg
             )
-        else:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -426,8 +423,8 @@ Respond with ONLY the generated content, no explanations or meta-text."""
         )
 
 
-@router.post("/generate-image", response_model=Dict[str, Any])
-async def generate_image(image_request: Dict[str, Any]):
+@router.post("/generate-image", response_model=dict[str, Any])
+async def generate_image(image_request: dict[str, Any]):
     """Generate an image based on the request details."""
     try:
         image_type = image_request.get("image_type")
@@ -453,18 +450,17 @@ async def generate_image(image_request: Dict[str, Any]):
         )
 
 
-@router.post("/battle-map", response_model=Dict[str, Any])
-async def generate_battle_map(map_request: Dict[str, Any]):
+@router.post("/battle-map", response_model=dict[str, Any])
+async def generate_battle_map(map_request: dict[str, Any]):
     """Generate a battle map based on environment details."""
     try:
         environment = map_request.get("environment", {})
         combat_context = map_request.get("combat_context")
 
-        battle_map = await get_combat_cartographer().generate_battle_map(
+        return await get_combat_cartographer().generate_battle_map(
             environment, combat_context
         )
 
-        return battle_map
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -528,7 +524,7 @@ async def process_player_input(player_input: PlayerInput):
         )
 
 
-@router.post("/character/{character_id}/level-up", response_model=Dict[str, Any])
+@router.post("/character/{character_id}/level-up", response_model=dict[str, Any])
 async def level_up_character(character_id: str, level_up_data: LevelUpRequest):
     """Level up a character."""
     try:
@@ -555,9 +551,9 @@ async def level_up_character(character_id: str, level_up_data: LevelUpRequest):
 
 
 @router.post(
-    "/character/{character_id}/award-experience", response_model=Dict[str, Any]
+    "/character/{character_id}/award-experience", response_model=dict[str, Any]
 )
-async def award_experience(character_id: str, experience_data: Dict[str, int]):
+async def award_experience(character_id: str, experience_data: dict[str, int]):
     """Award experience points to a character."""
     try:
         experience_points = experience_data.get("experience_points", 0)
@@ -584,7 +580,7 @@ async def award_experience(character_id: str, experience_data: Dict[str, int]):
         )
 
 
-@router.get("/character/{character_id}/progression-info", response_model=Dict[str, Any])
+@router.get("/character/{character_id}/progression-info", response_model=dict[str, Any])
 async def get_progression_info(character_id: str):
     """Get progression information for a character."""
     try:
@@ -624,8 +620,8 @@ async def get_progression_info(character_id: str):
 
 
 # Dice rolling endpoints
-@router.post("/dice/roll", response_model=Dict[str, Any])
-async def roll_dice(dice_data: Dict[str, str]):
+@router.post("/dice/roll", response_model=dict[str, Any])
+async def roll_dice(dice_data: dict[str, str]):
     """Roll dice using D&D notation."""
     try:
         from app.plugins.rules_engine_plugin import RulesEnginePlugin
@@ -655,8 +651,8 @@ async def roll_dice(dice_data: Dict[str, str]):
         )
 
 
-@router.post("/dice/roll-with-character", response_model=Dict[str, Any])
-async def roll_dice_with_character(roll_data: Dict[str, Any]):
+@router.post("/dice/roll-with-character", response_model=dict[str, Any])
+async def roll_dice_with_character(roll_data: dict[str, Any]):
     """Roll dice with character context for skill checks."""
     try:
         from app.plugins.rules_engine_plugin import RulesEnginePlugin
@@ -696,8 +692,8 @@ async def roll_dice_with_character(roll_data: Dict[str, Any]):
         )
 
 
-@router.post("/dice/manual-roll", response_model=Dict[str, Any])
-async def input_manual_roll(manual_data: Dict[str, Any]):
+@router.post("/dice/manual-roll", response_model=dict[str, Any])
+async def input_manual_roll(manual_data: dict[str, Any]):
     """Input a manual dice roll result."""
     try:
         from app.plugins.rules_engine_plugin import RulesEnginePlugin
@@ -712,9 +708,8 @@ async def input_manual_roll(manual_data: Dict[str, Any]):
             )
 
         rules_engine = RulesEnginePlugin()
-        manual_result = rules_engine.input_manual_roll(dice_notation, result)
+        return rules_engine.input_manual_roll(dice_notation, result)
 
-        return manual_result
     except HTTPException:
         raise
     except Exception as e:
@@ -725,8 +720,8 @@ async def input_manual_roll(manual_data: Dict[str, Any]):
 
 
 # Campaign creation and world generation endpoints
-@router.post("/campaign/generate-world", response_model=Dict[str, Any])
-async def generate_campaign_world(campaign_data: Dict[str, Any]):
+@router.post("/campaign/generate-world", response_model=dict[str, Any])
+async def generate_campaign_world(campaign_data: dict[str, Any]):
     """Generate world description and setting for a new campaign."""
     try:
         campaign_name = campaign_data.get("name", "Unnamed Campaign")
@@ -757,8 +752,8 @@ async def generate_campaign_world(campaign_data: Dict[str, Any]):
         )
 
 
-@router.post("/campaign/{campaign_id}/start-session", response_model=Dict[str, Any])
-async def start_game_session(campaign_id: str, session_data: Dict[str, Any]):
+@router.post("/campaign/{campaign_id}/start-session", response_model=dict[str, Any])
+async def start_game_session(campaign_id: str, session_data: dict[str, Any]):
     """Start a new game session for a campaign."""
     try:
         character_ids = session_data.get("character_ids", [])
@@ -767,7 +762,7 @@ async def start_game_session(campaign_id: str, session_data: Dict[str, Any]):
         )  # exploration, combat, social
 
         # Initialize session state
-        session_state = {
+        return {
             "session_id": f"session_{campaign_id}_{hash(str(character_ids))}",
             "campaign_id": campaign_id,
             "character_ids": character_ids,
@@ -779,7 +774,6 @@ async def start_game_session(campaign_id: str, session_data: Dict[str, Any]):
             "started_at": str(datetime.now()),
         }
 
-        return session_state
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -787,8 +781,8 @@ async def start_game_session(campaign_id: str, session_data: Dict[str, Any]):
         )
 
 
-@router.post("/session/{session_id}/action", response_model=Dict[str, Any])
-async def process_player_action(session_id: str, action_data: Dict[str, Any]):
+@router.post("/session/{session_id}/action", response_model=dict[str, Any])
+async def process_player_action(session_id: str, action_data: dict[str, Any]):
     """Process a player action within a game session."""
     try:
         action_type = action_data.get("type", "general")
@@ -825,8 +819,8 @@ async def process_player_action(session_id: str, action_data: Dict[str, Any]):
 
 
 # Combat workflow endpoints
-@router.post("/combat/initialize", response_model=Dict[str, Any])
-async def initialize_combat(combat_data: Dict[str, Any]):
+@router.post("/combat/initialize", response_model=dict[str, Any])
+async def initialize_combat(combat_data: dict[str, Any]):
     """Initialize a new combat encounter."""
     try:
         session_id = combat_data.get("session_id")
@@ -876,7 +870,7 @@ async def initialize_combat(combat_data: Dict[str, Any]):
         # Sort by initiative (highest first)
         initiative_order.sort(key=lambda x: x["initiative"], reverse=True)
 
-        combat_state = {
+        return {
             "combat_id": f"combat_{session_id}_{hash(str(participants))}",
             "session_id": session_id,
             "status": "active",
@@ -888,7 +882,6 @@ async def initialize_combat(combat_data: Dict[str, Any]):
             "started_at": str(datetime.now()),
         }
 
-        return combat_state
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -896,8 +889,8 @@ async def initialize_combat(combat_data: Dict[str, Any]):
         )
 
 
-@router.post("/combat/{combat_id}/turn", response_model=Dict[str, Any])
-async def process_combat_turn(combat_id: str, turn_data: Dict[str, Any]):
+@router.post("/combat/{combat_id}/turn", response_model=dict[str, Any])
+async def process_combat_turn(combat_id: str, turn_data: dict[str, Any]):
     """Process a single combat turn."""
     try:
         action_type = turn_data.get(
@@ -958,7 +951,7 @@ async def process_combat_turn(combat_id: str, turn_data: Dict[str, Any]):
 
 # Helper functions for campaign generation
 async def generate_world_description(
-    name: str, setting: str, tone: str, homebrew_rules: List[str]
+    name: str, setting: str, tone: str, homebrew_rules: list[str]
 ) -> str:
     """Generate a world description for the campaign."""
     descriptions = {
@@ -991,7 +984,7 @@ async def generate_world_description(
     return base_description
 
 
-def generate_major_locations(setting: str) -> List[Dict[str, str]]:
+def generate_major_locations(setting: str) -> list[dict[str, str]]:
     """Generate major locations for the campaign world."""
     locations = {
         "fantasy": [
@@ -1032,7 +1025,7 @@ def generate_major_locations(setting: str) -> List[Dict[str, str]]:
     return locations.get(setting, [])
 
 
-def generate_notable_npcs(setting: str, tone: str) -> List[Dict[str, str]]:
+def generate_notable_npcs(setting: str, tone: str) -> list[dict[str, str]]:
     """Generate notable NPCs for the campaign."""
     npcs = [
         {
@@ -1072,24 +1065,22 @@ def generate_notable_npcs(setting: str, tone: str) -> List[Dict[str, str]]:
     return npcs
 
 
-def generate_plot_hooks(setting: str, tone: str) -> List[str]:
+def generate_plot_hooks(setting: str, tone: str) -> list[str]:
     """Generate plot hooks for the campaign."""
-    hooks = [
+    return [
         "Ancient artifacts have been stolen from the museum, and the thieves left behind only cryptic symbols.",
         "Strange disappearances plague the local area, and survivors speak of shadowy figures in the night.",
         "A powerful ally has gone missing, and their last known location was a dangerous territory.",
     ]
-    return hooks
 
 
-def generate_world_lore(setting: str) -> List[str]:
+def generate_world_lore(setting: str) -> list[str]:
     """Generate world lore elements."""
-    lore = [
+    return [
         "Long ago, a great cataclysm reshaped the world, leaving scars that still influence events today.",
         "An ancient prophecy speaks of heroes who will arise in the realm's darkest hour.",
         "Hidden throughout the world are artifacts of immense power, sought by many but understood by few.",
     ]
-    return lore
 
 
 def generate_opening_scene(session_type: str) -> str:
@@ -1102,7 +1093,7 @@ def generate_opening_scene(session_type: str) -> str:
     return scenes.get(session_type, "Your adventure begins...")
 
 
-def generate_available_actions(session_type: str) -> List[str]:
+def generate_available_actions(session_type: str) -> list[str]:
     """Generate available actions for a session type."""
     actions = {
         "exploration": [
@@ -1130,8 +1121,8 @@ def generate_available_actions(session_type: str) -> List[str]:
 
 # Individual action processors
 async def process_combat_action(
-    session_id: str, character_id: str, description: str, dice_rolls: List[Dict]
-) -> Dict[str, Any]:
+    session_id: str, character_id: str, description: str, dice_rolls: list[dict]
+) -> dict[str, Any]:
     """Process a combat action."""
     return {
         "type": "combat",
@@ -1144,8 +1135,8 @@ async def process_combat_action(
 
 
 async def process_skill_check(
-    session_id: str, character_id: str, description: str, dice_rolls: List[Dict]
-) -> Dict[str, Any]:
+    session_id: str, character_id: str, description: str, dice_rolls: list[dict]
+) -> dict[str, Any]:
     """Process a skill check action."""
     success = (
         any(roll.get("total", 0) >= 15 for roll in dice_rolls) if dice_rolls else False
@@ -1162,7 +1153,7 @@ async def process_skill_check(
 
 async def process_exploration_action(
     session_id: str, character_id: str, description: str
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Process an exploration action."""
     return {
         "type": "exploration",
@@ -1179,7 +1170,7 @@ async def process_exploration_action(
 
 async def process_general_action(
     session_id: str, character_id: str, description: str
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Process a general action."""
     return {
         "type": "general",
@@ -1193,7 +1184,7 @@ async def process_general_action(
 # Spell System API Endpoints
 
 
-@router.post("/character/{character_id}/spells", response_model=Dict[str, Any])
+@router.post("/character/{character_id}/spells", response_model=dict[str, Any])
 async def manage_character_spells(character_id: str, request: ManageSpellsRequest):
     """Manage known spells for a character."""
     try:
@@ -1213,7 +1204,7 @@ async def manage_character_spells(character_id: str, request: ManageSpellsReques
         )
 
 
-@router.post("/character/{character_id}/spell-slots", response_model=Dict[str, Any])
+@router.post("/character/{character_id}/spell-slots", response_model=dict[str, Any])
 async def manage_spell_slots(character_id: str, request: ManageSpellSlotsRequest):
     """Manage spell slot usage and recovery for a character."""
     try:
@@ -1282,7 +1273,7 @@ async def cast_spell_in_combat(combat_id: str, request: CastSpellRequest):
         )
 
 
-async def _get_spell_data(spell_id: str) -> Dict[str, Any]:
+async def _get_spell_data(spell_id: str) -> dict[str, Any]:
     """Get spell data from database or return default spell structure."""
     from app.database import get_session
     from app.models.db_models import Spell
@@ -1312,7 +1303,7 @@ async def _get_spell_data(spell_id: str) -> Dict[str, Any]:
     return _get_default_spell_data(spell_id)
 
 
-def _get_default_spell_data(spell_id: str) -> Dict[str, Any]:
+def _get_default_spell_data(spell_id: str) -> dict[str, Any]:
     """Get default spell data for common spells."""
     # Common D&D 5e spells with basic data
     default_spells = {
@@ -1379,11 +1370,11 @@ def _get_default_spell_data(spell_id: str) -> Dict[str, Any]:
 
 
 async def _calculate_spell_effects(
-    spell_data: Dict[str, Any],
+    spell_data: dict[str, Any],
     cast_level: int,
-    target_ids: Optional[List[str]],
+    target_ids: list[str] | None,
     combat_id: str,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Calculate sophisticated spell effects based on spell data and level."""
     effects = {
         "spell_name": spell_data.get("name", "Unknown Spell"),
@@ -1465,9 +1456,9 @@ def _get_upcast_scaling(spell_name: str) -> int:
 
 @router.get("/spells/list", response_model=SpellListResponse)
 async def get_spell_list(
-    character_class: Optional[CharacterClass] = None,
-    spell_level: Optional[int] = None,
-    school: Optional[str] = None,
+    character_class: CharacterClass | None = None,
+    spell_level: int | None = None,
+    school: str | None = None,
 ):
     """Get available spells by class and level."""
     try:
@@ -1534,7 +1525,7 @@ async def get_spell_list(
         )
 
 
-@router.post("/spells/save-dc", response_model=Dict[str, Any])
+@router.post("/spells/save-dc", response_model=dict[str, Any])
 async def calculate_spell_save_dc_endpoint(
     character_class: CharacterClass, level: int, spellcasting_ability_score: int
 ):
@@ -1615,12 +1606,12 @@ async def manage_concentration(character_id: str, request: ConcentrationRequest)
                 success=True, concentration_maintained=True, dc=10, spell_ended=False
             )
 
-        elif request.action == "end":
+        if request.action == "end":
             return ConcentrationCheckResponse(
                 success=True, concentration_maintained=False, dc=0, spell_ended=True
             )
 
-        elif request.action == "check":
+        if request.action == "check":
             if request.damage_taken is None:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
@@ -1645,11 +1636,10 @@ async def manage_concentration(character_id: str, request: ConcentrationRequest)
                 spell_ended=not maintained,
             )
 
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Invalid action: {request.action}",
-            )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid action: {request.action}",
+        )
 
     except HTTPException:
         raise
@@ -1659,7 +1649,7 @@ async def manage_concentration(character_id: str, request: ConcentrationRequest)
         )
 
 
-@router.post("/spells/attack-bonus", response_model=Dict[str, Any])
+@router.post("/spells/attack-bonus", response_model=dict[str, Any])
 async def calculate_spell_attack_bonus(request: SpellAttackBonusRequest):
     """Calculate spell attack bonus for a character."""
     try:
@@ -1863,10 +1853,10 @@ async def manage_magical_effects(request: MagicalEffectsRequest):
 
 @router.get("/items/catalog", response_model=ItemCatalogResponse)
 async def get_item_catalog(
-    item_type: Optional[ItemType] = None,
-    rarity: Optional[ItemRarity] = None,
-    min_value: Optional[int] = None,
-    max_value: Optional[int] = None,
+    item_type: ItemType | None = None,
+    rarity: ItemRarity | None = None,
+    min_value: int | None = None,
+    max_value: int | None = None,
 ):
     """Browse available items with rarity and value information."""
     try:
@@ -2011,7 +2001,7 @@ async def create_campaign_npc(campaign_id: str, request: CreateNPCRequest):
             current=random.randint(4, 12), maximum=random.randint(4, 12)
         )
 
-        npc = NPC(
+        return NPC(
             name=request.name,
             race=request.race,
             gender=request.gender,
@@ -2027,7 +2017,6 @@ async def create_campaign_npc(campaign_id: str, request: CreateNPCRequest):
             story_role=request.story_role,
         )
 
-        return npc
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -2041,7 +2030,7 @@ async def get_npc_personality(npc_id: str):
     try:
         # This would normally retrieve from a database
         # For now, return a sample personality
-        personality = NPCPersonality(
+        return NPCPersonality(
             traits=["Honest", "Brave"],
             ideals=["Justice", "Freedom"],
             bonds=["Loyal to the crown", "Protects the innocent"],
@@ -2051,7 +2040,6 @@ async def get_npc_personality(npc_id: str):
             motivations=["Maintain law and order", "Protect the city"],
         )
 
-        return personality
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

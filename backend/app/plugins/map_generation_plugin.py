@@ -4,7 +4,7 @@ This plugin provides map generation capabilities for combat encounters.
 """
 
 import logging
-from typing import Dict, Any
+from typing import Any
 
 from semantic_kernel.functions import kernel_function
 
@@ -17,7 +17,7 @@ class MapGenerationPlugin:
     Handles map layout generation, grid systems, and tactical positioning.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the map generation plugin."""
         self.map_cache = {}
 
@@ -30,7 +30,7 @@ class MapGenerationPlugin:
         environment_context: str,
         map_size: str = "medium",
         grid_type: str = "square",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate a tactical battle map based on environment context.
 
@@ -96,7 +96,7 @@ class MapGenerationPlugin:
     )
     def create_grid_system(
         self, width: int = 20, height: int = 20, grid_type: str = "square"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Create a grid system for tactical positioning.
 
@@ -183,7 +183,7 @@ class MapGenerationPlugin:
 
         return features
 
-    def _calculate_entry_points(self, dimensions: Dict[str, int]) -> list:
+    def _calculate_entry_points(self, dimensions: dict[str, int]) -> list:
         """Calculate potential entry points for the map."""
         width, height = dimensions["width"], dimensions["height"]
 
@@ -194,7 +194,7 @@ class MapGenerationPlugin:
             {"position": [width // 2, height - 1], "side": "south", "type": "edge"},
         ]
 
-    def _define_terrain_zones(self, features: list, dimensions: Dict[str, int]) -> list:
+    def _define_terrain_zones(self, features: list, dimensions: dict[str, int]) -> list:
         """Define terrain zones based on features."""
         zones = []
 
@@ -228,7 +228,7 @@ class MapGenerationPlugin:
         return zones
 
     def _identify_strategic_positions(
-        self, features: list, dimensions: Dict[str, int]
+        self, features: list, dimensions: dict[str, int]
     ) -> list:
         """Identify strategic positions on the map."""
         positions = []
@@ -270,7 +270,7 @@ class MapGenerationPlugin:
 
         return positions
 
-    def _create_positioning_guide(self, grid_data: Dict[str, Any]) -> Dict[str, Any]:
+    def _create_positioning_guide(self, grid_data: dict[str, Any]) -> dict[str, Any]:
         """Create a guide for positioning units on the grid."""
         return {
             "coordinate_format": "x,y from bottom-left origin",

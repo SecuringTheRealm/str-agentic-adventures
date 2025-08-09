@@ -3,9 +3,9 @@ Narrative Memory Plugin for the Semantic Kernel.
 This plugin provides memory storage and retrieval for narrative elements.
 """
 
-import logging
-from typing import Dict, Any
 import datetime
+import logging
+from typing import Any
 
 from semantic_kernel.functions import kernel_function
 
@@ -18,7 +18,7 @@ class NarrativeMemoryPlugin:
     Stores and retrieves key facts, events, and narrative elements.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the narrative memory plugin."""
         # In-memory storage for narrative elements
         # In a production system, this would use a persistent store
@@ -34,7 +34,7 @@ class NarrativeMemoryPlugin:
     )
     def remember_fact(
         self, fact: str, category: str, importance: int = 5
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Store a narrative fact in memory.
 
@@ -77,7 +77,7 @@ class NarrativeMemoryPlugin:
     )
     def record_event(
         self, event: str, location: str, characters: str, importance: int = 5
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Record a narrative event in the campaign timeline.
 
@@ -122,7 +122,7 @@ class NarrativeMemoryPlugin:
         description="Retrieve facts related to a specific query or category.",
         name="recall_facts",
     )
-    def recall_facts(self, query: str = "", category: str = "") -> Dict[str, Any]:
+    def recall_facts(self, query: str = "", category: str = "") -> dict[str, Any]:
         """
         Retrieve facts related to a specific query or category.
 
@@ -137,7 +137,7 @@ class NarrativeMemoryPlugin:
             # Filter memories based on query and category
             filtered_memories = []
 
-            for memory_id, memory in self.memories.items():
+            for _memory_id, memory in self.memories.items():
                 # Update access time
                 memory["last_accessed"] = datetime.datetime.now().isoformat()
 
@@ -169,7 +169,7 @@ class NarrativeMemoryPlugin:
     )
     def recall_timeline(
         self, character: str = "", location: str = "", limit: int = 5
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Retrieve a timeline of recent events.
 
@@ -221,7 +221,7 @@ class NarrativeMemoryPlugin:
     )
     def update_npc(
         self, name: str, description: str, location: str, relationships: str = ""
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Add or update an NPC in the campaign.
 
@@ -265,7 +265,7 @@ class NarrativeMemoryPlugin:
     @kernel_function(
         description="Retrieve information about a specific NPC.", name="get_npc"
     )
-    def get_npc(self, name: str) -> Dict[str, Any]:
+    def get_npc(self, name: str) -> dict[str, Any]:
         """
         Retrieve information about a specific NPC.
 
@@ -283,8 +283,7 @@ class NarrativeMemoryPlugin:
                 npc["last_accessed"] = datetime.datetime.now().isoformat()
 
                 return {"status": "success", "npc": npc}
-            else:
-                return {"status": "not_found", "message": f"NPC {name} not found"}
+            return {"status": "not_found", "message": f"NPC {name} not found"}
         except Exception as e:
             logger.error(f"Error retrieving NPC: {str(e)}")
             return {"status": "error", "message": f"Failed to retrieve NPC: {str(e)}"}
@@ -300,7 +299,7 @@ class NarrativeMemoryPlugin:
         progress: str,
         key_events: str = "",
         character_impact: str = "",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Track the progress and impact of a story arc.
 
@@ -360,7 +359,7 @@ class NarrativeMemoryPlugin:
         development_type: str,
         description: str,
         story_arc_id: str = "",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Record character development moments and personal growth arcs.
 
@@ -410,7 +409,7 @@ class NarrativeMemoryPlugin:
     )
     def recall_story_arcs(
         self, character_id: str = "", status: str = ""
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Retrieve story arc memories for narrative continuity.
 
@@ -424,7 +423,7 @@ class NarrativeMemoryPlugin:
         try:
             filtered_arcs = []
 
-            for arc_id, arc_memory in self.story_arcs.items():
+            for _arc_id, arc_memory in self.story_arcs.items():
                 # Apply filters (simplified filtering for now)
                 matches_character = not character_id or character_id in arc_memory.get(
                     "character_impact", ""

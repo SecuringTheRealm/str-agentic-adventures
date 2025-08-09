@@ -3,9 +3,8 @@ Tests for the inventory system API endpoints.
 """
 
 import pytest
-from fastapi.testclient import TestClient
 from app.main import app
-from app.models.game_models import ItemType, ItemRarity, EquipmentSlot
+from fastapi.testclient import TestClient
 
 
 class TestInventorySystemEndpoints:
@@ -16,7 +15,7 @@ class TestInventorySystemEndpoints:
         """Create test client."""
         return TestClient(app)
 
-    def test_manage_equipment_equip(self, client):
+    def test_manage_equipment_equip(self, client) -> None:
         """Test equipping equipment endpoint."""
         character_id = "test_char_123"
         request_data = {
@@ -37,7 +36,7 @@ class TestInventorySystemEndpoints:
         assert "armor_class" in data["stat_changes"]
         assert data["armor_class_change"] == 8
 
-    def test_manage_equipment_unequip(self, client):
+    def test_manage_equipment_unequip(self, client) -> None:
         """Test unequipping equipment endpoint."""
         character_id = "test_char_123"
         request_data = {
@@ -58,7 +57,7 @@ class TestInventorySystemEndpoints:
         assert "armor_class" in data["stat_changes"]
         assert data["armor_class_change"] == -8  # Negative because unequipping
 
-    def test_manage_equipment_invalid_action(self, client):
+    def test_manage_equipment_invalid_action(self, client) -> None:
         """Test equipment management with invalid action."""
         character_id = "test_char_123"
         request_data = {
@@ -75,7 +74,7 @@ class TestInventorySystemEndpoints:
         data = response.json()
         assert "Invalid action" in data["detail"]
 
-    def test_get_encumbrance(self, client):
+    def test_get_encumbrance(self, client) -> None:
         """Test getting character encumbrance."""
         character_id = "test_char_123"
 
@@ -94,7 +93,7 @@ class TestInventorySystemEndpoints:
         assert "speed_penalty" in data
         assert isinstance(data["speed_penalty"], int)
 
-    def test_manage_magical_effects_apply(self, client):
+    def test_manage_magical_effects_apply(self, client) -> None:
         """Test applying magical item effects."""
         request_data = {
             "character_id": "test_char_123",
@@ -112,7 +111,7 @@ class TestInventorySystemEndpoints:
         assert "stealth" in data["stat_modifiers"]
         assert data["stat_modifiers"]["stealth"] == 2
 
-    def test_manage_magical_effects_remove(self, client):
+    def test_manage_magical_effects_remove(self, client) -> None:
         """Test removing magical item effects."""
         request_data = {
             "character_id": "test_char_123",
@@ -129,7 +128,7 @@ class TestInventorySystemEndpoints:
         assert len(data["active_effects"]) == 0
         assert len(data["stat_modifiers"]) == 0
 
-    def test_manage_magical_effects_invalid_action(self, client):
+    def test_manage_magical_effects_invalid_action(self, client) -> None:
         """Test magical effects management with invalid action."""
         request_data = {
             "character_id": "test_char_123",
@@ -143,7 +142,7 @@ class TestInventorySystemEndpoints:
         data = response.json()
         assert "Invalid action" in data["detail"]
 
-    def test_get_item_catalog_no_filters(self, client):
+    def test_get_item_catalog_no_filters(self, client) -> None:
         """Test getting item catalog without filters."""
         response = client.get("/api/game/items/catalog")
         assert response.status_code == 200
@@ -160,7 +159,7 @@ class TestInventorySystemEndpoints:
             assert "item_type" in item
             assert "rarity" in item
 
-    def test_get_item_catalog_filter_by_type(self, client):
+    def test_get_item_catalog_filter_by_type(self, client) -> None:
         """Test getting item catalog filtered by item type."""
         response = client.get("/api/game/items/catalog?item_type=weapon")
         assert response.status_code == 200
@@ -172,7 +171,7 @@ class TestInventorySystemEndpoints:
         for item in data["items"]:
             assert item["item_type"] == "weapon"
 
-    def test_get_item_catalog_filter_by_rarity(self, client):
+    def test_get_item_catalog_filter_by_rarity(self, client) -> None:
         """Test getting item catalog filtered by rarity."""
         response = client.get("/api/game/items/catalog?rarity=rare")
         assert response.status_code == 200
@@ -184,7 +183,7 @@ class TestInventorySystemEndpoints:
         for item in data["items"]:
             assert item["rarity"] == "rare"
 
-    def test_get_item_catalog_filter_by_value_range(self, client):
+    def test_get_item_catalog_filter_by_value_range(self, client) -> None:
         """Test getting item catalog filtered by value range."""
         response = client.get("/api/game/items/catalog?min_value=100&max_value=2000")
         assert response.status_code == 200
@@ -197,7 +196,7 @@ class TestInventorySystemEndpoints:
             if item["value"] is not None:
                 assert 100 <= item["value"] <= 2000
 
-    def test_get_item_catalog_multiple_filters(self, client):
+    def test_get_item_catalog_multiple_filters(self, client) -> None:
         """Test getting item catalog with multiple filters."""
         response = client.get("/api/game/items/catalog?item_type=armor&rarity=common")
         assert response.status_code == 200
@@ -210,7 +209,7 @@ class TestInventorySystemEndpoints:
             assert item["item_type"] == "armor"
             assert item["rarity"] == "common"
 
-    def test_magical_item_properties(self, client):
+    def test_magical_item_properties(self, client) -> None:
         """Test that magical items have proper properties."""
         response = client.get("/api/game/items/catalog?rarity=rare")
         assert response.status_code == 200
@@ -228,7 +227,7 @@ class TestInventorySystemEndpoints:
                 or len(item.get("special_abilities", [])) > 0
             )
 
-    def test_equipment_with_stat_modifiers(self, client):
+    def test_equipment_with_stat_modifiers(self, client) -> None:
         """Test that equipment with stat modifiers is properly represented."""
         response = client.get("/api/game/items/catalog")
         assert response.status_code == 200
@@ -243,5 +242,5 @@ class TestInventorySystemEndpoints:
         for item in items_with_modifiers:
             assert isinstance(item["stat_modifiers"], dict)
             # Check that modifier values are integers
-            for stat, modifier in item["stat_modifiers"].items():
+            for _stat, modifier in item["stat_modifiers"].items():
                 assert isinstance(modifier, int)

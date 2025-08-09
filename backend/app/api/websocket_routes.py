@@ -5,9 +5,10 @@ This implementation provides real-time multiplayer communication using FastAPI's
 native WebSocket support, as per the updated ADR 0008 decision.
 """
 
-import logging
 import json
-from typing import Dict, List, Any
+import logging
+from typing import Any
+
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from fastapi.websockets import WebSocketState
 
@@ -16,11 +17,11 @@ logger = logging.getLogger(__name__)
 
 # WebSocket connection manager
 class ConnectionManager:
-    def __init__(self):
-        self.active_connections: List[WebSocket] = []
-        self.campaign_connections: Dict[str, List[WebSocket]] = {}
+    def __init__(self) -> None:
+        self.active_connections: list[WebSocket] = []
+        self.campaign_connections: dict[str, list[WebSocket]] = {}
 
-    async def connect(self, websocket: WebSocket, campaign_id: str = None):
+    async def connect(self, websocket: WebSocket, campaign_id: str = None) -> None:
         await websocket.accept()
         self.active_connections.append(websocket)
 
@@ -33,7 +34,7 @@ class ConnectionManager:
             f"WebSocket connected. Total connections: {len(self.active_connections)}"
         )
 
-    def disconnect(self, websocket: WebSocket, campaign_id: str = None):
+    def disconnect(self, websocket: WebSocket, campaign_id: str = None) -> None:
         if websocket in self.active_connections:
             self.active_connections.remove(websocket)
 
@@ -49,14 +50,14 @@ class ConnectionManager:
             f"WebSocket disconnected. Total connections: {len(self.active_connections)}"
         )
 
-    async def send_personal_message(self, message: str, websocket: WebSocket):
+    async def send_personal_message(self, message: str, websocket: WebSocket) -> None:
         if websocket.client_state == WebSocketState.CONNECTED:
             try:
                 await websocket.send_text(message)
             except Exception as e:
                 logger.error(f"Failed to send personal message: {str(e)}")
 
-    async def send_campaign_message(self, message: str, campaign_id: str):
+    async def send_campaign_message(self, message: str, campaign_id: str) -> None:
         if campaign_id in self.campaign_connections:
             disconnected = []
             for connection in self.campaign_connections[campaign_id]:
@@ -73,7 +74,7 @@ class ConnectionManager:
             for conn in disconnected:
                 self.disconnect(conn, campaign_id)
 
-    async def broadcast(self, message: str):
+    async def broadcast(self, message: str) -> None:
         disconnected = []
         for connection in self.active_connections:
             if connection.client_state == WebSocketState.CONNECTED:
@@ -98,7 +99,7 @@ router = APIRouter()
 
 
 @router.websocket("/ws/chat/{campaign_id}")
-async def chat_websocket(websocket: WebSocket, campaign_id: str):
+async def chat_websocket(websocket: WebSocket, campaign_id: str) -> None:
     """WebSocket endpoint for streaming chat responses."""
     await manager.connect(websocket, campaign_id)
     try:
@@ -119,7 +120,7 @@ async def chat_websocket(websocket: WebSocket, campaign_id: str):
 
 
 @router.websocket("/ws/{campaign_id}")
-async def campaign_websocket(websocket: WebSocket, campaign_id: str):
+async def campaign_websocket(websocket: WebSocket, campaign_id: str) -> None:
     """WebSocket endpoint for campaign-specific real-time updates (non-chat)."""
     await manager.connect(websocket, campaign_id)
     try:
@@ -140,7 +141,7 @@ async def campaign_websocket(websocket: WebSocket, campaign_id: str):
 
 
 @router.websocket("/ws/global")
-async def global_websocket(websocket: WebSocket):
+async def global_websocket(websocket: WebSocket) -> None:
     """WebSocket endpoint for global updates."""
     await manager.connect(websocket)
     try:
@@ -160,8 +161,8 @@ async def global_websocket(websocket: WebSocket):
 
 
 async def handle_chat_message(
-    message: Dict[str, Any], websocket: WebSocket, campaign_id: str
-):
+    message: dict[str, Any], websocket: WebSocket, campaign_id: str
+) -> None:
     """Handle incoming chat messages and stream AI responses."""
     try:
         message_type = message.get("type")
@@ -192,8 +193,8 @@ async def handle_chat_message(
 
 
 async def handle_chat_input(
-    message: Dict[str, Any], websocket: WebSocket, campaign_id: str
-):
+    message: dict[str, Any], websocket: WebSocket, campaign_id: str
+) -> None:
     """Handle chat input and stream AI response."""
     try:
         user_input = message.get("message", "")
@@ -250,8 +251,8 @@ async def handle_chat_input(
 
 
 async def handle_websocket_message(
-    message: Dict[str, Any], websocket: WebSocket, campaign_id: str = None
-):
+    message: dict[str, Any], websocket: WebSocket, campaign_id: str = None
+) -> None:
     """Handle incoming WebSocket messages."""
     try:
         message_type = message.get("type")
@@ -286,8 +287,8 @@ async def handle_websocket_message(
 
 
 async def handle_dice_roll(
-    message: Dict[str, Any], websocket: WebSocket, campaign_id: str = None
-):
+    message: dict[str, Any], websocket: WebSocket, campaign_id: str = None
+) -> None:
     """Handle dice roll messages."""
     try:
         from app.plugins.rules_engine_plugin import RulesEnginePlugin
@@ -337,8 +338,8 @@ async def handle_dice_roll(
 
 
 async def handle_game_update(
-    message: Dict[str, Any], websocket: WebSocket, campaign_id: str = None
-):
+    message: dict[str, Any], websocket: WebSocket, campaign_id: str = None
+) -> None:
     """Handle game state updates."""
     try:
         update_type = message.get("update_type")
@@ -361,8 +362,8 @@ async def handle_game_update(
 
 
 async def handle_character_update(
-    message: Dict[str, Any], websocket: WebSocket, campaign_id: str = None
-):
+    message: dict[str, Any], websocket: WebSocket, campaign_id: str = None
+) -> None:
     """Handle character updates."""
     try:
         character_id = message.get("character_id")
@@ -386,8 +387,8 @@ async def handle_character_update(
 
 # Utility functions for broadcasting updates
 async def broadcast_dice_roll(
-    campaign_id: str, player_name: str, notation: str, result: Dict[str, Any]
-):
+    campaign_id: str, player_name: str, notation: str, result: dict[str, Any]
+) -> None:
     """Broadcast a dice roll result to all players in a campaign."""
     response = {
         "type": "dice_result",
@@ -400,8 +401,8 @@ async def broadcast_dice_roll(
 
 
 async def broadcast_game_state_update(
-    campaign_id: str, update_type: str, data: Dict[str, Any]
-):
+    campaign_id: str, update_type: str, data: dict[str, Any]
+) -> None:
     """Broadcast a game state update to all players in a campaign."""
     import datetime
 
@@ -415,8 +416,8 @@ async def broadcast_game_state_update(
 
 
 async def broadcast_character_update(
-    campaign_id: str, character_id: str, update_data: Dict[str, Any]
-):
+    campaign_id: str, character_id: str, update_data: dict[str, Any]
+) -> None:
     """Broadcast a character update to all players in a campaign."""
     import datetime
 

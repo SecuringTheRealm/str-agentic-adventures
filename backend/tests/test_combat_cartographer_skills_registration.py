@@ -2,15 +2,16 @@
 Test for Combat Cartographer Agent skills registration functionality.
 """
 
-import pytest
 import os
 from unittest.mock import Mock, patch
+
+import pytest
 
 
 class TestCombatCartographerAgentSkillsRegistration:
     """Test class for Combat Cartographer Agent skills registration."""
 
-    def test_combat_cartographer_agent_skills_registration(self):
+    def test_combat_cartographer_agent_skills_registration(self) -> None:
         """Test that CombatCartographerAgent properly registers all required skills."""
 
         # Set up environment variables to avoid config validation errors
@@ -88,7 +89,7 @@ class TestCombatCartographerAgentSkillsRegistration:
                     "Missing environmental_hazards plugin reference"
                 )
 
-    def test_combat_cartographer_skills_plugin_types(self):
+    def test_combat_cartographer_skills_plugin_types(self) -> None:
         """Test that the registered plugins are of the correct types."""
 
         # Set up environment variables to avoid config validation errors
@@ -123,16 +124,16 @@ class TestCombatCartographerAgentSkillsRegistration:
                 mock_manager.create_kernel.return_value = mock_kernel
 
                 from app.agents.combat_cartographer_agent import CombatCartographerAgent
-                from app.plugins.map_generation_plugin import MapGenerationPlugin
-                from app.plugins.tactical_analysis_plugin import TacticalAnalysisPlugin
-                from app.plugins.terrain_assessment_plugin import (
-                    TerrainAssessmentPlugin,
-                )
                 from app.plugins.battle_positioning_plugin import (
                     BattlePositioningPlugin,
                 )
                 from app.plugins.environmental_hazards_plugin import (
                     EnvironmentalHazardsPlugin,
+                )
+                from app.plugins.map_generation_plugin import MapGenerationPlugin
+                from app.plugins.tactical_analysis_plugin import TacticalAnalysisPlugin
+                from app.plugins.terrain_assessment_plugin import (
+                    TerrainAssessmentPlugin,
                 )
 
                 cartographer = CombatCartographerAgent()
@@ -152,7 +153,7 @@ class TestCombatCartographerAgentSkillsRegistration:
                     cartographer.environmental_hazards, EnvironmentalHazardsPlugin
                 )
 
-    def test_combat_cartographer_skills_registration_error_handling(self):
+    def test_combat_cartographer_skills_registration_error_handling(self) -> None:
         """Test that skills registration handles errors gracefully."""
 
         # Set up environment variables to avoid config validation errors
@@ -194,7 +195,7 @@ class TestCombatCartographerAgentSkillsRegistration:
                 with pytest.raises(Exception, match="Plugin registration failed"):
                     CombatCartographerAgent()
 
-    def test_combat_cartographer_plugin_functions_exist(self):
+    def test_combat_cartographer_plugin_functions_exist(self) -> None:
         """Test that all required plugin functions exist and are properly decorated."""
 
         # Test MapGenerationPlugin

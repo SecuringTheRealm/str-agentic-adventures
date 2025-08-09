@@ -5,8 +5,8 @@ This tests the image generation capabilities without requiring Azure credentials
 """
 
 import asyncio
-import sys
 import os
+import sys
 from unittest.mock import patch
 
 # Add the app directory to the Python path
@@ -28,7 +28,7 @@ with patch.dict(
     from app.agents.combat_cartographer_agent import CombatCartographerAgent
 
 
-async def test_artist_agent():
+async def test_artist_agent() -> bool | None:
     """Test the Artist Agent's image generation methods."""
     print("🎨 Testing Artist Agent...")
 
@@ -52,7 +52,7 @@ async def test_artist_agent():
                 f"   ❌ Portrait generation handled gracefully: {portrait_result.get('error', 'Unknown error')}"
             )
         else:
-            print(f"   ✅ Portrait generation successful!")
+            print("   ✅ Portrait generation successful!")
             print(f"      ID: {portrait_result.get('id')}")
             print(f"      Type: {portrait_result.get('type')}")
             print(f"      Character: {portrait_result.get('character_name')}")
@@ -79,7 +79,7 @@ async def test_artist_agent():
                 f"   ❌ Scene generation handled gracefully: {scene_result.get('error', 'Unknown error')}"
             )
         else:
-            print(f"   ✅ Scene generation successful!")
+            print("   ✅ Scene generation successful!")
             print(f"      ID: {scene_result.get('id')}")
             print(f"      Type: {scene_result.get('type')}")
             print(f"      Location: {scene_result.get('location')}")
@@ -102,7 +102,7 @@ async def test_artist_agent():
                 f"   ❌ Item generation handled gracefully: {item_result.get('error', 'Unknown error')}"
             )
         else:
-            print(f"   ✅ Item generation successful!")
+            print("   ✅ Item generation successful!")
             print(f"      ID: {item_result.get('id')}")
             print(f"      Type: {item_result.get('type')}")
             print(f"      Item: {item_result.get('item_name')}")
@@ -116,7 +116,7 @@ async def test_artist_agent():
         return False
 
 
-async def test_combat_cartographer():
+async def test_combat_cartographer() -> bool | None:
     """Test the Combat Cartographer Agent's battle map generation."""
     print("\n🗺️ Testing Combat Cartographer Agent...")
 
@@ -144,7 +144,7 @@ async def test_combat_cartographer():
                 f"   ❌ Map generation handled gracefully: {map_result.get('error', 'Unknown error')}"
             )
         else:
-            print(f"   ✅ Map generation successful!")
+            print("   ✅ Map generation successful!")
             print(f"      ID: {map_result.get('id')}")
             print(f"      Name: {map_result.get('name')}")
             print(f"      Terrain: {map_result.get('terrain')}")
@@ -159,7 +159,7 @@ async def test_combat_cartographer():
         return False
 
 
-async def main():
+async def main() -> bool:
     """Run all visual generation tests."""
     print("🚀 Starting Visual Generation Tests...")
     print("=" * 50)
@@ -179,9 +179,8 @@ async def main():
         print("\n🎉 All visual generation tests completed successfully!")
         print("✨ Visual elements functionality is properly implemented!")
         return True
-    else:
-        print("\n⚠️ Some tests failed. Check error messages above.")
-        return False
+    print("\n⚠️ Some tests failed. Check error messages above.")
+    return False
 
 
 if __name__ == "__main__":

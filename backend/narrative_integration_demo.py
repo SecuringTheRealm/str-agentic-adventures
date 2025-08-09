@@ -3,16 +3,17 @@ Integration example showing how the narrative generation system
 integrates with the existing game API and agent architecture.
 """
 
-from typing import Dict, Any
-from app.plugins.narrative_generation_plugin import NarrativeGenerationPlugin
-from app.plugins.narrative_memory_plugin import NarrativeMemoryPlugin
+from typing import Any
+
 from app.models.game_models import (
     Campaign,
     CreateCampaignRequest,
-    PlayerInput,
     GameResponse,
     NarrativeState,
+    PlayerInput,
 )
+from app.plugins.narrative_generation_plugin import NarrativeGenerationPlugin
+from app.plugins.narrative_memory_plugin import NarrativeMemoryPlugin
 
 
 class EnhancedGameService:
@@ -21,12 +22,12 @@ class EnhancedGameService:
     This demonstrates how the new narrative system fits into the existing architecture.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.narrative_gen = NarrativeGenerationPlugin()
         self.narrative_memory = NarrativeMemoryPlugin()
         self.campaigns = {}  # Campaign storage
 
-    def create_campaign(self, request: CreateCampaignRequest) -> Dict[str, Any]:
+    def create_campaign(self, request: CreateCampaignRequest) -> dict[str, Any]:
         """
         Create a new campaign with integrated narrative generation.
         """
@@ -155,7 +156,7 @@ class EnhancedGameService:
                 state_updates={},
             )
 
-    def get_campaign_narrative_status(self, campaign_id: str) -> Dict[str, Any]:
+    def get_campaign_narrative_status(self, campaign_id: str) -> dict[str, Any]:
         """
         Get comprehensive narrative status for a campaign.
         """
@@ -197,7 +198,7 @@ class EnhancedGameService:
 
     def make_narrative_choice(
         self, campaign_id: str, character_id: str, choice_id: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Process a player's narrative choice selection.
         """
@@ -231,14 +232,13 @@ class EnhancedGameService:
                     "narrative_advancement": advance_result,
                     "message": "Choice processed and narrative advanced",
                 }
-            else:
-                return process_result
+            return process_result
 
         except Exception as e:
             return {"success": False, "message": f"Failed to process choice: {str(e)}"}
 
 
-def demonstrate_api_integration():
+def demonstrate_api_integration() -> None:
     """
     Demonstrate the enhanced game service with narrative integration.
     """

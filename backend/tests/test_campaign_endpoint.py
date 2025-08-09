@@ -3,15 +3,16 @@ Test campaign endpoint functionality and error handling.
 """
 
 import os
+from unittest.mock import patch
+
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import patch
 
 
 class TestCampaignEndpoint:
     """Test campaign endpoint with proper assertions."""
 
-    def test_campaign_endpoint_with_missing_config(self):
+    def test_campaign_endpoint_with_missing_config(self) -> None:
         """Test that campaign endpoint properly handles missing Azure OpenAI configuration."""
 
         # Temporarily clear Azure OpenAI environment variables
@@ -70,7 +71,7 @@ class TestCampaignEndpoint:
                 elif var in os.environ:
                     del os.environ[var]
 
-    def test_campaign_endpoint_with_valid_data(self):
+    def test_campaign_endpoint_with_valid_data(self) -> None:
         """Test campaign creation with valid data and mocked dependencies."""
 
         with patch("app.agents.dungeon_master_agent.get_dungeon_master") as mock_dm:
@@ -110,7 +111,7 @@ class TestCampaignEndpoint:
                     f"Unexpected status: {response.status_code}"
                 )
 
-    def test_campaign_endpoint_validation(self):
+    def test_campaign_endpoint_validation(self) -> None:
         """Test campaign endpoint input validation."""
 
         from app.main import app

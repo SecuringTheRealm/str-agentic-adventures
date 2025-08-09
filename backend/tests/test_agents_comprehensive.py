@@ -2,11 +2,12 @@
 Comprehensive tests for agent functionality and interfaces.
 """
 
-import pytest
 import asyncio
-from unittest.mock import Mock, AsyncMock
-import sys
 import os
+import sys
+from unittest.mock import AsyncMock, Mock
+
+import pytest
 
 # Add the backend directory to Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -15,7 +16,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 class TestAgentInterfaceContracts:
     """Test expected agent interface contracts without external dependencies."""
 
-    def test_scribe_agent_interface(self):
+    def test_scribe_agent_interface(self) -> None:
         """Test scribe agent interface contract."""
         # Mock scribe agent behavior
         mock_scribe = Mock()
@@ -91,7 +92,7 @@ class TestAgentInterfaceContracts:
             "test_char_123", update_data
         )
 
-    def test_dungeon_master_interface(self):
+    def test_dungeon_master_interface(self) -> None:
         """Test dungeon master agent interface."""
         mock_dm = Mock()
         mock_dm.create_campaign = AsyncMock(
@@ -157,7 +158,7 @@ class TestAgentInterfaceContracts:
         assert result["combat_updates"]["status"] == "active"
         mock_dm.start_combat.assert_called_once_with(combat_context)
 
-    def test_artist_agent_interface(self):
+    def test_artist_agent_interface(self) -> None:
         """Test artist agent interface."""
         mock_artist = Mock()
         mock_artist.generate_character_portrait = AsyncMock(
@@ -205,7 +206,7 @@ class TestAgentInterfaceContracts:
         assert result["image_type"] == "battle_map"
         mock_artist.create_battle_map.assert_called_once_with(map_details)
 
-    def test_combat_cartographer_interface(self):
+    def test_combat_cartographer_interface(self) -> None:
         """Test combat cartographer agent interface."""
         mock_cartographer = Mock()
         mock_cartographer.create_tactical_map = AsyncMock(
@@ -253,7 +254,7 @@ class TestAgentInterfaceContracts:
 class TestAgentErrorHandling:
     """Test agent error handling scenarios."""
 
-    def test_agent_network_error_handling(self):
+    def test_agent_network_error_handling(self) -> None:
         """Test agents handle network errors gracefully."""
         mock_agent = Mock()
         mock_agent.process_request = AsyncMock(side_effect=Exception("Network timeout"))
@@ -264,7 +265,7 @@ class TestAgentErrorHandling:
 
         assert "Network timeout" in str(exc_info.value)
 
-    def test_agent_invalid_input_handling(self):
+    def test_agent_invalid_input_handling(self) -> None:
         """Test agents handle invalid input gracefully."""
         mock_scribe = Mock()
         mock_scribe.create_character = AsyncMock(
@@ -279,7 +280,7 @@ class TestAgentErrorHandling:
         assert "error" in result
         assert "missing required field" in result["error"]
 
-    def test_agent_rate_limiting_handling(self):
+    def test_agent_rate_limiting_handling(self) -> None:
         """Test agents handle rate limiting appropriately."""
         mock_artist = Mock()
         mock_artist.generate_image = AsyncMock(
@@ -299,7 +300,7 @@ class TestAgentErrorHandling:
 class TestAgentDataFlow:
     """Test data flow between agents and API."""
 
-    def test_character_creation_data_flow(self):
+    def test_character_creation_data_flow(self) -> None:
         """Test complete character creation data flow."""
         # Simulate API request data
         api_request = {
@@ -367,7 +368,7 @@ class TestAgentDataFlow:
         assert result["character_class"] == "ranger"
         assert result["level"] == 1
 
-    def test_game_input_processing_flow(self):
+    def test_game_input_processing_flow(self) -> None:
         """Test complete game input processing flow."""
         # API request
         player_input = {
@@ -415,13 +416,13 @@ class TestAgentDataFlow:
 class TestCombatMCAgentFallback:
     """Test combat MC agent fallback functionality."""
 
-    def test_fallback_roll_d20_normal(self):
+    def test_fallback_roll_d20_normal(self) -> None:
         """Test normal d20 roll in fallback mode."""
         from unittest.mock import patch
 
         # Mock the CombatMCAgent to avoid dependency issues
         class MockCombatMCAgent:
-            def __init__(self):
+            def __init__(self) -> None:
                 self.fallback_mode = True
 
             def _fallback_roll_d20(
@@ -468,7 +469,7 @@ class TestCombatMCAgentFallback:
             assert result["total"] == 18
             assert result["advantage_type"] == "normal"
 
-    def test_fallback_roll_d20_advantage(self):
+    def test_fallback_roll_d20_advantage(self) -> None:
         """Test d20 roll with advantage in fallback mode."""
         from unittest.mock import patch
 
@@ -518,7 +519,7 @@ class TestCombatMCAgentFallback:
             assert result["total"] == 17  # max(8, 15) + 2
             assert result["advantage_type"] == "advantage"
 
-    def test_fallback_roll_d20_disadvantage(self):
+    def test_fallback_roll_d20_disadvantage(self) -> None:
         """Test d20 roll with disadvantage in fallback mode."""
         from unittest.mock import patch
 
@@ -568,10 +569,10 @@ class TestCombatMCAgentFallback:
             assert result["total"] == 8  # min(12, 7) + 1
             assert result["advantage_type"] == "disadvantage"
 
-    def test_fallback_roll_damage_simple(self):
+    def test_fallback_roll_damage_simple(self) -> None:
         """Test simple damage roll in fallback mode."""
-        from unittest.mock import patch
         import re
+        from unittest.mock import patch
 
         class MockCombatMCAgent:
             def _fallback_roll_damage(self, dice_notation: str):
@@ -616,10 +617,10 @@ class TestCombatMCAgentFallback:
             assert result["modifier"] == 2
             assert result["total"] == 6
 
-    def test_fallback_roll_damage_multiple_dice(self):
+    def test_fallback_roll_damage_multiple_dice(self) -> None:
         """Test multiple dice damage roll in fallback mode."""
-        from unittest.mock import patch
         import re
+        from unittest.mock import patch
 
         class MockCombatMCAgent:
             def _fallback_roll_damage(self, dice_notation: str):
@@ -664,7 +665,7 @@ class TestCombatMCAgentFallback:
             assert result["modifier"] == 3
             assert result["total"] == 15  # 5 + 7 + 3
 
-    def test_fallback_roll_damage_invalid_notation(self):
+    def test_fallback_roll_damage_invalid_notation(self) -> None:
         """Test damage roll with invalid notation falls back gracefully."""
         import re
 
@@ -714,7 +715,7 @@ class TestCombatMCAgentFallback:
 class TestAgentConfiguration:
     """Test agent configuration and initialization."""
 
-    def test_agent_initialization_with_config(self):
+    def test_agent_initialization_with_config(self) -> None:
         """Test agents can be initialized with proper configuration."""
         config = {
             "azure_openai_endpoint": "https://test.openai.azure.com",
@@ -733,7 +734,7 @@ class TestAgentConfiguration:
         assert mock_agent.configure.called
         assert mock_agent.is_configured()
 
-    def test_agent_missing_configuration_handling(self):
+    def test_agent_missing_configuration_handling(self) -> None:
         """Test agents handle missing configuration gracefully."""
         mock_agent = Mock()
         mock_agent.is_configured = Mock(return_value=False)

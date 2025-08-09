@@ -5,20 +5,21 @@ This demonstrates how to replace duplicated combat action test scenarios
 with parameterized tests for better maintainability.
 """
 
-import pytest
 from unittest.mock import Mock
+
+import pytest
 from app.plugins.rules_engine_plugin import RulesEnginePlugin
 
 # Import factories with graceful degradation
 try:
     from .factories import (
         AttackActionFactory,
-        SpellAttackActionFactory,
-        SpellDamageActionFactory,
-        SkillCheckActionFactory,
-        SavingThrowActionFactory,
         CombatEncounterFactory,
         FighterCharacterFactory,
+        SavingThrowActionFactory,
+        SkillCheckActionFactory,
+        SpellAttackActionFactory,
+        SpellDamageActionFactory,
     )
 
     _FACTORIES_AVAILABLE = True
@@ -44,7 +45,7 @@ pytestmark = pytest.mark.skipif(
 class TestParameterizedCombatActions:
     """Test combat actions using parameterized tests and factories."""
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Set up test fixtures."""
         self.rules_plugin = RulesEnginePlugin()
         self.agent = Mock()
@@ -88,7 +89,7 @@ class TestParameterizedCombatActions:
             ),
         ],
     )
-    def test_attack_actions_basic_fields(self, action_factory, expected_fields):
+    def test_attack_actions_basic_fields(self, action_factory, expected_fields) -> None:
         """Test that different attack actions contain expected fields."""
         action_data = action_factory()
         # Mock a simple attack processor for this test
@@ -116,7 +117,7 @@ class TestParameterizedCombatActions:
             ("2d6+1", True),  # Two-handed weapon
         ],
     )
-    def test_damage_calculation_patterns(self, damage_roll, expected_success):
+    def test_damage_calculation_patterns(self, damage_roll, expected_success) -> None:
         """Test different damage roll patterns."""
         action_data = AttackActionFactory(damage=damage_roll)
 
@@ -134,7 +135,7 @@ class TestParameterizedCombatActions:
             ("saving_throw", SavingThrowActionFactory),
         ],
     )
-    def test_action_factory_consistency(self, action_type, factory_class):
+    def test_action_factory_consistency(self, action_type, factory_class) -> None:
         """Test that factories create consistent action data."""
         action_data = factory_class()
 
@@ -161,7 +162,7 @@ class TestParameterizedCombatActions:
             ("persuasion", 10, True),
         ],
     )
-    def test_skill_check_variations(self, skill, ability, proficient):
+    def test_skill_check_variations(self, skill, ability, proficient) -> None:
         """Test different skill check configurations."""
         action_data = SkillCheckActionFactory(
             skill=skill, ability_score=ability, proficient=proficient
@@ -181,7 +182,7 @@ class TestParameterizedCombatActions:
             ("strength", 12, 4),  # Str save vs grapple
         ],
     )
-    def test_saving_throw_variations(self, save_type, dc, expected_modifier):
+    def test_saving_throw_variations(self, save_type, dc, expected_modifier) -> None:
         """Test different saving throw configurations."""
         action_data = SavingThrowActionFactory(
             save_type=save_type,
@@ -202,7 +203,7 @@ class TestParameterizedCombatActions:
             ("sacred_flame", "radiant", "dexterity"),
         ],
     )
-    def test_spell_damage_variations(self, spell_name, damage_type, save_type):
+    def test_spell_damage_variations(self, spell_name, damage_type, save_type) -> None:
         """Test different spell damage configurations."""
         action_data = SpellDamageActionFactory(
             spell_name=spell_name, damage_type=damage_type, save_type=save_type
@@ -222,7 +223,9 @@ class TestParameterizedCombatActions:
             (10, 1.0),  # Large encounter
         ],
     )
-    def test_combat_performance_scaling(self, encounter_size, expected_processing_time):
+    def test_combat_performance_scaling(
+        self, encounter_size, expected_processing_time
+    ) -> None:
         """Test that combat processing scales appropriately with encounter size."""
         # Create encounter with multiple enemies
         enemies = [{"id": f"enemy{i}", "type": "goblin"} for i in range(encounter_size)]
@@ -234,7 +237,7 @@ class TestParameterizedCombatActions:
         assert expected_processing_time > 0  # Simple validation
 
     @pytest.mark.unit
-    def test_factory_data_consistency(self):
+    def test_factory_data_consistency(self) -> None:
         """Test that factories produce consistent, valid data."""
         # Create multiple instances to test consistency
         fighters = [FighterCharacterFactory() for _ in range(5)]
@@ -246,9 +249,9 @@ class TestParameterizedCombatActions:
             assert "hit_points" in fighter
 
     @pytest.mark.integration
-    def test_combat_action_integration(self):
+    def test_combat_action_integration(self) -> None:
         """Test integration between different combat action types."""
-        encounter = CombatEncounterFactory()
+        CombatEncounterFactory()
         attack = AttackActionFactory()
         spell = SpellAttackActionFactory()
 

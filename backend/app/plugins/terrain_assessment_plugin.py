@@ -4,7 +4,7 @@ This plugin provides terrain analysis capabilities for combat encounters.
 """
 
 import logging
-from typing import Dict, Any, List
+from typing import Any
 
 from semantic_kernel.functions import kernel_function
 
@@ -17,7 +17,7 @@ class TerrainAssessmentPlugin:
     Analyzes terrain features, movement effects, and tactical implications.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the terrain assessment plugin."""
         self.terrain_database = {}
 
@@ -27,7 +27,7 @@ class TerrainAssessmentPlugin:
     )
     def assess_terrain_features(
         self, terrain_description: str, map_size: str = "medium"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Assess terrain features and their impact on combat.
 
@@ -70,7 +70,7 @@ class TerrainAssessmentPlugin:
     )
     def analyze_movement_costs(
         self, terrain_types: str, unit_types: str = "standard"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Analyze movement costs across different terrain types.
 
@@ -112,7 +112,7 @@ class TerrainAssessmentPlugin:
     )
     def evaluate_defensive_terrain(
         self, terrain_description: str, defensive_objectives: str = "general"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Evaluate terrain for defensive capabilities and positioning.
 
@@ -154,7 +154,7 @@ class TerrainAssessmentPlugin:
                 "error": f"Defensive evaluation failed: {str(e)}",
             }
 
-    def _parse_terrain_features(self, terrain_description: str) -> List[Dict[str, Any]]:
+    def _parse_terrain_features(self, terrain_description: str) -> list[dict[str, Any]]:
         """Parse terrain description to identify features."""
         features = []
         description_lower = terrain_description.lower()
@@ -248,8 +248,8 @@ class TerrainAssessmentPlugin:
         return features
 
     def _analyze_movement_effects(
-        self, terrain_features: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+        self, terrain_features: list[dict[str, Any]]
+    ) -> dict[str, Any]:
         """Analyze how terrain affects movement."""
         movement_effects = {
             "standard_movement": [],
@@ -272,8 +272,8 @@ class TerrainAssessmentPlugin:
         return movement_effects
 
     def _analyze_cover_opportunities(
-        self, terrain_features: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+        self, terrain_features: list[dict[str, Any]]
+    ) -> dict[str, Any]:
         """Analyze cover opportunities provided by terrain."""
         cover_analysis = {
             "full_cover": [],
@@ -298,8 +298,8 @@ class TerrainAssessmentPlugin:
         return cover_analysis
 
     def _assess_tactical_implications(
-        self, terrain_features: List[Dict[str, Any]]
-    ) -> List[Dict[str, Any]]:
+        self, terrain_features: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
         """Assess tactical implications of terrain features."""
         implications = []
 
@@ -342,8 +342,8 @@ class TerrainAssessmentPlugin:
         return implications
 
     def _identify_terrain_hazards(
-        self, terrain_features: List[Dict[str, Any]]
-    ) -> List[Dict[str, Any]]:
+        self, terrain_features: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
         """Identify potential hazards in the terrain."""
         hazards = []
 
@@ -361,8 +361,8 @@ class TerrainAssessmentPlugin:
         return hazards
 
     def _evaluate_strategic_value(
-        self, terrain_features: List[Dict[str, Any]], map_size: str
-    ) -> Dict[str, Any]:
+        self, terrain_features: list[dict[str, Any]], map_size: str
+    ) -> dict[str, Any]:
         """Evaluate the strategic value of terrain features."""
         return {
             "key_terrain": [
@@ -381,7 +381,7 @@ class TerrainAssessmentPlugin:
             else "minimal",
         }
 
-    def _calculate_movement_costs(self, terrain_types: str) -> Dict[str, int]:
+    def _calculate_movement_costs(self, terrain_types: str) -> dict[str, int]:
         """Calculate movement costs for different terrain types."""
         base_costs = {
             "plains": 1,
@@ -402,7 +402,7 @@ class TerrainAssessmentPlugin:
 
         return present_terrain
 
-    def _analyze_unit_movement_effects(self, unit_types: str) -> Dict[str, Any]:
+    def _analyze_unit_movement_effects(self, unit_types: str) -> dict[str, Any]:
         """Analyze how different unit types are affected by terrain."""
         return {
             "infantry": {
@@ -419,7 +419,7 @@ class TerrainAssessmentPlugin:
             "aquatic": {"water": "enhanced", "land": "restricted"},
         }
 
-    def _suggest_optimal_paths(self, terrain_types: str) -> List[str]:
+    def _suggest_optimal_paths(self, terrain_types: str) -> list[str]:
         """Suggest optimal movement paths based on terrain."""
         paths = []
 
@@ -434,7 +434,7 @@ class TerrainAssessmentPlugin:
 
     def _identify_movement_restrictions(
         self, terrain_types: str
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Identify movement restrictions imposed by terrain."""
         restrictions = []
 
@@ -462,7 +462,7 @@ class TerrainAssessmentPlugin:
 
     def _recommend_traversal_strategies(
         self, terrain_types: str, unit_types: str
-    ) -> List[str]:
+    ) -> list[str]:
         """Recommend strategies for traversing different terrain."""
         strategies = [
             "Plan routes to minimize difficult terrain exposure",
@@ -479,7 +479,7 @@ class TerrainAssessmentPlugin:
 
     def _identify_defensive_positions(
         self, terrain_description: str
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Identify strong defensive positions in the terrain."""
         positions = []
 
@@ -498,7 +498,7 @@ class TerrainAssessmentPlugin:
 
         return positions
 
-    def _find_chokepoints(self, terrain_description: str) -> List[Dict[str, Any]]:
+    def _find_chokepoints(self, terrain_description: str) -> list[dict[str, Any]]:
         """Find natural chokepoints in the terrain."""
         chokepoints = []
 
@@ -518,7 +518,7 @@ class TerrainAssessmentPlugin:
 
     def _assess_fortification_potential(
         self, terrain_description: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Assess potential for creating fortifications."""
         return {
             "natural_defenses": "high"
@@ -538,7 +538,7 @@ class TerrainAssessmentPlugin:
             else "low",
         }
 
-    def _map_escape_routes(self, terrain_description: str) -> List[str]:
+    def _map_escape_routes(self, terrain_description: str) -> list[str]:
         """Map potential escape routes."""
         routes = ["Multiple exit points recommended"]
 
@@ -549,7 +549,7 @@ class TerrainAssessmentPlugin:
 
         return routes
 
-    def _catalog_defensive_advantages(self, terrain_description: str) -> List[str]:
+    def _catalog_defensive_advantages(self, terrain_description: str) -> list[str]:
         """Catalog defensive advantages of the terrain."""
         advantages = []
 
@@ -568,7 +568,7 @@ class TerrainAssessmentPlugin:
 
     def _identify_defensive_vulnerabilities(
         self, terrain_description: str
-    ) -> List[str]:
+    ) -> list[str]:
         """Identify defensive vulnerabilities in the terrain."""
         vulnerabilities = []
 
@@ -585,7 +585,7 @@ class TerrainAssessmentPlugin:
 
         return vulnerabilities
 
-    def _assess_hazard_severity(self, feature: Dict[str, Any]) -> str:
+    def _assess_hazard_severity(self, feature: dict[str, Any]) -> str:
         """Assess the severity of a terrain hazard."""
         hazard_type = feature.get("hazard", "")
 
@@ -599,7 +599,7 @@ class TerrainAssessmentPlugin:
 
         return severity_map.get(hazard_type, "low")
 
-    def _suggest_hazard_mitigation(self, feature: Dict[str, Any]) -> str:
+    def _suggest_hazard_mitigation(self, feature: dict[str, Any]) -> str:
         """Suggest mitigation strategies for terrain hazards."""
         hazard_type = feature.get("hazard", "")
 

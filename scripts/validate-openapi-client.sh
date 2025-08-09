@@ -32,10 +32,17 @@ fi
 
 print_status "Step 1: Checking backend dependencies..."
 
-# Check if Python dependencies are available
-if ! python -c "import fastapi" 2>/dev/null; then
+# Check if UV is available
+if ! command -v uv &> /dev/null; then
+    print_error "UV package manager not found. Please install UV:"
+    echo "curl -LsSf https://astral.sh/uv/install.sh | sh"
+    exit 1
+fi
+
+# Check if Python dependencies are available using UV
+if ! uv run python -c "import fastapi" 2>/dev/null; then
     print_error "FastAPI not available. Please install backend dependencies:"
-    echo "cd backend && pip install -r requirements.txt"
+    echo "uv sync"
     exit 1
 fi
 
@@ -44,9 +51,9 @@ print_success "Backend dependencies are available"
 print_status "Step 2: Starting backend server..."
 
 # Start backend server in background
-cd backend
-python -m app.main &
+cd backend && uv run python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 &
 BACKEND_PID=$!
+cd ..
 
 # Function to cleanup background process
 cleanup() {
@@ -104,7 +111,7 @@ fi
 
 print_status "Step 5: Testing frontend client generation..."
 
-cd ../frontend
+cd frontend
 
 # Check if openapi-generator-cli is available
 if ! npm list @openapitools/openapi-generator-cli > /dev/null 2>&1; then

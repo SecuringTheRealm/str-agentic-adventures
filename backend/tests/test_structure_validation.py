@@ -4,7 +4,6 @@ Structure validation tests that can run without external dependencies.
 
 import ast
 import os
-import json
 
 
 class TestProjectStructure:
@@ -22,7 +21,7 @@ class TestProjectStructure:
         # Return original path if neither exists (will fail appropriately)
         return path
 
-    def test_backend_file_structure(self):
+    def test_backend_file_structure(self) -> None:
         """Test that all required backend files exist."""
         required_files = [
             "app/__init__.py",
@@ -35,7 +34,6 @@ class TestProjectStructure:
             "app/agents/__init__.py",
             "app/config.py",
             "app/database.py",
-            "requirements.txt",
         ]
 
         for file_path in required_files:
@@ -45,7 +43,27 @@ class TestProjectStructure:
             )
             print(f"✅ {file_path} exists at {resolved_path}")
 
-    def test_python_syntax_validation(self):
+        # Verify dependency configuration exists (UV-based project structure)
+        dependency_config_found = False
+        config_sources = []
+
+        # Check for root pyproject.toml (primary UV configuration)
+        for pyproject_path in [
+            "../pyproject.toml",
+            "./pyproject.toml",
+            "pyproject.toml",
+        ]:
+            if os.path.exists(pyproject_path):
+                dependency_config_found = True
+                config_sources.append(f"root pyproject.toml ({pyproject_path})")
+                print(f"✅ Found UV dependency configuration: {pyproject_path}")
+                break
+
+        assert dependency_config_found, (
+            "No dependency configuration found. Expected root pyproject.toml for UV-based project"
+        )
+
+    def test_python_syntax_validation(self) -> None:
         """Test that all Python files have valid syntax."""
         python_files = []
 
@@ -55,14 +73,14 @@ class TestProjectStructure:
 
         # Walk through app directory
         if os.path.exists(app_dir):
-            for root, dirs, files in os.walk(app_dir):
+            for root, _dirs, files in os.walk(app_dir):
                 for file in files:
                     if file.endswith(".py"):
                         python_files.append(os.path.join(root, file))
 
         # Add test files
         if os.path.exists(tests_dir):
-            for root, dirs, files in os.walk(tests_dir):
+            for root, _dirs, files in os.walk(tests_dir):
                 for file in files:
                     if file.endswith(".py") and file.startswith("test_"):
                         python_files.append(os.path.join(root, file))
@@ -71,7 +89,7 @@ class TestProjectStructure:
 
         for file_path in python_files:
             try:
-                with open(file_path, "r", encoding="utf-8") as f:
+                with open(file_path, encoding="utf-8") as f:
                     content = f.read()
                 ast.parse(content)
                 print(f"✅ {file_path} syntax valid")
@@ -83,11 +101,11 @@ class TestProjectStructure:
 
         assert len(syntax_errors) == 0, f"Syntax errors found: {syntax_errors}"
 
-    def test_api_endpoints_defined(self):
+    def test_api_endpoints_defined(self) -> None:
         """Test that required API endpoints are defined in route files."""
         route_file = self._resolve_backend_path("app/api/game_routes.py")
 
-        with open(route_file, "r") as f:
+        with open(route_file) as f:
             content = f.read()
 
         # Required endpoints based on frontend API calls
@@ -111,11 +129,11 @@ class TestProjectStructure:
 
         assert len(missing_endpoints) == 0, f"Missing endpoints: {missing_endpoints}"
 
-    def test_model_imports_structure(self):
+    def test_model_imports_structure(self) -> None:
         """Test that model imports are properly structured."""
         models_file = self._resolve_backend_path("app/models/game_models.py")
 
-        with open(models_file, "r") as f:
+        with open(models_file) as f:
             content = f.read()
 
         # Check for required model classes
@@ -139,7 +157,7 @@ class TestProjectStructure:
 
         assert len(missing_models) == 0, f"Missing models: {missing_models}"
 
-    def test_requirements_file_exists(self):
+    def test_requirements_file_exists(self) -> None:
         """Test that project dependencies are properly defined."""
         # Check for new root pyproject.toml first (preferred approach)
         # Try different path variations depending on where pytest is run from
@@ -157,7 +175,7 @@ class TestProjectStructure:
         for pyproject_path in possible_pyproject_paths:
             if os.path.exists(pyproject_path):
                 dependency_source = f"root pyproject.toml ({pyproject_path})"
-                with open(pyproject_path, "r") as f:
+                with open(pyproject_path) as f:
                     content = f.read()
                 print(f"✅ Using {dependency_source} for dependency validation")
                 break
@@ -165,19 +183,19 @@ class TestProjectStructure:
         # Fallback to backend requirements.txt if pyproject.toml not found
         if not dependency_source and os.path.exists(backend_requirements):
             dependency_source = "backend requirements.txt"
-            with open(backend_requirements, "r") as f:
+            with open(backend_requirements) as f:
                 content = f.read()
             print(f"✅ Using {dependency_source} for dependency validation")
 
         # Also try backend/requirements.txt from root directory
         if not dependency_source and os.path.exists("backend/requirements.txt"):
             dependency_source = "backend/requirements.txt"
-            with open("backend/requirements.txt", "r") as f:
+            with open("backend/requirements.txt") as f:
                 content = f.read()
             print(f"✅ Using {dependency_source} for dependency validation")
 
         if not dependency_source:
-            assert False, (
+            raise AssertionError(
                 "Neither root pyproject.toml nor backend requirements.txt found"
             )
 
@@ -209,7 +227,7 @@ class TestProjectStructure:
 class TestFrontendBackendAPIMapping:
     """Test that frontend API calls map to backend endpoints."""
 
-    def test_api_url_mapping(self):
+    def test_api_url_mapping(self) -> None:
         """Test that frontend API URLs map correctly to backend routes."""
         # Read frontend API file
         frontend_api_file = "../frontend/src/services/api.ts"
@@ -220,13 +238,13 @@ class TestFrontendBackendAPIMapping:
             )
             return
 
-        with open(frontend_api_file, "r") as f:
+        with open(frontend_api_file) as f:
             frontend_content = f.read()
 
         # Read backend routes file
         backend_routes_file = "app/api/game_routes.py"
 
-        with open(backend_routes_file, "r") as f:
+        with open(backend_routes_file) as f:
             backend_content = f.read()
 
         # Map frontend calls to backend endpoints
@@ -262,11 +280,11 @@ class TestFrontendBackendAPIMapping:
                     f"⚠️ Backend has {backend_endpoint} but frontend doesn't call {frontend_call}"
                 )
             else:
-                print(f"⚠️ Neither frontend nor backend has this mapping")
+                print("⚠️ Neither frontend nor backend has this mapping")
 
         assert len(missing_mappings) == 0, f"Missing API mappings: {missing_mappings}"
 
-    def test_api_base_url_consistency(self):
+    def test_api_base_url_consistency(self) -> None:
         """Test that API base URL is configured correctly."""
         frontend_api_file = "../frontend/src/services/api.ts"
 
@@ -274,7 +292,7 @@ class TestFrontendBackendAPIMapping:
             print("⚠️ Frontend API file not found - skipping base URL test")
             return
 
-        with open(frontend_api_file, "r") as f:
+        with open(frontend_api_file) as f:
             content = f.read()
 
         # Check that API base URL includes /api prefix to match backend routing

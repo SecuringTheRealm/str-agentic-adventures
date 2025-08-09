@@ -8,8 +8,8 @@ even when Azure OpenAI is not configured.
 """
 
 import asyncio
-import sys
 import logging
+import sys
 
 # Set up logging to see any warnings
 logging.basicConfig(level=logging.INFO)
@@ -85,10 +85,10 @@ async def test_dm_agent_responses():
         return False
 
 
-async def test_api_endpoint():
+async def test_api_endpoint() -> bool | None:
     """Test the API endpoint to ensure it works end-to-end."""
 
-    print(f"\n🌐 Testing API Endpoint")
+    print("\n🌐 Testing API Endpoint")
     print("=" * 30)
 
     try:
@@ -113,19 +113,17 @@ async def test_api_endpoint():
                         f"✅ API Response: {data['message'][:50]}{'...' if len(data['message']) > 50 else ''}"
                     )
                     return True
-                else:
-                    print(f"❌ API returned empty message: {data}")
-                    return False
-            else:
-                print(f"❌ API returned status {response.status_code}: {response.text}")
+                print(f"❌ API returned empty message: {data}")
                 return False
+            print(f"❌ API returned status {response.status_code}: {response.text}")
+            return False
 
     except Exception as e:
         print(f"❌ API test failed: {e}")
         return False
 
 
-async def main():
+async def main() -> int:
     """Run all tests and report results."""
 
     print("🔍 Testing GitHub Issue #283 Fix")
@@ -141,20 +139,19 @@ async def main():
     api_test_passed = await test_api_endpoint()
 
     # Summary
-    print(f"\n📊 Test Results Summary")
+    print("\n📊 Test Results Summary")
     print("=" * 30)
     print(f"DM Agent Direct Tests: {'✅ PASSED' if dm_test_passed else '❌ FAILED'}")
     print(f"API Endpoint Tests: {'✅ PASSED' if api_test_passed else '❌ FAILED'}")
 
     if dm_test_passed and api_test_passed:
-        print(f"\n🎉 Issue #283 FIX VERIFIED: All tests passed!")
+        print("\n🎉 Issue #283 FIX VERIFIED: All tests passed!")
         print(
             "Users should now be able to chat with the dungeon master agent successfully."
         )
         return 0
-    else:
-        print(f"\n⚠️  Issue #283 FIX INCOMPLETE: Some tests failed!")
-        return 1
+    print("\n⚠️  Issue #283 FIX INCOMPLETE: Some tests failed!")
+    return 1
 
 
 if __name__ == "__main__":

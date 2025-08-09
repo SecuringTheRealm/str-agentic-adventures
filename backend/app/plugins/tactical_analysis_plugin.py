@@ -4,7 +4,7 @@ This plugin provides tactical analysis capabilities for combat encounters.
 """
 
 import logging
-from typing import Dict, Any, List
+from typing import Any
 
 from semantic_kernel.functions import kernel_function
 
@@ -17,7 +17,7 @@ class TacticalAnalysisPlugin:
     Analyzes positioning, threat assessment, and strategic recommendations.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the tactical analysis plugin."""
         self.analysis_cache = {}
 
@@ -27,7 +27,7 @@ class TacticalAnalysisPlugin:
     )
     def analyze_tactical_positions(
         self, combatant_positions: str, map_features: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Analyze current tactical positions and provide strategic insights.
 
@@ -84,7 +84,7 @@ class TacticalAnalysisPlugin:
     )
     def assess_combat_threats(
         self, enemy_positions: str, ally_positions: str, combat_state: str = "active"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Assess threat levels and identify priority targets.
 
@@ -125,7 +125,7 @@ class TacticalAnalysisPlugin:
     )
     def calculate_optimal_positioning(
         self, unit_type: str, objectives: str, constraints: str = ""
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Calculate optimal positioning for different unit types.
 
@@ -167,8 +167,8 @@ class TacticalAnalysisPlugin:
             }
 
     def _analyze_position_strengths(
-        self, positions: Dict, map_features: str
-    ) -> List[Dict[str, Any]]:
+        self, positions: dict, map_features: str
+    ) -> list[dict[str, Any]]:
         """Analyze strengths of current positions."""
         strengths = []
 
@@ -204,8 +204,8 @@ class TacticalAnalysisPlugin:
         return strengths
 
     def _identify_vulnerabilities(
-        self, positions: Dict, map_features: str
-    ) -> List[Dict[str, Any]]:
+        self, positions: dict, map_features: str
+    ) -> list[dict[str, Any]]:
         """Identify tactical vulnerabilities."""
         vulnerabilities = []
 
@@ -230,8 +230,8 @@ class TacticalAnalysisPlugin:
         return vulnerabilities
 
     def _find_tactical_opportunities(
-        self, positions: Dict, map_features: str
-    ) -> List[Dict[str, Any]]:
+        self, positions: dict, map_features: str
+    ) -> list[dict[str, Any]]:
         """Find tactical opportunities."""
         opportunities = []
 
@@ -254,7 +254,7 @@ class TacticalAnalysisPlugin:
 
         return opportunities
 
-    def _assess_threats(self, positions: Dict) -> Dict[str, Any]:
+    def _assess_threats(self, positions: dict) -> dict[str, Any]:
         """Assess overall threat level."""
         return {
             "overall_threat_level": "moderate",
@@ -264,8 +264,8 @@ class TacticalAnalysisPlugin:
         }
 
     def _generate_recommendations(
-        self, positions: Dict, map_features: str
-    ) -> List[str]:
+        self, positions: dict, map_features: str
+    ) -> list[str]:
         """Generate tactical recommendations."""
         recommendations = [
             "Maintain unit cohesion while advancing",
@@ -283,7 +283,7 @@ class TacticalAnalysisPlugin:
 
     def _identify_immediate_threats(
         self, enemy_positions: str, ally_positions: str
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Identify immediate tactical threats."""
         return [
             {
@@ -300,7 +300,7 @@ class TacticalAnalysisPlugin:
             },
         ]
 
-    def _rank_priority_targets(self, enemy_positions: str) -> List[Dict[str, Any]]:
+    def _rank_priority_targets(self, enemy_positions: str) -> list[dict[str, Any]]:
         """Rank enemy targets by priority."""
         return [
             {
@@ -320,7 +320,7 @@ class TacticalAnalysisPlugin:
             },
         ]
 
-    def _assess_defensive_needs(self, ally_positions: str) -> Dict[str, Any]:
+    def _assess_defensive_needs(self, ally_positions: str) -> dict[str, Any]:
         """Assess defensive needs of allied units."""
         return {
             "vulnerable_units": ["wounded_allies", "spellcasters"],
@@ -334,7 +334,7 @@ class TacticalAnalysisPlugin:
         """Evaluate overall tactical state."""
         return "balanced"  # Could be: advantageous, balanced, disadvantageous
 
-    def _suggest_tactical_actions(self, combat_state: str) -> List[str]:
+    def _suggest_tactical_actions(self, combat_state: str) -> list[str]:
         """Suggest immediate tactical actions."""
         actions = {
             "active": ["aggressive_positioning", "focus_fire", "advance_formation"],
@@ -349,7 +349,7 @@ class TacticalAnalysisPlugin:
 
     def _calculate_optimal_positions(
         self, unit_type: str, objectives: str
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Calculate optimal positions for unit type."""
         position_templates = {
             "melee": [
@@ -383,7 +383,7 @@ class TacticalAnalysisPlugin:
         }
         return position_templates.get(unit_type, position_templates["melee"])
 
-    def _determine_movement_priorities(self, unit_type: str) -> List[str]:
+    def _determine_movement_priorities(self, unit_type: str) -> list[str]:
         """Determine movement priorities for unit type."""
         priorities = {
             "melee": ["engage_enemies", "protect_allies", "control_space"],
@@ -393,7 +393,7 @@ class TacticalAnalysisPlugin:
         }
         return priorities.get(unit_type, priorities["melee"])
 
-    def _get_positioning_principles(self, unit_type: str) -> List[str]:
+    def _get_positioning_principles(self, unit_type: str) -> list[str]:
         """Get core positioning principles for unit type."""
         principles = {
             "melee": [
@@ -413,7 +413,7 @@ class TacticalAnalysisPlugin:
 
     def _analyze_tactical_considerations(
         self, objectives: str, constraints: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Analyze tactical considerations."""
         return {
             "primary_objective": objectives,
@@ -428,9 +428,9 @@ class TacticalAnalysisPlugin:
 
     def _suggest_formations(
         self, unit_type: str, objectives: str
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Suggest tactical formations."""
-        formations = [
+        return [
             {
                 "name": "line_formation",
                 "best_for": "frontal_assault",
@@ -447,7 +447,6 @@ class TacticalAnalysisPlugin:
                 "description": "Circle with casters inside",
             },
         ]
-        return formations
 
     def _get_timestamp(self) -> str:
         """Get current timestamp."""

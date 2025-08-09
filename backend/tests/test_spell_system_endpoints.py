@@ -3,9 +3,8 @@ Tests for the spell system API endpoints.
 """
 
 import pytest
-from fastapi.testclient import TestClient
 from app.main import app
-from app.models.game_models import CharacterClass
+from fastapi.testclient import TestClient
 
 
 class TestSpellSystemEndpoints:
@@ -16,7 +15,7 @@ class TestSpellSystemEndpoints:
         """Create test client."""
         return TestClient(app)
 
-    def test_manage_character_spells(self, client):
+    def test_manage_character_spells(self, client) -> None:
         """Test managing character spells endpoint."""
         character_id = "test_char_123"
         request_data = {
@@ -36,7 +35,7 @@ class TestSpellSystemEndpoints:
         assert data["spell_ids"] == ["magic_missile", "fireball"]
         assert data["success"] is True
 
-    def test_manage_spell_slots(self, client):
+    def test_manage_spell_slots(self, client) -> None:
         """Test managing spell slots endpoint."""
         character_id = "test_char_123"
         request_data = {
@@ -57,7 +56,7 @@ class TestSpellSystemEndpoints:
         assert data["slot_level"] == 1
         assert data["success"] is True
 
-    def test_cast_spell_in_combat(self, client):
+    def test_cast_spell_in_combat(self, client) -> None:
         """Test casting spell in combat endpoint."""
         combat_id = "test_combat_123"
         request_data = {
@@ -78,7 +77,7 @@ class TestSpellSystemEndpoints:
         assert "spell_effects" in data
         assert data["slot_used"] is True
 
-    def test_get_spell_list(self, client):
+    def test_get_spell_list(self, client) -> None:
         """Test getting spell list endpoint."""
         response = client.get("/api/game/spells/list")
         assert response.status_code == 200
@@ -88,7 +87,7 @@ class TestSpellSystemEndpoints:
         assert "total_count" in data
         assert len(data["spells"]) == data["total_count"]
 
-    def test_get_spell_list_filtered_by_class(self, client):
+    def test_get_spell_list_filtered_by_class(self, client) -> None:
         """Test getting spell list filtered by character class."""
         response = client.get("/api/game/spells/list?character_class=wizard")
         assert response.status_code == 200
@@ -101,7 +100,7 @@ class TestSpellSystemEndpoints:
         for spell in data["spells"]:
             assert "wizard" in spell["available_classes"]
 
-    def test_get_spell_list_filtered_by_level(self, client):
+    def test_get_spell_list_filtered_by_level(self, client) -> None:
         """Test getting spell list filtered by spell level."""
         response = client.get("/api/game/spells/list?spell_level=1")
         assert response.status_code == 200
@@ -113,7 +112,7 @@ class TestSpellSystemEndpoints:
         for spell in data["spells"]:
             assert spell["level"] == 1
 
-    def test_calculate_spell_save_dc(self, client):
+    def test_calculate_spell_save_dc(self, client) -> None:
         """Test calculating spell save DC endpoint."""
         params = {
             "character_class": "wizard",
@@ -135,7 +134,7 @@ class TestSpellSystemEndpoints:
         # Expected: 8 + 3 + 3 = 14
         assert data["save_dc"] == 14
 
-    def test_manage_concentration_start(self, client):
+    def test_manage_concentration_start(self, client) -> None:
         """Test starting concentration on a spell."""
         character_id = "test_char_123"
         request_data = {
@@ -154,7 +153,7 @@ class TestSpellSystemEndpoints:
         assert data["concentration_maintained"] is True
         assert data["spell_ended"] is False
 
-    def test_manage_concentration_end(self, client):
+    def test_manage_concentration_end(self, client) -> None:
         """Test ending concentration on a spell."""
         character_id = "test_char_123"
         request_data = {"character_id": character_id, "action": "end"}
@@ -169,7 +168,7 @@ class TestSpellSystemEndpoints:
         assert data["concentration_maintained"] is False
         assert data["spell_ended"] is True
 
-    def test_manage_concentration_check(self, client):
+    def test_manage_concentration_check(self, client) -> None:
         """Test concentration check with damage."""
         character_id = "test_char_123"
         request_data = {
@@ -189,7 +188,7 @@ class TestSpellSystemEndpoints:
         assert data["dc"] == 10  # max(10, 20//2) = 10
         assert "roll_result" in data
 
-    def test_manage_concentration_invalid_action(self, client):
+    def test_manage_concentration_invalid_action(self, client) -> None:
         """Test concentration management with invalid action."""
         character_id = "test_char_123"
         request_data = {"character_id": character_id, "action": "invalid_action"}
@@ -199,7 +198,7 @@ class TestSpellSystemEndpoints:
         )
         assert response.status_code == 400
 
-    def test_manage_concentration_start_without_spell_id(self, client):
+    def test_manage_concentration_start_without_spell_id(self, client) -> None:
         """Test starting concentration without spell_id."""
         character_id = "test_char_123"
         request_data = {"character_id": character_id, "action": "start"}
@@ -209,7 +208,7 @@ class TestSpellSystemEndpoints:
         )
         assert response.status_code == 400
 
-    def test_manage_concentration_check_without_damage(self, client):
+    def test_manage_concentration_check_without_damage(self, client) -> None:
         """Test concentration check without damage_taken."""
         character_id = "test_char_123"
         request_data = {"character_id": character_id, "action": "check"}

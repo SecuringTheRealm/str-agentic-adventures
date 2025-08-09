@@ -5,8 +5,7 @@ Combat MC Agent - Manages combat encounters, tactics, and battle flow.
 import logging
 import random
 import re
-from typing import Dict, Any, List
-
+from typing import Any
 
 from app.kernel_setup import kernel_manager
 
@@ -19,7 +18,7 @@ class CombatMCAgent:
     This agent is responsible for enemy tactics, initiative tracking, and combat state.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the Combat MC agent with its own kernel instance."""
         self.kernel = kernel_manager.create_kernel()
         self.fallback_mode = False  # Track if we're using fallback mechanics
@@ -28,7 +27,7 @@ class CombatMCAgent:
         # Active combat tracking
         self.active_combats = {}
 
-    def _register_skills(self):
+    def _register_skills(self) -> None:
         """Register necessary skills for the Combat MC agent."""
         try:
             # Import plugins
@@ -47,7 +46,7 @@ class CombatMCAgent:
             self.fallback_mode = True
             self._initialize_fallback_mechanics()
 
-    def _initialize_fallback_mechanics(self):
+    def _initialize_fallback_mechanics(self) -> None:
         """Initialize built-in fallback mechanics when plugin registration fails."""
         logger.info("Initializing built-in combat mechanics as fallback")
 
@@ -68,7 +67,7 @@ class CombatMCAgent:
 
     def _fallback_roll_d20(
         self, modifier: int = 0, advantage: bool = False, disadvantage: bool = False
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Built-in d20 roll for fallback mode."""
 
         if advantage and not disadvantage:
@@ -97,7 +96,7 @@ class CombatMCAgent:
             "advantage_type": advantage_type,
         }
 
-    def _fallback_roll_damage(self, dice_notation: str) -> Dict[str, Any]:
+    def _fallback_roll_damage(self, dice_notation: str) -> dict[str, Any]:
         """Built-in damage roll for fallback mode."""
 
         # Simple dice parser for basic notation like "1d6+2" or "2d8"
@@ -130,8 +129,8 @@ class CombatMCAgent:
         }
 
     async def create_encounter(
-        self, party_info: Dict[str, Any], narrative_context: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, party_info: dict[str, Any], narrative_context: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Create a balanced combat encounter based on party level and narrative context.
 
@@ -196,8 +195,8 @@ class CombatMCAgent:
             return {"error": "Failed to create encounter"}
 
     async def start_combat(
-        self, encounter_id: str, party_members: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+        self, encounter_id: str, party_members: list[dict[str, Any]]
+    ) -> dict[str, Any]:
         """
         Start a combat encounter by rolling initiative and determining turn order.
 
@@ -279,8 +278,8 @@ class CombatMCAgent:
             return {"error": "Failed to start combat"}
 
     async def process_combat_action(
-        self, encounter_id: str, action_data: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, encounter_id: str, action_data: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Process an action in combat.
 
@@ -303,17 +302,16 @@ class CombatMCAgent:
             if self.fallback_mode:
                 # Use fallback combat processing
                 return self._process_fallback_combat_action(encounter, action_data)
-            else:
-                # Use plugin-based combat processing
-                return self._process_plugin_combat_action(encounter, action_data)
+            # Use plugin-based combat processing
+            return self._process_plugin_combat_action(encounter, action_data)
 
         except Exception as e:
             logger.error(f"Error processing combat action: {str(e)}")
             return {"error": "Failed to process combat action"}
 
     def _process_fallback_combat_action(
-        self, encounter: Dict[str, Any], action_data: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, encounter: dict[str, Any], action_data: dict[str, Any]
+    ) -> dict[str, Any]:
         """Process combat action using fallback mechanics."""
         action_type = action_data.get("type", "attack")
         actor_id = action_data.get("actor_id")
@@ -381,8 +379,8 @@ class CombatMCAgent:
         return result
 
     def _process_plugin_combat_action(
-        self, encounter: Dict[str, Any], action_data: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, encounter: dict[str, Any], action_data: dict[str, Any]
+    ) -> dict[str, Any]:
         """Process combat action using plugin-based rules engine."""
         action_type = action_data.get("type", "attack")
         actor_id = action_data.get("actor_id")
@@ -412,38 +410,37 @@ class CombatMCAgent:
 
             if action_type == "attack":
                 return self._process_attack_action(action_data, result, rules_plugin)
-            elif action_type == "spell_attack":
+            if action_type == "spell_attack":
                 return self._process_spell_attack_action(
                     action_data, result, rules_plugin
                 )
-            elif action_type == "spell_damage":
+            if action_type == "spell_damage":
                 return self._process_spell_damage_action(
                     action_data, result, rules_plugin
                 )
-            elif action_type == "spell_healing":
+            if action_type == "spell_healing":
                 return self._process_spell_healing_action(
                     action_data, result, rules_plugin
                 )
-            elif action_type == "skill_check":
+            if action_type == "skill_check":
                 return self._process_skill_check_action(
                     action_data, result, rules_plugin
                 )
-            elif action_type == "saving_throw":
+            if action_type == "saving_throw":
                 return self._process_saving_throw_action(
                     action_data, result, rules_plugin
                 )
-            elif action_type in ["move", "dash", "dodge", "hide", "help", "ready"]:
+            if action_type in ["move", "dash", "dodge", "hide", "help", "ready"]:
                 return self._process_movement_or_simple_action(action_data, result)
-            elif action_type in ["grapple", "shove"]:
+            if action_type in ["grapple", "shove"]:
                 return self._process_contested_action(action_data, result, rules_plugin)
-            else:
-                result.update(
-                    {
-                        "success": True,
-                        "message": f"Plugin mode: {action_type} action processed",
-                    }
-                )
-                return result
+            result.update(
+                {
+                    "success": True,
+                    "message": f"Plugin mode: {action_type} action processed",
+                }
+            )
+            return result
 
         except Exception as e:
             logger.error(f"Error in plugin-based combat action processing: {str(e)}")
@@ -451,8 +448,8 @@ class CombatMCAgent:
             return result
 
     def _process_attack_action(
-        self, action_data: Dict[str, Any], result: Dict[str, Any], rules_plugin
-    ) -> Dict[str, Any]:
+        self, action_data: dict[str, Any], result: dict[str, Any], rules_plugin
+    ) -> dict[str, Any]:
         """Process an attack action using the rules engine plugin."""
         try:
             # Get attack parameters
@@ -513,8 +510,8 @@ class CombatMCAgent:
             return result
 
     def _process_spell_attack_action(
-        self, action_data: Dict[str, Any], result: Dict[str, Any], rules_plugin
-    ) -> Dict[str, Any]:
+        self, action_data: dict[str, Any], result: dict[str, Any], rules_plugin
+    ) -> dict[str, Any]:
         """Process a spell attack action using the rules engine plugin."""
         try:
             # Get spell attack parameters
@@ -594,8 +591,8 @@ class CombatMCAgent:
             return result
 
     def _process_spell_damage_action(
-        self, action_data: Dict[str, Any], result: Dict[str, Any], rules_plugin
-    ) -> Dict[str, Any]:
+        self, action_data: dict[str, Any], result: dict[str, Any], rules_plugin
+    ) -> dict[str, Any]:
         """Process a spell damage action (e.g., area effects, save-or-suck spells)."""
         try:
             damage_dice = action_data.get("damage", "1d6")
@@ -631,8 +628,8 @@ class CombatMCAgent:
             return result
 
     def _process_spell_healing_action(
-        self, action_data: Dict[str, Any], result: Dict[str, Any], rules_plugin
-    ) -> Dict[str, Any]:
+        self, action_data: dict[str, Any], result: dict[str, Any], rules_plugin
+    ) -> dict[str, Any]:
         """Process a spell healing action."""
         try:
             healing_dice = action_data.get("healing", "1d8+3")
@@ -665,8 +662,8 @@ class CombatMCAgent:
             return result
 
     def _process_skill_check_action(
-        self, action_data: Dict[str, Any], result: Dict[str, Any], rules_plugin
-    ) -> Dict[str, Any]:
+        self, action_data: dict[str, Any], result: dict[str, Any], rules_plugin
+    ) -> dict[str, Any]:
         """Process a skill check action using the rules engine plugin."""
         try:
             ability_score = action_data.get("ability_score", 10)
@@ -709,8 +706,8 @@ class CombatMCAgent:
             return result
 
     def _process_saving_throw_action(
-        self, action_data: Dict[str, Any], result: Dict[str, Any], rules_plugin
-    ) -> Dict[str, Any]:
+        self, action_data: dict[str, Any], result: dict[str, Any], rules_plugin
+    ) -> dict[str, Any]:
         """Process a saving throw action using the rules engine plugin."""
         try:
             save_dc = action_data.get("save_dc", 15)
@@ -747,8 +744,8 @@ class CombatMCAgent:
             return result
 
     def _process_movement_or_simple_action(
-        self, action_data: Dict[str, Any], result: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, action_data: dict[str, Any], result: dict[str, Any]
+    ) -> dict[str, Any]:
         """Process movement or simple actions like dash, dodge, hide, help, ready."""
         action_type = action_data.get("type")
 
@@ -804,8 +801,7 @@ class CombatMCAgent:
                 return self._process_skill_check_action(
                     stealth_data, result, rules_plugin
                 )
-            else:
-                result.update({"success": True, "message": "Hide action attempted"})
+            result.update({"success": True, "message": "Hide action attempted"})
 
         elif action_type == "help":
             target = action_data.get("target", "ally")
@@ -826,8 +822,8 @@ class CombatMCAgent:
         return result
 
     def _process_contested_action(
-        self, action_data: Dict[str, Any], result: Dict[str, Any], rules_plugin
-    ) -> Dict[str, Any]:
+        self, action_data: dict[str, Any], result: dict[str, Any], rules_plugin
+    ) -> dict[str, Any]:
         """Process contested actions like grapple or shove."""
         action_type = action_data.get("type")
 
@@ -882,7 +878,7 @@ class CombatMCAgent:
         """Check if the combat MC agent is running in fallback mode."""
         return self.fallback_mode
 
-    def get_capabilities(self) -> Dict[str, Any]:
+    def get_capabilities(self) -> dict[str, Any]:
         """Get information about the agent's current capabilities."""
         if self.fallback_mode:
             return {
@@ -900,19 +896,18 @@ class CombatMCAgent:
                     "basic_combat_mechanics_only",
                 ],
             }
-        else:
-            return {
-                "mode": "full",
-                "capabilities": [
-                    "advanced_dice_rolling",
-                    "complex_spell_effects",
-                    "detailed_combat_mechanics",
-                    "comprehensive_rule_system",
-                ],
-                "limitations": [],
-            }
+        return {
+            "mode": "full",
+            "capabilities": [
+                "advanced_dice_rolling",
+                "complex_spell_effects",
+                "detailed_combat_mechanics",
+                "comprehensive_rule_system",
+            ],
+            "limitations": [],
+        }
 
-    def _calculate_average_party_level(self, party_info: Dict[str, Any]) -> float:
+    def _calculate_average_party_level(self, party_info: dict[str, Any]) -> float:
         """Calculate the average level of the party."""
         members = party_info.get("members", [])
         if not members:
@@ -926,14 +921,13 @@ class CombatMCAgent:
         if avg_level < 3:
             # Low levels: approximately equal numbers
             return party_size
-        elif avg_level < 10:
+        if avg_level < 10:
             # Mid levels: slightly more enemies
             return int(party_size * 1.5)
-        else:
-            # High levels: many enemies or fewer powerful ones
-            return party_size * 2
+        # High levels: many enemies or fewer powerful ones
+        return party_size * 2
 
-    def _get_enemy_types_for_location(self, location: str) -> List[str]:
+    def _get_enemy_types_for_location(self, location: str) -> list[str]:
         """Get appropriate enemy types for a given location."""
         location_enemies = {
             "forest": ["goblin", "wolf", "bandit"],
@@ -945,7 +939,7 @@ class CombatMCAgent:
 
         return location_enemies.get(location.lower(), ["goblin", "bandit", "cultist"])
 
-    def _get_actions_for_enemy_type(self, enemy_type: str) -> List[Dict[str, Any]]:
+    def _get_actions_for_enemy_type(self, enemy_type: str) -> list[dict[str, Any]]:
         """Get appropriate actions for an enemy type."""
         # Simplified implementation
         basic_actions = [{"name": "Attack", "damage": "1d6+2", "type": "melee"}]

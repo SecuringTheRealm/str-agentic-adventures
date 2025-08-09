@@ -2,15 +2,16 @@
 Test for Artist Agent skills registration functionality.
 """
 
-import pytest
 import os
 from unittest.mock import Mock, patch
+
+import pytest
 
 
 class TestArtistAgentSkillsRegistration:
     """Test class for Artist Agent skills registration."""
 
-    def test_artist_agent_skills_registration(self):
+    def test_artist_agent_skills_registration(self) -> None:
         """Test that ArtistAgent properly registers all required skills."""
 
         # Set up environment variables to avoid config validation errors
@@ -88,7 +89,7 @@ class TestArtistAgentSkillsRegistration:
                     "Missing scene_composition plugin reference"
                 )
 
-    def test_artist_skills_plugin_types(self):
+    def test_artist_skills_plugin_types(self) -> None:
         """Test that the registered plugins are of the correct types."""
 
         # Set up environment variables to avoid config validation errors
@@ -123,15 +124,15 @@ class TestArtistAgentSkillsRegistration:
                 mock_manager.create_kernel.return_value = mock_kernel
 
                 from app.agents.artist_agent import ArtistAgent
-                from app.plugins.image_generation_plugin import ImageGenerationPlugin
                 from app.plugins.art_style_analysis_plugin import ArtStyleAnalysisPlugin
-                from app.plugins.visual_consistency_plugin import (
-                    VisualConsistencyPlugin,
-                )
                 from app.plugins.character_visualization_plugin import (
                     CharacterVisualizationPlugin,
                 )
+                from app.plugins.image_generation_plugin import ImageGenerationPlugin
                 from app.plugins.scene_composition_plugin import SceneCompositionPlugin
+                from app.plugins.visual_consistency_plugin import (
+                    VisualConsistencyPlugin,
+                )
 
                 artist = ArtistAgent()
 
@@ -144,7 +145,7 @@ class TestArtistAgentSkillsRegistration:
                 )
                 assert isinstance(artist.scene_composition, SceneCompositionPlugin)
 
-    def test_artist_skills_registration_error_handling(self):
+    def test_artist_skills_registration_error_handling(self) -> None:
         """Test that skills registration handles errors gracefully."""
 
         # Set up environment variables to avoid config validation errors

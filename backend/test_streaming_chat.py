@@ -5,9 +5,8 @@ Tests both fallback mode (without Azure OpenAI) and the streaming infrastructure
 """
 
 import asyncio
-import sys
 import logging
-from unittest.mock import Mock, AsyncMock
+import sys
 
 # Set up logging to see any warnings
 logging.basicConfig(level=logging.INFO)
@@ -16,16 +15,16 @@ logging.basicConfig(level=logging.INFO)
 class MockWebSocket:
     """Mock WebSocket for testing streaming functionality."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.sent_messages = []
 
-    async def send_text(self, message):
+    async def send_text(self, message) -> None:
         """Mock send_text method."""
         self.sent_messages.append(message)
         print(f"WebSocket sent: {message}")
 
 
-async def test_streaming_chat_fallback():
+async def test_streaming_chat_fallback() -> bool | None:
     """Test streaming chat functionality in fallback mode."""
     print("🧪 Testing Streaming Chat in Fallback Mode")
     print("=" * 60)
@@ -113,13 +112,13 @@ async def test_streaming_chat_fallback():
         return False
 
 
-async def test_websocket_infrastructure():
+async def test_websocket_infrastructure() -> bool | None:
     """Test WebSocket infrastructure components."""
     print("\n🧪 Testing WebSocket Infrastructure")
     print("=" * 60)
 
     try:
-        from app.api.websocket_routes import manager, handle_chat_message
+        from app.api.websocket_routes import manager
 
         # Test connection manager
         print("✅ WebSocket manager imported successfully")
@@ -136,7 +135,7 @@ async def test_websocket_infrastructure():
         return False
 
 
-async def test_azure_openai_streaming():
+async def test_azure_openai_streaming() -> bool | None:
     """Test Azure OpenAI streaming client (will fail without config, which is expected)."""
     print("\n🧪 Testing Azure OpenAI Streaming Client")
     print("=" * 60)
@@ -164,7 +163,7 @@ async def test_azure_openai_streaming():
         return True
 
 
-async def main():
+async def main() -> int:
     """Run all tests and report results."""
     print("🚀 Starting Streaming Chat Tests")
     print("=" * 60)
@@ -204,9 +203,8 @@ async def main():
     if passed == total:
         print("🎉 All tests passed! Streaming chat is ready.")
         return 0
-    else:
-        print("⚠️  Some tests failed. Check the output above.")
-        return 1
+    print("⚠️  Some tests failed. Check the output above.")
+    return 1
 
 
 if __name__ == "__main__":

@@ -4,9 +4,9 @@ This plugin provides D&D 5e SRD ruleset functionality to the agents.
 """
 
 import logging
-from typing import Dict, Any, List
 import random
 from datetime import datetime
+from typing import Any
 
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
@@ -198,7 +198,7 @@ class RulesEnginePlugin:
     This plugin handles dice rolling, skill checks, and other game mechanics.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the rules engine plugin."""
         # Roll history for tracking dice rolls
         self.roll_history = []
@@ -269,7 +269,7 @@ class RulesEnginePlugin:
     )
     def get_spell_slots_for_level(
         self, character_class: str, level: int
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Get the spell slots available for a character at a given level.
 
@@ -314,7 +314,7 @@ class RulesEnginePlugin:
         spellcasting_ability_modifier: int,
         proficiency_bonus: int,
         character_level: int = None,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Calculate spell attack bonus using D&D 5e rules.
 
@@ -352,7 +352,7 @@ class RulesEnginePlugin:
         spell_level: int,
         target_count: int = 1,
         slot_level: int = None,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Resolve the effects of a spell being cast.
 
@@ -404,7 +404,7 @@ class RulesEnginePlugin:
         spellcasting_ability_modifier: int,
         proficiency_bonus: int,
         character_level: int = None,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Calculate spell save DC using D&D 5e rules.
 
@@ -438,7 +438,7 @@ class RulesEnginePlugin:
     )
     def calculate_spell_attack_bonus(
         self, spellcasting_ability_modifier: int, proficiency_bonus: int
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Calculate spell attack bonus using D&D 5e rules.
 
@@ -470,7 +470,7 @@ class RulesEnginePlugin:
     )
     def resolve_spell_damage(
         self, dice_notation: str, damage_type: str, target_count: int = 1
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Resolve spell damage using dice rolls.
 
@@ -508,7 +508,7 @@ class RulesEnginePlugin:
     )
     def resolve_spell_healing(
         self, dice_notation: str, spellcasting_modifier: int = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Resolve spell healing using dice rolls.
 
@@ -558,7 +558,7 @@ class RulesEnginePlugin:
         proficiency_bonus: int = 0,
         is_proficient: bool = False,
         roll_result: int = None,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Resolve a saving throw against a spell effect.
 
@@ -605,7 +605,7 @@ class RulesEnginePlugin:
         description="Roll dice using standard D&D notation with advanced features (e.g., '1d20', '2d6+3', '4d6dl1', '2d20kh1').",
         name="roll_dice",
     )
-    def roll_dice(self, dice_notation: str) -> Dict[str, Any]:
+    def roll_dice(self, dice_notation: str) -> dict[str, Any]:
         """
         Roll dice based on the given notation with support for advanced D&D features.
 
@@ -638,7 +638,7 @@ class RulesEnginePlugin:
                 "error": f"Invalid dice notation: {str(e)}",
             }
 
-    def _parse_and_roll_dice(self, dice_notation: str) -> Dict[str, Any]:
+    def _parse_and_roll_dice(self, dice_notation: str) -> dict[str, Any]:
         """Parse and execute dice roll notation."""
         original_notation = dice_notation
         dice_notation = dice_notation.lower().replace(" ", "")
@@ -659,7 +659,7 @@ class RulesEnginePlugin:
 
     def _handle_multiple_pools(
         self, original_notation: str, dice_notation: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Handle multiple dice pools in one expression."""
         import re
 
@@ -704,7 +704,7 @@ class RulesEnginePlugin:
 
     def _roll_single_pool(
         self, original_notation: str, dice_notation: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Roll a single dice pool with potential advanced notation."""
         # Parse basic dice notation (XdY)
         if "d" not in dice_notation:
@@ -820,7 +820,7 @@ class RulesEnginePlugin:
 
         return result
 
-    def _extract_advanced_modifiers(self, dice_notation: str) -> Dict[str, Any]:
+    def _extract_advanced_modifiers(self, dice_notation: str) -> dict[str, Any]:
         """Extract advanced notation modifiers from dice string."""
         import re
 
@@ -876,7 +876,7 @@ class RulesEnginePlugin:
         proficiency_bonus: int = 2,
         advantage: bool = False,
         disadvantage: bool = False,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Perform a skill check against a target difficulty class.
 
@@ -945,7 +945,7 @@ class RulesEnginePlugin:
         target_ac: int,
         advantage: bool = False,
         disadvantage: bool = False,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Calculate whether an attack hits based on the attack roll and target's armor class.
 
@@ -1010,7 +1010,7 @@ class RulesEnginePlugin:
     )
     def calculate_damage(
         self, damage_dice: str, is_critical: bool = False
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Calculate damage for an attack based on the damage dice and modifiers.
 
@@ -1058,7 +1058,7 @@ class RulesEnginePlugin:
         description="Calculate the level for a character based on their experience points.",
         name="calculate_level",
     )
-    def calculate_level(self, experience: int) -> Dict[str, Any]:
+    def calculate_level(self, experience: int) -> dict[str, Any]:
         """
         Calculate the level for a character based on their experience points.
 
@@ -1096,7 +1096,7 @@ class RulesEnginePlugin:
         description="Calculate proficiency bonus for a given level.",
         name="calculate_proficiency_bonus",
     )
-    def calculate_proficiency_bonus(self, level: int) -> Dict[str, Any]:
+    def calculate_proficiency_bonus(self, level: int) -> dict[str, Any]:
         """
         Calculate proficiency bonus for a given level.
 
@@ -1124,7 +1124,7 @@ class RulesEnginePlugin:
         description="Check if a character can gain ability score improvement at their level.",
         name="check_asi_eligibility",
     )
-    def check_asi_eligibility(self, level: int, asi_used: int) -> Dict[str, Any]:
+    def check_asi_eligibility(self, level: int, asi_used: int) -> dict[str, Any]:
         """
         Check if a character can gain ability score improvement at their level.
 
@@ -1160,7 +1160,7 @@ class RulesEnginePlugin:
     )
     def calculate_level_up_hp(
         self, character_class: str, constitution_modifier: int, use_average: bool = True
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Calculate hit points gained on level up.
 
@@ -1197,27 +1197,26 @@ class RulesEnginePlugin:
                     "total_hp_gain": max(total_hp_gain, 1),  # Minimum 1 HP per level
                     "method": "average",
                 }
-            else:
-                # Roll for hit points
-                roll_result = self.roll_dice(hit_dice)
-                base_hp = roll_result.get("total", 1)
-                total_hp_gain = base_hp + constitution_modifier
+            # Roll for hit points
+            roll_result = self.roll_dice(hit_dice)
+            base_hp = roll_result.get("total", 1)
+            total_hp_gain = base_hp + constitution_modifier
 
-                return {
-                    "hit_dice": hit_dice,
-                    "roll": roll_result,
-                    "base_hp": base_hp,
-                    "constitution_modifier": constitution_modifier,
-                    "total_hp_gain": max(total_hp_gain, 1),  # Minimum 1 HP per level
-                    "method": "rolled",
-                }
+            return {
+                "hit_dice": hit_dice,
+                "roll": roll_result,
+                "base_hp": base_hp,
+                "constitution_modifier": constitution_modifier,
+                "total_hp_gain": max(total_hp_gain, 1),  # Minimum 1 HP per level
+                "method": "rolled",
+            }
         except Exception as e:
             logger.error(f"Error calculating level up HP: {str(e)}")
             return {"error": f"Error calculating level up HP: {str(e)}"}
 
     def roll_with_character(
-        self, dice_notation: str, character: Dict[str, Any], skill: str = None
-    ) -> Dict[str, Any]:
+        self, dice_notation: str, character: dict[str, Any], skill: str = None
+    ) -> dict[str, Any]:
         """
         Roll dice with character context for automatic modifiers.
 
@@ -1265,7 +1264,7 @@ class RulesEnginePlugin:
 
         return base_result
 
-    def input_manual_roll(self, dice_notation: str, result: int) -> Dict[str, Any]:
+    def input_manual_roll(self, dice_notation: str, result: int) -> dict[str, Any]:
         """
         Input a manual roll result (for when dice are rolled physically).
 
@@ -1287,11 +1286,11 @@ class RulesEnginePlugin:
         self._add_to_history(manual_result)
         return manual_result
 
-    def clear_roll_history(self):
+    def clear_roll_history(self) -> None:
         """Clear the roll history."""
         self.roll_history = []
 
-    def get_roll_history(self, limit: int = None) -> List[Dict[str, Any]]:
+    def get_roll_history(self, limit: int = None) -> list[dict[str, Any]]:
         """
         Get the roll history.
 
@@ -1305,7 +1304,7 @@ class RulesEnginePlugin:
             return self.roll_history[-limit:]
         return self.roll_history.copy()
 
-    def _add_to_history(self, roll_result: Dict[str, Any]):
+    def _add_to_history(self, roll_result: dict[str, Any]) -> None:
         """Add a roll result to the history."""
         # Add timestamp
         import datetime
@@ -1324,8 +1323,8 @@ class RulesEnginePlugin:
         name="start_concentration",
     )
     def start_concentration(
-        self, character_id: str, spell_data: Dict[str, Any], duration_rounds: int = 10
-    ) -> Dict[str, Any]:
+        self, character_id: str, spell_data: dict[str, Any], duration_rounds: int = 10
+    ) -> dict[str, Any]:
         """
         Start concentration on a spell for a character.
 
@@ -1379,7 +1378,7 @@ class RulesEnginePlugin:
         description="End concentration on a spell for a character.",
         name="end_concentration",
     )
-    def end_concentration(self, character_id: str) -> Dict[str, Any]:
+    def end_concentration(self, character_id: str) -> dict[str, Any]:
         """
         End concentration on a spell for a character.
 
@@ -1418,7 +1417,7 @@ class RulesEnginePlugin:
         description="Check current concentration status for a character.",
         name="check_concentration",
     )
-    def check_concentration(self, character_id: str) -> Dict[str, Any]:
+    def check_concentration(self, character_id: str) -> dict[str, Any]:
         """
         Check current concentration status for a character.
 
@@ -1457,7 +1456,7 @@ class RulesEnginePlugin:
     )
     def concentration_saving_throw(
         self, character_id: str, damage_taken: int, constitution_modifier: int = 0
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Perform a concentration saving throw when character takes damage.
 
@@ -1527,7 +1526,7 @@ class RulesEnginePlugin:
         description="Reduce spell duration for all concentrating characters (call each round).",
         name="advance_concentration_round",
     )
-    def advance_concentration_round(self) -> Dict[str, Any]:
+    def advance_concentration_round(self) -> dict[str, Any]:
         """
         Reduce spell duration for all concentrating characters by one round.
         Should be called at the end of each combat round.

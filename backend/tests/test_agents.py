@@ -2,15 +2,16 @@
 Tests for agent functionality with mocked dependencies.
 """
 
-import pytest
-from unittest.mock import Mock, patch, AsyncMock
 import asyncio
+from unittest.mock import AsyncMock, Mock, patch
+
+import pytest
 
 
 class TestAgentMocking:
     """Test class for agent functionality through mocking."""
 
-    def test_agent_imports_available(self):
+    def test_agent_imports_available(self) -> None:
         """Test that agent modules can be imported with proper mocking."""
         # Mock semantic kernel and dependencies
         with patch.dict(
@@ -53,7 +54,7 @@ class TestAgentMocking:
                     # We'll test the API endpoints instead which is more important
                     pytest.skip(f"Could not import agent due to dependencies: {e}")
 
-    def test_agent_interface_contracts(self):
+    def test_agent_interface_contracts(self) -> None:
         """Test expected agent interface contracts without importing actual agents."""
         # This tests the expected behavior of agents as used by the API routes
 
@@ -91,7 +92,7 @@ class TestAgentMocking:
         assert result["id"] == "test_char_123"
         mock_scribe.get_character.assert_called_once_with("test_char_123")
 
-    def test_dungeon_master_interface(self):
+    def test_dungeon_master_interface(self) -> None:
         """Test expected dungeon master agent interface."""
         mock_dm = Mock()
         mock_dm.create_campaign = AsyncMock(
@@ -127,7 +128,7 @@ class TestAgentMocking:
         assert "state_updates" in result
         mock_dm.process_input.assert_called_once_with("I look around", context)
 
-    def test_artist_agent_interface(self):
+    def test_artist_agent_interface(self) -> None:
         """Test expected artist agent interface."""
         mock_artist = Mock()
         mock_artist.generate_character_portrait = AsyncMock(

@@ -3,7 +3,6 @@
 Quick SRD Rules Compliance Checker - focused on key game elements.
 """
 
-import re
 from pathlib import Path
 
 
@@ -93,7 +92,7 @@ def check_basic_srd_compliance():
     all_content = ""
     for file_path in py_files + ts_files:
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 all_content += f.read().lower() + "\n"
         except:
             continue
@@ -179,7 +178,7 @@ def check_basic_srd_compliance():
     return "\n".join(report)
 
 
-def main():
+def main() -> None:
     report = check_basic_srd_compliance()
 
     # Save report (output to temp location to avoid committing generated reports)

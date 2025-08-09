@@ -8,11 +8,11 @@ from app.plugins.rules_engine_plugin import RulesEnginePlugin
 class TestDiceRolling:
     """Test enhanced dice rolling functionality."""
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Set up test fixtures."""
         self.plugin = RulesEnginePlugin()
 
-    def test_basic_dice_notation(self):
+    def test_basic_dice_notation(self) -> None:
         """Test basic dice notation still works."""
         result = self.plugin.roll_dice("1d20")
         assert "total" in result
@@ -21,7 +21,7 @@ class TestDiceRolling:
         assert 1 <= result["rolls"][0] <= 20
         assert result["total"] == result["rolls"][0]
 
-    def test_dice_with_modifier(self):
+    def test_dice_with_modifier(self) -> None:
         """Test dice with positive and negative modifiers."""
         result = self.plugin.roll_dice("1d20+5")
         assert result["modifier"] == 5
@@ -31,7 +31,7 @@ class TestDiceRolling:
         assert result["modifier"] == -2
         assert result["total"] == sum(result["rolls"]) - 2
 
-    def test_drop_lowest_notation(self):
+    def test_drop_lowest_notation(self) -> None:
         """Test advanced notation: drop lowest."""
         result = self.plugin.roll_dice("4d6dl1")
         assert "total" in result
@@ -44,7 +44,7 @@ class TestDiceRolling:
         expected_total = sum(sorted_rolls[:3])
         assert result["total"] == expected_total
 
-    def test_keep_highest_notation(self):
+    def test_keep_highest_notation(self) -> None:
         """Test advanced notation: keep highest (advantage)."""
         result = self.plugin.roll_dice("2d20kh1")
         assert "total" in result
@@ -55,7 +55,7 @@ class TestDiceRolling:
         # Total should be the highest roll
         assert result["total"] == max(result["rolls"])
 
-    def test_keep_lowest_notation(self):
+    def test_keep_lowest_notation(self) -> None:
         """Test advanced notation: keep lowest (disadvantage)."""
         result = self.plugin.roll_dice("2d20kl1")
         assert "total" in result
@@ -66,7 +66,7 @@ class TestDiceRolling:
         # Total should be the lowest roll
         assert result["total"] == min(result["rolls"])
 
-    def test_reroll_notation(self):
+    def test_reroll_notation(self) -> None:
         """Test reroll notation."""
         # This test is probabilistic, so we'll run it multiple times
         # to ensure the reroll functionality works
@@ -85,7 +85,7 @@ class TestDiceRolling:
         ]
         assert len(reroll_results) > 0  # Should have some rerolls in 100 attempts
 
-    def test_multiple_dice_pools(self):
+    def test_multiple_dice_pools(self) -> None:
         """Test multiple dice pools in one expression."""
         result = self.plugin.roll_dice("2d6+1d4+3")
         assert "total" in result
@@ -104,11 +104,11 @@ class TestDiceRolling:
 class TestCharacterIntegration:
     """Test character sheet integration features."""
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Set up test fixtures."""
         self.plugin = RulesEnginePlugin()
 
-    def test_roll_with_character_context(self):
+    def test_roll_with_character_context(self) -> None:
         """Test rolling with character context for automatic modifiers."""
         character = {
             "abilities": {"strength": 16, "dexterity": 14},
@@ -123,7 +123,7 @@ class TestCharacterIntegration:
         expected_bonus = 3 + 3  # STR mod + prof
         assert result["character_bonus"] == expected_bonus
 
-    def test_manual_roll_input(self):
+    def test_manual_roll_input(self) -> None:
         """Test manual roll input functionality."""
         result = self.plugin.input_manual_roll("1d20", 18)
         assert result["notation"] == "1d20"
@@ -135,11 +135,11 @@ class TestCharacterIntegration:
 class TestRollHistory:
     """Test roll history functionality."""
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Set up test fixtures."""
         self.plugin = RulesEnginePlugin()
 
-    def test_roll_history_tracking(self):
+    def test_roll_history_tracking(self) -> None:
         """Test that rolls are tracked in history."""
         # Clear any existing history
         self.plugin.clear_roll_history()
@@ -155,12 +155,12 @@ class TestRollHistory:
         assert "timestamp" in history[0]
         assert "timestamp" in history[1]
 
-    def test_roll_history_limit(self):
+    def test_roll_history_limit(self) -> None:
         """Test roll history has a reasonable limit."""
         self.plugin.clear_roll_history()
 
         # Make many rolls
-        for i in range(150):
+        for _i in range(150):
             self.plugin.roll_dice("1d6")
 
         history = self.plugin.get_roll_history()
@@ -171,7 +171,7 @@ class TestRollHistory:
 class TestConcentrationTracking:
     """Test concentration tracking functionality."""
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Set up test fixtures."""
         self.plugin = RulesEnginePlugin()
 
@@ -190,7 +190,7 @@ class TestConcentrationTracking:
             "requires_concentration": False,
         }
 
-    def test_start_concentration_success(self):
+    def test_start_concentration_success(self) -> None:
         """Test successfully starting concentration on a spell."""
         result = self.plugin.start_concentration("char1", self.concentration_spell, 10)
 
@@ -200,14 +200,14 @@ class TestConcentrationTracking:
         assert result["duration_rounds"] == 10
         assert "message" in result
 
-    def test_start_concentration_non_concentration_spell(self):
+    def test_start_concentration_non_concentration_spell(self) -> None:
         """Test starting concentration on a spell that doesn't require it."""
         result = self.plugin.start_concentration("char1", self.non_concentration_spell)
 
         assert result["success"] is False
         assert "does not require concentration" in result["error"]
 
-    def test_start_concentration_replaces_existing(self):
+    def test_start_concentration_replaces_existing(self) -> None:
         """Test that starting new concentration ends existing concentration."""
         # Start first concentration
         self.plugin.start_concentration("char1", self.concentration_spell)
@@ -223,7 +223,7 @@ class TestConcentrationTracking:
         status = self.plugin.check_concentration("char1")
         assert status["spell"]["name"] == "Blur"
 
-    def test_check_concentration_active(self):
+    def test_check_concentration_active(self) -> None:
         """Test checking concentration when character is concentrating."""
         self.plugin.start_concentration("char1", self.concentration_spell, 5)
 
@@ -235,7 +235,7 @@ class TestConcentrationTracking:
         assert result["duration_remaining"] == 5
         assert "started_at" in result
 
-    def test_check_concentration_inactive(self):
+    def test_check_concentration_inactive(self) -> None:
         """Test checking concentration when character is not concentrating."""
         result = self.plugin.check_concentration("char1")
 
@@ -244,7 +244,7 @@ class TestConcentrationTracking:
         assert result["spell"] is None
         assert result["duration_remaining"] == 0
 
-    def test_end_concentration_success(self):
+    def test_end_concentration_success(self) -> None:
         """Test successfully ending concentration."""
         self.plugin.start_concentration("char1", self.concentration_spell)
 
@@ -259,14 +259,14 @@ class TestConcentrationTracking:
         status = self.plugin.check_concentration("char1")
         assert status["is_concentrating"] is False
 
-    def test_end_concentration_not_concentrating(self):
+    def test_end_concentration_not_concentrating(self) -> None:
         """Test ending concentration when not concentrating."""
         result = self.plugin.end_concentration("char1")
 
         assert result["success"] is False
         assert "not concentrating" in result["error"]
 
-    def test_concentration_saving_throw_success(self):
+    def test_concentration_saving_throw_success(self) -> None:
         """Test successful concentration saving throw."""
         self.plugin.start_concentration("char1", self.concentration_spell)
 
@@ -289,7 +289,7 @@ class TestConcentrationTracking:
         assert "success" in result
         assert "concentration_maintained" in result
 
-    def test_concentration_saving_throw_dc_calculation(self):
+    def test_concentration_saving_throw_dc_calculation(self) -> None:
         """Test concentration saving throw DC calculation."""
         self.plugin.start_concentration("char1", self.concentration_spell)
 
@@ -304,14 +304,14 @@ class TestConcentrationTracking:
         result2 = self.plugin.concentration_saving_throw("char1", 30, 0)
         assert result2["dc"] == 15  # 30 // 2
 
-    def test_concentration_saving_throw_not_concentrating(self):
+    def test_concentration_saving_throw_not_concentrating(self) -> None:
         """Test concentration saving throw when not concentrating."""
         result = self.plugin.concentration_saving_throw("char1", 10, 0)
 
         assert result["success"] is False
         assert "not concentrating" in result["error"]
 
-    def test_advance_concentration_round(self):
+    def test_advance_concentration_round(self) -> None:
         """Test advancing concentration rounds."""
         # Set up multiple characters with concentration
         self.plugin.start_concentration("char1", self.concentration_spell, 3)
@@ -347,7 +347,7 @@ class TestConcentrationTracking:
 class TestSpellEffectResolution:
     """Test spell effect resolution system."""
 
-    def test_calculate_spell_save_dc(self):
+    def test_calculate_spell_save_dc(self) -> None:
         """Test spell save DC calculation."""
         # Test with standard spellcaster stats
         result = self.plugin.calculate_spell_save_dc(
@@ -367,7 +367,7 @@ class TestSpellEffectResolution:
         )
         assert result["save_dc"] == 15  # 8 + 4 + 3 = 15
 
-    def test_calculate_spell_attack_bonus(self):
+    def test_calculate_spell_attack_bonus(self) -> None:
         """Test spell attack bonus calculation."""
         result = self.plugin.calculate_spell_attack_bonus(
             spellcasting_ability_modifier=3, proficiency_bonus=2
@@ -376,7 +376,7 @@ class TestSpellEffectResolution:
         assert result["spellcasting_modifier"] == 3
         assert result["proficiency_bonus"] == 2
 
-    def test_resolve_spell_damage(self):
+    def test_resolve_spell_damage(self) -> None:
         """Test spell damage resolution."""
         # Test basic damage spell
         result = self.plugin.resolve_spell_damage(
@@ -396,7 +396,7 @@ class TestSpellEffectResolution:
         assert result["damage_type"] == "force"
         assert 4 <= result["total_damage"] <= 7  # 1d4+3 range
 
-    def test_resolve_spell_healing(self):
+    def test_resolve_spell_healing(self) -> None:
         """Test spell healing resolution."""
         result = self.plugin.resolve_spell_healing(
             dice_notation="1d8+3",  # Cure Wounds
@@ -413,7 +413,7 @@ class TestSpellEffectResolution:
         assert "healing_amount" in result
         assert 4 <= result["healing_amount"] <= 10  # 2d4+2 range
 
-    def test_resolve_saving_throw(self):
+    def test_resolve_saving_throw(self) -> None:
         """Test saving throw resolution."""
         # Test successful save
         result = self.plugin.resolve_saving_throw(
@@ -439,7 +439,7 @@ class TestSpellEffectResolution:
         assert result["total_roll"] == 9  # 8 + 1 (no proficiency)
         assert result["save_dc"] == 15
 
-    def test_spell_effect_integration(self):
+    def test_spell_effect_integration(self) -> None:
         """Test integration between different spell effect methods."""
         # Create a scenario: Level 5 wizard casting fireball
         wizard_int_mod = 4  # 18 Intelligence
@@ -474,7 +474,7 @@ class TestSpellEffectResolution:
         assert save_result["save_successful"] is True
         assert save_result["total_roll"] == 15
 
-    def test_spell_attack_integration(self):
+    def test_spell_attack_integration(self) -> None:
         """Test spell attack integration."""
         # Test spell attack calculation
         attack_result = self.plugin.calculate_spell_attack_bonus(

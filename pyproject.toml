@@ -82,8 +82,8 @@ extend-exclude = [
 ]
 
 [tool.ruff.lint]
-select = ["E", "F", "B", "I", "N", "UP", "ANN", "S", "A", "COM", "C4", "T10", "RET", "SIM", "ERA"]
-ignore = ["ANN101", "ANN102"]  # Ignore missing self and cls type annotations
+select = ["E", "F", "B", "I", "N", "UP", "ANN", "S", "A", "C4", "T10", "RET", "SIM", "ERA"]
+ignore = []  # Removed deprecated ANN101/ANN102 rules, removed COM to avoid formatter conflicts
 
 [tool.ruff.format]
 quote-style = "double"

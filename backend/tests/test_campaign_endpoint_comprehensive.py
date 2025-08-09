@@ -3,10 +3,11 @@ Comprehensive test for the campaign endpoint to ensure proper error handling.
 """
 
 import os
+
 from fastapi.testclient import TestClient
 
 
-def test_campaign_endpoint_with_missing_config():
+def test_campaign_endpoint_with_missing_config() -> bool | None:
     """Test that campaign endpoint properly handles missing Azure OpenAI configuration."""
 
     # Temporarily clear Azure OpenAI environment variables
@@ -68,7 +69,7 @@ def test_campaign_endpoint_with_missing_config():
                 del os.environ[var]
 
 
-def test_campaign_endpoint_with_config():
+def test_campaign_endpoint_with_config() -> bool | None:
     """Test that campaign endpoint works when Azure OpenAI configuration is provided."""
 
     # Set minimal valid Azure OpenAI configuration

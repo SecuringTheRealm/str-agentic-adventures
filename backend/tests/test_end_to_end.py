@@ -2,9 +2,8 @@
 End-to-end integration tests to verify complete functionality.
 """
 
-import sys
 import os
-import json
+import sys
 
 # Add the backend directory to Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -13,7 +12,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 class TestEndToEndWorkflows:
     """Test complete workflows from request to response."""
 
-    def test_character_creation_workflow(self):
+    def test_character_creation_workflow(self) -> None:
         """Test complete character creation workflow."""
         # This test validates the data flow works correctly
         # even without running the full server
@@ -37,10 +36,10 @@ class TestEndToEndWorkflows:
         # Validate this would work with our models (when dependencies are available)
         try:
             from app.models.game_models import (
+                Abilities,
+                CharacterClass,
                 CreateCharacterRequest,
                 Race,
-                CharacterClass,
-                Abilities,
             )
 
             abilities = Abilities(**frontend_request["abilities"])
@@ -80,7 +79,7 @@ class TestEndToEndWorkflows:
             )
             print("✅ Character creation data structure validation passed")
 
-    def test_campaign_creation_workflow(self):
+    def test_campaign_creation_workflow(self) -> None:
         """Test complete campaign creation workflow."""
         frontend_request = {
             "name": "The Fellowship's Journey",
@@ -90,7 +89,7 @@ class TestEndToEndWorkflows:
         }
 
         try:
-            from app.models.game_models import CreateCampaignRequest, Campaign
+            from app.models.game_models import Campaign, CreateCampaignRequest
 
             campaign_request = CreateCampaignRequest(**frontend_request)
 
@@ -132,7 +131,7 @@ class TestEndToEndWorkflows:
             assert isinstance(frontend_request["homebrew_rules"], list)
             print("✅ Campaign creation data structure validation passed")
 
-    def test_player_input_workflow(self):
+    def test_player_input_workflow(self) -> None:
         """Test player input processing workflow."""
         frontend_request = {
             "message": "I search for traps in the corridor",
@@ -141,7 +140,7 @@ class TestEndToEndWorkflows:
         }
 
         try:
-            from app.models.game_models import PlayerInput, GameResponse
+            from app.models.game_models import GameResponse, PlayerInput
 
             player_input = PlayerInput(**frontend_request)
 
@@ -175,7 +174,7 @@ class TestEndToEndWorkflows:
             assert "campaign_id" in frontend_request
             print("✅ Player input data structure validation passed")
 
-    def test_image_generation_workflow(self):
+    def test_image_generation_workflow(self) -> None:
         """Test image generation workflow."""
         frontend_request = {
             "image_type": "character_portrait",
@@ -213,10 +212,16 @@ class TestEndToEndWorkflows:
 class TestComponentIntegration:
     """Test that different components work together correctly."""
 
-    def test_api_route_coverage(self):
+    def test_api_route_coverage(self) -> None:
         """Test that all frontend API calls have corresponding backend routes."""
-        # Read the game routes file
-        with open("app/api/game_routes.py", "r") as f:
+        # Read the game routes file with correct path
+        routes_file = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "app",
+            "api",
+            "game_routes.py",
+        )
+        with open(routes_file) as f:
             routes_content = f.read()
 
         # Check that all critical routes are present
@@ -237,10 +242,16 @@ class TestComponentIntegration:
         assert len(missing_routes) == 0, f"Missing critical routes: {missing_routes}"
         print("✅ All critical API routes are present")
 
-    def test_model_field_consistency(self):
+    def test_model_field_consistency(self) -> None:
         """Test that model fields are consistent across the application."""
-        # Read the models file
-        with open("app/models/game_models.py", "r") as f:
+        # Read the models file with correct path
+        models_file = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "app",
+            "models",
+            "game_models.py",
+        )
+        with open(models_file) as f:
             models_content = f.read()
 
         # Check for critical field naming patterns
@@ -267,10 +278,16 @@ class TestComponentIntegration:
                 else:
                     raise AssertionError(f"Missing required pattern: {field_pattern}")
 
-    def test_agent_integration_points(self):
+    def test_agent_integration_points(self) -> None:
         """Test that agents are properly integrated with the API layer."""
-        # Read the game routes file
-        with open("app/api/game_routes.py", "r") as f:
+        # Read the game routes file with correct path
+        routes_file = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "app",
+            "api",
+            "game_routes.py",
+        )
+        with open(routes_file) as f:
             routes_content = f.read()
 
         # Check that agents are imported and used

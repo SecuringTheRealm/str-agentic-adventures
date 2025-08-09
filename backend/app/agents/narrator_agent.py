@@ -3,12 +3,12 @@ Narrator Agent - Manages campaign narrative and story elements.
 """
 
 import logging
-from typing import Any, Dict
+from typing import Any
 
 from semantic_kernel.functions import KernelArguments
 
-from app.kernel_setup import kernel_manager
 from app.azure_openai_client import AzureOpenAIClient
+from app.kernel_setup import kernel_manager
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ class NarratorAgent:
     This agent is responsible for generating rich descriptions and determining narrative outcomes.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the Narrator agent with its own kernel instance."""
         # Initialize basic attributes first
         self._fallback_mode = False
@@ -50,21 +50,21 @@ class NarratorAgent:
                 # Re-raise other errors as-is
                 raise
 
-    def _initialize_fallback_components(self):
+    def _initialize_fallback_components(self) -> None:
         """Initialize fallback components when Azure OpenAI is not available."""
         self._fallback_mode = True
         # Basic fallback - no advanced narrative generation
         logger.info("Narrator agent initialized in fallback mode")
 
-    def _register_skills(self):
+    def _register_skills(self) -> None:
         """Register necessary skills for the Narrator agent."""
         try:
             # Import plugins
-            from app.plugins.narrative_memory_plugin import NarrativeMemoryPlugin
-            from app.plugins.rules_engine_plugin import RulesEnginePlugin
             from app.plugins.narrative_generation_plugin import (
                 NarrativeGenerationPlugin,
             )
+            from app.plugins.narrative_memory_plugin import NarrativeMemoryPlugin
+            from app.plugins.rules_engine_plugin import RulesEnginePlugin
 
             # Create plugin instances
             narrative_memory = NarrativeMemoryPlugin()
@@ -89,7 +89,7 @@ class NarratorAgent:
                 "Narrator agent entering fallback mode - using basic functionality without advanced plugins"
             )
 
-    async def describe_scene(self, scene_context: Dict[str, Any]) -> str:
+    async def describe_scene(self, scene_context: dict[str, Any]) -> str:
         """
         Generate a rich description of a scene based on the provided context.
 
@@ -182,11 +182,10 @@ class NarratorAgent:
                     {"role": "user", "content": full_description},
                 ]
                 try:
-                    enhanced = await self.openai_client.chat_completion(
+                    return await self.openai_client.chat_completion(
                         messages,
                         temperature=0.7,
                     )
-                    return enhanced
                 except Exception as error:  # pragma: no cover - fallback path
                     logger.error("OpenAI enhancement failed: %s", error)
                     return full_description
@@ -201,8 +200,8 @@ class NarratorAgent:
             )
 
     async def process_action(
-        self, action: str, context: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, action: str, context: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Process a player action and determine narrative outcome.
 
@@ -319,8 +318,8 @@ class NarratorAgent:
             }
 
     async def create_campaign_story(
-        self, campaign_context: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, campaign_context: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Create initial story arcs and narrative structure for a new campaign.
 
@@ -430,7 +429,7 @@ class NarratorAgent:
                 "message": f"Failed to create campaign story: {str(e)}",
             }
 
-    async def get_narrative_status(self, campaign_id: str) -> Dict[str, Any]:
+    async def get_narrative_status(self, campaign_id: str) -> dict[str, Any]:
         """
         Get the current narrative status and available choices for a campaign.
 

@@ -7,16 +7,15 @@ This simulates how the system works when a user sends a chat message.
 import asyncio
 import json
 import sys
-from typing import List, Dict, Any
 
 
 class StreamingDemo:
     """Demonstrates the streaming chat flow."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.messages_sent = []
 
-    async def simulate_websocket_send(self, message: str):
+    async def simulate_websocket_send(self, message: str) -> None:
         """Simulate sending a message via WebSocket."""
         self.messages_sent.append(message)
 
@@ -41,7 +40,7 @@ class StreamingDemo:
         except json.JSONDecodeError:
             print(f"Raw message: {message}")
 
-    async def demonstrate_streaming_flow(self):
+    async def demonstrate_streaming_flow(self) -> bool:
         """Show how streaming chat works."""
         print("🎭 Streaming Chat Demonstration")
         print("=" * 60)
@@ -49,10 +48,10 @@ class StreamingDemo:
 
         # Mock WebSocket for testing
         class MockWebSocket:
-            def __init__(self, demo):
+            def __init__(self, demo) -> None:
                 self.demo = demo
 
-            async def send_text(self, message):
+            async def send_text(self, message) -> None:
                 await self.demo.simulate_websocket_send(message)
 
         try:
@@ -88,7 +87,7 @@ class StreamingDemo:
         return True
 
 
-async def main():
+async def main() -> int:
     """Run the streaming demonstration."""
     demo = StreamingDemo()
 
@@ -106,9 +105,8 @@ async def main():
         print("✅ Better error handling and connection management")
         print("✅ Separated chat from other game events")
         return 0
-    else:
-        print("\n❌ Demonstration failed")
-        return 1
+    print("\n❌ Demonstration failed")
+    return 1
 
 
 if __name__ == "__main__":

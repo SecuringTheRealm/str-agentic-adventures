@@ -2,15 +2,15 @@
 Test AI content generation endpoint functionality.
 """
 
-import pytest
+from unittest.mock import AsyncMock, patch
+
 from fastapi.testclient import TestClient
-from unittest.mock import patch, AsyncMock
 
 
 class TestAIContentGeneration:
     """Test AI content generation endpoint."""
 
-    def test_ai_content_generation_endpoint_exists(self):
+    def test_ai_content_generation_endpoint_exists(self) -> None:
         """Test that the AI content generation endpoint exists and returns proper structure."""
         from app.main import app
 
@@ -49,7 +49,7 @@ class TestAIContentGeneration:
             else:
                 assert "error" in data
 
-    def test_ai_content_generation_with_empty_text(self):
+    def test_ai_content_generation_with_empty_text(self) -> None:
         """Test AI content generation with empty current text."""
         from app.main import app
 
@@ -76,7 +76,7 @@ class TestAIContentGeneration:
             assert "generated_content" in data
             assert "success" in data
 
-    def test_ai_content_generation_error_handling(self):
+    def test_ai_content_generation_error_handling(self) -> None:
         """Test error handling when Azure OpenAI fails."""
         from app.main import app
 
@@ -107,7 +107,7 @@ class TestAIContentGeneration:
             assert "error" in data
             assert "Azure OpenAI error" in data["error"]
 
-    def test_invalid_request_data(self):
+    def test_invalid_request_data(self) -> None:
         """Test with invalid request data."""
         from app.main import app
 

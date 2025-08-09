@@ -2,9 +2,10 @@
 Tests for the narrative generation system.
 """
 
-import pytest
 import os
 from unittest.mock import patch
+
+import pytest
 from app.plugins.narrative_generation_plugin import NarrativeGenerationPlugin
 from app.plugins.narrative_memory_plugin import NarrativeMemoryPlugin
 
@@ -27,11 +28,11 @@ from app.models.game_models import NarrativeState
 class TestNarrativeGenerationPlugin:
     """Test cases for the narrative generation plugin."""
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Set up test fixtures."""
         self.plugin = NarrativeGenerationPlugin()
 
-    def test_create_story_arc(self):
+    def test_create_story_arc(self) -> None:
         """Test story arc creation."""
         result = self.plugin.create_story_arc(
             title="Test Adventure",
@@ -53,7 +54,7 @@ class TestNarrativeGenerationPlugin:
         assert "char1" in story_arc.characters_involved
         assert len(story_arc.plot_points) > 0
 
-    def test_generate_choices(self):
+    def test_generate_choices(self) -> None:
         """Test narrative choice generation."""
         result = self.plugin.generate_choices(
             situation="You encounter a locked door",
@@ -71,7 +72,7 @@ class TestNarrativeGenerationPlugin:
             assert "description" in choice
             assert choice["id"] in self.plugin.narrative_choices
 
-    def test_process_choice(self):
+    def test_process_choice(self) -> None:
         """Test choice processing and consequence application."""
         # First generate a choice
         choice_result = self.plugin.generate_choices(
@@ -96,7 +97,7 @@ class TestNarrativeGenerationPlugin:
         assert event.event_type == "choice_made"
         assert choice_id in event.choices_made
 
-    def test_advance_narrative(self):
+    def test_advance_narrative(self) -> None:
         """Test narrative advancement and plot point triggers."""
         campaign_id = "test_campaign"
 
@@ -124,7 +125,7 @@ class TestNarrativeGenerationPlugin:
         updated_state = self.plugin.narrative_states[campaign_id]
         assert len(updated_state.pending_choices) > 0
 
-    def test_get_narrative_state(self):
+    def test_get_narrative_state(self) -> None:
         """Test retrieving narrative state."""
         campaign_id = "test_campaign"
 
@@ -144,11 +145,11 @@ class TestNarrativeGenerationPlugin:
 class TestNarrativeMemoryPlugin:
     """Test cases for the enhanced narrative memory plugin."""
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Set up test fixtures."""
         self.plugin = NarrativeMemoryPlugin()
 
-    def test_track_story_arc(self):
+    def test_track_story_arc(self) -> None:
         """Test story arc tracking functionality."""
         result = self.plugin.track_story_arc(
             arc_id="arc_1",
@@ -168,7 +169,7 @@ class TestNarrativeMemoryPlugin:
         assert "Met the mentor" in arc_memory["key_events"]
         assert arc_memory["character_impact"] == "Characters are motivated"
 
-    def test_record_character_development(self):
+    def test_record_character_development(self) -> None:
         """Test character development recording."""
         result = self.plugin.record_character_development(
             character_id="char_1",
@@ -186,7 +187,7 @@ class TestNarrativeMemoryPlugin:
         assert developments[0]["type"] == "personality"
         assert developments[0]["description"] == "Showed courage in the face of danger"
 
-    def test_recall_story_arcs(self):
+    def test_recall_story_arcs(self) -> None:
         """Test story arc recall functionality."""
         # Add some test data
         self.plugin.track_story_arc(
@@ -214,13 +215,13 @@ class TestNarratorAgent:
     """Test cases for the enhanced narrator agent."""
 
     @pytest.fixture(autouse=True)
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Set up test fixtures."""
         with patch("app.agents.narrator_agent.kernel_manager"):
             self.narrator = NarratorAgent()
 
     @pytest.mark.asyncio
-    async def test_describe_scene_with_narrative_context(self):
+    async def test_describe_scene_with_narrative_context(self) -> None:
         """Test scene description with narrative context."""
         scene_context = {
             "location": "Ancient Temple",
@@ -237,7 +238,7 @@ class TestNarratorAgent:
         assert len(description) > 50  # Should be a rich description
 
     @pytest.mark.asyncio
-    async def test_process_action_with_choices(self):
+    async def test_process_action_with_choices(self) -> None:
         """Test action processing with narrative choice generation."""
         action = "investigate the mysterious altar"
         context = {
@@ -253,7 +254,7 @@ class TestNarratorAgent:
         assert "state_updates" in result
 
     @pytest.mark.asyncio
-    async def test_create_campaign_story(self):
+    async def test_create_campaign_story(self) -> None:
         """Test campaign story creation."""
         campaign_context = {
             "campaign_id": "new_campaign",
@@ -270,7 +271,7 @@ class TestNarratorAgent:
         assert result["campaign_id"] == "new_campaign"
 
     @pytest.mark.asyncio
-    async def test_get_narrative_status(self):
+    async def test_get_narrative_status(self) -> None:
         """Test narrative status retrieval."""
         campaign_id = "test_campaign"
 
@@ -294,7 +295,7 @@ class TestNarratorAgent:
 class TestNarrativeIntegration:
     """Integration tests for the complete narrative system."""
 
-    def test_narrative_flow_integration(self):
+    def test_narrative_flow_integration(self) -> None:
         """Test complete narrative flow from arc creation to choice processing."""
         # Create plugins
         narrative_gen = NarrativeGenerationPlugin()

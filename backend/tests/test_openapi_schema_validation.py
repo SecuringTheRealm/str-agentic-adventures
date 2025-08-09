@@ -3,11 +3,10 @@ OpenAPI Schema Validation Tests.
 Tests to ensure backend API schema is accessible and valid for frontend client generation.
 """
 
-import pytest
-import sys
 import os
-import json
-import subprocess
+import sys
+
+import pytest
 from fastapi.testclient import TestClient
 
 # Add the backend directory to Python path
@@ -24,7 +23,7 @@ class TestOpenAPISchemaValidation:
         """Create a test client for the FastAPI app."""
         return TestClient(app)
 
-    def test_openapi_schema_endpoint_accessible(self, client):
+    def test_openapi_schema_endpoint_accessible(self, client) -> None:
         """Test that the OpenAPI schema endpoint is accessible."""
         response = client.get("/openapi.json")
         assert response.status_code == 200, (
@@ -40,7 +39,7 @@ class TestOpenAPISchemaValidation:
         for field in required_fields:
             assert field in schema, f"OpenAPI schema missing required field: {field}"
 
-    def test_openapi_schema_structure(self, client):
+    def test_openapi_schema_structure(self, client) -> None:
         """Test that the OpenAPI schema has the expected structure."""
         response = client.get("/openapi.json")
         schema = response.json()
@@ -72,11 +71,11 @@ class TestOpenAPISchemaValidation:
         ]
 
         for endpoint in expected_endpoints:
-            assert any(endpoint in path for path in paths.keys()), (
+            assert any(endpoint in path for path in paths), (
                 f"Missing endpoint in schema: {endpoint}"
             )
 
-    def test_openapi_schema_components(self, client):
+    def test_openapi_schema_components(self, client) -> None:
         """Test that the OpenAPI schema includes component definitions."""
         response = client.get("/openapi.json")
         schema = response.json()
@@ -104,7 +103,7 @@ class TestOpenAPISchemaValidation:
         for schema_name in expected_schemas:
             assert schema_name in schemas, f"Missing schema definition: {schema_name}"
 
-    def test_character_endpoint_schema_compatibility(self, client):
+    def test_character_endpoint_schema_compatibility(self, client) -> None:
         """Test that character endpoint schema matches frontend expectations."""
         response = client.get("/openapi.json")
         schema = response.json()
@@ -131,7 +130,7 @@ class TestOpenAPISchemaValidation:
         responses = character_endpoint["responses"]
         assert "200" in responses or "201" in responses, "Should have success response"
 
-    def test_campaign_endpoint_schema_compatibility(self, client):
+    def test_campaign_endpoint_schema_compatibility(self, client) -> None:
         """Test that campaign endpoint schema matches frontend expectations."""
         response = client.get("/openapi.json")
         schema = response.json()
@@ -153,7 +152,7 @@ class TestOpenAPISchemaValidation:
         assert "content" in request_body
         assert "application/json" in request_body["content"]
 
-    def test_schema_enum_values_match_frontend(self, client):
+    def test_schema_enum_values_match_frontend(self, client) -> None:
         """Test that enum values in schema match frontend expectations."""
         response = client.get("/openapi.json")
         schema = response.json()
@@ -178,7 +177,7 @@ class TestOpenAPISchemaValidation:
                 assert "fighter" in class_values or "Fighter" in class_values
                 assert "wizard" in class_values or "Wizard" in class_values
 
-    def test_required_fields_documented(self, client):
+    def test_required_fields_documented(self, client) -> None:
         """Test that required fields are properly documented in schema."""
         response = client.get("/openapi.json")
         schema = response.json()
@@ -196,17 +195,17 @@ class TestOpenAPISchemaValidation:
                         f"Missing required field in schema: {field}"
                     )
 
-    def test_docs_endpoint_accessible(self, client):
+    def test_docs_endpoint_accessible(self, client) -> None:
         """Test that the interactive docs endpoint is accessible."""
         response = client.get("/docs")
         assert response.status_code == 200, "Interactive docs should be accessible"
 
-    def test_redoc_endpoint_accessible(self, client):
+    def test_redoc_endpoint_accessible(self, client) -> None:
         """Test that the ReDoc endpoint is accessible."""
         response = client.get("/redoc")
         assert response.status_code == 200, "ReDoc documentation should be accessible"
 
-    def test_schema_validation_for_client_generation(self, client):
+    def test_schema_validation_for_client_generation(self, client) -> None:
         """Test that the schema is valid for TypeScript client generation."""
         response = client.get("/openapi.json")
         schema = response.json()
@@ -230,7 +229,7 @@ class TestOpenAPISchemaValidation:
                         f"Operation {method} {path} missing responses"
                     )
 
-    def test_frontend_client_generation_compatibility(self):
+    def test_frontend_client_generation_compatibility(self) -> None:
         """Test that the OpenAPI schema can be used to generate a TypeScript client."""
         # This test verifies the schema is compatible with openapi-generator-cli
         # It doesn't actually run the generation (which requires the server to be running)
@@ -248,16 +247,13 @@ class TestOpenAPISchemaValidation:
         # Check that routers are properly included
         assert len(app.routes) > 0, "App should have routes configured"
 
-    def test_model_serialization_compatibility(self):
+    def test_model_serialization_compatibility(self) -> None:
         """Test that Pydantic models serialize correctly for OpenAPI schema."""
         from app.models.game_models import (
-            CreateCharacterRequest,
-            CharacterSheet,
-            CreateCampaignRequest,
-            Campaign,
-            Race,
-            CharacterClass,
             Abilities,
+            CharacterClass,
+            CreateCharacterRequest,
+            Race,
         )
 
         # Test that models can be serialized to JSON schema

@@ -3,11 +3,12 @@ Frontend-Backend Integration Tests.
 Tests API endpoint compatibility and route configuration.
 """
 
-import pytest
-import sys
 import os
+import sys
+from unittest.mock import MagicMock, patch
+
+import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import patch, MagicMock
 
 # Add the backend directory to Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -23,19 +24,19 @@ class TestFrontendBackendIntegration:
         """Create a test client for the FastAPI app."""
         return TestClient(app)
 
-    def test_health_endpoint_exists(self, client):
+    def test_health_endpoint_exists(self, client) -> None:
         """Test that the health endpoint exists and responds."""
         response = client.get("/health")
         assert response.status_code == 200
         assert response.json() == {"status": "ok", "version": "0.1.0"}
 
-    def test_root_endpoint_exists(self, client):
+    def test_root_endpoint_exists(self, client) -> None:
         """Test that the root endpoint exists and responds."""
         response = client.get("/")
         assert response.status_code == 200
         assert "message" in response.json()
 
-    def test_api_routes_exist(self, client):
+    def test_api_routes_exist(self, client) -> None:
         """Test that all expected API routes exist and return proper status codes."""
         # Test routes that should exist based on frontend api.ts file
         routes_to_test = [
@@ -70,7 +71,9 @@ class TestFrontendBackendIntegration:
                 )
 
     @patch("app.agents.scribe_agent.get_scribe")
-    def test_character_creation_endpoint_compatibility(self, mock_scribe, client):
+    def test_character_creation_endpoint_compatibility(
+        self, mock_scribe, client
+    ) -> None:
         """Test character creation endpoint matches frontend expectations."""
         # Mock scribe agent response
         mock_scribe_instance = MagicMock()
@@ -139,7 +142,7 @@ class TestFrontendBackendIntegration:
                 )
 
     @patch("app.agents.dungeon_master_agent.get_dungeon_master")
-    def test_campaign_creation_endpoint_compatibility(self, mock_dm, client):
+    def test_campaign_creation_endpoint_compatibility(self, mock_dm, client) -> None:
         """Test campaign creation endpoint matches frontend expectations."""
         # Mock dungeon master agent
         mock_dm_instance = MagicMock()
@@ -176,7 +179,7 @@ class TestFrontendBackendIntegration:
             assert "Azure OpenAI configuration" in response.json().get("detail", "")
 
     @patch("app.agents.dungeon_master_agent.get_dungeon_master")
-    def test_player_input_endpoint_compatibility(self, mock_dm, client):
+    def test_player_input_endpoint_compatibility(self, mock_dm, client) -> None:
         """Test player input endpoint matches frontend expectations."""
         # Mock dungeon master agent
         mock_dm_instance = MagicMock()
@@ -207,7 +210,7 @@ class TestFrontendBackendIntegration:
         if response.status_code == 503:
             assert "Azure OpenAI configuration" in response.json().get("detail", "")
 
-    def test_image_generation_endpoint_exists(self, client):
+    def test_image_generation_endpoint_exists(self, client) -> None:
         """Test image generation endpoint matches frontend expectations."""
         # Frontend request format (matches api.ts)
         frontend_request = {
@@ -222,7 +225,7 @@ class TestFrontendBackendIntegration:
             f"Image generation endpoint returned unexpected status: {response.status_code}"
         )
 
-    def test_battle_map_endpoint_exists(self, client):
+    def test_battle_map_endpoint_exists(self, client) -> None:
         """Test battle map generation endpoint matches frontend expectations."""
         # Frontend request format (matches api.ts)
         frontend_request = {
@@ -237,7 +240,7 @@ class TestFrontendBackendIntegration:
             f"Battle map endpoint returned unexpected status: {response.status_code}"
         )
 
-    def test_dice_rolling_endpoints_exist(self, client):
+    def test_dice_rolling_endpoints_exist(self, client) -> None:
         """Test dice rolling endpoints exist and handle requests."""
         # Test basic dice roll
         response = client.post("/api/game/dice/roll", json={"notation": "1d20"})
@@ -253,7 +256,7 @@ class TestFrontendBackendIntegration:
             f"Manual dice roll endpoint returned unexpected status: {response.status_code}"
         )
 
-    def test_missing_endpoints_fail_properly(self, client):
+    def test_missing_endpoints_fail_properly(self, client) -> None:
         """Test that missing endpoints return 404."""
         missing_endpoints = [
             "/api/game/nonexistent",
@@ -267,14 +270,14 @@ class TestFrontendBackendIntegration:
                 f"Missing endpoint {endpoint} should return 404"
             )
 
-    def test_cors_headers_present(self, client):
+    def test_cors_headers_present(self, client) -> None:
         """Test that CORS headers are present for frontend access."""
         response = client.options("/api/game/character")
         # CORS should be configured to allow frontend access
         # The exact headers depend on the CORS configuration
         assert response.status_code in [200, 405], "CORS preflight should be handled"
 
-    def test_websocket_route_exists(self, client):
+    def test_websocket_route_exists(self, client) -> None:
         """Test that WebSocket route exists."""
         # We can't easily test WebSocket connection in this setup,
         # but we can verify the app has routes configured
@@ -291,16 +294,16 @@ class TestFrontendBackendIntegration:
             "WebSocket router should be defined"
         )
 
-    def test_frontend_backend_model_compatibility(self):
+    def test_frontend_backend_model_compatibility(self) -> None:
         """Test that frontend TypeScript models match backend Pydantic models."""
         from app.models.game_models import (
-            CreateCharacterRequest,
-            CreateCampaignRequest,
-            PlayerInput,
-            GameResponse,
-            Race,
-            CharacterClass,
             Abilities,
+            CharacterClass,
+            CreateCampaignRequest,
+            CreateCharacterRequest,
+            GameResponse,
+            PlayerInput,
+            Race,
         )
 
         # Test that all required frontend fields are present in backend models
@@ -350,7 +353,7 @@ class TestFrontendBackendIntegration:
         for field in frontend_response_fields:
             assert field in response_dict
 
-    def test_error_response_format(self, client):
+    def test_error_response_format(self, client) -> None:
         """Test that error responses are in the expected format."""
         # Test invalid JSON
         response = client.post("/api/game/character", data="invalid json")

@@ -5,15 +5,15 @@ This tests the structure and logic of image generation capabilities.
 """
 
 import asyncio
-import sys
 import os
-from unittest.mock import Mock, AsyncMock, patch
+import sys
+from unittest.mock import AsyncMock, Mock, patch
 
 # Add the app directory to the Python path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "app"))
 
 
-def test_artist_agent_structure():
+def test_artist_agent_structure() -> bool | None:
     """Test the Artist Agent's structure and methods without Azure calls."""
     print("🎨 Testing Artist Agent structure...")
 
@@ -67,7 +67,7 @@ def test_artist_agent_structure():
         return False
 
 
-def test_combat_cartographer_structure():
+def test_combat_cartographer_structure() -> bool | None:
     """Test the Combat Cartographer Agent's structure without Azure calls."""
     print("\n🗺️ Testing Combat Cartographer structure...")
 
@@ -122,7 +122,7 @@ def test_combat_cartographer_structure():
         return False
 
 
-async def test_artist_generation_flow():
+async def test_artist_generation_flow() -> bool | None:
     """Test the Artist Agent's generation flow with mocked Azure client."""
     print("\n🎨 Testing Artist Agent generation flow...")
 
@@ -189,7 +189,7 @@ async def test_artist_generation_flow():
         return False
 
 
-def test_azure_client_structure():
+def test_azure_client_structure() -> bool | None:
     """Test the Azure OpenAI Client structure."""
     print("\n☁️ Testing Azure OpenAI Client structure...")
 
@@ -226,7 +226,7 @@ def test_azure_client_structure():
         return False
 
 
-def test_config_dalle_support():
+def test_config_dalle_support() -> bool | None:
     """Test that config includes DALL-E deployment setting."""
     print("\n⚙️ Testing configuration DALL-E support...")
 
@@ -264,7 +264,7 @@ def test_config_dalle_support():
         return False
 
 
-async def main():
+async def main() -> bool:
     """Run all visual generation structure tests."""
     print("🚀 Starting Visual Generation Structure Tests...")
     print("=" * 60)
@@ -314,9 +314,8 @@ async def main():
         print("   • Frontend API integration for image generation")
         print("   • Visual controls UI implemented")
         return True
-    else:
-        print("\n⚠️ Some structure tests failed. Check error messages above.")
-        return False
+    print("\n⚠️ Some structure tests failed. Check error messages above.")
+    return False
 
 
 if __name__ == "__main__":

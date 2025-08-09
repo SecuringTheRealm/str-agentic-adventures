@@ -3,7 +3,7 @@ Artist Agent - Generates visual imagery for the game.
 """
 
 import logging
-from typing import Dict, Any
+from typing import Any
 
 from app.azure_openai_client import AzureOpenAIClient
 from app.kernel_setup import kernel_manager
@@ -17,7 +17,7 @@ class ArtistAgent:
     This agent is responsible for creating character portraits, scene illustrations, and visual aids.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the Artist agent with its own kernel instance."""
         self.kernel = kernel_manager.create_kernel()
         self.azure_client = AzureOpenAIClient()
@@ -26,17 +26,17 @@ class ArtistAgent:
         # Store generated art references
         self.generated_art = {}
 
-    def _register_skills(self):
+    def _register_skills(self) -> None:
         """Register necessary skills for the Artist agent."""
         try:
             # Import artist-specific plugins
-            from app.plugins.image_generation_plugin import ImageGenerationPlugin
             from app.plugins.art_style_analysis_plugin import ArtStyleAnalysisPlugin
-            from app.plugins.visual_consistency_plugin import VisualConsistencyPlugin
             from app.plugins.character_visualization_plugin import (
                 CharacterVisualizationPlugin,
             )
+            from app.plugins.image_generation_plugin import ImageGenerationPlugin
             from app.plugins.scene_composition_plugin import SceneCompositionPlugin
+            from app.plugins.visual_consistency_plugin import VisualConsistencyPlugin
 
             # Create plugin instances
             image_generation = ImageGenerationPlugin()
@@ -65,8 +65,8 @@ class ArtistAgent:
             raise
 
     async def generate_character_portrait(
-        self, character_details: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, character_details: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Generate a visual portrait of a character.
 
@@ -144,7 +144,7 @@ class ArtistAgent:
             logger.error(f"Error generating character portrait: {str(e)}")
             return {"error": "Failed to generate character portrait"}
 
-    async def illustrate_scene(self, scene_context: Dict[str, Any]) -> Dict[str, Any]:
+    async def illustrate_scene(self, scene_context: dict[str, Any]) -> dict[str, Any]:
         """
         Generate an illustration of a scene based on the provided context.
 
@@ -233,8 +233,8 @@ class ArtistAgent:
             return {"error": "Failed to illustrate scene"}
 
     async def create_item_visualization(
-        self, item_details: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, item_details: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Generate a visual representation of an important item.
 

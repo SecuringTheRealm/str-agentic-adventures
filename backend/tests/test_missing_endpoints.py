@@ -3,11 +3,12 @@ Test to ensure all frontend API calls have corresponding backend endpoints.
 This test scans the frontend code for API calls and validates they exist in the backend.
 """
 
-import pytest
-import sys
 import os
 import re
+import sys
 from pathlib import Path
+
+import pytest
 from fastapi.testclient import TestClient
 
 # Add the backend directory to Python path
@@ -41,7 +42,7 @@ class TestFrontendBackendAPICompatibility:
 
         for file_path in frontend_path.rglob("*.ts"):
             try:
-                with open(file_path, "r", encoding="utf-8") as f:
+                with open(file_path, encoding="utf-8") as f:
                     content = f.read()
 
                 for pattern in patterns:
@@ -52,13 +53,11 @@ class TestFrontendBackendAPICompatibility:
                             api_calls.add(match[1] if len(match) > 1 else match[0])
                         elif isinstance(match, str):
                             api_calls.add(match)
-            except (UnicodeDecodeError, IOError):
+            except (OSError, UnicodeDecodeError):
                 continue  # Skip files that can't be read
 
         # Filter to only API paths
-        api_paths = {call for call in api_calls if call.startswith("/api/")}
-
-        return api_paths
+        return {call for call in api_calls if call.startswith("/api/")}
 
     def get_frontend_api_functions(self):
         """Extract API function calls from frontend services/api.ts."""
@@ -76,7 +75,7 @@ class TestFrontendBackendAPICompatibility:
         api_functions = set()
 
         try:
-            with open(frontend_api_path, "r", encoding="utf-8") as f:
+            with open(frontend_api_path, encoding="utf-8") as f:
                 content = f.read()
 
             # Extract function definitions like "export const functionName = async"
@@ -91,12 +90,12 @@ class TestFrontendBackendAPICompatibility:
             matches = re.findall(endpoint_pattern, content)
             endpoints = {match[1] for match in matches}
 
-        except (UnicodeDecodeError, IOError):
+        except (OSError, UnicodeDecodeError):
             return set()
 
         return api_functions, endpoints
 
-    def test_frontend_api_functions_exist(self):
+    def test_frontend_api_functions_exist(self) -> None:
         """Test that frontend API functions are implemented."""
         functions, endpoints = self.get_frontend_api_functions()
 
@@ -114,7 +113,7 @@ class TestFrontendBackendAPICompatibility:
                 f"API function {func} is missing from frontend api.ts"
             )
 
-    def test_frontend_api_endpoints_exist_in_backend(self, client):
+    def test_frontend_api_endpoints_exist_in_backend(self, client) -> None:
         """Test that all frontend API endpoints exist in the backend."""
         functions, endpoints = self.get_frontend_api_functions()
 
@@ -141,7 +140,7 @@ class TestFrontendBackendAPICompatibility:
                     f"POST {endpoint} should be accessible"
                 )
 
-    def test_websocket_endpoints_configured(self):
+    def test_websocket_endpoints_configured(self) -> None:
         """Test that WebSocket endpoints are properly configured."""
         from app.main import app
 
@@ -156,7 +155,7 @@ class TestFrontendBackendAPICompatibility:
         except ImportError:
             pytest.fail("WebSocket routes module should be importable")
 
-    def test_dice_rolling_endpoints_exist(self, client):
+    def test_dice_rolling_endpoints_exist(self, client) -> None:
         """Test that dice rolling endpoints exist (used by frontend DiceRoller component)."""
         dice_endpoints = [
             "/api/game/dice/roll",
@@ -170,7 +169,7 @@ class TestFrontendBackendAPICompatibility:
                 f"Dice endpoint {endpoint} should exist"
             )
 
-    def test_character_progression_endpoints_exist(self, client):
+    def test_character_progression_endpoints_exist(self, client) -> None:
         """Test character progression endpoints."""
         progression_endpoints = [
             ("/api/game/character/test-id/level-up", "POST"),
@@ -187,7 +186,7 @@ class TestFrontendBackendAPICompatibility:
                 f"{method} {endpoint} should exist"
             )
 
-    def test_campaign_management_endpoints_exist(self, client):
+    def test_campaign_management_endpoints_exist(self, client) -> None:
         """Test campaign management endpoints."""
         campaign_endpoints = [
             "/api/game/campaign/generate-world",
@@ -203,7 +202,7 @@ class TestFrontendBackendAPICompatibility:
                 f"Campaign endpoint {endpoint} should exist"
             )
 
-    def test_api_error_handling_consistency(self, client):
+    def test_api_error_handling_consistency(self, client) -> None:
         """Test that all API endpoints handle errors consistently."""
         endpoints_to_test = [
             "/api/game/character",
@@ -228,19 +227,20 @@ class TestFrontendBackendAPICompatibility:
                     f"{endpoint} error response should have 'detail' field"
                 )
 
-    def test_frontend_typescript_compatibility(self):
+    def test_frontend_typescript_compatibility(self) -> None:
         """Test that frontend TypeScript interfaces match backend models."""
         # This is a basic check - in a real app you'd want more sophisticated validation
-        from app.models.game_models import (
-            CharacterSheet,
-            Campaign,
-            GameResponse,
-            CreateCharacterRequest,
-            CreateCampaignRequest,
-            PlayerInput,
-        )
         import json
         from typing import get_type_hints
+
+        from app.models.game_models import (
+            Campaign,
+            CharacterSheet,
+            CreateCampaignRequest,
+            CreateCharacterRequest,
+            GameResponse,
+            PlayerInput,
+        )
 
         # Test that models can be serialized (important for API responses)
         models_to_test = [
@@ -290,7 +290,7 @@ class TestFrontendBackendAPICompatibility:
                         f"Field {field_name} in {model_class.__name__} should have type annotation"
                     )
 
-    def test_cors_configuration(self, client):
+    def test_cors_configuration(self, client) -> None:
         """Test that CORS is properly configured for frontend access."""
         # Test preflight request
         response = client.options(
@@ -305,7 +305,7 @@ class TestFrontendBackendAPICompatibility:
         # Should not fail with CORS error
         assert response.status_code in [200, 405], "CORS should be configured"
 
-    def test_websocket_path_matches_frontend(self):
+    def test_websocket_path_matches_frontend(self) -> None:
         """Test that WebSocket paths match what the frontend expects."""
         # Frontend expects: /api/ws/{campaign_id}
         from app.api.websocket_routes import router as ws_router
