@@ -77,12 +77,14 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: '3.12'
-        cache: 'pip'
-        cache-dependency-path: requirements.txt
+
+    - name: Install UV
+      run: curl -LsSf https://astral.sh/uv/install.sh | sh
 
     - name: Install backend dependencies
       run: |
-        pip install -r requirements.txt
+        export PATH="$HOME/.local/bin:$PATH"
+        uv sync
 
     - name: Run backend tests
       run: |
@@ -161,12 +163,14 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: '3.12'
-        cache: 'pip'
-        cache-dependency-path: requirements.txt
+
+    - name: Install UV
+      run: curl -LsSf https://astral.sh/uv/install.sh | sh
 
     - name: Install backend dependencies
       run: |
-        pip install -r requirements.txt
+        export PATH="$HOME/.local/bin:$PATH"
+        uv sync
 
     - name: Check API compatibility
       run: |

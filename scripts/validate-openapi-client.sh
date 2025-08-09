@@ -51,7 +51,7 @@ print_success "Backend dependencies are available"
 print_status "Step 2: Starting backend server..."
 
 # Start backend server in background
-cd backend && uv run python -m app.main &
+cd backend && uv run python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 &
 BACKEND_PID=$!
 cd ..
 
@@ -111,7 +111,7 @@ fi
 
 print_status "Step 5: Testing frontend client generation..."
 
-cd ../frontend
+cd frontend
 
 # Check if openapi-generator-cli is available
 if ! npm list @openapitools/openapi-generator-cli > /dev/null 2>&1; then
