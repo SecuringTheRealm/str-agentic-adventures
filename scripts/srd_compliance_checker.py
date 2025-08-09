@@ -435,8 +435,12 @@ def main():
     compliance_data = checker.check_implementation_compliance()
     report = checker.generate_compliance_report(compliance_data)
 
-    # Save report
-    report_file = Path(repo_root) / "docs" / "srd_compliance_report.md"
+    # Save report (output to temp location to avoid committing generated reports)
+    import tempfile
+
+    temp_dir = Path(tempfile.gettempdir()) / "str-agentic-adventures"
+    temp_dir.mkdir(exist_ok=True)
+    report_file = temp_dir / "srd_compliance_report.md"
     with open(report_file, "w", encoding="utf-8") as f:
         f.write(report)
 

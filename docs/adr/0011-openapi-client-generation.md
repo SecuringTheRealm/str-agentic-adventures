@@ -111,5 +111,5 @@ Justification:
   * [Generated Client Documentation](../../frontend/src/api-client/docs/)
 * **Implementation**: 
   * Generated client: `frontend/src/api-client/`
-  * Usage documentation: `OPENAPI_CLIENT.md`
+  * Usage documentation: `docs/OPENAPI_CLIENT.md`
   * Generation script: `npm run generate:api`

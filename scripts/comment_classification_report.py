@@ -242,9 +242,12 @@ def main():
     print("📝 Generating classification report...")
     report = classifier.generate_report()
 
-    # Save report to file
-    report_file = Path(repo_root) / "docs" / "comment_classification_report.md"
-    report_file.parent.mkdir(exist_ok=True)
+    # Save report to file (output to temp location to avoid committing generated reports)
+    import tempfile
+
+    temp_dir = Path(tempfile.gettempdir()) / "str-agentic-adventures"
+    temp_dir.mkdir(exist_ok=True)
+    report_file = temp_dir / "comment_classification_report.md"
 
     with open(report_file, "w", encoding="utf-8") as f:
         f.write(report)

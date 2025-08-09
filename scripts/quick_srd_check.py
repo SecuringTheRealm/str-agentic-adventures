@@ -182,10 +182,12 @@ def check_basic_srd_compliance():
 def main():
     report = check_basic_srd_compliance()
 
-    # Save report
-    report_file = Path(
-        "/home/runner/work/str-agentic-adventures/str-agentic-adventures/docs/srd_compliance_report.md"
-    )
+    # Save report (output to temp location to avoid committing generated reports)
+    import tempfile
+
+    temp_dir = Path(tempfile.gettempdir()) / "str-agentic-adventures"
+    temp_dir.mkdir(exist_ok=True)
+    report_file = temp_dir / "srd_compliance_report.md"
     with open(report_file, "w", encoding="utf-8") as f:
         f.write(report)
 

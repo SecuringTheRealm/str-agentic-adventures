@@ -265,8 +265,8 @@ class TestPlayerInput:
         with pytest.raises(ValidationError):
             PlayerInput(
                 message=123,  # Should be string
-                character_id="char_123", 
-                campaign_id="camp_456"
+                character_id="char_123",
+                campaign_id="camp_456",
             )
 
 
