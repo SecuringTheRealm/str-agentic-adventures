@@ -4,6 +4,7 @@ Main FastAPI application to serve the AI Dungeon Master backend.
 
 import logging
 import os
+from contextlib import asynccontextmanager
 
 import uvicorn
 from dotenv import load_dotenv
@@ -26,27 +27,11 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Create FastAPI app
-app = FastAPI(
-    title="AI Dungeon Master API",
-    description="Backend API for the AI Dungeon Master application",
-    version="0.1.0",
-)
 
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Update for production
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-
-# Initialize database and create templates on startup
-@app.on_event("startup")
-async def startup_event() -> None:
-    """Initialize database and create default templates."""
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Handle application lifespan events."""
+    # Startup
     logger.info("Initializing configuration...")
     init_settings()  # Load configuration once at startup
 
@@ -57,6 +42,29 @@ async def startup_event() -> None:
     campaign_service.create_template_campaigns()
 
     logger.info("Application startup complete.")
+
+    yield
+
+    # Shutdown (currently no cleanup needed)
+    logger.info("Application shutdown complete.")
+
+
+# Create FastAPI app
+app = FastAPI(
+    title="AI Dungeon Master API",
+    description="Backend API for the AI Dungeon Master application",
+    version="0.1.0",
+    lifespan=lifespan,
+)
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Update for production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # Include routers
