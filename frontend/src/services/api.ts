@@ -20,27 +20,36 @@ export const apiClient = axios.create({
 });
 
 // Add response interceptor for better error handling in production
-apiClient.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    // Add context to errors for better debugging
-    if (error.response) {
-      console.error('API Error Response:', {
-        status: error.response.status,
-        statusText: error.response.statusText,
-        url: error.config?.url,
-        data: error.response.data
-      });
-    } else if (error.request) {
-      console.error('API Network Error:', {
-        url: error.config?.url,
-        message: error.message,
-        baseURL: apiClient.defaults.baseURL
-      });
-    }
-    return Promise.reject(error);
+try {
+  if (apiClient?.interceptors) {
+    apiClient.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        // Add context to errors for better debugging
+        if (error.response) {
+          console.error('API Error Response:', {
+            status: error.response.status,
+            statusText: error.response.statusText,
+            url: error.config?.url,
+            data: error.response.data
+          });
+        } else if (error.request) {
+          console.error('API Network Error:', {
+            url: error.config?.url,
+            message: error.message,
+            baseURL: apiClient.defaults?.baseURL
+          });
+        }
+        return Promise.reject(error);
+      }
+    );
   }
-);
+} catch (error) {
+  // Ignore interceptor setup errors in test environment
+  if (process.env.NODE_ENV !== 'test') {
+    console.warn('Failed to setup API interceptors:', error);
+  }
+}
 
 // Export all types from the generated client
 export * from "../api-client";

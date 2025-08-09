@@ -74,7 +74,7 @@ export const validateApiUrl = (url: string): { isValid: boolean; issues: string[
   }
   
   if (url.includes('/api')) {
-    issues.push('API URL should not include /api path (it will be added automatically)');
+    issues.push('API URL should not include /api path (it will be added automatically). This causes double /api paths and 404 errors.');
   }
   
   try {
