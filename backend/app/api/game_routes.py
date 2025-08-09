@@ -1462,46 +1462,31 @@ async def get_spell_list(
 ):
     """Get available spells by class and level."""
     try:
-        # This would query a spell database
-        # For now, returning some sample spells
-        sample_spells = [
-            Spell(
-                name="Magic Missile",
-                level=1,
-                school="Evocation",
-                casting_time="1 action",
-                range="120 feet",
-                components="V, S",
-                duration="Instantaneous",
-                description="Three darts of magical force hit their targets.",
-                available_classes=["wizard", "sorcerer"],
-            ),
-            Spell(
-                name="Fireball",
-                level=3,
-                school="Evocation",
-                casting_time="1 action",
-                range="150 feet",
-                components="V, S, M",
-                duration="Instantaneous",
-                description="A bright flash of energy streaks toward a point within range.",
-                available_classes=["wizard", "sorcerer"],
-            ),
-            Spell(
-                name="Cure Wounds",
-                level=1,
-                school="Evocation",
-                casting_time="1 action",
-                range="Touch",
-                components="V, S",
-                duration="Instantaneous",
-                description="Restores hit points to a creature you touch.",
-                available_classes=["cleric", "druid", "paladin", "ranger"],
-            ),
-        ]
+        from app.srd_data import load_spells
+        
+        # Load spells from SRD data
+        spell_data = load_spells()
+        
+        # Convert to Spell objects
+        spells = []
+        for spell_dict in spell_data:
+            spell = Spell(
+                id=spell_dict.get("id", ""),
+                name=spell_dict.get("name", ""),
+                level=spell_dict.get("level", 0),
+                school=spell_dict.get("school", ""),
+                casting_time=spell_dict.get("casting_time", ""),
+                range=spell_dict.get("range", ""),
+                components=spell_dict.get("components", ""),
+                duration=spell_dict.get("duration", ""),
+                description=spell_dict.get("description", ""),
+                requires_concentration=spell_dict.get("requires_concentration", False),
+                available_classes=spell_dict.get("available_classes", [])
+            )
+            spells.append(spell)
 
         # Filter spells based on parameters
-        filtered_spells = sample_spells
+        filtered_spells = spells
         if character_class:
             filtered_spells = [
                 s

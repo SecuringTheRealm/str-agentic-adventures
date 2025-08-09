@@ -1,0 +1,482 @@
+{
+  "barbarian": {
+    "hit_die": "1d12",
+    "spellcasting_ability": null,
+    "saving_throw_proficiencies": ["strength", "constitution"],
+    "features": {
+      "1": [
+        {
+          "name": "Rage",
+          "description": "You can enter a rage as a bonus action. While raging, you gain damage bonus to melee attacks using Strength, resistance to bludgeoning, piercing, and slashing damage, and advantage on Strength checks and saving throws. You can't cast spells while raging. Rage lasts 1 minute. You have 2 rages per long rest.",
+          "type": "combat"
+        },
+        {
+          "name": "Unarmored Defense",
+          "description": "While not wearing armor, your AC equals 10 + Dex modifier + Con modifier + shield.",
+          "type": "defensive"
+        }
+      ],
+      "2": [
+        {
+          "name": "Reckless Attack",
+          "description": "You can throw aside all concern for defense to attack with fierce desperation. When you make your first attack on your turn, you can decide to attack recklessly, giving you advantage on melee weapon attack rolls using Strength during this turn, but attack rolls against you have advantage until your next turn.",
+          "type": "combat"
+        },
+        {
+          "name": "Danger Sense",
+          "description": "You gain advantage on Dexterity saving throws against effects you can see, such as traps and spells, as long as you aren't blinded, deafened, or incapacitated.",
+          "type": "defensive"
+        }
+      ],
+      "3": [
+        {
+          "name": "Primal Path",
+          "description": "You choose a primal path that shapes the nature of your rage. Your choice grants you features at 3rd level and again at 6th, 10th, and 14th levels.",
+          "type": "class_choice"
+        }
+      ],
+      "5": [
+        {
+          "name": "Extra Attack",
+          "description": "You can attack twice, instead of once, whenever you take the Attack action on your turn.",
+          "type": "combat"
+        },
+        {
+          "name": "Fast Movement",
+          "description": "Your speed increases by 10 feet while you aren't wearing heavy armor.",
+          "type": "utility"
+        }
+      ]
+    }
+  },
+  "fighter": {
+    "hit_die": "1d10",
+    "spellcasting_ability": null,
+    "saving_throw_proficiencies": ["strength", "constitution"],
+    "features": {
+      "1": [
+        {
+          "name": "Fighting Style",
+          "description": "You adopt a particular style of fighting as your specialty. Choose from Archery, Defense, Dueling, Great Weapon Fighting, Protection, or Two-Weapon Fighting.",
+          "type": "class_choice"
+        },
+        {
+          "name": "Second Wind",
+          "description": "You can use a bonus action to regain hit points equal to 1d10 + your fighter level. You can use this feature once per short or long rest.",
+          "type": "healing"
+        }
+      ],
+      "2": [
+        {
+          "name": "Action Surge",
+          "description": "You can push yourself beyond your normal limits for a moment. On your turn, you can take one additional action. You can use this feature once per short or long rest.",
+          "type": "combat"
+        }
+      ],
+      "3": [
+        {
+          "name": "Martial Archetype",
+          "description": "You choose an archetype that you strive to emulate in your combat styles and techniques. Your choice grants you features at 3rd level and again at 7th, 10th, 15th, and 18th levels.",
+          "type": "class_choice"
+        }
+      ],
+      "5": [
+        {
+          "name": "Extra Attack",
+          "description": "You can attack twice, instead of once, whenever you take the Attack action on your turn.",
+          "type": "combat"
+        }
+      ]
+    }
+  },
+  "wizard": {
+    "hit_die": "1d6",
+    "spellcasting_ability": "intelligence",
+    "saving_throw_proficiencies": ["intelligence", "wisdom"],
+    "features": {
+      "1": [
+        {
+          "name": "Spellcasting",
+          "description": "You have learned to cast spells. Intelligence is your spellcasting ability. You prepare spells from the wizard spell list. You have a spellbook containing six 1st-level wizard spells of your choice.",
+          "type": "spellcasting"
+        },
+        {
+          "name": "Arcane Recovery",
+          "description": "You can regain some of your magical energy by studying your spellbook. Once per day when you finish a short rest, you can choose expended spell slots to recover. The spell slots can have a combined level that is equal to or less than half your wizard level (rounded up), and none of the slots can be 6th level or higher.",
+          "type": "spellcasting"
+        }
+      ],
+      "2": [
+        {
+          "name": "Arcane Tradition",
+          "description": "You choose an arcane tradition, shaping your practice of magic through one of the schools of magic. Your choice grants you features at 2nd level and again at 6th, 10th, and 14th levels.",
+          "type": "class_choice"
+        }
+      ]
+    }
+  },
+  "cleric": {
+    "hit_die": "1d8",
+    "spellcasting_ability": "wisdom",
+    "saving_throw_proficiencies": ["wisdom", "charisma"],
+    "features": {
+      "1": [
+        {
+          "name": "Spellcasting",
+          "description": "You have learned to cast spells. Wisdom is your spellcasting ability. You prepare spells from the cleric spell list. You know three cantrips of your choice from the cleric spell list.",
+          "type": "spellcasting"
+        },
+        {
+          "name": "Divine Domain",
+          "description": "You choose a domain related to your deity. Your choice grants you domain spells and other features when you choose it at 1st level and again at 2nd, 6th, 8th, and 17th levels.",
+          "type": "class_choice"
+        }
+      ],
+      "2": [
+        {
+          "name": "Channel Divinity",
+          "description": "You gain the ability to channel divine energy directly from your deity, using that energy to fuel magical effects. You start with two such effects: Turn Undead and an effect determined by your domain. You can use Channel Divinity once per short or long rest.",
+          "type": "divine"
+        }
+      ]
+    }
+  },
+  "rogue": {
+    "hit_die": "1d8",
+    "spellcasting_ability": null,
+    "saving_throw_proficiencies": ["dexterity", "intelligence"],
+    "features": {
+      "1": [
+        {
+          "name": "Expertise",
+          "description": "Choose two of your skill proficiencies. Your proficiency bonus is doubled for any ability check you make that uses either of the chosen proficiencies.",
+          "type": "skill"
+        },
+        {
+          "name": "Sneak Attack",
+          "description": "You know how to strike subtly and exploit a foe's distraction. Once per turn, you can deal an extra 1d6 damage to one creature you hit with an attack if you have advantage on the attack roll.",
+          "type": "combat"
+        },
+        {
+          "name": "Thieves' Cant",
+          "description": "You know thieves' cant, a secret mix of dialect, jargon, and code that allows you to hide messages in seemingly normal conversation.",
+          "type": "utility"
+        }
+      ],
+      "2": [
+        {
+          "name": "Cunning Action",
+          "description": "You can take a bonus action on each of your turns in combat to take the Dash, Disengage, or Hide action.",
+          "type": "combat"
+        }
+      ],
+      "3": [
+        {
+          "name": "Roguish Archetype",
+          "description": "You choose an archetype that you emulate in the exercise of your rogue abilities. Your choice grants you features at 3rd level and then again at 9th, 13th, and 17th levels.",
+          "type": "class_choice"
+        }
+      ]
+    }
+  },
+  "ranger": {
+    "hit_die": "1d10",
+    "spellcasting_ability": "wisdom",
+    "saving_throw_proficiencies": ["strength", "dexterity"],
+    "features": {
+      "1": [
+        {
+          "name": "Favored Enemy",
+          "description": "You have studied, tracked, and learned to effectively hunt a certain type of creature. Choose a type of favored enemy. You have advantage on Wisdom (Survival) checks to track your favored enemies, as well as on Intelligence checks to recall information about them.",
+          "type": "utility"
+        },
+        {
+          "name": "Natural Explorer",
+          "description": "You are particularly familiar with one type of natural environment and are adept at traveling and surviving in such regions. Choose a favored terrain type.",
+          "type": "utility"
+        }
+      ],
+      "2": [
+        {
+          "name": "Fighting Style",
+          "description": "You adopt a particular style of fighting as your specialty. Choose from Archery, Defense, Dueling, or Two-Weapon Fighting.",
+          "type": "class_choice"
+        },
+        {
+          "name": "Spellcasting",
+          "description": "You have learned to cast spells. Wisdom is your spellcasting ability for your ranger spells. You learn spells as you advance in level.",
+          "type": "spellcasting"
+        }
+      ],
+      "3": [
+        {
+          "name": "Ranger Archetype",
+          "description": "You choose an archetype that you strive to emulate. Your choice grants you features at 3rd level and again at 7th, 11th, and 15th levels.",
+          "type": "class_choice"
+        },
+        {
+          "name": "Primeval Awareness",
+          "description": "You can use your action and expend one ranger spell slot to focus your awareness on the region around you. You can sense whether certain types of creatures are present within 1 mile of you.",
+          "type": "utility"
+        }
+      ],
+      "5": [
+        {
+          "name": "Extra Attack",
+          "description": "You can attack twice, instead of once, whenever you take the Attack action on your turn.",
+          "type": "combat"
+        }
+      ]
+    }
+  },
+  "paladin": {
+    "hit_die": "1d10",
+    "spellcasting_ability": "charisma",
+    "saving_throw_proficiencies": ["wisdom", "charisma"],
+    "features": {
+      "1": [
+        {
+          "name": "Divine Sense",
+          "description": "The presence of strong evil registers on your senses like a noxious odor, and powerful good rings like heavenly music in your ears. You can use this feature a number of times equal to 1 + your Charisma modifier per long rest.",
+          "type": "divine"
+        },
+        {
+          "name": "Lay on Hands",
+          "description": "Your blessed touch can heal wounds. You have a pool of healing power that replenishes when you take a long rest. With this pool, you can restore a total number of hit points equal to your paladin level × 5.",
+          "type": "healing"
+        }
+      ],
+      "2": [
+        {
+          "name": "Fighting Style",
+          "description": "You adopt a particular style of fighting as your specialty. Choose from Defense, Dueling, Great Weapon Fighting, or Protection.",
+          "type": "class_choice"
+        },
+        {
+          "name": "Spellcasting",
+          "description": "You have learned to cast spells. Charisma is your spellcasting ability for your paladin spells. You prepare spells from the paladin spell list.",
+          "type": "spellcasting"
+        },
+        {
+          "name": "Divine Smite",
+          "description": "When you hit a creature with a melee weapon attack, you can expend one spell slot to deal radiant damage to the target, in addition to the weapon's damage.",
+          "type": "divine"
+        }
+      ],
+      "3": [
+        {
+          "name": "Sacred Oath",
+          "description": "You swear the oath that binds you as a paladin forever. Your choice grants you features at 3rd level and again at 7th, 15th, and 20th levels.",
+          "type": "class_choice"
+        },
+        {
+          "name": "Divine Health",
+          "description": "The divine magic flowing through you makes you immune to disease.",
+          "type": "defensive"
+        }
+      ],
+      "5": [
+        {
+          "name": "Extra Attack",
+          "description": "You can attack twice, instead of once, whenever you take the Attack action on your turn.",
+          "type": "combat"
+        }
+      ]
+    }
+  },
+  "bard": {
+    "hit_die": "1d8",
+    "spellcasting_ability": "charisma",
+    "saving_throw_proficiencies": ["dexterity", "charisma"],
+    "features": {
+      "1": [
+        {
+          "name": "Spellcasting",
+          "description": "You have learned to cast spells. Charisma is your spellcasting ability for your bard spells. You know two cantrips of your choice from the bard spell list.",
+          "type": "spellcasting"
+        },
+        {
+          "name": "Bardic Inspiration",
+          "description": "You can inspire others through stirring words or music. To do so, you use a bonus action on your turn to choose one creature other than yourself within 60 feet of you who can hear you. That creature gains one Bardic Inspiration die, a d6.",
+          "type": "support"
+        }
+      ],
+      "2": [
+        {
+          "name": "Jack of All Trades",
+          "description": "You can add half your proficiency bonus, rounded down, to any ability check you make that doesn't already include your proficiency bonus.",
+          "type": "skill"
+        },
+        {
+          "name": "Song of Rest",
+          "description": "You can use soothing music or oration to help revitalize your wounded allies during a short rest. If you or any friendly creatures who can hear your performance regain hit points by spending Hit Dice at the end of the short rest, each of those creatures regains an extra 1d6 hit points.",
+          "type": "healing"
+        }
+      ],
+      "3": [
+        {
+          "name": "Bard College",
+          "description": "You delve into the advanced techniques of a bard college of your choice. Your choice grants you features at 3rd level and again at 6th and 14th levels.",
+          "type": "class_choice"
+        },
+        {
+          "name": "Expertise",
+          "description": "Choose two of your skill proficiencies. Your proficiency bonus is doubled for any ability check you make that uses either of the chosen proficiencies.",
+          "type": "skill"
+        }
+      ]
+    }
+  },
+  "druid": {
+    "hit_die": "1d8",
+    "spellcasting_ability": "wisdom",
+    "saving_throw_proficiencies": ["intelligence", "wisdom"],
+    "features": {
+      "1": [
+        {
+          "name": "Druidcraft",
+          "description": "You know the druidcraft cantrip.",
+          "type": "spellcasting"
+        },
+        {
+          "name": "Spellcasting",
+          "description": "You have learned to cast spells. Wisdom is your spellcasting ability for your druid spells. You know two cantrips of your choice from the druid spell list.",
+          "type": "spellcasting"
+        }
+      ],
+      "2": [
+        {
+          "name": "Wild Shape",
+          "description": "You can use your action to magically assume the shape of a beast that you have seen before. You can use this feature twice per short or long rest.",
+          "type": "transformation"
+        },
+        {
+          "name": "Druid Circle",
+          "description": "You choose to identify with a circle of druids. Your choice grants you features at 2nd level and again at 6th, 10th, and 14th levels.",
+          "type": "class_choice"
+        }
+      ]
+    }
+  },
+  "sorcerer": {
+    "hit_die": "1d6",
+    "spellcasting_ability": "charisma",
+    "saving_throw_proficiencies": ["constitution", "charisma"],
+    "features": {
+      "1": [
+        {
+          "name": "Spellcasting",
+          "description": "You have the ability to cast spells. Charisma is your spellcasting ability for your sorcerer spells. You know four cantrips of your choice from the sorcerer spell list.",
+          "type": "spellcasting"
+        },
+        {
+          "name": "Sorcerous Origin",
+          "description": "Choose a sorcerous origin, which describes the source of your innate magical power. Your choice grants you features when you choose it at 1st level and again at 6th, 14th, and 18th levels.",
+          "type": "class_choice"
+        }
+      ],
+      "2": [
+        {
+          "name": "Font of Magic",
+          "description": "You tap into a deep wellspring of magic within yourself. This wellspring is represented by sorcery points, which allow you to create a variety of magical effects.",
+          "type": "spellcasting"
+        }
+      ],
+      "3": [
+        {
+          "name": "Metamagic",
+          "description": "You gain the ability to twist your spells to suit your needs. You gain two of the following Metamagic options of your choice: Careful Spell, Distant Spell, Empowered Spell, Extended Spell, Heightened Spell, Quickened Spell, Subtle Spell, Twinned Spell.",
+          "type": "spellcasting"
+        }
+      ]
+    }
+  },
+  "warlock": {
+    "hit_die": "1d8",
+    "spellcasting_ability": "charisma",
+    "saving_throw_proficiencies": ["wisdom", "charisma"],
+    "features": {
+      "1": [
+        {
+          "name": "Otherworldly Patron",
+          "description": "You have struck a pact with an otherworldly being. Your choice grants you features at 1st level and again at 6th, 10th, and 14th levels.",
+          "type": "class_choice"
+        },
+        {
+          "name": "Pact Magic",
+          "description": "Your arcane research and the magic bestowed on you by your patron have given you facility with spells. Charisma is your spellcasting ability for your warlock spells. You know two cantrips of your choice from the warlock spell list.",
+          "type": "spellcasting"
+        }
+      ],
+      "2": [
+        {
+          "name": "Eldritch Invocations",
+          "description": "In your study of occult lore, you have unearthed eldritch invocations, fragments of forbidden knowledge that imbue you with an abiding magical ability. You gain two invocations of your choice.",
+          "type": "spellcasting"
+        }
+      ],
+      "3": [
+        {
+          "name": "Pact Boon",
+          "description": "Your otherworldly patron bestows a gift upon you for your loyal service. You gain one of the following features of your choice: Pact of the Blade, Pact of the Chain, or Pact of the Tome.",
+          "type": "class_choice"
+        }
+      ]
+    }
+  },
+  "monk": {
+    "hit_die": "1d8",
+    "spellcasting_ability": null,
+    "saving_throw_proficiencies": ["strength", "dexterity"],
+    "features": {
+      "1": [
+        {
+          "name": "Unarmored Defense",
+          "description": "While not wearing armor and not wielding a shield, your AC equals 10 + your Dexterity modifier + your Wisdom modifier.",
+          "type": "defensive"
+        },
+        {
+          "name": "Martial Arts",
+          "description": "You can use Dexterity instead of Strength for the attack and damage rolls of your unarmed strikes and monk weapons. You can roll a d4 in place of the normal damage of your unarmed strike or monk weapon. When you use the Attack action with an unarmed strike or a monk weapon on your turn, you can make one unarmed strike as a bonus action.",
+          "type": "combat"
+        }
+      ],
+      "2": [
+        {
+          "name": "Ki",
+          "description": "Your training allows you to harness the mystic energy of ki. You have 2 ki points, and you regain all expended ki points when you finish a short or long rest. You can spend these points to fuel various ki features.",
+          "type": "resource"
+        },
+        {
+          "name": "Unarmored Movement",
+          "description": "Your speed increases by 10 feet while you are not wearing armor or wielding a shield.",
+          "type": "utility"
+        }
+      ],
+      "3": [
+        {
+          "name": "Monastic Tradition",
+          "description": "You commit yourself to a monastic tradition. Your tradition grants you features at 3rd level and again at 6th, 11th, and 17th levels.",
+          "type": "class_choice"
+        },
+        {
+          "name": "Deflect Missiles",
+          "description": "You can use your reaction to deflect or catch the missile when you are hit by a ranged weapon attack. When you do so, the damage you take from the attack is reduced by 1d10 + your Dexterity modifier + your monk level.",
+          "type": "defensive"
+        }
+      ],
+      "5": [
+        {
+          "name": "Extra Attack",
+          "description": "You can attack twice, instead of once, whenever you take the Attack action on your turn.",
+          "type": "combat"
+        },
+        {
+          "name": "Stunning Strike",
+          "description": "When you hit another creature with a melee weapon attack, you can spend 1 ki point to attempt a stunning strike. The target must make a Constitution saving throw or be stunned until the end of your next turn.",
+          "type": "combat"
+        }
+      ]
+    }
+  }
+}
