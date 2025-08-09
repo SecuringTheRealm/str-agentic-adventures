@@ -233,7 +233,6 @@ jobs:
             --resource-group "$RESOURCE_GROUP" \
             --environment "$CONTAINER_APP_ENVIRONMENT" \
             --source . \
-            --dockerfile ./Dockerfile \
             --target-port 8000 \
             --ingress external \
             --env-vars \
