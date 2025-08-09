@@ -23,7 +23,7 @@ class TestSpellAttackBonusEndpoint:
         request_data = {
             "character_class": "wizard",
             "level": 5,
-            "spellcasting_ability_score": 16  # +3 modifier
+            "spellcasting_ability_score": 16,  # +3 modifier
         }
 
         response = client.post("/api/game/spells/attack-bonus", json=request_data)
@@ -48,7 +48,7 @@ class TestSpellAttackBonusEndpoint:
         request_data = {
             "character_class": "cleric",
             "level": 1,
-            "spellcasting_ability_score": 14  # +2 modifier
+            "spellcasting_ability_score": 14,  # +2 modifier
         }
 
         response = client.post("/api/game/spells/attack-bonus", json=request_data)
@@ -73,7 +73,7 @@ class TestSpellAttackBonusEndpoint:
         request_data = {
             "character_class": "sorcerer",
             "level": 17,
-            "spellcasting_ability_score": 20  # +5 modifier
+            "spellcasting_ability_score": 20,  # +5 modifier
         }
 
         response = client.post("/api/game/spells/attack-bonus", json=request_data)
@@ -98,7 +98,7 @@ class TestSpellAttackBonusEndpoint:
         request_data = {
             "character_class": "fighter",
             "level": 5,
-            "spellcasting_ability_score": 16
+            "spellcasting_ability_score": 16,
         }
 
         response = client.post("/api/game/spells/attack-bonus", json=request_data)
@@ -114,13 +114,17 @@ class TestSpellAttackBonusEndpoint:
         # Test missing required fields
         invalid_requests = [
             {},  # Empty request
-            {"character_class": "wizard"},  # Missing level and spellcasting_ability_score
+            {
+                "character_class": "wizard"
+            },  # Missing level and spellcasting_ability_score
             {"level": 5},  # Missing character_class and spellcasting_ability_score
             {"spellcasting_ability_score": 16},  # Missing character_class and level
         ]
 
         for invalid_request in invalid_requests:
-            response = client.post("/api/game/spells/attack-bonus", json=invalid_request)
+            response = client.post(
+                "/api/game/spells/attack-bonus", json=invalid_request
+            )
             assert response.status_code == 422, (
                 f"Should reject invalid request: {invalid_request}"
             )
@@ -133,19 +137,19 @@ class TestSpellAttackBonusEndpoint:
 
         # Test various ability scores
         test_cases = [
-            (8, -1),   # 8 score = -1 modifier
-            (10, 0),   # 10 score = 0 modifier  
-            (11, 0),   # 11 score = 0 modifier
-            (12, 1),   # 12 score = +1 modifier
-            (13, 1),   # 13 score = +1 modifier
-            (18, 4),   # 18 score = +4 modifier
+            (8, -1),  # 8 score = -1 modifier
+            (10, 0),  # 10 score = 0 modifier
+            (11, 0),  # 11 score = 0 modifier
+            (12, 1),  # 12 score = +1 modifier
+            (13, 1),  # 13 score = +1 modifier
+            (18, 4),  # 18 score = +4 modifier
         ]
 
         for ability_score, expected_modifier in test_cases:
             request_data = {
                 "character_class": "wizard",
                 "level": 1,
-                "spellcasting_ability_score": ability_score
+                "spellcasting_ability_score": ability_score,
             }
 
             response = client.post("/api/game/spells/attack-bonus", json=request_data)
@@ -165,11 +169,11 @@ class TestSpellAttackBonusEndpoint:
 
         # Test proficiency bonus progression
         test_cases = [
-            (1, 2),   # Levels 1-4: +2
-            (4, 2),   # Levels 1-4: +2
-            (5, 3),   # Levels 5-8: +3
-            (8, 3),   # Levels 5-8: +3
-            (9, 4),   # Levels 9-12: +4
+            (1, 2),  # Levels 1-4: +2
+            (4, 2),  # Levels 1-4: +2
+            (5, 3),  # Levels 5-8: +3
+            (8, 3),  # Levels 5-8: +3
+            (9, 4),  # Levels 9-12: +4
             (12, 4),  # Levels 9-12: +4
             (13, 5),  # Levels 13-16: +5
             (16, 5),  # Levels 13-16: +5
@@ -181,7 +185,7 @@ class TestSpellAttackBonusEndpoint:
             request_data = {
                 "character_class": "wizard",
                 "level": level,
-                "spellcasting_ability_score": 10  # 0 modifier for easier testing
+                "spellcasting_ability_score": 10,  # 0 modifier for easier testing
             }
 
             response = client.post("/api/game/spells/attack-bonus", json=request_data)

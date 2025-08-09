@@ -33,7 +33,9 @@ class ArtistAgent:
             from app.plugins.image_generation_plugin import ImageGenerationPlugin
             from app.plugins.art_style_analysis_plugin import ArtStyleAnalysisPlugin
             from app.plugins.visual_consistency_plugin import VisualConsistencyPlugin
-            from app.plugins.character_visualization_plugin import CharacterVisualizationPlugin
+            from app.plugins.character_visualization_plugin import (
+                CharacterVisualizationPlugin,
+            )
             from app.plugins.scene_composition_plugin import SceneCompositionPlugin
 
             # Create plugin instances

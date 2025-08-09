@@ -16,61 +16,179 @@ logger = logging.getLogger(__name__)
 # D&D 5e spell slot progression tables by class and level
 SPELL_SLOTS_BY_CLASS_LEVEL = {
     "wizard": {
-        1: [2], 2: [3], 3: [4, 2], 4: [4, 3], 5: [4, 3, 2],
-        6: [4, 3, 3], 7: [4, 3, 3, 1], 8: [4, 3, 3, 2], 9: [4, 3, 3, 3, 1],
-        10: [4, 3, 3, 3, 2], 11: [4, 3, 3, 3, 2, 1], 12: [4, 3, 3, 3, 2, 1],
-        13: [4, 3, 3, 3, 2, 1, 1], 14: [4, 3, 3, 3, 2, 1, 1], 15: [4, 3, 3, 3, 2, 1, 1, 1],
-        16: [4, 3, 3, 3, 2, 1, 1, 1], 17: [4, 3, 3, 3, 2, 1, 1, 1, 1], 18: [4, 3, 3, 3, 3, 1, 1, 1, 1],
-        19: [4, 3, 3, 3, 3, 2, 1, 1, 1], 20: [4, 3, 3, 3, 3, 2, 2, 1, 1]
+        1: [2],
+        2: [3],
+        3: [4, 2],
+        4: [4, 3],
+        5: [4, 3, 2],
+        6: [4, 3, 3],
+        7: [4, 3, 3, 1],
+        8: [4, 3, 3, 2],
+        9: [4, 3, 3, 3, 1],
+        10: [4, 3, 3, 3, 2],
+        11: [4, 3, 3, 3, 2, 1],
+        12: [4, 3, 3, 3, 2, 1],
+        13: [4, 3, 3, 3, 2, 1, 1],
+        14: [4, 3, 3, 3, 2, 1, 1],
+        15: [4, 3, 3, 3, 2, 1, 1, 1],
+        16: [4, 3, 3, 3, 2, 1, 1, 1],
+        17: [4, 3, 3, 3, 2, 1, 1, 1, 1],
+        18: [4, 3, 3, 3, 3, 1, 1, 1, 1],
+        19: [4, 3, 3, 3, 3, 2, 1, 1, 1],
+        20: [4, 3, 3, 3, 3, 2, 2, 1, 1],
     },
     "sorcerer": {
-        1: [2], 2: [3], 3: [4, 2], 4: [4, 3], 5: [4, 3, 2],
-        6: [4, 3, 3], 7: [4, 3, 3, 1], 8: [4, 3, 3, 2], 9: [4, 3, 3, 3, 1],
-        10: [4, 3, 3, 3, 2], 11: [4, 3, 3, 3, 2, 1], 12: [4, 3, 3, 3, 2, 1],
-        13: [4, 3, 3, 3, 2, 1, 1], 14: [4, 3, 3, 3, 2, 1, 1], 15: [4, 3, 3, 3, 2, 1, 1, 1],
-        16: [4, 3, 3, 3, 2, 1, 1, 1], 17: [4, 3, 3, 3, 2, 1, 1, 1, 1], 18: [4, 3, 3, 3, 3, 1, 1, 1, 1],
-        19: [4, 3, 3, 3, 3, 2, 1, 1, 1], 20: [4, 3, 3, 3, 3, 2, 2, 1, 1]
+        1: [2],
+        2: [3],
+        3: [4, 2],
+        4: [4, 3],
+        5: [4, 3, 2],
+        6: [4, 3, 3],
+        7: [4, 3, 3, 1],
+        8: [4, 3, 3, 2],
+        9: [4, 3, 3, 3, 1],
+        10: [4, 3, 3, 3, 2],
+        11: [4, 3, 3, 3, 2, 1],
+        12: [4, 3, 3, 3, 2, 1],
+        13: [4, 3, 3, 3, 2, 1, 1],
+        14: [4, 3, 3, 3, 2, 1, 1],
+        15: [4, 3, 3, 3, 2, 1, 1, 1],
+        16: [4, 3, 3, 3, 2, 1, 1, 1],
+        17: [4, 3, 3, 3, 2, 1, 1, 1, 1],
+        18: [4, 3, 3, 3, 3, 1, 1, 1, 1],
+        19: [4, 3, 3, 3, 3, 2, 1, 1, 1],
+        20: [4, 3, 3, 3, 3, 2, 2, 1, 1],
     },
     "cleric": {
-        1: [2], 2: [3], 3: [4, 2], 4: [4, 3], 5: [4, 3, 2],
-        6: [4, 3, 3], 7: [4, 3, 3, 1], 8: [4, 3, 3, 2], 9: [4, 3, 3, 3, 1],
-        10: [4, 3, 3, 3, 2], 11: [4, 3, 3, 3, 2, 1], 12: [4, 3, 3, 3, 2, 1],
-        13: [4, 3, 3, 3, 2, 1, 1], 14: [4, 3, 3, 3, 2, 1, 1], 15: [4, 3, 3, 3, 2, 1, 1, 1],
-        16: [4, 3, 3, 3, 2, 1, 1, 1], 17: [4, 3, 3, 3, 2, 1, 1, 1, 1], 18: [4, 3, 3, 3, 3, 1, 1, 1, 1],
-        19: [4, 3, 3, 3, 3, 2, 1, 1, 1], 20: [4, 3, 3, 3, 3, 2, 2, 1, 1]
+        1: [2],
+        2: [3],
+        3: [4, 2],
+        4: [4, 3],
+        5: [4, 3, 2],
+        6: [4, 3, 3],
+        7: [4, 3, 3, 1],
+        8: [4, 3, 3, 2],
+        9: [4, 3, 3, 3, 1],
+        10: [4, 3, 3, 3, 2],
+        11: [4, 3, 3, 3, 2, 1],
+        12: [4, 3, 3, 3, 2, 1],
+        13: [4, 3, 3, 3, 2, 1, 1],
+        14: [4, 3, 3, 3, 2, 1, 1],
+        15: [4, 3, 3, 3, 2, 1, 1, 1],
+        16: [4, 3, 3, 3, 2, 1, 1, 1],
+        17: [4, 3, 3, 3, 2, 1, 1, 1, 1],
+        18: [4, 3, 3, 3, 3, 1, 1, 1, 1],
+        19: [4, 3, 3, 3, 3, 2, 1, 1, 1],
+        20: [4, 3, 3, 3, 3, 2, 2, 1, 1],
     },
     "druid": {
-        1: [2], 2: [3], 3: [4, 2], 4: [4, 3], 5: [4, 3, 2],
-        6: [4, 3, 3], 7: [4, 3, 3, 1], 8: [4, 3, 3, 2], 9: [4, 3, 3, 3, 1],
-        10: [4, 3, 3, 3, 2], 11: [4, 3, 3, 3, 2, 1], 12: [4, 3, 3, 3, 2, 1],
-        13: [4, 3, 3, 3, 2, 1, 1], 14: [4, 3, 3, 3, 2, 1, 1], 15: [4, 3, 3, 3, 2, 1, 1, 1],
-        16: [4, 3, 3, 3, 2, 1, 1, 1], 17: [4, 3, 3, 3, 2, 1, 1, 1, 1], 18: [4, 3, 3, 3, 3, 1, 1, 1, 1],
-        19: [4, 3, 3, 3, 3, 2, 1, 1, 1], 20: [4, 3, 3, 3, 3, 2, 2, 1, 1]
+        1: [2],
+        2: [3],
+        3: [4, 2],
+        4: [4, 3],
+        5: [4, 3, 2],
+        6: [4, 3, 3],
+        7: [4, 3, 3, 1],
+        8: [4, 3, 3, 2],
+        9: [4, 3, 3, 3, 1],
+        10: [4, 3, 3, 3, 2],
+        11: [4, 3, 3, 3, 2, 1],
+        12: [4, 3, 3, 3, 2, 1],
+        13: [4, 3, 3, 3, 2, 1, 1],
+        14: [4, 3, 3, 3, 2, 1, 1],
+        15: [4, 3, 3, 3, 2, 1, 1, 1],
+        16: [4, 3, 3, 3, 2, 1, 1, 1],
+        17: [4, 3, 3, 3, 2, 1, 1, 1, 1],
+        18: [4, 3, 3, 3, 3, 1, 1, 1, 1],
+        19: [4, 3, 3, 3, 3, 2, 1, 1, 1],
+        20: [4, 3, 3, 3, 3, 2, 2, 1, 1],
     },
     "bard": {
-        1: [2], 2: [3], 3: [4, 2], 4: [4, 3], 5: [4, 3, 2],
-        6: [4, 3, 3], 7: [4, 3, 3, 1], 8: [4, 3, 3, 2], 9: [4, 3, 3, 3, 1],
-        10: [4, 3, 3, 3, 2], 11: [4, 3, 3, 3, 2, 1], 12: [4, 3, 3, 3, 2, 1],
-        13: [4, 3, 3, 3, 2, 1, 1], 14: [4, 3, 3, 3, 2, 1, 1], 15: [4, 3, 3, 3, 2, 1, 1, 1],
-        16: [4, 3, 3, 3, 2, 1, 1, 1], 17: [4, 3, 3, 3, 2, 1, 1, 1, 1], 18: [4, 3, 3, 3, 3, 1, 1, 1, 1],
-        19: [4, 3, 3, 3, 3, 2, 1, 1, 1], 20: [4, 3, 3, 3, 3, 2, 2, 1, 1]
+        1: [2],
+        2: [3],
+        3: [4, 2],
+        4: [4, 3],
+        5: [4, 3, 2],
+        6: [4, 3, 3],
+        7: [4, 3, 3, 1],
+        8: [4, 3, 3, 2],
+        9: [4, 3, 3, 3, 1],
+        10: [4, 3, 3, 3, 2],
+        11: [4, 3, 3, 3, 2, 1],
+        12: [4, 3, 3, 3, 2, 1],
+        13: [4, 3, 3, 3, 2, 1, 1],
+        14: [4, 3, 3, 3, 2, 1, 1],
+        15: [4, 3, 3, 3, 2, 1, 1, 1],
+        16: [4, 3, 3, 3, 2, 1, 1, 1],
+        17: [4, 3, 3, 3, 2, 1, 1, 1, 1],
+        18: [4, 3, 3, 3, 3, 1, 1, 1, 1],
+        19: [4, 3, 3, 3, 3, 2, 1, 1, 1],
+        20: [4, 3, 3, 3, 3, 2, 2, 1, 1],
     },
     "warlock": {
-        1: [1], 2: [2], 3: [2], 4: [2], 5: [2], 6: [2], 7: [2], 8: [2], 9: [2], 10: [2],
-        11: [3], 12: [3], 13: [3], 14: [3], 15: [3], 16: [3], 17: [4], 18: [4], 19: [4], 20: [4]
+        1: [1],
+        2: [2],
+        3: [2],
+        4: [2],
+        5: [2],
+        6: [2],
+        7: [2],
+        8: [2],
+        9: [2],
+        10: [2],
+        11: [3],
+        12: [3],
+        13: [3],
+        14: [3],
+        15: [3],
+        16: [3],
+        17: [4],
+        18: [4],
+        19: [4],
+        20: [4],
     },
     "paladin": {
-        2: [2], 3: [3], 4: [3], 5: [4, 2], 6: [4, 2], 7: [4, 3], 8: [4, 3], 9: [4, 3, 2],
-        10: [4, 3, 2], 11: [4, 3, 3], 12: [4, 3, 3], 13: [4, 3, 3, 1], 14: [4, 3, 3, 1],
-        15: [4, 3, 3, 2], 16: [4, 3, 3, 2], 17: [4, 3, 3, 3, 1], 18: [4, 3, 3, 3, 1],
-        19: [4, 3, 3, 3, 2], 20: [4, 3, 3, 3, 2]
+        2: [2],
+        3: [3],
+        4: [3],
+        5: [4, 2],
+        6: [4, 2],
+        7: [4, 3],
+        8: [4, 3],
+        9: [4, 3, 2],
+        10: [4, 3, 2],
+        11: [4, 3, 3],
+        12: [4, 3, 3],
+        13: [4, 3, 3, 1],
+        14: [4, 3, 3, 1],
+        15: [4, 3, 3, 2],
+        16: [4, 3, 3, 2],
+        17: [4, 3, 3, 3, 1],
+        18: [4, 3, 3, 3, 1],
+        19: [4, 3, 3, 3, 2],
+        20: [4, 3, 3, 3, 2],
     },
     "ranger": {
-        2: [2], 3: [3], 4: [3], 5: [4, 2], 6: [4, 2], 7: [4, 3], 8: [4, 3], 9: [4, 3, 2],
-        10: [4, 3, 2], 11: [4, 3, 3], 12: [4, 3, 3], 13: [4, 3, 3, 1], 14: [4, 3, 3, 1],
-        15: [4, 3, 3, 2], 16: [4, 3, 3, 2], 17: [4, 3, 3, 3, 1], 18: [4, 3, 3, 3, 1],
-        19: [4, 3, 3, 3, 2], 20: [4, 3, 3, 3, 2]
-    }
+        2: [2],
+        3: [3],
+        4: [3],
+        5: [4, 2],
+        6: [4, 2],
+        7: [4, 3],
+        8: [4, 3],
+        9: [4, 3, 2],
+        10: [4, 3, 2],
+        11: [4, 3, 3],
+        12: [4, 3, 3],
+        13: [4, 3, 3, 1],
+        14: [4, 3, 3, 1],
+        15: [4, 3, 3, 2],
+        16: [4, 3, 3, 2],
+        17: [4, 3, 3, 3, 1],
+        18: [4, 3, 3, 3, 1],
+        19: [4, 3, 3, 3, 2],
+        20: [4, 3, 3, 3, 2],
+    },
 }
 
 
@@ -150,17 +268,15 @@ class RulesEnginePlugin:
         name="get_spell_slots_for_level",
     )
     def get_spell_slots_for_level(
-        self, 
-        character_class: str,
-        level: int
+        self, character_class: str, level: int
     ) -> Dict[str, Any]:
         """
         Get the spell slots available for a character at a given level.
-        
+
         Args:
             character_class: The character's class
             level: The character's level
-            
+
         Returns:
             Dict[str, Any]: Spell slot information by level
         """
@@ -168,22 +284,22 @@ class RulesEnginePlugin:
             class_lower = character_class.lower()
             if class_lower not in self.spell_slots_by_class_level:
                 return {"error": f"Class {character_class} is not a spellcasting class"}
-            
+
             if level not in self.spell_slots_by_class_level[class_lower]:
                 return {"error": f"Level {level} not found for class {character_class}"}
-            
+
             slots = self.spell_slots_by_class_level[class_lower][level]
-            
+
             # Convert to dictionary format
             spell_slots = {}
             for slot_level, count in enumerate(slots, 1):
                 spell_slots[str(slot_level)] = count
-            
+
             return {
                 "character_class": character_class,
                 "level": level,
                 "spell_slots": spell_slots,
-                "total_slots": sum(slots)
+                "total_slots": sum(slots),
             }
         except Exception as e:
             logger.error(f"Error getting spell slots: {str(e)}")
@@ -194,33 +310,33 @@ class RulesEnginePlugin:
         name="calculate_spell_attack_bonus",
     )
     def calculate_spell_attack_bonus(
-        self, 
+        self,
         spellcasting_ability_modifier: int,
         proficiency_bonus: int,
-        character_level: int = None
+        character_level: int = None,
     ) -> Dict[str, Any]:
         """
         Calculate spell attack bonus using D&D 5e rules.
-        
+
         Formula: proficiency bonus + spellcasting ability modifier
-        
+
         Args:
             spellcasting_ability_modifier: The modifier for the character's spellcasting ability
             proficiency_bonus: The character's proficiency bonus
             character_level: Optional character level (for information)
-            
+
         Returns:
             Dict[str, Any]: Spell attack bonus information
         """
         try:
             attack_bonus = proficiency_bonus + spellcasting_ability_modifier
-            
+
             return {
                 "spell_attack_bonus": attack_bonus,
                 "spellcasting_modifier": spellcasting_ability_modifier,
                 "proficiency_bonus": proficiency_bonus,
                 "character_level": character_level,
-                "formula": "proficiency_bonus + spellcasting_ability_modifier"
+                "formula": "proficiency_bonus + spellcasting_ability_modifier",
             }
         except Exception as e:
             logger.error(f"Error calculating spell attack bonus: {str(e)}")
@@ -231,28 +347,28 @@ class RulesEnginePlugin:
         name="resolve_spell_effect",
     )
     def resolve_spell_effect(
-        self, 
+        self,
         spell_name: str,
         spell_level: int,
         target_count: int = 1,
-        slot_level: int = None
+        slot_level: int = None,
     ) -> Dict[str, Any]:
         """
         Resolve the effects of a spell being cast.
-        
+
         Args:
             spell_name: Name of the spell being cast
             spell_level: Base level of the spell
             target_count: Number of targets
             slot_level: Level of spell slot used (for upcast effects)
-            
+
         Returns:
             Dict[str, Any]: Spell effect information
         """
         try:
             slot_level = slot_level or spell_level
             upcast_levels = max(0, slot_level - spell_level)
-            
+
             # Basic spell effect template
             effect = {
                 "spell_name": spell_name,
@@ -265,13 +381,15 @@ class RulesEnginePlugin:
                 "healing": None,
                 "duration": None,
                 "save_required": False,
-                "attack_required": False
+                "attack_required": False,
             }
-            
+
             # Add basic effect processing - this would be expanded with actual spell data
             if upcast_levels > 0:
-                effect["effects"].append(f"Spell cast at {slot_level} level (+{upcast_levels} levels)")
-            
+                effect["effects"].append(
+                    f"Spell cast at {slot_level} level (+{upcast_levels} levels)"
+                )
+
             return effect
         except Exception as e:
             logger.error(f"Error resolving spell effect: {str(e)}")
@@ -282,33 +400,33 @@ class RulesEnginePlugin:
         name="calculate_spell_save_dc",
     )
     def calculate_spell_save_dc(
-        self, 
+        self,
         spellcasting_ability_modifier: int,
         proficiency_bonus: int,
-        character_level: int = None
+        character_level: int = None,
     ) -> Dict[str, Any]:
         """
         Calculate spell save DC using D&D 5e rules.
-        
+
         Formula: 8 + proficiency bonus + spellcasting ability modifier
-        
+
         Args:
             spellcasting_ability_modifier: The modifier for the character's spellcasting ability
             proficiency_bonus: The character's proficiency bonus
             character_level: Optional character level (for information)
-            
+
         Returns:
             Dict[str, Any]: Spell save DC information
         """
         try:
             save_dc = 8 + proficiency_bonus + spellcasting_ability_modifier
-            
+
             return {
                 "save_dc": save_dc,
                 "spellcasting_modifier": spellcasting_ability_modifier,
                 "proficiency_bonus": proficiency_bonus,
                 "character_level": character_level,
-                "formula": "8 + proficiency_bonus + spellcasting_ability_modifier"
+                "formula": "8 + proficiency_bonus + spellcasting_ability_modifier",
             }
         except Exception as e:
             logger.error(f"Error calculating spell save DC: {str(e)}")
@@ -319,30 +437,28 @@ class RulesEnginePlugin:
         name="calculate_spell_attack_bonus",
     )
     def calculate_spell_attack_bonus(
-        self,
-        spellcasting_ability_modifier: int,
-        proficiency_bonus: int
+        self, spellcasting_ability_modifier: int, proficiency_bonus: int
     ) -> Dict[str, Any]:
         """
         Calculate spell attack bonus using D&D 5e rules.
-        
+
         Formula: proficiency bonus + spellcasting ability modifier
-        
+
         Args:
             spellcasting_ability_modifier: The modifier for the character's spellcasting ability
             proficiency_bonus: The character's proficiency bonus
-            
+
         Returns:
             Dict[str, Any]: Spell attack bonus information
         """
         try:
             attack_bonus = proficiency_bonus + spellcasting_ability_modifier
-            
+
             return {
                 "attack_bonus": attack_bonus,
                 "spellcasting_modifier": spellcasting_ability_modifier,
                 "proficiency_bonus": proficiency_bonus,
-                "formula": "proficiency_bonus + spellcasting_ability_modifier"
+                "formula": "proficiency_bonus + spellcasting_ability_modifier",
             }
         except Exception as e:
             logger.error(f"Error calculating spell attack bonus: {str(e)}")
@@ -353,29 +469,26 @@ class RulesEnginePlugin:
         name="resolve_spell_damage",
     )
     def resolve_spell_damage(
-        self,
-        dice_notation: str,
-        damage_type: str,
-        target_count: int = 1
+        self, dice_notation: str, damage_type: str, target_count: int = 1
     ) -> Dict[str, Any]:
         """
         Resolve spell damage using dice rolls.
-        
+
         Args:
             dice_notation: Damage dice notation (e.g., "3d6", "1d4+3")
             damage_type: Type of damage (e.g., "fire", "force", "cold")
             target_count: Number of targets (for information)
-            
+
         Returns:
             Dict[str, Any]: Damage resolution results
         """
         try:
             # Use existing dice rolling system
             roll_result = self.roll_dice(dice_notation)
-            
+
             if "error" in roll_result:
                 return roll_result
-                
+
             return {
                 "total_damage": roll_result["total"],
                 "damage_type": damage_type,
@@ -383,7 +496,7 @@ class RulesEnginePlugin:
                 "dice_rolls": roll_result.get("rolls", []),
                 "modifier": roll_result.get("modifier", 0),
                 "target_count": target_count,
-                "roll_details": roll_result
+                "roll_details": roll_result,
             }
         except Exception as e:
             logger.error(f"Error resolving spell damage: {str(e)}")
@@ -394,40 +507,41 @@ class RulesEnginePlugin:
         name="resolve_spell_healing",
     )
     def resolve_spell_healing(
-        self,
-        dice_notation: str,
-        spellcasting_modifier: int = None
+        self, dice_notation: str, spellcasting_modifier: int = None
     ) -> Dict[str, Any]:
         """
         Resolve spell healing using dice rolls.
-        
+
         Args:
             dice_notation: Healing dice notation (e.g., "1d8+3", "2d4+2")
             spellcasting_modifier: Optional additional modifier (if not in dice notation)
-            
+
         Returns:
             Dict[str, Any]: Healing resolution results
         """
         try:
             # Use existing dice rolling system
             roll_result = self.roll_dice(dice_notation)
-            
+
             if "error" in roll_result:
                 return roll_result
-                
+
             healing_amount = roll_result["total"]
-            
+
             # Add additional modifier if provided and not already in dice notation
-            if spellcasting_modifier is not None and roll_result.get("modifier", 0) == 0:
+            if (
+                spellcasting_modifier is not None
+                and roll_result.get("modifier", 0) == 0
+            ):
                 healing_amount += spellcasting_modifier
-                
+
             return {
                 "healing_amount": healing_amount,
                 "dice_notation": dice_notation,
                 "dice_rolls": roll_result.get("rolls", []),
                 "base_modifier": roll_result.get("modifier", 0),
                 "spellcasting_modifier": spellcasting_modifier,
-                "roll_details": roll_result
+                "roll_details": roll_result,
             }
         except Exception as e:
             logger.error(f"Error resolving spell healing: {str(e)}")
@@ -443,18 +557,18 @@ class RulesEnginePlugin:
         ability_modifier: int,
         proficiency_bonus: int = 0,
         is_proficient: bool = False,
-        roll_result: int = None
+        roll_result: int = None,
     ) -> Dict[str, Any]:
         """
         Resolve a saving throw against a spell effect.
-        
+
         Args:
             save_dc: The DC to beat
             ability_modifier: The relevant ability modifier
             proficiency_bonus: Character's proficiency bonus
             is_proficient: Whether the character is proficient in this save
             roll_result: Optional manual roll result (if not provided, will roll d20)
-            
+
         Returns:
             Dict[str, Any]: Saving throw results
         """
@@ -465,14 +579,14 @@ class RulesEnginePlugin:
                 if "error" in roll_data:
                     return roll_data
                 roll_result = roll_data["total"]
-                
+
             # Calculate total roll
             total_roll = roll_result + ability_modifier
             if is_proficient:
                 total_roll += proficiency_bonus
-                
+
             save_successful = total_roll >= save_dc
-            
+
             return {
                 "save_successful": save_successful,
                 "total_roll": total_roll,
@@ -481,7 +595,7 @@ class RulesEnginePlugin:
                 "proficiency_bonus": proficiency_bonus if is_proficient else 0,
                 "is_proficient": is_proficient,
                 "save_dc": save_dc,
-                "margin": total_roll - save_dc
+                "margin": total_roll - save_dc,
             }
         except Exception as e:
             logger.error(f"Error resolving saving throw: {str(e)}")
@@ -1214,12 +1328,12 @@ class RulesEnginePlugin:
     ) -> Dict[str, Any]:
         """
         Start concentration on a spell for a character.
-        
+
         Args:
             character_id: The character's unique identifier
             spell_data: Dictionary containing spell information (name, level, etc.)
             duration_rounds: Duration of the spell in combat rounds (default 10 for 1 minute)
-            
+
         Returns:
             Dict[str, Any]: Result of starting concentration
         """
@@ -1229,32 +1343,37 @@ class RulesEnginePlugin:
                 return {
                     "success": False,
                     "error": "Spell does not require concentration",
-                    "spell": spell_data.get("name", "Unknown")
+                    "spell": spell_data.get("name", "Unknown"),
                 }
-            
+
             # End any existing concentration
             if character_id in self.concentration_spells:
                 old_spell = self.concentration_spells[character_id]["spell"]
-                logger.info(f"Character {character_id} lost concentration on {old_spell.get('name', 'Unknown')}")
-            
+                logger.info(
+                    f"Character {character_id} lost concentration on {old_spell.get('name', 'Unknown')}"
+                )
+
             # Start new concentration
             self.concentration_spells[character_id] = {
                 "spell": spell_data,
                 "duration_remaining": duration_rounds,
-                "started_at": datetime.now().isoformat()
+                "started_at": datetime.now().isoformat(),
             }
-            
+
             return {
                 "success": True,
                 "character_id": character_id,
                 "spell": spell_data.get("name", "Unknown"),
                 "duration_rounds": duration_rounds,
-                "message": f"Concentration started on {spell_data.get('name', 'Unknown')}"
+                "message": f"Concentration started on {spell_data.get('name', 'Unknown')}",
             }
-            
+
         except Exception as e:
             logger.error(f"Error starting concentration: {str(e)}")
-            return {"success": False, "error": f"Error starting concentration: {str(e)}"}
+            return {
+                "success": False,
+                "error": f"Error starting concentration: {str(e)}",
+            }
 
     @kernel_function(
         description="End concentration on a spell for a character.",
@@ -1263,10 +1382,10 @@ class RulesEnginePlugin:
     def end_concentration(self, character_id: str) -> Dict[str, Any]:
         """
         End concentration on a spell for a character.
-        
+
         Args:
             character_id: The character's unique identifier
-            
+
         Returns:
             Dict[str, Any]: Result of ending concentration
         """
@@ -1275,22 +1394,22 @@ class RulesEnginePlugin:
                 return {
                     "success": False,
                     "error": "Character is not concentrating on any spell",
-                    "character_id": character_id
+                    "character_id": character_id,
                 }
-            
+
             spell_data = self.concentration_spells[character_id]["spell"]
             spell_name = spell_data.get("name", "Unknown")
-            
+
             # Remove concentration
             del self.concentration_spells[character_id]
-            
+
             return {
                 "success": True,
                 "character_id": character_id,
                 "spell": spell_name,
-                "message": f"Concentration ended on {spell_name}"
+                "message": f"Concentration ended on {spell_name}",
             }
-            
+
         except Exception as e:
             logger.error(f"Error ending concentration: {str(e)}")
             return {"success": False, "error": f"Error ending concentration: {str(e)}"}
@@ -1302,10 +1421,10 @@ class RulesEnginePlugin:
     def check_concentration(self, character_id: str) -> Dict[str, Any]:
         """
         Check current concentration status for a character.
-        
+
         Args:
             character_id: The character's unique identifier
-            
+
         Returns:
             Dict[str, Any]: Current concentration status
         """
@@ -1315,19 +1434,19 @@ class RulesEnginePlugin:
                     "is_concentrating": False,
                     "character_id": character_id,
                     "spell": None,
-                    "duration_remaining": 0
+                    "duration_remaining": 0,
                 }
-            
+
             concentration_data = self.concentration_spells[character_id]
-            
+
             return {
                 "is_concentrating": True,
                 "character_id": character_id,
                 "spell": concentration_data["spell"],
                 "duration_remaining": concentration_data["duration_remaining"],
-                "started_at": concentration_data["started_at"]
+                "started_at": concentration_data["started_at"],
             }
-            
+
         except Exception as e:
             logger.error(f"Error checking concentration: {str(e)}")
             return {"error": f"Error checking concentration: {str(e)}"}
@@ -1341,12 +1460,12 @@ class RulesEnginePlugin:
     ) -> Dict[str, Any]:
         """
         Perform a concentration saving throw when character takes damage.
-        
+
         Args:
             character_id: The character's unique identifier
             damage_taken: Amount of damage taken
             constitution_modifier: Character's Constitution modifier
-            
+
         Returns:
             Dict[str, Any]: Result of the concentration save
         """
@@ -1355,23 +1474,23 @@ class RulesEnginePlugin:
                 return {
                     "success": False,
                     "error": "Character is not concentrating on any spell",
-                    "character_id": character_id
+                    "character_id": character_id,
                 }
-            
+
             # Calculate DC: 10 or half the damage taken, whichever is higher
             dc = max(10, damage_taken // 2)
-            
+
             # Roll d20 + Constitution modifier
             roll_result = self.roll_dice("1d20")
             if "error" in roll_result:
                 return roll_result
-            
+
             total = roll_result["total"] + constitution_modifier
             success = total >= dc
-            
+
             concentration_data = self.concentration_spells[character_id]
             spell_name = concentration_data["spell"].get("name", "Unknown")
-            
+
             result = {
                 "character_id": character_id,
                 "spell": spell_name,
@@ -1381,21 +1500,28 @@ class RulesEnginePlugin:
                 "constitution_modifier": constitution_modifier,
                 "total": total,
                 "success": success,
-                "concentration_maintained": success
+                "concentration_maintained": success,
             }
-            
+
             if not success:
                 # Concentration is lost
                 del self.concentration_spells[character_id]
-                result["message"] = f"Concentration lost on {spell_name}! (Rolled {total} vs DC {dc})"
+                result["message"] = (
+                    f"Concentration lost on {spell_name}! (Rolled {total} vs DC {dc})"
+                )
             else:
-                result["message"] = f"Concentration maintained on {spell_name}! (Rolled {total} vs DC {dc})"
-            
+                result["message"] = (
+                    f"Concentration maintained on {spell_name}! (Rolled {total} vs DC {dc})"
+                )
+
             return result
-            
+
         except Exception as e:
             logger.error(f"Error with concentration saving throw: {str(e)}")
-            return {"success": False, "error": f"Error with concentration saving throw: {str(e)}"}
+            return {
+                "success": False,
+                "error": f"Error with concentration saving throw: {str(e)}",
+            }
 
     @kernel_function(
         description="Reduce spell duration for all concentrating characters (call each round).",
@@ -1405,40 +1531,48 @@ class RulesEnginePlugin:
         """
         Reduce spell duration for all concentrating characters by one round.
         Should be called at the end of each combat round.
-        
+
         Returns:
             Dict[str, Any]: Summary of concentration changes
         """
         try:
             expired_spells = []
             continuing_spells = []
-            
-            for character_id, concentration_data in list(self.concentration_spells.items()):
+
+            for character_id, concentration_data in list(
+                self.concentration_spells.items()
+            ):
                 concentration_data["duration_remaining"] -= 1
-                
+
                 if concentration_data["duration_remaining"] <= 0:
                     # Spell duration expired
                     spell_name = concentration_data["spell"].get("name", "Unknown")
-                    expired_spells.append({
-                        "character_id": character_id,
-                        "spell": spell_name
-                    })
+                    expired_spells.append(
+                        {"character_id": character_id, "spell": spell_name}
+                    )
                     del self.concentration_spells[character_id]
                 else:
                     # Spell continues
-                    continuing_spells.append({
-                        "character_id": character_id,
-                        "spell": concentration_data["spell"].get("name", "Unknown"),
-                        "duration_remaining": concentration_data["duration_remaining"]
-                    })
-            
+                    continuing_spells.append(
+                        {
+                            "character_id": character_id,
+                            "spell": concentration_data["spell"].get("name", "Unknown"),
+                            "duration_remaining": concentration_data[
+                                "duration_remaining"
+                            ],
+                        }
+                    )
+
             return {
                 "success": True,
                 "expired_spells": expired_spells,
                 "continuing_spells": continuing_spells,
-                "total_concentrating": len(self.concentration_spells)
+                "total_concentrating": len(self.concentration_spells),
             }
-            
+
         except Exception as e:
             logger.error(f"Error advancing concentration round: {str(e)}")
-            return {"success": False, "error": f"Error advancing concentration round: {str(e)}"}
+            return {
+                "success": False,
+                "error": f"Error advancing concentration round: {str(e)}",
+            }

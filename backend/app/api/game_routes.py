@@ -72,9 +72,9 @@ async def create_character(character_data: CreateCharacterRequest, config: Confi
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail="Azure OpenAI configuration is missing or invalid. "
-                       "This agentic demo requires proper Azure OpenAI setup."
+                "This agentic demo requires proper Azure OpenAI setup.",
             )
-        
+
         # Convert Pydantic model to dictionary for the agent
         character_dict = character_data.model_dump()
 
@@ -116,9 +116,9 @@ async def get_character(character_id: str, config: ConfigDep):
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail="Azure OpenAI configuration is missing or invalid. "
-                       "This agentic demo requires proper Azure OpenAI setup."
+                "This agentic demo requires proper Azure OpenAI setup.",
             )
-        
+
         character = await get_scribe().get_character(character_id)
 
         if not character:
@@ -151,6 +151,13 @@ async def get_character(character_id: str, config: ConfigDep):
 async def create_campaign(campaign_data: CreateCampaignRequest):
     """Create a new campaign."""
     try:
+        # Check if Azure OpenAI is configured
+        if not config.is_azure_openai_configured():
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Azure OpenAI configuration is missing or invalid. "
+                "This agentic demo requires proper Azure OpenAI setup.",
+            )
         campaign = campaign_service.create_campaign(campaign_data)
         return campaign
     except HTTPException:
@@ -178,11 +185,8 @@ async def list_campaigns():
     try:
         all_campaigns = campaign_service.list_campaigns()
         templates = campaign_service.get_templates()
-        
-        return CampaignListResponse(
-            campaigns=all_campaigns,
-            templates=templates
-        )
+
+        return CampaignListResponse(campaigns=all_campaigns, templates=templates)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -211,7 +215,7 @@ async def get_campaign(campaign_id: str):
         if not campaign:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Campaign {campaign_id} not found"
+                detail=f"Campaign {campaign_id} not found",
             )
         return campaign
     except HTTPException:
@@ -229,20 +233,20 @@ async def update_campaign(campaign_id: str, updates: CampaignUpdateRequest):
     try:
         # Convert to dict, excluding None values
         update_data = {k: v for k, v in updates.model_dump().items() if v is not None}
-        
+
         if not update_data:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="No valid updates provided"
+                detail="No valid updates provided",
             )
-        
+
         updated_campaign = campaign_service.update_campaign(campaign_id, update_data)
         if not updated_campaign:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Campaign {campaign_id} not found"
+                detail=f"Campaign {campaign_id} not found",
             )
-        
+
         return updated_campaign
     except HTTPException:
         raise
@@ -258,16 +262,15 @@ async def clone_campaign(clone_data: CloneCampaignRequest):
     """Clone a template campaign for customization."""
     try:
         cloned_campaign = campaign_service.clone_campaign(
-            clone_data.template_id,
-            clone_data.new_name
+            clone_data.template_id, clone_data.new_name
         )
-        
+
         if not cloned_campaign:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Template campaign {clone_data.template_id} not found"
+                detail=f"Template campaign {clone_data.template_id} not found",
             )
-        
+
         return cloned_campaign
     except HTTPException:
         raise
@@ -286,9 +289,9 @@ async def delete_campaign(campaign_id: str):
         if not success:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Campaign {campaign_id} not found or cannot be deleted"
+                detail=f"Campaign {campaign_id} not found or cannot be deleted",
             )
-        
+
         return {"message": "Campaign deleted successfully"}
     except HTTPException:
         raise
@@ -307,42 +310,42 @@ async def get_ai_assistance(request: AIAssistanceRequest):
         # In a full implementation, this would use the AI agents
         suggestions = []
         enhanced_text = None
-        
+
         if request.context_type == "setting":
             suggestions = [
                 "Add more sensory details (sights, sounds, smells)",
                 "Include potential conflict sources or tensions",
                 "Describe the political or social climate",
-                "Mention notable landmarks or geographical features"
+                "Mention notable landmarks or geographical features",
             ]
         elif request.context_type == "description":
             suggestions = [
                 "Expand on character motivations",
                 "Add more dialogue or character interactions",
                 "Include environmental details that set the mood",
-                "Consider adding a plot twist or complication"
+                "Consider adding a plot twist or complication",
             ]
         elif request.context_type == "plot_hook":
             suggestions = [
                 "Make the stakes more personal for the characters",
                 "Add a time pressure element",
                 "Include moral dilemmas or difficult choices",
-                "Connect to character backstories"
+                "Connect to character backstories",
             ]
         else:
             suggestions = [
                 "Consider your target audience and tone",
                 "Add specific details that engage the senses",
                 "Think about cause and effect relationships",
-                "Ensure consistency with your campaign world"
+                "Ensure consistency with your campaign world",
             ]
-        
+
         # Simple text enhancement - in a full implementation this would use AI
         enhanced_text = None
         if request.text:
             # Basic text enhancement with context-aware improvements
             text = request.text.strip()
-            
+
             if request.context_type == "setting":
                 # Add atmospheric details for settings
                 enhanced_text = f"{text}\n\nThe air carries subtle hints of the environment's character, while distant sounds suggest the life and activity that defines this place."
@@ -355,10 +358,9 @@ async def get_ai_assistance(request: AIAssistanceRequest):
             else:
                 # General enhancement
                 enhanced_text = f"{text}\n\nThis element resonates with potential, offering opportunities for creative development and meaningful narrative engagement."
-        
+
         return AIAssistanceResponse(
-            suggestions=suggestions,
-            enhanced_text=enhanced_text
+            suggestions=suggestions, enhanced_text=enhanced_text
         )
     except Exception as e:
         raise HTTPException(
@@ -372,10 +374,10 @@ async def generate_ai_content(request: AIContentGenerationRequest):
     """Generate AI content based on a specific suggestion and current text."""
     try:
         from app.azure_openai_client import AzureOpenAIClient
-        
+
         # Initialize the Azure OpenAI client
         openai_client = AzureOpenAIClient()
-        
+
         # Create contextual prompt based on suggestion type and content
         system_prompt = f"""You are an expert D&D campaign writer helping to enhance campaign content.
 Your task is to generate creative, contextual content based on a specific suggestion.
@@ -396,36 +398,31 @@ Guidelines:
 Respond with ONLY the generated content, no explanations or meta-text."""
 
         user_prompt = f"Current field content: {request.current_text or '(empty)'}\n\nSuggestion to implement: {request.suggestion}"
-        
+
         messages = [
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
+            {"role": "user", "content": user_prompt},
         ]
-        
+
         # Generate content using Azure OpenAI
         generated_content = await openai_client.chat_completion(
-            messages,
-            temperature=0.7,
-            max_tokens=300
+            messages, temperature=0.7, max_tokens=300
         )
-        
+
         if not generated_content or generated_content.strip() == "":
             return AIContentGenerationResponse(
-                generated_content="",
-                success=False,
-                error="Failed to generate content"
+                generated_content="", success=False, error="Failed to generate content"
             )
-        
+
         return AIContentGenerationResponse(
-            generated_content=generated_content.strip(),
-            success=True
+            generated_content=generated_content.strip(), success=True
         )
-        
+
     except Exception as e:
         return AIContentGenerationResponse(
             generated_content="",
             success=False,
-            error=f"Failed to generate AI content: {str(e)}"
+            error=f"Failed to generate AI content: {str(e)}",
         )
 
 
@@ -484,13 +481,15 @@ async def process_player_input(player_input: PlayerInput):
         try:
             character = await get_scribe().get_character(player_input.character_id)
         except Exception as e:
-            logger.warning(f"Could not retrieve character {player_input.character_id}: {str(e)}")
+            logger.warning(
+                f"Could not retrieve character {player_input.character_id}: {str(e)}"
+            )
             # Use fallback character info
             character = {
                 "id": player_input.character_id,
                 "name": "Adventurer",
-                "class": "Fighter", 
-                "level": 1
+                "class": "Fighter",
+                "level": 1,
             }
 
         # Create context for the Dungeon Master agent
@@ -1193,6 +1192,7 @@ async def process_general_action(
 
 # Spell System API Endpoints
 
+
 @router.post("/character/{character_id}/spells", response_model=Dict[str, Any])
 async def manage_character_spells(character_id: str, request: ManageSpellsRequest):
     """Manage known spells for a character."""
@@ -1204,13 +1204,14 @@ async def manage_character_spells(character_id: str, request: ManageSpellsReques
             "action": request.action,
             "spell_ids": request.spell_ids,
             "success": True,
-            "message": f"Successfully {request.action} spells for character {character_id}"
+            "message": f"Successfully {request.action} spells for character {character_id}",
         }
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to manage character spells: {str(e)}"
+            detail=f"Failed to manage character spells: {str(e)}",
         )
+
 
 @router.post("/character/{character_id}/spell-slots", response_model=Dict[str, Any])
 async def manage_spell_slots(character_id: str, request: ManageSpellSlotsRequest):
@@ -1224,13 +1225,14 @@ async def manage_spell_slots(character_id: str, request: ManageSpellSlotsRequest
             "slot_level": request.slot_level,
             "count": request.count,
             "success": True,
-            "message": f"Successfully {request.action} spell slots for character {character_id}"
+            "message": f"Successfully {request.action} spell slots for character {character_id}",
         }
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to manage spell slots: {str(e)}"
+            detail=f"Failed to manage spell slots: {str(e)}",
         )
+
 
 @router.post("/combat/{combat_id}/cast-spell", response_model=SpellCastingResponse)
 async def cast_spell_in_combat(combat_id: str, request: CastSpellRequest):
@@ -1238,43 +1240,45 @@ async def cast_spell_in_combat(combat_id: str, request: CastSpellRequest):
     try:
         # Load spell from database if available, otherwise use default effects
         spell_data = await _get_spell_data(request.spell_id)
-        
+
         # Calculate spell effects based on spell data and casting level
         spell_effects = await _calculate_spell_effects(
             spell_data, request.slot_level, request.target_ids, combat_id
         )
-        
+
         # Process concentration spells
-        concentration_needed = spell_data.get("concentration", False) or spell_data.get("requires_concentration", False)
+        concentration_needed = spell_data.get("concentration", False) or spell_data.get(
+            "requires_concentration", False
+        )
         concentration_broken = False
-        
+
         if concentration_needed:
             from app.plugins.rules_engine_plugin import RulesEnginePlugin
+
             rules_engine = RulesEnginePlugin()
-            
+
             # Start concentration on the spell
             concentration_result = rules_engine.start_concentration(
-                request.character_id, 
-                spell_data, 
-                duration_rounds=10  # Default 1 minute duration
+                request.character_id,
+                spell_data,
+                duration_rounds=10,  # Default 1 minute duration
             )
-            
+
             if not concentration_result.get("success", False):
                 # If concentration failed to start, it could mean the spell doesn't require it
                 # or there was an error, but we'll continue with the spell casting
                 pass
-        
+
         return SpellCastingResponse(
             success=True,
             message=f"Spell '{spell_data.get('name', request.spell_id)}' cast successfully in combat {combat_id}",
             spell_effects=spell_effects,
             concentration_broken=concentration_broken,
-            slot_used=True
+            slot_used=True,
         )
     except Exception as e:
         return SpellCastingResponse(
-            success=False,
-            message=f"Failed to cast spell: {str(e)}"
+            success=False, message=f"Failed to cast spell: {str(e)}"
         )
 
 
@@ -1282,7 +1286,7 @@ async def _get_spell_data(spell_id: str) -> Dict[str, Any]:
     """Get spell data from database or return default spell structure."""
     from app.database import get_session
     from app.models.db_models import Spell
-    
+
     try:
         with next(get_session()) as db:
             spell = db.query(Spell).filter(Spell.id == spell_id).first()
@@ -1299,11 +1303,11 @@ async def _get_spell_data(spell_id: str) -> Dict[str, Any]:
                     "components": spell.components,
                     "description": spell.description,
                     "higher_levels": spell.higher_levels,
-                    **spell.data
+                    **spell.data,
                 }
     except Exception:
         pass  # Fall back to basic spell data
-    
+
     # Default spell data for unknown spells
     return _get_default_spell_data(spell_id)
 
@@ -1313,40 +1317,73 @@ def _get_default_spell_data(spell_id: str) -> Dict[str, Any]:
     # Common D&D 5e spells with basic data
     default_spells = {
         "magic_missile": {
-            "name": "Magic Missile", "level": 1, "school": "evocation",
-            "damage_dice": "1d4+1", "save_type": None, "concentration": False,
-            "auto_hit": True, "base_missiles": 3
+            "name": "Magic Missile",
+            "level": 1,
+            "school": "evocation",
+            "damage_dice": "1d4+1",
+            "save_type": None,
+            "concentration": False,
+            "auto_hit": True,
+            "base_missiles": 3,
         },
         "fireball": {
-            "name": "Fireball", "level": 3, "school": "evocation", 
-            "damage_dice": "8d6", "save_type": "dexterity", "concentration": False,
-            "area_effect": True, "radius": 20
+            "name": "Fireball",
+            "level": 3,
+            "school": "evocation",
+            "damage_dice": "8d6",
+            "save_type": "dexterity",
+            "concentration": False,
+            "area_effect": True,
+            "radius": 20,
         },
         "healing_word": {
-            "name": "Healing Word", "level": 1, "school": "evocation",
-            "healing_dice": "1d4", "save_type": None, "concentration": False,
-            "range": 60, "bonus_action": True
+            "name": "Healing Word",
+            "level": 1,
+            "school": "evocation",
+            "healing_dice": "1d4",
+            "save_type": None,
+            "concentration": False,
+            "range": 60,
+            "bonus_action": True,
         },
         "shield": {
-            "name": "Shield", "level": 1, "school": "abjuration",
-            "ac_bonus": 5, "save_type": None, "concentration": False,
-            "duration": "1 round", "reaction": True
+            "name": "Shield",
+            "level": 1,
+            "school": "abjuration",
+            "ac_bonus": 5,
+            "save_type": None,
+            "concentration": False,
+            "duration": "1 round",
+            "reaction": True,
         },
         "cure_wounds": {
-            "name": "Cure Wounds", "level": 1, "school": "evocation",
-            "healing_dice": "1d8", "save_type": None, "concentration": False,
-            "touch": True
-        }
+            "name": "Cure Wounds",
+            "level": 1,
+            "school": "evocation",
+            "healing_dice": "1d8",
+            "save_type": None,
+            "concentration": False,
+            "touch": True,
+        },
     }
-    
-    return default_spells.get(spell_id, {
-        "name": spell_id.replace("_", " ").title(),
-        "level": 1, "school": "unknown", "concentration": False
-    })
+
+    return default_spells.get(
+        spell_id,
+        {
+            "name": spell_id.replace("_", " ").title(),
+            "level": 1,
+            "school": "unknown",
+            "concentration": False,
+        },
+    )
 
 
-async def _calculate_spell_effects(spell_data: Dict[str, Any], cast_level: int, 
-                                   target_ids: Optional[List[str]], combat_id: str) -> Dict[str, Any]:
+async def _calculate_spell_effects(
+    spell_data: Dict[str, Any],
+    cast_level: int,
+    target_ids: Optional[List[str]],
+    combat_id: str,
+) -> Dict[str, Any]:
     """Calculate sophisticated spell effects based on spell data and level."""
     effects = {
         "spell_name": spell_data.get("name", "Unknown Spell"),
@@ -1360,11 +1397,11 @@ async def _calculate_spell_effects(spell_data: Dict[str, Any], cast_level: int,
         "healing": None,
         "save_required": spell_data.get("save_type") is not None,
         "save_type": spell_data.get("save_type"),
-        "concentration": spell_data.get("concentration", False)
+        "concentration": spell_data.get("concentration", False),
     }
-    
+
     upcast_levels = cast_level - spell_data.get("level", 1)
-    
+
     # Calculate damage effects
     if spell_data.get("damage_dice"):
         base_damage = spell_data["damage_dice"]
@@ -1375,8 +1412,8 @@ async def _calculate_spell_effects(spell_data: Dict[str, Any], cast_level: int,
         else:
             effects["damage"] = base_damage
         effects["effects"].append(f"Deals {effects['damage']} damage")
-    
-    # Calculate healing effects  
+
+    # Calculate healing effects
     if spell_data.get("healing_dice"):
         base_healing = spell_data["healing_dice"]
         if upcast_levels > 0:
@@ -1385,28 +1422,32 @@ async def _calculate_spell_effects(spell_data: Dict[str, Any], cast_level: int,
         else:
             effects["healing"] = base_healing
         effects["effects"].append(f"Heals {effects['healing']} hit points")
-    
+
     # Special spell effects
     if spell_data.get("auto_hit"):
         effects["effects"].append("Automatically hits target(s)")
-    
+
     if spell_data.get("area_effect"):
         radius = spell_data.get("radius", 10)
         effects["effects"].append(f"Area effect: {radius} foot radius")
-    
+
     if spell_data.get("ac_bonus"):
         effects["effects"].append(f"Grants +{spell_data['ac_bonus']} AC")
-    
+
     # Magic Missile special handling
     if spell_data.get("name") == "Magic Missile":
         base_missiles = spell_data.get("base_missiles", 3)
         total_missiles = base_missiles + upcast_levels
         effects["effects"].append(f"Fires {total_missiles} missiles")
-        effects["damage"] = f"{total_missiles} missiles, each dealing 1d4+1 force damage"
-    
+        effects["damage"] = (
+            f"{total_missiles} missiles, each dealing 1d4+1 force damage"
+        )
+
     if upcast_levels > 0:
-        effects["effects"].append(f"Cast at {cast_level} level (+{upcast_levels} levels)")
-    
+        effects["effects"].append(
+            f"Cast at {cast_level} level (+{upcast_levels} levels)"
+        )
+
     return effects
 
 
@@ -1414,10 +1455,10 @@ def _get_upcast_scaling(spell_name: str) -> int:
     """Get damage dice scaling for upcasting spells."""
     scaling_table = {
         "Fireball": 1,  # +1d6 per level
-        "Lightning Bolt": 1,  # +1d6 per level  
+        "Lightning Bolt": 1,  # +1d6 per level
         "Scorching Ray": 1,  # +1 ray per level
         "Cure Wounds": 1,  # +1d8 per level
-        "Healing Word": 1   # +1d4 per level
+        "Healing Word": 1,  # +1d4 per level
     }
     return scaling_table.get(spell_name, 1)
 
@@ -1426,7 +1467,7 @@ def _get_upcast_scaling(spell_name: str) -> int:
 async def get_spell_list(
     character_class: Optional[CharacterClass] = None,
     spell_level: Optional[int] = None,
-    school: Optional[str] = None
+    school: Optional[str] = None,
 ):
     """Get available spells by class and level."""
     try:
@@ -1442,83 +1483,87 @@ async def get_spell_list(
                 components="V, S",
                 duration="Instantaneous",
                 description="Three darts of magical force hit their targets.",
-                available_classes=["wizard", "sorcerer"]
+                available_classes=["wizard", "sorcerer"],
             ),
             Spell(
                 name="Fireball",
                 level=3,
-                school="Evocation", 
+                school="Evocation",
                 casting_time="1 action",
                 range="150 feet",
                 components="V, S, M",
                 duration="Instantaneous",
                 description="A bright flash of energy streaks toward a point within range.",
-                available_classes=["wizard", "sorcerer"]
+                available_classes=["wizard", "sorcerer"],
             ),
             Spell(
                 name="Cure Wounds",
                 level=1,
                 school="Evocation",
-                casting_time="1 action", 
+                casting_time="1 action",
                 range="Touch",
                 components="V, S",
                 duration="Instantaneous",
                 description="Restores hit points to a creature you touch.",
-                available_classes=["cleric", "druid", "paladin", "ranger"]
-            )
+                available_classes=["cleric", "druid", "paladin", "ranger"],
+            ),
         ]
-        
+
         # Filter spells based on parameters
         filtered_spells = sample_spells
         if character_class:
-            filtered_spells = [s for s in filtered_spells if character_class.value in s.available_classes]
+            filtered_spells = [
+                s
+                for s in filtered_spells
+                if character_class.value in s.available_classes
+            ]
         if spell_level is not None:
             filtered_spells = [s for s in filtered_spells if s.level == spell_level]
         if school:
-            filtered_spells = [s for s in filtered_spells if s.school.lower() == school.lower()]
-        
+            filtered_spells = [
+                s for s in filtered_spells if s.school.lower() == school.lower()
+            ]
+
         return SpellListResponse(
-            spells=filtered_spells,
-            total_count=len(filtered_spells)
+            spells=filtered_spells, total_count=len(filtered_spells)
         )
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get spell list: {str(e)}"
+            detail=f"Failed to get spell list: {str(e)}",
         )
+
 
 @router.post("/spells/save-dc", response_model=Dict[str, Any])
 async def calculate_spell_save_dc_endpoint(
-    character_class: CharacterClass,
-    level: int,
-    spellcasting_ability_score: int
+    character_class: CharacterClass, level: int, spellcasting_ability_score: int
 ):
     """Calculate spell save DC for a character."""
     try:
         # Map character classes to their spellcasting abilities
         spellcasting_abilities = {
             "wizard": "intelligence",
-            "artificer": "intelligence", 
+            "artificer": "intelligence",
             "cleric": "wisdom",
             "druid": "wisdom",
             "ranger": "wisdom",
             "bard": "charisma",
-            "paladin": "charisma", 
+            "paladin": "charisma",
             "sorcerer": "charisma",
-            "warlock": "charisma"
+            "warlock": "charisma",
         }
-        
+
         # Get spellcasting ability for the class
         spellcasting_ability = spellcasting_abilities.get(character_class.value)
         if not spellcasting_ability:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Class {character_class.value} is not a spellcasting class"
+                detail=f"Class {character_class.value} is not a spellcasting class",
             )
-        
+
         # Calculate ability modifier: (ability_score - 10) // 2
         ability_modifier = (spellcasting_ability_score - 10) // 2
-        
+
         # Calculate proficiency bonus based on level
         proficiency_bonus = 2
         if level >= 17:
@@ -1529,10 +1574,10 @@ async def calculate_spell_save_dc_endpoint(
             proficiency_bonus = 4
         elif level >= 5:
             proficiency_bonus = 3
-        
+
         # Spell save DC = 8 + proficiency bonus + ability modifier
         save_dc = 8 + proficiency_bonus + ability_modifier
-        
+
         return {
             "save_dc": save_dc,
             "character_class": character_class.value,
@@ -1540,19 +1585,22 @@ async def calculate_spell_save_dc_endpoint(
             "spellcasting_ability": spellcasting_ability,
             "spellcasting_ability_score": spellcasting_ability_score,
             "ability_modifier": ability_modifier,
-            "proficiency_bonus": proficiency_bonus
+            "proficiency_bonus": proficiency_bonus,
         }
-        
+
     except HTTPException:
         # Re-raise HTTPExceptions to maintain proper status codes
         raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to calculate spell save DC: {str(e)}"
+            detail=f"Failed to calculate spell save DC: {str(e)}",
         )
 
-@router.post("/character/{character_id}/concentration", response_model=ConcentrationCheckResponse)
+
+@router.post(
+    "/character/{character_id}/concentration", response_model=ConcentrationCheckResponse
+)
 async def manage_concentration(character_id: str, request: ConcentrationRequest):
     """Manage spell concentration tracking for a character."""
     try:
@@ -1560,62 +1608,54 @@ async def manage_concentration(character_id: str, request: ConcentrationRequest)
             if not request.spell_id:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="spell_id required for starting concentration"
+                    detail="spell_id required for starting concentration",
                 )
-            
+
             return ConcentrationCheckResponse(
-                success=True,
-                concentration_maintained=True,
-                dc=10,
-                spell_ended=False
+                success=True, concentration_maintained=True, dc=10, spell_ended=False
             )
-        
+
         elif request.action == "end":
             return ConcentrationCheckResponse(
-                success=True,
-                concentration_maintained=False,
-                dc=0,
-                spell_ended=True
+                success=True, concentration_maintained=False, dc=0, spell_ended=True
             )
-        
+
         elif request.action == "check":
             if request.damage_taken is None:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="damage_taken required for concentration check"
+                    detail="damage_taken required for concentration check",
                 )
-            
+
             # Calculate concentration DC (half damage taken, minimum 10)
             dc = max(10, request.damage_taken // 2)
-            
+
             # This would normally involve rolling a Constitution saving throw
             # For now, returning a simulated result
             import random
+
             roll_result = random.randint(1, 20) + 3  # Assuming +3 Constitution modifier
             maintained = roll_result >= dc
-            
+
             return ConcentrationCheckResponse(
                 success=True,
                 concentration_maintained=maintained,
                 dc=dc,
                 roll_result=roll_result,
-                spell_ended=not maintained
+                spell_ended=not maintained,
             )
-        
+
         else:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Invalid action: {request.action}"
+                detail=f"Invalid action: {request.action}",
             )
-    
+
     except HTTPException:
         raise
     except Exception:
         return ConcentrationCheckResponse(
-            success=False,
-            concentration_maintained=False,
-            dc=0,
-            spell_ended=True
+            success=False, concentration_maintained=False, dc=0, spell_ended=True
         )
 
 
@@ -1626,27 +1666,27 @@ async def calculate_spell_attack_bonus(request: SpellAttackBonusRequest):
         # Map character classes to their spellcasting abilities
         spellcasting_abilities = {
             "wizard": "intelligence",
-            "artificer": "intelligence", 
+            "artificer": "intelligence",
             "cleric": "wisdom",
             "druid": "wisdom",
             "ranger": "wisdom",
             "bard": "charisma",
-            "paladin": "charisma", 
+            "paladin": "charisma",
             "sorcerer": "charisma",
-            "warlock": "charisma"
+            "warlock": "charisma",
         }
-        
+
         # Get spellcasting ability for the class
         spellcasting_ability = spellcasting_abilities.get(request.character_class)
         if not spellcasting_ability:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Class {request.character_class.value} is not a spellcasting class"
+                detail=f"Class {request.character_class.value} is not a spellcasting class",
             )
-        
+
         # Calculate ability modifier: (ability_score - 10) // 2
         ability_modifier = (request.spellcasting_ability_score - 10) // 2
-        
+
         # Calculate proficiency bonus based on level
         proficiency_bonus = 2
         if request.level >= 17:
@@ -1657,10 +1697,10 @@ async def calculate_spell_attack_bonus(request: SpellAttackBonusRequest):
             proficiency_bonus = 4
         elif request.level >= 5:
             proficiency_bonus = 3
-        
+
         # Spell attack bonus = proficiency bonus + ability modifier
         spell_attack_bonus = proficiency_bonus + ability_modifier
-        
+
         return {
             "character_class": request.character_class,
             "level": request.level,
@@ -1668,19 +1708,21 @@ async def calculate_spell_attack_bonus(request: SpellAttackBonusRequest):
             "spellcasting_ability_score": request.spellcasting_ability_score,
             "ability_modifier": ability_modifier,
             "proficiency_bonus": proficiency_bonus,
-            "spell_attack_bonus": spell_attack_bonus
+            "spell_attack_bonus": spell_attack_bonus,
         }
-        
+
     except HTTPException:
         # Re-raise HTTPExceptions to maintain proper status codes
         raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to calculate spell attack bonus: {str(e)}"
+            detail=f"Failed to calculate spell attack bonus: {str(e)}",
         )
 
+
 # Enhanced Inventory System API Endpoints
+
 
 @router.post("/character/{character_id}/equipment", response_model=EquipmentResponse)
 async def manage_equipment(character_id: str, request: ManageEquipmentRequest):
@@ -1688,16 +1730,16 @@ async def manage_equipment(character_id: str, request: ManageEquipmentRequest):
     try:
         # This would integrate with a character storage system
         # For now, simulate equipment management with basic stat effects
-        
+
         sample_stat_effects = {
             "plate_armor": {"armor_class": 8, "stealth": -1},
             "magic_sword": {"attack_bonus": 1, "damage_bonus": 1},
-            "ring_of_protection": {"armor_class": 1, "saving_throws": 1}
+            "ring_of_protection": {"armor_class": 1, "saving_throws": 1},
         }
-        
+
         equipment_name = request.equipment_id.lower()
         stat_changes = sample_stat_effects.get(equipment_name, {})
-        
+
         if request.action == "equip":
             message = f"Successfully equipped {request.equipment_id}"
             armor_class_change = stat_changes.get("armor_class", 0)
@@ -1709,22 +1751,22 @@ async def manage_equipment(character_id: str, request: ManageEquipmentRequest):
         else:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Invalid action: {request.action}"
+                detail=f"Invalid action: {request.action}",
             )
-        
+
         return EquipmentResponse(
             success=True,
             message=message,
             stat_changes=stat_changes,
-            armor_class_change=armor_class_change
+            armor_class_change=armor_class_change,
         )
     except HTTPException:
         raise
     except Exception as e:
         return EquipmentResponse(
-            success=False,
-            message=f"Failed to manage equipment: {str(e)}"
+            success=False, message=f"Failed to manage equipment: {str(e)}"
         )
+
 
 @router.get("/character/{character_id}/encumbrance", response_model=EncumbranceResponse)
 async def get_encumbrance(character_id: str):
@@ -1732,12 +1774,12 @@ async def get_encumbrance(character_id: str):
     try:
         # This would normally calculate from actual character data
         # For now, returning sample encumbrance data
-        
+
         # Simulate character strength-based carrying capacity
         strength_score = 15  # Would be retrieved from character data
         carrying_capacity = strength_score * 15  # 15 lbs per point of Strength
         current_weight = 85.5  # Would be calculated from actual inventory
-        
+
         # Determine encumbrance level
         if current_weight <= carrying_capacity:
             encumbrance_level = "unencumbered"
@@ -1748,19 +1790,20 @@ async def get_encumbrance(character_id: str):
         else:
             encumbrance_level = "heavily_encumbered"
             speed_penalty = 20
-        
+
         return EncumbranceResponse(
             character_id=character_id,
             current_weight=current_weight,
             carrying_capacity=carrying_capacity,
             encumbrance_level=encumbrance_level,
-            speed_penalty=speed_penalty
+            speed_penalty=speed_penalty,
         )
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to calculate encumbrance: {str(e)}"
+            detail=f"Failed to calculate encumbrance: {str(e)}",
         )
+
 
 @router.post("/items/magical-effects", response_model=MagicalEffectsResponse)
 async def manage_magical_effects(request: MagicalEffectsRequest):
@@ -1771,19 +1814,22 @@ async def manage_magical_effects(request: MagicalEffectsRequest):
             "cloak_of_elvenkind": {
                 "stealth": 2,
                 "perception": 2,
-                "effects": ["Advantage on Dexterity (Stealth) checks", "Disadvantage on Perception checks against you"]
+                "effects": [
+                    "Advantage on Dexterity (Stealth) checks",
+                    "Disadvantage on Perception checks against you",
+                ],
             },
             "gauntlets_of_ogre_power": {
                 "strength": 19,  # Sets Strength to 19 if it's lower
-                "effects": ["Strength becomes 19", "Advantage on Strength checks"]
+                "effects": ["Strength becomes 19", "Advantage on Strength checks"],
             },
             "ring_of_mind_shielding": {
                 "effects": ["Immune to charm", "Mind cannot be read", "Soul protected"]
-            }
+            },
         }
-        
+
         item_effects = magical_effects.get(request.item_id.lower(), {})
-        
+
         if request.action == "apply":
             message = f"Applied magical effects of {request.item_id}"
             active_effects = item_effects.get("effects", [])
@@ -1795,14 +1841,14 @@ async def manage_magical_effects(request: MagicalEffectsRequest):
         else:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Invalid action: {request.action}"
+                detail=f"Invalid action: {request.action}",
             )
-        
+
         return MagicalEffectsResponse(
             success=True,
             message=message,
             active_effects=active_effects,
-            stat_modifiers=stat_modifiers
+            stat_modifiers=stat_modifiers,
         )
     except HTTPException:
         raise
@@ -1811,15 +1857,16 @@ async def manage_magical_effects(request: MagicalEffectsRequest):
             success=False,
             message=f"Failed to manage magical effects: {str(e)}",
             active_effects=[],
-            stat_modifiers={}
+            stat_modifiers={},
         )
+
 
 @router.get("/items/catalog", response_model=ItemCatalogResponse)
 async def get_item_catalog(
     item_type: Optional[ItemType] = None,
     rarity: Optional[ItemRarity] = None,
     min_value: Optional[int] = None,
-    max_value: Optional[int] = None
+    max_value: Optional[int] = None,
 ):
     """Browse available items with rarity and value information."""
     try:
@@ -1833,7 +1880,7 @@ async def get_item_catalog(
                 value=15,
                 damage_dice="1d8",
                 damage_type="slashing",
-                properties=["versatile"]
+                properties=["versatile"],
             ),
             Equipment(
                 name="Plate Armor",
@@ -1842,7 +1889,7 @@ async def get_item_catalog(
                 weight=65.0,
                 value=1500,
                 armor_class=18,
-                stat_modifiers={"stealth": -1}
+                stat_modifiers={"stealth": -1},
             ),
             Equipment(
                 name="Ring of Protection",
@@ -1852,7 +1899,7 @@ async def get_item_catalog(
                 value=3500,
                 requires_attunement=True,
                 is_magical=True,
-                stat_modifiers={"armor_class": 1, "saving_throws": 1}
+                stat_modifiers={"armor_class": 1, "saving_throws": 1},
             ),
             Equipment(
                 name="Flame Tongue",
@@ -1865,39 +1912,50 @@ async def get_item_catalog(
                 damage_dice="1d8",
                 damage_type="slashing",
                 special_abilities=["Fire damage", "Light source"],
-                properties=["versatile"]
+                properties=["versatile"],
             ),
             Equipment(
                 name="Thieves' Tools",
                 item_type=ItemType.TOOL,
                 rarity=ItemRarity.COMMON,
                 weight=1.0,
-                value=25
-            )
+                value=25,
+            ),
         ]
-        
+
         # Filter items based on parameters
         filtered_items = sample_items
         if item_type:
-            filtered_items = [item for item in filtered_items if item.item_type == item_type]
+            filtered_items = [
+                item for item in filtered_items if item.item_type == item_type
+            ]
         if rarity:
             filtered_items = [item for item in filtered_items if item.rarity == rarity]
         if min_value is not None:
-            filtered_items = [item for item in filtered_items if item.value and item.value >= min_value]
+            filtered_items = [
+                item
+                for item in filtered_items
+                if item.value and item.value >= min_value
+            ]
         if max_value is not None:
-            filtered_items = [item for item in filtered_items if item.value and item.value <= max_value]
-        
+            filtered_items = [
+                item
+                for item in filtered_items
+                if item.value and item.value <= max_value
+            ]
+
         return ItemCatalogResponse(
-            items=filtered_items,
-            total_count=len(filtered_items)
+            items=filtered_items, total_count=len(filtered_items)
         )
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get item catalog: {str(e)}"
+            detail=f"Failed to get item catalog: {str(e)}",
         )
 
+
 # Enhanced NPC Management API Endpoints
+
 
 @router.post("/campaign/{campaign_id}/npcs", response_model=NPC)
 async def create_campaign_npc(campaign_id: str, request: CreateNPCRequest):
@@ -1905,40 +1963,54 @@ async def create_campaign_npc(campaign_id: str, request: CreateNPCRequest):
     try:
         # Generate basic personality traits if not provided
         import random
-        
+
         sample_traits = [
-            "Honest", "Deceitful", "Brave", "Cowardly", "Generous", "Greedy",
-            "Kind", "Cruel", "Optimistic", "Pessimistic", "Curious", "Secretive"
+            "Honest",
+            "Deceitful",
+            "Brave",
+            "Cowardly",
+            "Generous",
+            "Greedy",
+            "Kind",
+            "Cruel",
+            "Optimistic",
+            "Pessimistic",
+            "Curious",
+            "Secretive",
         ]
-        
+
         sample_mannerisms = [
-            "Speaks softly", "Gestures wildly", "Never makes eye contact",
-            "Constantly fidgets", "Uses elaborate vocabulary", "Speaks in short sentences"
+            "Speaks softly",
+            "Gestures wildly",
+            "Never makes eye contact",
+            "Constantly fidgets",
+            "Uses elaborate vocabulary",
+            "Speaks in short sentences",
         ]
-        
+
         # Create NPC with generated personality
         personality = NPCPersonality(
             traits=random.sample(sample_traits, 2),
             mannerisms=random.sample(sample_mannerisms, 1),
-            motivations=["Survive and prosper", "Help their family"]
+            motivations=["Survive and prosper", "Help their family"],
         )
-        
+
         # Generate basic abilities for the NPC
         from app.models.game_models import Abilities, HitPoints
+
         abilities = Abilities(
             strength=random.randint(8, 16),
             dexterity=random.randint(8, 16),
             constitution=random.randint(8, 16),
             intelligence=random.randint(8, 16),
             wisdom=random.randint(8, 16),
-            charisma=random.randint(8, 16)
+            charisma=random.randint(8, 16),
         )
-        
+
         hit_points = HitPoints(
-            current=random.randint(4, 12),
-            maximum=random.randint(4, 12)
+            current=random.randint(4, 12), maximum=random.randint(4, 12)
         )
-        
+
         npc = NPC(
             name=request.name,
             race=request.race,
@@ -1952,15 +2024,16 @@ async def create_campaign_npc(campaign_id: str, request: CreateNPCRequest):
             hit_points=hit_points,
             armor_class=10 + ((abilities.dexterity - 10) // 2),
             importance=request.importance,
-            story_role=request.story_role
+            story_role=request.story_role,
         )
-        
+
         return npc
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to create NPC: {str(e)}"
+            detail=f"Failed to create NPC: {str(e)}",
         )
+
 
 @router.get("/npc/{npc_id}/personality", response_model=NPCPersonality)
 async def get_npc_personality(npc_id: str):
@@ -1975,15 +2048,16 @@ async def get_npc_personality(npc_id: str):
             flaws=["Quick to anger", "Overly trusting"],
             mannerisms=["Speaks with authority", "Always stands straight"],
             appearance="Tall and imposing with graying hair",
-            motivations=["Maintain law and order", "Protect the city"]
+            motivations=["Maintain law and order", "Protect the city"],
         )
-        
+
         return personality
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get NPC personality: {str(e)}"
+            detail=f"Failed to get NPC personality: {str(e)}",
         )
+
 
 @router.post("/npc/{npc_id}/interaction", response_model=NPCInteractionResponse)
 async def log_npc_interaction(npc_id: str, request: NPCInteractionRequest):
@@ -1996,80 +2070,82 @@ async def log_npc_interaction(npc_id: str, request: NPCInteractionRequest):
             interaction_type=request.interaction_type,
             summary=request.summary,
             outcome=request.outcome,
-            relationship_change=request.relationship_change
+            relationship_change=request.relationship_change,
         )
-        
+
         # This would normally be stored in a database
         # For now, return success response
-        
+
         # Calculate new relationship level (simulated)
         import random
+
         current_level = random.randint(-50, 50)  # Would be retrieved from database
         new_level = max(-100, min(100, current_level + request.relationship_change))
-        
+
         return NPCInteractionResponse(
             success=True,
             message=f"Interaction logged successfully for NPC {npc_id}",
             interaction_id=interaction.id,
-            new_relationship_level=new_level
+            new_relationship_level=new_level,
         )
     except Exception as e:
         return NPCInteractionResponse(
             success=False,
             message=f"Failed to log NPC interaction: {str(e)}",
-            interaction_id=""
+            interaction_id="",
         )
+
 
 @router.post("/npc/{npc_id}/generate-stats", response_model=NPCStatsResponse)
 async def generate_npc_stats(npc_id: str, request: GenerateNPCStatsRequest):
     """Generate combat stats for NPCs dynamically."""
     try:
         import random
-        
+
         level = request.level or 1
         role = request.role
-        
+
         # Generate stats based on role and level
         stat_templates = {
             "civilian": {
                 "hit_dice": "1d4",
                 "armor_class_base": 10,
                 "proficiency_bonus": 2,
-                "abilities_mod": 0
+                "abilities_mod": 0,
             },
             "guard": {
                 "hit_dice": "1d8",
                 "armor_class_base": 16,
                 "proficiency_bonus": 2,
-                "abilities_mod": 2
+                "abilities_mod": 2,
             },
             "soldier": {
                 "hit_dice": "1d10",
                 "armor_class_base": 18,
                 "proficiency_bonus": 2 + (level - 1) // 4,
-                "abilities_mod": 3
+                "abilities_mod": 3,
             },
             "spellcaster": {
                 "hit_dice": "1d6",
                 "armor_class_base": 12,
                 "proficiency_bonus": 2 + (level - 1) // 4,
-                "abilities_mod": 4
+                "abilities_mod": 4,
             },
             "rogue": {
                 "hit_dice": "1d8",
                 "armor_class_base": 14,
                 "proficiency_bonus": 2 + (level - 1) // 4,
-                "abilities_mod": 3
-            }
+                "abilities_mod": 3,
+            },
         }
-        
+
         template = stat_templates.get(role, stat_templates["civilian"])
-        
+
         # Generate hit points
         hit_dice_num = int(template["hit_dice"].split("d")[1])
         hit_points = sum(random.randint(1, hit_dice_num) for _ in range(level))
         hit_points += level * 1  # Constitution modifier (assumed +1)
-        
+
         # Generate abilities
         base_stat = 10 + template["abilities_mod"]
         abilities = {
@@ -2078,9 +2154,9 @@ async def generate_npc_stats(npc_id: str, request: GenerateNPCStatsRequest):
             "constitution": base_stat + random.randint(-2, 2),
             "intelligence": base_stat + random.randint(-2, 2),
             "wisdom": base_stat + random.randint(-2, 2),
-            "charisma": base_stat + random.randint(-2, 2)
+            "charisma": base_stat + random.randint(-2, 2),
         }
-        
+
         # Role-specific stat adjustments
         if role == "soldier":
             abilities["strength"] += 2
@@ -2094,28 +2170,26 @@ async def generate_npc_stats(npc_id: str, request: GenerateNPCStatsRequest):
         elif role == "guard":
             abilities["strength"] += 1
             abilities["constitution"] += 1
-        
+
         generated_stats = {
             "level": level,
-            "hit_points": {
-                "current": hit_points,
-                "maximum": hit_points
-            },
-            "armor_class": template["armor_class_base"] + ((abilities["dexterity"] - 10) // 2),
+            "hit_points": {"current": hit_points, "maximum": hit_points},
+            "armor_class": template["armor_class_base"]
+            + ((abilities["dexterity"] - 10) // 2),
             "proficiency_bonus": template["proficiency_bonus"],
             "abilities": abilities,
             "role": role,
-            "challenge_rating": level / 2 if level > 1 else 0.25
+            "challenge_rating": level / 2 if level > 1 else 0.25,
         }
-        
+
         return NPCStatsResponse(
             success=True,
             message=f"Generated {role} stats for level {level} NPC",
-            generated_stats=generated_stats
+            generated_stats=generated_stats,
         )
     except Exception as e:
         return NPCStatsResponse(
             success=False,
             message=f"Failed to generate NPC stats: {str(e)}",
-            generated_stats={}
+            generated_stats={},
         )

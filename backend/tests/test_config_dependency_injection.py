@@ -1,6 +1,7 @@
 """
 Tests for improved configuration handling via dependency injection.
 """
+
 import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import patch, MagicMock
@@ -17,6 +18,7 @@ class TestConfigurationDependencyInjection:
         with patch("app.api.game_routes.get_scribe") as mock_get_scribe:
             # Mock the scribe agent to avoid kernel initialization
             mock_scribe = MagicMock()
+
             # Make create_character return an awaitable with proper format
             async def create_character_async(*args, **kwargs):
                 return {
@@ -33,15 +35,13 @@ class TestConfigurationDependencyInjection:
                         "wisdom": 13,
                         "charisma": 10,
                     },
-                    "hit_points": {
-                        "current": 12,
-                        "maximum": 12
-                    },
+                    "hit_points": {"current": 12, "maximum": 12},
                     "armor_class": 16,
                     "inventory": [],
                     "features": [],
-                    "spells": []
+                    "spells": [],
                 }
+
             mock_scribe.create_character = create_character_async
             mock_get_scribe.return_value = mock_scribe
 
@@ -60,7 +60,9 @@ class TestConfigurationDependencyInjection:
                 "backstory": "A brave warrior",
             }
 
-            response = client_with_config.post("/api/game/character", json=character_data)
+            response = client_with_config.post(
+                "/api/game/character", json=character_data
+            )
 
             assert response.status_code == 200
             assert mock_get_scribe.called
@@ -82,7 +84,9 @@ class TestConfigurationDependencyInjection:
             "backstory": "A brave warrior",
         }
 
-        response = client_with_missing_config.post("/api/game/character", json=character_data)
+        response = client_with_missing_config.post(
+            "/api/game/character", json=character_data
+        )
 
         # Should return 503 error for missing configuration
         assert response.status_code == 503
@@ -90,7 +94,9 @@ class TestConfigurationDependencyInjection:
 
     def test_campaign_creation_with_valid_config(self, client_with_config):
         """Test campaign creation with valid configuration."""
-        with patch("app.services.campaign_service.campaign_service.create_campaign") as mock_create:
+        with patch(
+            "app.services.campaign_service.campaign_service.create_campaign"
+        ) as mock_create:
             # Mock successful campaign creation
             mock_create.return_value = {
                 "id": "camp_123",
@@ -111,12 +117,16 @@ class TestConfigurationDependencyInjection:
             assert response.status_code == 200
             assert mock_create.called
 
-    def test_campaign_creation_with_missing_config(self, client_with_missing_config, campaign_factory):
+    def test_campaign_creation_with_missing_config(
+        self, client_with_missing_config, campaign_factory
+    ):
         """Test campaign creation with missing Azure OpenAI configuration."""
         # Use factory instead of hand-crafted dictionary
         campaign_data = campaign_factory()
 
-        response = client_with_missing_config.post("/api/game/campaign", json=campaign_data)
+        response = client_with_missing_config.post(
+            "/api/game/campaign", json=campaign_data
+        )
 
         # Should return 503 error for missing configuration
         assert response.status_code == 503
@@ -140,6 +150,7 @@ class TestConfigurationDependencyInjection:
             # Test any endpoint that uses config dependency
             with patch("app.api.game_routes.get_scribe") as mock_get_scribe:
                 mock_scribe = MagicMock()
+
                 # Make create_character return an awaitable with proper format
                 async def create_character_async(*args, **kwargs):
                     return {
@@ -156,15 +167,13 @@ class TestConfigurationDependencyInjection:
                             "wisdom": 13,
                             "charisma": 10,
                         },
-                        "hit_points": {
-                            "current": 10,
-                            "maximum": 10
-                        },
+                        "hit_points": {"current": 10, "maximum": 10},
                         "armor_class": 15,
                         "inventory": [],
                         "features": [],
-                        "spells": []
+                        "spells": [],
                     }
+
                 mock_scribe.create_character = create_character_async
                 mock_get_scribe.return_value = mock_scribe
 
@@ -196,14 +205,16 @@ class TestConfigurationDependencyInjection:
         """Test get character with valid configuration."""
         with patch("app.api.game_routes.get_scribe") as mock_get_scribe:
             mock_scribe = MagicMock()
+
             # Make get_character return an awaitable
             async def get_character_async(*args, **kwargs):
                 return {
                     "id": "char_123",
                     "name": "Existing Character",
                     "race": "elf",
-                    "character_class": "wizard"
+                    "character_class": "wizard",
                 }
+
             mock_scribe.get_character = get_character_async
             mock_get_scribe.return_value = mock_scribe
 

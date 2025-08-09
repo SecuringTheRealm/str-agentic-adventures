@@ -25,19 +25,20 @@ class NarratorAgent:
         self._fallback_mode = False
         self.kernel = None
         self.openai_client = None
-        
+
         try:
             # Try to create kernel and OpenAI client
             self.kernel = kernel_manager.create_kernel()
             self.openai_client = AzureOpenAIClient()
             self._register_skills()
-            
+
         except Exception as e:
             # Check if this is a configuration error
             error_msg = str(e)
-            if (("validation errors for Settings" in error_msg and (
-                "azure_openai" in error_msg or "openai" in error_msg
-            )) or "Azure OpenAI configuration is missing or invalid" in error_msg):
+            if (
+                "validation errors for Settings" in error_msg
+                and ("azure_openai" in error_msg or "openai" in error_msg)
+            ) or "Azure OpenAI configuration is missing or invalid" in error_msg:
                 logger.warning(
                     "Azure OpenAI configuration is missing or invalid. "
                     "Narrator agent operating in fallback mode with basic functionality."
@@ -48,7 +49,7 @@ class NarratorAgent:
             else:
                 # Re-raise other errors as-is
                 raise
-                
+
     def _initialize_fallback_components(self):
         """Initialize fallback components when Azure OpenAI is not available."""
         self._fallback_mode = True
@@ -84,7 +85,9 @@ class NarratorAgent:
             logger.error(f"Error registering Narrator agent plugins: {str(e)}")
             # Don't raise - enter fallback mode instead
             self._fallback_mode = True
-            logger.warning("Narrator agent entering fallback mode - using basic functionality without advanced plugins")
+            logger.warning(
+                "Narrator agent entering fallback mode - using basic functionality without advanced plugins"
+            )
 
     async def describe_scene(self, scene_context: Dict[str, Any]) -> str:
         """
@@ -170,9 +173,12 @@ class NarratorAgent:
                 )
 
             # Enhance description with Azure OpenAI if available
-            if not getattr(self, '_fallback_mode', False) and self.openai_client:
+            if not getattr(self, "_fallback_mode", False) and self.openai_client:
                 messages = [
-                    {"role": "system", "content": "You are a world class game narrator."},
+                    {
+                        "role": "system",
+                        "content": "You are a world class game narrator.",
+                    },
                     {"role": "user", "content": full_description},
                 ]
                 try:
@@ -483,12 +489,14 @@ class NarratorAgent:
 # Lazy singleton instance
 _narrator = None
 
+
 def get_narrator():
     """Get the narrator instance, creating it if necessary."""
     global _narrator
     if _narrator is None:
         _narrator = NarratorAgent()
     return _narrator
+
 
 # For backward compatibility during import-time checks
 narrator = None

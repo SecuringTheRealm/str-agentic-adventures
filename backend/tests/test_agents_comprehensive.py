@@ -418,15 +418,20 @@ class TestCombatMCAgentFallback:
     def test_fallback_roll_d20_normal(self):
         """Test normal d20 roll in fallback mode."""
         from unittest.mock import patch
-        
+
         # Mock the CombatMCAgent to avoid dependency issues
         class MockCombatMCAgent:
             def __init__(self):
                 self.fallback_mode = True
-                
-            def _fallback_roll_d20(self, modifier: int = 0, advantage: bool = False, disadvantage: bool = False):
+
+            def _fallback_roll_d20(
+                self,
+                modifier: int = 0,
+                advantage: bool = False,
+                disadvantage: bool = False,
+            ):
                 import random
-                
+
                 if advantage and not disadvantage:
                     roll1 = random.randint(1, 20)
                     roll2 = random.randint(1, 20)
@@ -443,20 +448,20 @@ class TestCombatMCAgentFallback:
                     roll = random.randint(1, 20)
                     rolls = [roll]
                     advantage_type = "normal"
-                
+
                 total = roll + modifier
-                
+
                 return {
                     "rolls": rolls,
                     "modifier": modifier,
                     "total": total,
-                    "advantage_type": advantage_type
+                    "advantage_type": advantage_type,
                 }
-        
+
         agent = MockCombatMCAgent()
-        
+
         # Test normal roll
-        with patch('random.randint', return_value=15):
+        with patch("random.randint", return_value=15):
             result = agent._fallback_roll_d20(3)
             assert result["rolls"] == [15]
             assert result["modifier"] == 3
@@ -466,11 +471,16 @@ class TestCombatMCAgentFallback:
     def test_fallback_roll_d20_advantage(self):
         """Test d20 roll with advantage in fallback mode."""
         from unittest.mock import patch
-        
+
         class MockCombatMCAgent:
-            def _fallback_roll_d20(self, modifier: int = 0, advantage: bool = False, disadvantage: bool = False):
+            def _fallback_roll_d20(
+                self,
+                modifier: int = 0,
+                advantage: bool = False,
+                disadvantage: bool = False,
+            ):
                 import random
-                
+
                 if advantage and not disadvantage:
                     roll1 = random.randint(1, 20)
                     roll2 = random.randint(1, 20)
@@ -487,20 +497,20 @@ class TestCombatMCAgentFallback:
                     roll = random.randint(1, 20)
                     rolls = [roll]
                     advantage_type = "normal"
-                
+
                 total = roll + modifier
-                
+
                 return {
                     "rolls": rolls,
                     "modifier": modifier,
                     "total": total,
-                    "advantage_type": advantage_type
+                    "advantage_type": advantage_type,
                 }
-        
+
         agent = MockCombatMCAgent()
-        
+
         # Test advantage roll - mock two different values
-        with patch('random.randint', side_effect=[8, 15]):
+        with patch("random.randint", side_effect=[8, 15]):
             result = agent._fallback_roll_d20(2, advantage=True)
             assert len(result["rolls"]) == 2
             assert result["rolls"] == [8, 15]
@@ -511,11 +521,16 @@ class TestCombatMCAgentFallback:
     def test_fallback_roll_d20_disadvantage(self):
         """Test d20 roll with disadvantage in fallback mode."""
         from unittest.mock import patch
-        
+
         class MockCombatMCAgent:
-            def _fallback_roll_d20(self, modifier: int = 0, advantage: bool = False, disadvantage: bool = False):
+            def _fallback_roll_d20(
+                self,
+                modifier: int = 0,
+                advantage: bool = False,
+                disadvantage: bool = False,
+            ):
                 import random
-                
+
                 if advantage and not disadvantage:
                     roll1 = random.randint(1, 20)
                     roll2 = random.randint(1, 20)
@@ -532,20 +547,20 @@ class TestCombatMCAgentFallback:
                     roll = random.randint(1, 20)
                     rolls = [roll]
                     advantage_type = "normal"
-                
+
                 total = roll + modifier
-                
+
                 return {
                     "rolls": rolls,
                     "modifier": modifier,
                     "total": total,
-                    "advantage_type": advantage_type
+                    "advantage_type": advantage_type,
                 }
-        
+
         agent = MockCombatMCAgent()
-        
+
         # Test disadvantage roll
-        with patch('random.randint', side_effect=[12, 7]):
+        with patch("random.randint", side_effect=[12, 7]):
             result = agent._fallback_roll_d20(1, disadvantage=True)
             assert len(result["rolls"]) == 2
             assert result["rolls"] == [12, 7]
@@ -557,39 +572,44 @@ class TestCombatMCAgentFallback:
         """Test simple damage roll in fallback mode."""
         from unittest.mock import patch
         import re
-        
+
         class MockCombatMCAgent:
             def _fallback_roll_damage(self, dice_notation: str):
                 import random
-                
+
                 # Simple dice parser for basic notation like "1d6+2" or "2d8"
                 pattern = r"(\d*)d(\d+)(?:\+(\d+))?(?:\-(\d+))?"
                 match = re.match(pattern, dice_notation.lower().replace(" ", ""))
-                
+
                 if not match:
                     # Fallback to fixed damage if parsing fails
-                    return {"total": 4, "rolls": [4], "notation": dice_notation, "fallback": True}
-                
+                    return {
+                        "total": 4,
+                        "rolls": [4],
+                        "notation": dice_notation,
+                        "fallback": True,
+                    }
+
                 num_dice = int(match.group(1)) if match.group(1) else 1
                 dice_type = int(match.group(2))
                 plus_mod = int(match.group(3)) if match.group(3) else 0
                 minus_mod = int(match.group(4)) if match.group(4) else 0
                 modifier = plus_mod - minus_mod
-                
+
                 rolls = [random.randint(1, dice_type) for _ in range(num_dice)]
                 total = sum(rolls) + modifier
-                
+
                 return {
                     "notation": dice_notation,
                     "rolls": rolls,
                     "modifier": modifier,
-                    "total": max(total, 1)  # Minimum 1 damage
+                    "total": max(total, 1),  # Minimum 1 damage
                 }
-        
+
         agent = MockCombatMCAgent()
-        
+
         # Test 1d6+2
-        with patch('random.randint', return_value=4):
+        with patch("random.randint", return_value=4):
             result = agent._fallback_roll_damage("1d6+2")
             assert result["notation"] == "1d6+2"
             assert result["rolls"] == [4]
@@ -600,39 +620,44 @@ class TestCombatMCAgentFallback:
         """Test multiple dice damage roll in fallback mode."""
         from unittest.mock import patch
         import re
-        
+
         class MockCombatMCAgent:
             def _fallback_roll_damage(self, dice_notation: str):
                 import random
-                
+
                 # Simple dice parser for basic notation like "1d6+2" or "2d8"
                 pattern = r"(\d*)d(\d+)(?:\+(\d+))?(?:\-(\d+))?"
                 match = re.match(pattern, dice_notation.lower().replace(" ", ""))
-                
+
                 if not match:
                     # Fallback to fixed damage if parsing fails
-                    return {"total": 4, "rolls": [4], "notation": dice_notation, "fallback": True}
-                
+                    return {
+                        "total": 4,
+                        "rolls": [4],
+                        "notation": dice_notation,
+                        "fallback": True,
+                    }
+
                 num_dice = int(match.group(1)) if match.group(1) else 1
                 dice_type = int(match.group(2))
                 plus_mod = int(match.group(3)) if match.group(3) else 0
                 minus_mod = int(match.group(4)) if match.group(4) else 0
                 modifier = plus_mod - minus_mod
-                
+
                 rolls = [random.randint(1, dice_type) for _ in range(num_dice)]
                 total = sum(rolls) + modifier
-                
+
                 return {
                     "notation": dice_notation,
                     "rolls": rolls,
                     "modifier": modifier,
-                    "total": max(total, 1)  # Minimum 1 damage
+                    "total": max(total, 1),  # Minimum 1 damage
                 }
-        
+
         agent = MockCombatMCAgent()
-        
+
         # Test 2d8+3
-        with patch('random.randint', side_effect=[5, 7]):
+        with patch("random.randint", side_effect=[5, 7]):
             result = agent._fallback_roll_damage("2d8+3")
             assert result["notation"] == "2d8+3"
             assert result["rolls"] == [5, 7]
@@ -642,37 +667,42 @@ class TestCombatMCAgentFallback:
     def test_fallback_roll_damage_invalid_notation(self):
         """Test damage roll with invalid notation falls back gracefully."""
         import re
-        
+
         class MockCombatMCAgent:
             def _fallback_roll_damage(self, dice_notation: str):
                 import random
-                
+
                 # Simple dice parser for basic notation like "1d6+2" or "2d8"
                 pattern = r"(\d*)d(\d+)(?:\+(\d+))?(?:\-(\d+))?"
                 match = re.match(pattern, dice_notation.lower().replace(" ", ""))
-                
+
                 if not match:
                     # Fallback to fixed damage if parsing fails
-                    return {"total": 4, "rolls": [4], "notation": dice_notation, "fallback": True}
-                
+                    return {
+                        "total": 4,
+                        "rolls": [4],
+                        "notation": dice_notation,
+                        "fallback": True,
+                    }
+
                 num_dice = int(match.group(1)) if match.group(1) else 1
                 dice_type = int(match.group(2))
                 plus_mod = int(match.group(3)) if match.group(3) else 0
                 minus_mod = int(match.group(4)) if match.group(4) else 0
                 modifier = plus_mod - minus_mod
-                
+
                 rolls = [random.randint(1, dice_type) for _ in range(num_dice)]
                 total = sum(rolls) + modifier
-                
+
                 return {
                     "notation": dice_notation,
                     "rolls": rolls,
                     "modifier": modifier,
-                    "total": max(total, 1)  # Minimum 1 damage
+                    "total": max(total, 1),  # Minimum 1 damage
                 }
-        
+
         agent = MockCombatMCAgent()
-        
+
         # Test invalid notation
         result = agent._fallback_roll_damage("invalid")
         assert result["notation"] == "invalid"

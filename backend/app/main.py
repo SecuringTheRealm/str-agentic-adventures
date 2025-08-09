@@ -1,6 +1,7 @@
 """
 Main FastAPI application to serve the AI Dungeon Master backend.
 """
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
@@ -41,34 +42,39 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # Initialize database and create templates on startup
 @app.on_event("startup")
 async def startup_event():
     """Initialize database and create default templates."""
     logger.info("Initializing configuration...")
     init_settings()  # Load configuration once at startup
-    
+
     logger.info("Initializing database...")
     init_db()
-    
+
     logger.info("Creating default campaign templates...")
     campaign_service.create_template_campaigns()
-    
+
     logger.info("Application startup complete.")
+
 
 # Include routers
 app.include_router(game_routes.router, prefix="/api/game")
 app.include_router(websocket_routes.router, prefix="/api")
+
 
 # Health check endpoint
 @app.get("/health")
 async def health_check():
     return {"status": "ok", "version": "0.1.0"}
 
+
 # Root endpoint
 @app.get("/")
 async def root():
     return {"message": "Welcome to the AI Dungeon Master API"}
+
 
 if __name__ == "__main__":
     host = os.getenv("APP_HOST", "0.0.0.0")

@@ -165,7 +165,7 @@ async def handle_chat_message(
     """Handle incoming chat messages and stream AI responses."""
     try:
         message_type = message.get("type")
-        
+
         if message_type == "chat_input":
             await handle_chat_input(message, websocket, campaign_id)
         elif message_type == "ping":
@@ -198,14 +198,14 @@ async def handle_chat_input(
     try:
         user_input = message.get("message", "")
         character_id = message.get("character_id")
-        
+
         if not user_input.strip():
             await manager.send_personal_message(
                 json.dumps({"type": "chat_error", "message": "Empty message"}),
                 websocket,
             )
             return
-            
+
         if not character_id:
             await manager.send_personal_message(
                 json.dumps({"type": "chat_error", "message": "Missing character_id"}),
@@ -215,37 +215,36 @@ async def handle_chat_input(
 
         # Send acknowledgment that we received the message
         await manager.send_personal_message(
-            json.dumps({
-                "type": "chat_start",
-                "message": "Processing your input..."
-            }),
+            json.dumps({"type": "chat_start", "message": "Processing your input..."}),
             websocket,
         )
 
         # Import here to avoid circular imports
         from app.agents.dungeon_master_agent import get_dungeon_master
-        
+
         # Get DM agent and stream response
         dm_agent = get_dungeon_master()
-        
+
         # Create context for DM processing
         context = {
             "character_id": character_id,
             "campaign_id": campaign_id,
             "websocket": websocket,
-            "streaming": True
+            "streaming": True,
         }
-        
+
         # Process input with streaming enabled
         await dm_agent.process_input_stream(user_input, context)
 
     except Exception as e:
         logger.error(f"Error handling chat input: {str(e)}")
         await manager.send_personal_message(
-            json.dumps({
-                "type": "chat_error", 
-                "message": f"Failed to process chat input: {str(e)}"
-            }),
+            json.dumps(
+                {
+                    "type": "chat_error",
+                    "message": f"Failed to process chat input: {str(e)}",
+                }
+            ),
             websocket,
         )
 
