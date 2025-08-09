@@ -341,7 +341,9 @@ class CreateCharacterRequest(BaseModel):
     character_class: CharacterClass
     abilities: Abilities
     backstory: str | None = None
-    background: str | None = None  # Background choice from SRD (acolyte, criminal, etc.)
+    background: str | None = (
+        None  # Background choice from SRD (acolyte, criminal, etc.)
+    )
 
 
 class LevelUpRequest(BaseModel):

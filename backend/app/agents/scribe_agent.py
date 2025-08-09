@@ -402,17 +402,19 @@ class ScribeAgent:
                     skill_proficiencies = background_info.get("skill_proficiencies", [])
                     for skill in skill_proficiencies:
                         character_sheet["skills"][skill] = True
-                    
+
                     # Add background feature as a feature
                     feature = background_info.get("feature", {})
                     if feature:
-                        character_sheet["features"].append({
-                            "name": feature["name"],
-                            "description": feature["description"],
-                            "type": "background",
-                            "source": "background",
-                            "level_gained": 1
-                        })
+                        character_sheet["features"].append(
+                            {
+                                "name": feature["name"],
+                                "description": feature["description"],
+                                "type": "background",
+                                "source": "background",
+                                "level_gained": 1,
+                            }
+                        )
 
             # Add level 1 class features
             level_1_features = get_class_features(character_class, 1)

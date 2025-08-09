@@ -146,23 +146,23 @@ class TestSRDCharacterCreation:
             "name": "Test Acolyte",
             "race": "human",
             "class": "cleric",
-            "background": "acolyte"
+            "background": "acolyte",
         }
 
-        with patch('app.agents.scribe_agent.get_session') as mock_session:
+        with patch("app.agents.scribe_agent.get_session") as mock_session:
             mock_db = MagicMock()
             mock_session.return_value.__enter__.return_value = mock_db
-            
+
             result = await scribe_agent.create_character(acolyte_data)
-            
+
             # Check that background was applied
             assert result["background"] == "acolyte"
-            
+
             # Check that background skills were added
             skills = result.get("skills", {})
             assert skills.get("insight") is True
             assert skills.get("religion") is True
-            
+
             # Check that background feature was added
             features = result.get("features", [])
             feature_names = [f["name"] for f in features]
