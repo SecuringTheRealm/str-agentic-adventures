@@ -34,7 +34,6 @@ class TestProjectStructure:
             "app/agents/__init__.py",
             "app/config.py",
             "app/database.py",
-            "requirements.txt",
         ]
 
         for file_path in required_files:
@@ -43,6 +42,22 @@ class TestProjectStructure:
                 f"Required file {file_path} is missing (looked for {resolved_path})"
             )
             print(f"✅ {file_path} exists at {resolved_path}")
+
+        # Verify dependency configuration exists (UV-based project structure)
+        dependency_config_found = False
+        config_sources = []
+
+        # Check for root pyproject.toml (primary UV configuration)
+        for pyproject_path in ["../pyproject.toml", "./pyproject.toml", "pyproject.toml"]:
+            if os.path.exists(pyproject_path):
+                dependency_config_found = True
+                config_sources.append(f"root pyproject.toml ({pyproject_path})")
+                print(f"✅ Found UV dependency configuration: {pyproject_path}")
+                break
+
+        assert dependency_config_found, (
+            "No dependency configuration found. Expected root pyproject.toml for UV-based project"
+        )
 
     def test_python_syntax_validation(self) -> None:
         """Test that all Python files have valid syntax."""
