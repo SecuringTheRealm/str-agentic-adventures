@@ -741,6 +741,12 @@ export interface CreateCharacterRequest {
      * @memberof CreateCharacterRequest
      */
     'backstory'?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof CreateCharacterRequest
+     */
+    'background'?: string | null;
 }
 
 

@@ -147,7 +147,7 @@ async def get_character(character_id: str, config: ConfigDep):
 
 
 @router.post("/campaign", response_model=Campaign)
-async def create_campaign(campaign_data: CreateCampaignRequest):
+async def create_campaign(campaign_data: CreateCampaignRequest, config: ConfigDep):
     """Create a new campaign."""
     try:
         # Check if Azure OpenAI is configured
@@ -165,11 +165,14 @@ async def create_campaign(campaign_data: CreateCampaignRequest):
         # Handle configuration errors specifically
         error_msg = str(e)
         if "Azure OpenAI configuration" in error_msg:
+            logger.exception("Configuration error during campaign creation")
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=error_msg
             )
+        logger.exception("Validation error during campaign creation")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
+        logger.exception("Unexpected error during campaign creation")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to create campaign: {str(e)}",
@@ -185,6 +188,7 @@ async def list_campaigns():
 
         return CampaignListResponse(campaigns=all_campaigns, templates=templates)
     except Exception as e:
+        logger.exception("Error listing campaigns")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to list campaigns: {str(e)}",
@@ -198,6 +202,7 @@ async def get_campaign_templates():
         templates = campaign_service.get_templates()
         return {"templates": templates}
     except Exception as e:
+        logger.exception("Error getting campaign templates")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get templates: {str(e)}",

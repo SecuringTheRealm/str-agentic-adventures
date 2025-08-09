@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 **character_class** | [**CharacterClass**](CharacterClass.md) |  | [default to undefined]
 **abilities** | [**Abilities**](Abilities.md) |  | [default to undefined]
 **backstory** | **string** |  | [optional] [default to undefined]
+**background** | **string** |  | [optional] [default to undefined]
 
 ## Example
 
@@ -22,6 +23,7 @@ const instance: CreateCharacterRequest = {
     character_class,
     abilities,
     backstory,
+    background,
 };
 ```
 
