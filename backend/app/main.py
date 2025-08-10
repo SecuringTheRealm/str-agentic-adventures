@@ -37,6 +37,7 @@ async def lifespan(app: FastAPI):
 
     logger.info("Running database migrations...")
     from app.migration_runner import run_migrations
+
     run_migrations()
 
     logger.info("Creating default campaign templates...")

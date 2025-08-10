@@ -1,7 +1,7 @@
 # AI Dungeon Master - Build System
 # This Makefile provides standardized targets for dependency management, testing, and running the application
 
-.PHONY: deps test run clean lint format help backend-deps backend-test backend-run
+.PHONY: deps test run clean lint format help
 
 # Default target
 help:
@@ -12,7 +12,6 @@ help:
 	@echo "  lint        - Run linting checks"
 	@echo "  format      - Format code"
 	@echo "  clean       - Clean up temporary files"
-	@echo "  backend-*   - Backend-specific targets"
 
 # Install dependencies
 deps:
@@ -32,19 +31,6 @@ test:
 # Start the application (backend server)
 run:
 	@echo "Starting AI Dungeon Master backend..."
-	PYTHONPATH=./backend uv run python -m app.main
-
-# Backend-specific targets for direct backend operations
-backend-deps:
-	@echo "Installing backend dependencies..."
-	cd backend && uv sync
-
-backend-test:
-	@echo "Running backend tests..."
-	cd backend && uv run pytest tests/ -v
-
-backend-run:
-	@echo "Starting backend server from backend directory..."
 	PYTHONPATH=./backend uv run python -m app.main
 
 # Linting

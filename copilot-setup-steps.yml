@@ -17,17 +17,6 @@
     elif [ -f "requirements.txt" ]; then
       uv pip install -r requirements.txt
     fi
-    
-    # If there's a backend directory, check there too
-    if [ -d "backend" ] && [ -f "backend/pyproject.toml" ]; then
-      cd backend
-      uv sync
-      cd ..
-    elif [ -d "backend" ] && [ -f "backend/requirements.txt" ]; then
-      cd backend
-      uv pip install -r requirements.txt
-      cd ..
-    fi
 
 # Install frontend dependencies  
 - name: Install frontend dependencies
@@ -76,12 +65,5 @@
       # Install common Python development tools if pyproject.toml exists (root level)
       if [ -f "pyproject.toml" ]; then
         uv add --dev pytest black isort mypy ruff || echo "Development tools installation skipped - add them manually if needed"
-      fi
-      
-      # Install development tools for backend directory if it exists
-      if [ -d "backend" ] && [ -f "backend/pyproject.toml" ]; then
-        cd backend
-        uv add --dev pytest black isort mypy ruff || echo "Development tools installation skipped - add them manually if needed"
-        cd ..
       fi
     fi
