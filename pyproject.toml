@@ -27,7 +27,6 @@ dependencies = [
     # Azure & OpenAI integration
     "semantic-kernel>=1.0,<2.0",
     "azure-identity>=1.13.0",
-    "azure-storage-blob>=12.16.0",
     "openai>=1.0,<2.0",
     # Database
     "sqlalchemy>=2.0.0",

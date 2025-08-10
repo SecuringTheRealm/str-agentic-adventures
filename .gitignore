@@ -418,10 +418,24 @@ infra/main.json
 *.db
 *.sqlite
 *.sqlite3
+*.db-journal
+*.sqlite-journal
+*.db-wal
+*.sqlite-wal  
+*.db-shm
+*.sqlite-shm
 backend/app.db
 app.db
+
+# Auto-generated API client files that shouldn't be committed
+frontend/src/api-client/git_push.sh
 
 # Legacy files
 *.old
 *.bak
 *.backup
+
+# Build artifacts and generated files
+requirements.txt
+build/
+dist/
