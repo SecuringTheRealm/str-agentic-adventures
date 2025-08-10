@@ -14,6 +14,22 @@ AI-powered tabletop RPG application with Python FastAPI backend using Semantic K
   ```
 - Node.js 18+ is required (package.json specifies 22+ but 20 works with warnings)
 
+### Optimized Copilot Setup Workflow
+
+**IMPORTANT**: The repository includes an optimized GitHub Actions workflow for Copilot agent setup with dependency caching. This workflow is located at `.github/workflows/copilot-setup-steps.yml` and provides:
+
+- **Dependency Caching**: UV Python dependencies cached at `~/.cache/uv` with cache keys based on `pyproject.toml` and `uv.lock` files
+- **NPM Caching**: Frontend dependencies cached using `actions/setup-node@v4` built-in caching with `frontend/package-lock.json` as the cache dependency path
+- **Performance**: Reduces setup time from 4+ minutes to seconds on cache hits
+- **Consistency**: Python 3.12 and Node.js 20 versions aligned with CI workflows
+
+The workflow automatically handles:
+1. Dependency installation with caching
+2. Environment setup for GitHub Actions context
+3. Development tool availability verification
+
+For manual setup outside the workflow, follow the steps below.
+
 ### Bootstrap, Build, and Test the Repository
 
 1. **Install all dependencies:**
@@ -167,6 +183,7 @@ AI-powered tabletop RPG application with Python FastAPI backend using Semantic K
 - **Backend**: Makefile + UV package manager for standardized commands
 - **Frontend**: Standard npm scripts
 - **CI/CD**: Multiple GitHub workflows (unit tests, integration tests, E2E tests)
+- **Copilot Setup**: Optimized workflow with dependency caching at `.github/workflows/copilot-setup-steps.yml`
 
 ## Environment Configuration
 

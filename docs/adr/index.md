@@ -31,6 +31,7 @@ This directory contains Architecture Decision Records (ADRs) for the Agentic Adv
 | 0012 | [FastAPI Lifespan Event Handler Migration](0012-fastapi-lifespan-migration.md) | Accepted | 2025-01-09 | Migration from deprecated on_event handlers to modern lifespan context manager |
 | 0013 | [CI Workflow Optimization for Reduced Duplication and CI Minutes](0013-ci-workflow-optimization.md) | Accepted | 2025-08-09 | Optimization of GitHub Actions workflows to reduce CI minutes usage and improve PR feedback loops |
 | 0014 | [Multi-Platform AI Instruction Architecture](0014-multi-platform-ai-instruction-architecture.md) | Accepted | 2025-01-27 | Hierarchical instruction structure supporting OpenAI Codex, GitHub Copilot Chat, coding agent, and code review |
+| 0015 | [Copilot Workflow Optimization with Dependency Caching](0015-copilot-workflow-optimization-with-dependency-caching.md) | Accepted | 2025-08-10 | Optimize Copilot agent setup workflow with GitHub Actions dependency caching to reduce startup times |
 
 ## ADR Statuses
 
