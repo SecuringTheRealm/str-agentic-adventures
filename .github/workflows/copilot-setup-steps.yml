@@ -2,7 +2,7 @@
 name: "Copilot Setup Steps"
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: {}
   push:
     paths:
       - .github/workflows/copilot-setup-steps.yml
@@ -31,7 +31,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/uv
-          key: ${{ runner.os }}-uv-${{ hashFiles('**/pyproject.toml', '**/uv.lock') }}
+          key: >-
+            ${{ runner.os }}-uv-${{ hashFiles('**/pyproject.toml', '**/uv.lock') }}
           restore-keys: ${{ runner.os }}-uv-
 
       - name: Install Python dependencies
@@ -52,8 +53,9 @@ jobs:
 
       - name: Setup environment configuration
         run: |
-          # In GitHub Actions context, environment variables should come from secrets
-          # Example: Create .env file with secrets if needed by the application
+          # In GitHub Actions context, environment variables should come from
+          # secrets. Example: Create .env file with secrets if needed by the
+          # application
           echo "Environment setup for GitHub Actions context"
           echo "# Use GitHub secrets to populate environment variables in workflows:"
           echo "#   env:"
@@ -63,6 +65,7 @@ jobs:
       - name: Install development tools
         run: |
           export PATH="$HOME/.local/bin:$PATH"
-          # Python development tools are already included in pyproject.toml dev dependencies
-          # Frontend development tools are managed via package.json devDependencies
+          # Python development tools are already included in pyproject.toml dev
+          # dependencies Frontend development tools are managed via package.json
+          # devDependencies
           echo "✅ Development tools available via project dependency files"
