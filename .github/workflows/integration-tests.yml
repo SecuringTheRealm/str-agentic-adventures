@@ -118,8 +118,13 @@ jobs:
         cd ../backend
         uv run python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 &
         BACKEND_PID=$!
-        sleep 10  # Give server time to start
-        
+        # Wait for backend server to be ready (timeout after 30s)
+        for i in {1..30}; do
+          if curl -fs http://localhost:8000/openapi.json > /dev/null; then
+            break
+          fi
+          sleep 1
+        done
         # Test OpenAPI schema availability
         curl -f http://localhost:8000/openapi.json > /dev/null || {
           echo "❌ OpenAPI schema not available"
