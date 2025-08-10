@@ -66,6 +66,23 @@ Apply the [general coding guidelines](./general-coding.instructions.md) to all c
 - Use Biome for linting and formatting
 - Ensure all linting and formatting rules pass before submitting code
 
+## API Integration
+
+### OpenAPI Client Management
+
+- **MANDATORY: Regenerate API client after backend schema/API changes**
+- **Command**: `cd frontend && npm run generate:api`
+- **Required**: Must run when backend models, endpoints, or request/response schemas change
+- **Location**: Generated files in `src/api-client/` (DO NOT edit manually)
+- **Workflow**: Backend changes → regenerate client → update frontend code → test
+
+### API Service Layer
+
+- Use generated client types for type safety
+- Wrap generated API calls in service functions for consistency
+- Handle API response shape mismatches in service layer (e.g., `{templates: [...]}` → `[...]`)
+- Implement proper error handling and retry logic for production reliability
+
 ## UI Theming Guidelines
 
 ### General Practices

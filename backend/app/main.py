@@ -35,8 +35,9 @@ async def lifespan(app: FastAPI):
     logger.info("Initializing configuration...")
     init_settings()  # Load configuration once at startup
 
-    logger.info("Initializing database...")
-    init_db()
+    logger.info("Running database migrations...")
+    from app.migration_runner import run_migrations
+    run_migrations()
 
     logger.info("Creating default campaign templates...")
     campaign_service.create_template_campaigns()
