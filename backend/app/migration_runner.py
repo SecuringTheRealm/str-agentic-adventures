@@ -20,10 +20,12 @@ def get_alembic_config() -> config.Config:
     # Go up one level to the backend directory where alembic.ini is located
     backend_dir = os.path.dirname(current_dir)
     alembic_ini_path = os.path.join(backend_dir, "alembic.ini")
-    
+
     if not os.path.exists(alembic_ini_path):
-        raise FileNotFoundError(f"Alembic configuration not found at {alembic_ini_path}")
-    
+        raise FileNotFoundError(
+            f"Alembic configuration not found at {alembic_ini_path}"
+        )
+
     cfg = config.Config(alembic_ini_path)
     cfg.set_main_option("sqlalchemy.url", DATABASE_URL)
     return cfg
@@ -77,7 +79,7 @@ def get_head_revision() -> str | None:
 def run_migrations() -> None:
     """
     Run database migrations automatically on startup.
-    
+
     Logic:
     1. If no alembic_version table exists and database is empty -> run create_all
     2. If no alembic_version table exists but database has tables -> stamp with current head
@@ -86,48 +88,51 @@ def run_migrations() -> None:
     """
     try:
         logger.info("Checking database migration status...")
-        
+
         # Check if this is a fresh database
         if is_database_empty():
             logger.info("Database is empty, creating initial schema...")
             from app.database import init_db
+
             init_db()
-            
+
             # Stamp the database with the current head revision
             cfg = get_alembic_config()
             command.stamp(cfg, "head")
             logger.info("Database initialized and stamped with current migration head")
             return
-        
+
         # Check if alembic version table exists
         if not has_alembic_version_table():
-            logger.info("Existing database found without migration tracking, stamping with current head...")
+            logger.info(
+                "Existing database found without migration tracking, stamping with current head..."
+            )
             cfg = get_alembic_config()
             command.stamp(cfg, "head")
             logger.info("Database stamped with current migration head")
             return
-        
+
         # Check if migrations need to be run
         current_rev = get_current_revision()
         head_rev = get_head_revision()
-        
+
         if current_rev is None:
             logger.warning("Could not determine current database revision")
             return
-        
+
         if head_rev is None:
             logger.warning("Could not determine head revision from migration scripts")
             return
-        
+
         if current_rev == head_rev:
             logger.info(f"Database is up to date (revision: {current_rev})")
             return
-        
+
         logger.info(f"Database needs upgrade: {current_rev} -> {head_rev}")
         cfg = get_alembic_config()
         command.upgrade(cfg, "head")
         logger.info("Database migration completed successfully")
-        
+
     except Exception as e:
         logger.error(f"Error running database migrations: {e}")
         # Don't raise the exception to allow the application to continue
@@ -139,16 +144,16 @@ def create_initial_migration() -> None:
     try:
         cfg = get_alembic_config()
         script_dir = ScriptDirectory.from_config(cfg)
-        
+
         # Check if any migrations exist
         revisions = list(script_dir.walk_revisions())
         if revisions:
             logger.info("Migration files already exist")
             return
-        
+
         logger.info("Creating initial migration...")
         command.revision(cfg, autogenerate=True, message="Initial database schema")
         logger.info("Initial migration created")
-        
+
     except Exception as e:
         logger.error(f"Error creating initial migration: {e}")
