@@ -46,8 +46,20 @@ All code must follow the [general coding guidelines](./general-coding.instructio
 
 - Use Pydantic models for data validation.
 - Ensure proper serialization for campaign persistence.
-- Use SQLAlchemy for all database interactions.
+- **MANDATORY: Use SQLAlchemy ORM for all database interactions** - Never use raw database connectors
+- **FORBIDDEN: Direct use of sqlite3, psycopg2, or other database drivers** - Always use ORM sessions
+- **Use dependency injection**: Access database via `get_session()` dependency
+- **Model changes require migrations**: Update `app/models/db_models.py` + create Alembic migration
 - Provide migration scripts for schema changes.
+
+### Database Access Patterns
+
+- **Correct**: `with next(get_session()) as db: db.query(Model).filter(...)`
+- **Correct**: Use SQLAlchemy Session methods: `query()`, `add()`, `commit()`, `rollback()`
+- **FORBIDDEN**: `import sqlite3; conn = sqlite3.connect(...)`
+- **FORBIDDEN**: `import psycopg2; conn = psycopg2.connect(...)`
+- **FORBIDDEN**: Raw SQL strings without SQLAlchemy text() wrapper
+- **Required**: All model changes must include corresponding Alembic migrations
 
 ## Testing
 

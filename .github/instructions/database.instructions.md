@@ -25,20 +25,46 @@ Apply the [general coding guidelines](./general-coding.instructions.md) to all d
 
 ## Schema Management
 
+### Alembic Migration System
+
+- **MANDATORY: Use Alembic for all schema changes** - Never modify database models without creating migrations
+- **Automatic migration runner on startup** - The application automatically checks and runs migrations
+- **Migration file organization**: Stored in `backend/migrations/versions/`
+- **Naming convention**: Alembic auto-generates timestamps like `9a6d5baf6502_initial_database_schema.py`
+
 ### Migration Best Practices
 
-- **Always create migration scripts** for schema changes
-- **Test migrations on realistic data** before deploying
-- **Make migrations reversible** when possible
-- **Document breaking changes** and required data transformations
-- **Version migrations sequentially** to maintain consistency
+- **Always create migration scripts** for any model changes using `alembic revision --autogenerate -m "description"`
+- **Test migrations on realistic data** before deploying to production
+- **Make migrations reversible** when possible by implementing proper `downgrade()` functions
+- **Document breaking changes** and required data transformations in migration comments
+- **Review auto-generated migrations** - Alembic may miss some changes or generate suboptimal SQL
+
+### Migration Workflow
+
+1. **Make model changes** in `app/models/db_models.py`
+2. **Generate migration**: `cd backend && uv run alembic revision --autogenerate -m "description"`
+3. **Review generated migration** in `migrations/versions/` directory
+4. **Test migration**: Start the application - migrations run automatically
+5. **Commit both model changes and migration files** together
+
+### Database Environment Configuration
+
+- **PostgreSQL (Production)**: Set `DATABASE_HOST`, `DATABASE_NAME`, `DATABASE_USER`, `DATABASE_PASSWORD`
+- **Azure AD Authentication**: Set `DATABASE_HOST` and `DATABASE_NAME` without user/password for Managed Identity
+- **SQLite (Development)**: Default fallback when no PostgreSQL env vars are set
+- **Custom URL**: Set `DATABASE_URL` to override automatic configuration
 
 ### Migration File Organization
 
-- Place migration files in dedicated `migrations/` directory
-- Use timestamp-based naming: `YYYYMMDD_HHMMSS_description.sql`
-- Include both up and down migration scripts
-- Maintain a migration history table in the database
+- **Location**: `backend/migrations/versions/`
+- **Auto-generated naming**: Alembic uses revision hashes + description
+- **Migration history**: Tracked in `alembic_version` table
+- **Startup behavior**: 
+  - Empty DB → Create schema + stamp with head revision
+  - Existing DB without tracking → Stamp with current head
+  - Tracked DB behind head → Run upgrade migrations
+  - Up-to-date DB → No action required
 
 ## Database Development Practices
 

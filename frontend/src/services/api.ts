@@ -117,7 +117,8 @@ export const deleteCampaign = async (campaignId: string) => {
 
 export const getCampaignTemplates = async () => {
   const response = await gameApi.getCampaignTemplatesApiGameCampaignTemplatesGet();
-  return response.data;
+  // The API returns {templates: [...]} but we need to return just the array
+  return response.data.templates || [];
 };
 
 /**
