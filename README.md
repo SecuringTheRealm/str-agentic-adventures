@@ -196,4 +196,25 @@ Validate the entire workflow:
 ./scripts/validate-openapi-client.sh
 ```
 
-See [docs/OPENAPI_CLIENT.md](docs/OPENAPI_CLIENT.md) for detailed documentation.
+See [docs/specs/OPENAPI_CLIENT.md](docs/specs/OPENAPI_CLIENT.md) for detailed documentation.
+
+## Documentation
+
+### User Guides
+- [Build System Guide](docs/user/BUILD.md) - How to build and run the application
+- [Agent Documentation](AGENTS.md) - Detailed information about the AI agents
+
+### Technical Specifications
+- [Testing Strategy](docs/specs/TESTING_STRATEGY.md) - Test organization and strategy
+- [OpenAPI Client](docs/specs/OPENAPI_CLIENT.md) - API client generation and usage
+- [UV Migration Guide](docs/specs/UV_MIGRATION.md) - Migration to UV package manager
+
+### Reference Materials
+- [D&D 5e SRD Compliance](docs/reference/srd-5.2.1.md) - Complete SRD reference
+- [SRD Compliance Summary](docs/reference/SRD_COMPLIANCE_SUMMARY.md) - Summary of D&D 5e compliance
+- [Container Optimization](docs/reference/CONTAINER_OPTIMIZATION.md) - Deployment optimization guide
+
+### Architecture Decisions
+- [ADR Index](docs/adr/index.md) - Complete list of architectural decisions
+- [Project Requirements](docs/product_requirements_document.md) - Product specification
+- [Deployment Guide](docs/deployment.md) - Production deployment instructions
