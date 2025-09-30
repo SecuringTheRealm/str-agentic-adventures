@@ -23,6 +23,15 @@ jobs:
     permissions:
       contents: read
 
+    # Environment variables available to the Copilot agent during development
+    # These secrets are automatically masked in GitHub logs
+    env:
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+      AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+
     steps:
       # Checkout code to install project dependencies.
       # If this step is omitted, Copilot will clone the repository automatically after setup.
