@@ -22,11 +22,31 @@ AI-powered tabletop RPG application with Python FastAPI backend using Semantic K
 - **NPM Caching**: Frontend dependencies cached using `actions/setup-node@v4` built-in caching with `frontend/package-lock.json` as the cache dependency path
 - **Performance**: Reduces setup time from 4+ minutes to seconds on cache hits
 - **Consistency**: Python 3.12 and Node.js 20 versions aligned with CI workflows
+- **Azure Secrets**: Environment variables for Azure services are automatically available for local testing and Playwright E2E tests
 
 The workflow automatically handles:
 1. Python and Node.js environment setup
 2. Dependency installation with caching (Python via UV, Node.js via npm)
 3. Repository checkout for dependency installation
+4. Azure secrets exposure for local development and testing
+
+#### Available Azure Environment Variables
+
+The following Azure secrets are automatically available as environment variables during Copilot agent sessions for local testing and Playwright E2E tests:
+
+- `AZURE_CLIENT_ID` - Application (client) ID from service principal
+- `AZURE_OPENAI_API_KEY` - Azure AI Foundry API key for OpenAI services
+- `AZURE_OPENAI_ENDPOINT` - Azure OpenAI endpoint URL (e.g., `https://your-project.openai.azure.com/`)
+- `AZURE_SUBSCRIPTION_ID` - Azure subscription ID
+- `AZURE_TENANT_ID` - Directory (tenant) ID
+
+These environment variables enable:
+- Running backend tests that require Azure OpenAI authentication
+- Executing Playwright E2E tests with real Azure services
+- Local development with Azure AI Foundry integration
+- Testing AI agent functionality without manual environment setup
+
+**Note**: These secrets are automatically masked in GitHub logs to prevent exposure. They are only available when the Copilot agent workflow runs and are not stored in the repository.
 
 For manual setup outside the workflow, follow the steps below.
 
