@@ -1,6 +1,9 @@
 ---
 name: "Copilot Setup Steps"
 
+# This workflow customizes the GitHub Copilot coding agent environment.
+# See: https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/customize-the-agent-environment
+
 on:
   workflow_dispatch: {}
   push:
@@ -11,22 +14,33 @@ on:
       - .github/workflows/copilot-setup-steps.yml
 
 jobs:
+  # The job MUST be named 'copilot-setup-steps' to be recognized by GitHub Copilot
   copilot-setup-steps:
     runs-on: ubuntu-latest
+
+    # Set permissions to the minimum required for setup steps.
+    # Copilot will be given its own token for operations after setup completes.
     permissions:
       contents: read
+
     steps:
+      # Checkout code to install project dependencies.
+      # If this step is omitted, Copilot will clone the repository automatically after setup.
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Set up Python 3.12 (aligned with CI workflows)
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.12"
 
+      # Install UV package manager for Python dependency management
       - name: Install UV
         run: curl -LsSf https://astral.sh/uv/install.sh | sh
 
+      # Cache Python dependencies to speed up subsequent runs
+      # Cache key based on pyproject.toml and uv.lock ensures invalidation on dependency changes
       - name: Cache Python dependencies (UV)
         uses: actions/cache@v4
         with:
@@ -35,11 +49,13 @@ jobs:
             ${{ runner.os }}-uv-${{ hashFiles('**/pyproject.toml', '**/uv.lock') }}
           restore-keys: ${{ runner.os }}-uv-
 
+      # Install Python dependencies including dev dependencies for linting, testing, etc.
       - name: Install Python dependencies
         run: |
           export PATH="$HOME/.local/bin:$PATH"
           uv sync
 
+      # Set up Node.js 20 with npm caching (aligned with CI workflows)
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -47,25 +63,8 @@ jobs:
           cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
+      # Install frontend dependencies
+      # --legacy-peer-deps required due to peer dependency conflicts in some packages
       - name: Install frontend dependencies
         run: |
           cd frontend && npm ci --legacy-peer-deps
-
-      - name: Setup environment configuration
-        run: |
-          # In GitHub Actions context, environment variables should come from
-          # secrets. Example: Create .env file with secrets if needed by the
-          # application
-          echo "Environment setup for GitHub Actions context"
-          echo "# Use GitHub secrets to populate environment variables in workflows:"
-          echo "#   env:"
-          echo "#     API_KEY: \${{ secrets.API_KEY }}"
-          echo "#     DATABASE_URL: \${{ secrets.DATABASE_URL }}"
-
-      - name: Install development tools
-        run: |
-          export PATH="$HOME/.local/bin:$PATH"
-          # Python development tools are already included in pyproject.toml dev
-          # dependencies Frontend development tools are managed via package.json
-          # devDependencies
-          echo "✅ Development tools available via project dependency files"

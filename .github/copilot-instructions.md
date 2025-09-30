@@ -24,9 +24,9 @@ AI-powered tabletop RPG application with Python FastAPI backend using Semantic K
 - **Consistency**: Python 3.12 and Node.js 20 versions aligned with CI workflows
 
 The workflow automatically handles:
-1. Dependency installation with caching
-2. Environment setup for GitHub Actions context
-3. Development tool availability verification
+1. Python and Node.js environment setup
+2. Dependency installation with caching (Python via UV, Node.js via npm)
+3. Repository checkout for dependency installation
 
 For manual setup outside the workflow, follow the steps below.
 
