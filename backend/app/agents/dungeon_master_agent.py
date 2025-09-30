@@ -9,12 +9,18 @@ import json
 import logging
 import random
 import re
-from typing import Any
+from typing import Any, Optional
+
+from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+from semantic_kernel.contents import ChatHistory
+from semantic_kernel.connectors.ai.prompt_execution_settings import (
+    PromptExecutionSettings,
+)
+
+from app.kernel_setup import kernel_manager
 
 logger = logging.getLogger(__name__)
-
-# Placeholder for compatibility with tests expecting a kernel manager
-kernel_manager = None
 
 
 class DungeonMasterAgent:
@@ -27,30 +33,29 @@ class DungeonMasterAgent:
     def __init__(self) -> None:
         """Initialize the Dungeon Master agent."""
         self._fallback_mode = False
-        self.openai_client = None
+        self.kernel: Optional[Kernel] = None
+        self.chat_service: Optional[AzureChatCompletion] = None
 
+        # Try to get the shared kernel from kernel manager
         try:
-            # Try to initialize Azure OpenAI client
-            from app.azure_openai_client import AzureOpenAIClient
-
-            self.openai_client = AzureOpenAIClient()
-            logger.info("DM Agent initialized with Azure OpenAI support")
+            self.kernel = kernel_manager.get_kernel()
+            if self.kernel is None:
+                # Kernel manager is in fallback mode
+                self._fallback_mode = True
+                logger.warning(
+                    "DM Agent operating in fallback mode - Azure OpenAI not configured"
+                )
+            else:
+                # Get the chat service from the kernel
+                self.chat_service = self.kernel.get_service(type=AzureChatCompletion)
+                logger.info("DM Agent initialized with Semantic Kernel")
 
         except Exception as e:
-            # Fall back to basic mode if Azure OpenAI is not configured
-            error_msg = str(e)
-            if (
-                "validation errors for Settings" in error_msg
-                and ("azure_openai" in error_msg or "openai" in error_msg)
-            ) or "Azure OpenAI configuration is missing or invalid" in error_msg:
-                logger.warning(
-                    "Azure OpenAI configuration is missing or invalid. "
-                    "DM Agent operating in fallback mode with basic functionality."
-                )
-                self._fallback_mode = True
-            else:
-                # Re-raise other errors
-                raise
+            logger.warning(
+                f"Failed to initialize DM Agent with Semantic Kernel: {e}. "
+                "Operating in fallback mode."
+            )
+            self._fallback_mode = True
 
         # Fallback components are initialized lazily
         self._fallback_initialized = False
@@ -107,7 +112,7 @@ Always respond as a helpful, creative DM who wants players to have an exciting a
 
         # Use fallback mode if needed
         if self._fallback_mode:
-            return self._process_input_fallback(user_input, context)
+            return await self._process_input_fallback(user_input, context)
 
         try:
             # Create system prompt
@@ -118,21 +123,29 @@ Always respond as a helpful, creative DM who wants players to have an exciting a
             if context.get("character_name"):
                 user_message = f"Player ({context['character_name']}): {user_input}"
 
-            messages = [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_message},
-            ]
+            # Create chat history with Semantic Kernel
+            chat_history = ChatHistory()
+            chat_history.add_system_message(system_prompt)
+            chat_history.add_user_message(user_message)
 
-            # Get AI response
-            ai_response = await self.openai_client.chat_completion(
-                messages, temperature=0.7, max_tokens=500
+            # Configure prompt execution settings
+            settings = PromptExecutionSettings(
+                temperature=0.7,
+                max_tokens=500,
             )
+
+            # Get AI response using Semantic Kernel
+            response = await self.chat_service.get_chat_message_contents(
+                chat_history=chat_history,
+                settings=settings,
+            )
+
+            # Extract the response text
+            ai_response = str(response[0]) if response else "The adventure continues..."
 
             # Structure the response in the expected format
             return {
-                "message": ai_response.strip()
-                if ai_response
-                else "The adventure continues...",
+                "message": ai_response.strip(),
                 "visuals": [],  # Simple implementation - no visual generation
                 "state_updates": {"last_action": user_input},
                 "combat_updates": None,
@@ -141,7 +154,7 @@ Always respond as a helpful, creative DM who wants players to have an exciting a
         except Exception as e:
             logger.error(f"Error in DM processing: {str(e)}")
             # Fall back to using the full fallback processing which handles dice, etc.
-            return self._process_input_fallback(user_input, context)
+            return await self._process_input_fallback(user_input, context)
 
     async def process_input_stream(
         self, user_input: str, context: dict[str, Any] = None
@@ -207,27 +220,50 @@ Always respond as a helpful, creative DM who wants players to have an exciting a
     async def _stream_ai_response(
         self, messages: list[dict[str, str]], websocket
     ) -> None:
-        """Stream AI response using Azure OpenAI."""
+        """Stream AI response using Semantic Kernel."""
         try:
             # Send start streaming message
             await self._send_chat_message(
                 websocket, {"type": "chat_start_stream", "message": ""}
             )
 
+            # Convert messages to ChatHistory
+            chat_history = ChatHistory()
+            for msg in messages:
+                if msg["role"] == "system":
+                    chat_history.add_system_message(msg["content"])
+                elif msg["role"] == "user":
+                    chat_history.add_user_message(msg["content"])
+                elif msg["role"] == "assistant":
+                    chat_history.add_assistant_message(msg["content"])
+
+            # Configure prompt execution settings
+            settings = PromptExecutionSettings(
+                temperature=0.7,
+                max_tokens=500,
+            )
+
+            # Stream response using Semantic Kernel
             full_response = ""
-            async for chunk in self.openai_client.chat_completion_stream(
-                messages, temperature=0.7, max_tokens=500
+            async for (
+                chunk_list
+            ) in self.chat_service.get_streaming_chat_message_contents(
+                chat_history=chat_history,
+                settings=settings,
             ):
-                if chunk:
-                    full_response += chunk
-                    await self._send_chat_message(
-                        websocket,
-                        {
-                            "type": "chat_stream",
-                            "chunk": chunk,
-                            "full_text": full_response,
-                        },
-                    )
+                # Each chunk is a list of StreamingChatMessageContent
+                for chunk in chunk_list:
+                    chunk_text = str(chunk)
+                    if chunk_text:
+                        full_response += chunk_text
+                        await self._send_chat_message(
+                            websocket,
+                            {
+                                "type": "chat_stream",
+                                "chunk": chunk_text,
+                                "full_text": full_response,
+                            },
+                        )
 
             # Send completion message
             await self._send_chat_message(
