@@ -5,7 +5,10 @@ Combat MC Agent - Manages combat encounters, tactics, and battle flow.
 import logging
 import random
 import re
-from typing import Any
+from typing import Any, Optional
+
+from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 
 from app.kernel_setup import kernel_manager
 
@@ -20,15 +23,43 @@ class CombatMCAgent:
 
     def __init__(self) -> None:
         """Initialize the Combat MC agent with its own kernel instance."""
-        self.kernel = kernel_manager.create_kernel()
+        self.kernel: Optional[Kernel] = None
+        self.chat_service: Optional[AzureChatCompletion] = None
         self.fallback_mode = False  # Track if we're using fallback mechanics
-        self._register_skills()
+
+        # Try to get the shared kernel from kernel manager
+        try:
+            self.kernel = kernel_manager.get_kernel()
+            if self.kernel is None:
+                self.fallback_mode = True
+                logger.warning(
+                    "Combat MC agent operating in fallback mode - Azure OpenAI not configured"
+                )
+                self._initialize_fallback_mechanics()
+            else:
+                self.chat_service = self.kernel.get_service(type=AzureChatCompletion)
+                self._register_skills()
+                logger.info("Combat MC agent initialized with Semantic Kernel")
+        except Exception as e:
+            logger.warning(
+                f"Failed to initialize Combat MC agent with Semantic Kernel: {e}. "
+                "Operating in fallback mode."
+            )
+            self.fallback_mode = True
+            self._initialize_fallback_mechanics()
 
         # Active combat tracking
         self.active_combats = {}
 
     def _register_skills(self) -> None:
         """Register necessary skills for the Combat MC agent."""
+        # Skip if in fallback mode
+        if self.fallback_mode or self.kernel is None:
+            logger.info(
+                "Combat MC agent in fallback mode - skipping plugin registration"
+            )
+            return
+
         try:
             # Import plugins
             from app.plugins.rules_engine_plugin import RulesEnginePlugin

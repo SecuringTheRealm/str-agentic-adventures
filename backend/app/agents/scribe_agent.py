@@ -3,7 +3,10 @@ Scribe Agent - Manages character sheets and game data.
 """
 
 import logging
-from typing import Any
+from typing import Any, Optional
+
+from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 
 from app.database import get_session, init_db
 from app.kernel_setup import kernel_manager
@@ -20,7 +23,28 @@ class ScribeAgent:
 
     def __init__(self) -> None:
         """Initialize the Scribe agent with its own kernel instance."""
-        self.kernel = kernel_manager.create_kernel()
+        self.kernel: Optional[Kernel] = None
+        self.chat_service: Optional[AzureChatCompletion] = None
+        self._fallback_mode = False
+
+        # Try to get the shared kernel from kernel manager
+        try:
+            self.kernel = kernel_manager.get_kernel()
+            if self.kernel is None:
+                self._fallback_mode = True
+                logger.warning(
+                    "Scribe agent operating in fallback mode - Azure OpenAI not configured"
+                )
+            else:
+                self.chat_service = self.kernel.get_service(type=AzureChatCompletion)
+                logger.info("Scribe agent initialized with Semantic Kernel")
+        except Exception as e:
+            logger.warning(
+                f"Failed to initialize Scribe agent with Semantic Kernel: {e}. "
+                "Operating in fallback mode."
+            )
+            self._fallback_mode = True
+
         init_db()
         self._register_skills()
 
@@ -226,6 +250,11 @@ class ScribeAgent:
 
     def _register_skills(self) -> None:
         """Register necessary skills for the Scribe agent."""
+        # Skip plugin registration if in fallback mode
+        if self._fallback_mode or self.kernel is None:
+            logger.info("Scribe agent in fallback mode - skipping plugin registration")
+            return
+
         from semantic_kernel import kernel_function
 
         @kernel_function(
