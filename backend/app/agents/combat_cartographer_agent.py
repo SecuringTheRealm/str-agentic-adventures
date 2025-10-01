@@ -19,8 +19,40 @@ class CombatCartographerAgent:
 
     def __init__(self) -> None:
         """Initialize the Combat Cartographer agent with its own kernel instance."""
-        self.kernel = kernel_manager.create_kernel()
-        self.azure_client = AzureOpenAIClient()
+        self.kernel: Optional[Kernel] = None
+        self.chat_service: Optional[AzureChatCompletion] = None
+        self._fallback_mode = False
+
+        # Try to get the shared kernel from kernel manager
+        try:
+            self.kernel = kernel_manager.get_kernel()
+            if self.kernel is None:
+                self._fallback_mode = True
+                logger.warning(
+                    "Combat Cartographer agent operating in fallback mode - Azure OpenAI not configured"
+                )
+            else:
+                self.chat_service = self.kernel.get_service(type=AzureChatCompletion)
+                logger.info(
+                    "Combat Cartographer agent initialized with Semantic Kernel"
+                )
+        except Exception as e:
+            logger.warning(
+                f"Failed to initialize Combat Cartographer agent with Semantic Kernel: {e}. "
+                "Operating in fallback mode."
+            )
+            self._fallback_mode = True
+
+        # Image generation still uses AzureOpenAIClient (SK doesn't support DALL-E yet)
+        if not self._fallback_mode:
+            try:
+                self.azure_client = AzureOpenAIClient()
+            except Exception as e:
+                logger.warning(
+                    f"Failed to initialize Azure OpenAI client for image generation: {e}"
+                )
+                self._fallback_mode = True
+
         self._register_skills()
 
         # Store map references
@@ -28,6 +60,13 @@ class CombatCartographerAgent:
 
     def _register_skills(self) -> None:
         """Register necessary skills for the Combat Cartographer agent."""
+        # Skip plugin registration if in fallback mode
+        if self._fallback_mode or self.kernel is None:
+            logger.info(
+                "Combat Cartographer agent in fallback mode - skipping plugin registration"
+            )
+            return
+
         try:
             # Import combat cartographer-specific plugins
             from app.plugins.battle_positioning_plugin import BattlePositioningPlugin

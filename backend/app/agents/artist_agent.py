@@ -3,7 +3,10 @@ Artist Agent - Generates visual imagery for the game.
 """
 
 import logging
-from typing import Any
+from typing import Any, Optional
+
+from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 
 from app.azure_openai_client import AzureOpenAIClient
 from app.kernel_setup import kernel_manager
@@ -19,8 +22,39 @@ class ArtistAgent:
 
     def __init__(self) -> None:
         """Initialize the Artist agent with its own kernel instance."""
-        self.kernel = kernel_manager.create_kernel()
-        self.azure_client = AzureOpenAIClient()
+        self.kernel: Optional[Kernel] = None
+        self.chat_service: Optional[AzureChatCompletion] = None
+        self._fallback_mode = False
+
+        # Try to get the shared kernel from kernel manager
+        try:
+            self.kernel = kernel_manager.get_kernel()
+            if self.kernel is None:
+                self._fallback_mode = True
+                logger.warning(
+                    "Artist agent operating in fallback mode - Azure OpenAI not configured"
+                )
+            else:
+                self.chat_service = self.kernel.get_service(type=AzureChatCompletion)
+                logger.info("Artist agent initialized with Semantic Kernel")
+        except Exception as e:
+            logger.warning(
+                f"Failed to initialize Artist agent with Semantic Kernel: {e}. "
+                "Operating in fallback mode."
+            )
+            self._fallback_mode = True
+
+        # Image generation still uses AzureOpenAIClient (SK doesn't support DALL-E yet)
+        # Only initialize if not in fallback mode
+        if not self._fallback_mode:
+            try:
+                self.azure_client = AzureOpenAIClient()
+            except Exception as e:
+                logger.warning(
+                    f"Failed to initialize Azure OpenAI client for image generation: {e}"
+                )
+                self._fallback_mode = True
+
         self._register_skills()
 
         # Store generated art references
@@ -28,6 +62,11 @@ class ArtistAgent:
 
     def _register_skills(self) -> None:
         """Register necessary skills for the Artist agent."""
+        # Skip plugin registration if in fallback mode
+        if self._fallback_mode or self.kernel is None:
+            logger.info("Artist agent in fallback mode - skipping plugin registration")
+            return
+
         try:
             # Import artist-specific plugins
             from app.plugins.art_style_analysis_plugin import ArtStyleAnalysisPlugin
@@ -62,7 +101,11 @@ class ArtistAgent:
             logger.info("Artist agent skills registered successfully")
         except Exception as e:
             logger.error(f"Error registering Artist agent skills: {str(e)}")
-            raise
+            # Don't raise - enter fallback mode instead
+            self._fallback_mode = True
+            logger.warning(
+                "Artist agent entering fallback mode - using basic functionality without advanced plugins"
+            )
 
     async def generate_character_portrait(
         self, character_details: dict[str, Any]
@@ -76,6 +119,12 @@ class ArtistAgent:
         Returns:
             Dict[str, Any]: Details of the generated portrait, including image reference
         """
+        # Return error if in fallback mode
+        if self._fallback_mode:
+            return {
+                "error": "Artist agent in fallback mode - image generation not available"
+            }
+
         try:
             # Generate a unique ID for this artwork
             art_id = f"portrait_{len(self.generated_art) + 1}"

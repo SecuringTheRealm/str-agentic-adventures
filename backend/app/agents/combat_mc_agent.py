@@ -5,9 +5,13 @@ Combat MC Agent - Manages combat encounters, tactics, and battle flow.
 import logging
 import random
 import re
-from typing import Any
+from typing import Any, Optional
+
+from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 
 from app.kernel_setup import kernel_manager
+from app.utils.dice import DiceRoller
 
 logger = logging.getLogger(__name__)
 
@@ -20,15 +24,43 @@ class CombatMCAgent:
 
     def __init__(self) -> None:
         """Initialize the Combat MC agent with its own kernel instance."""
-        self.kernel = kernel_manager.create_kernel()
+        self.kernel: Optional[Kernel] = None
+        self.chat_service: Optional[AzureChatCompletion] = None
         self.fallback_mode = False  # Track if we're using fallback mechanics
-        self._register_skills()
+
+        # Try to get the shared kernel from kernel manager
+        try:
+            self.kernel = kernel_manager.get_kernel()
+            if self.kernel is None:
+                self.fallback_mode = True
+                logger.warning(
+                    "Combat MC agent operating in fallback mode - Azure OpenAI not configured"
+                )
+                self._initialize_fallback_mechanics()
+            else:
+                self.chat_service = self.kernel.get_service(type=AzureChatCompletion)
+                self._register_skills()
+                logger.info("Combat MC agent initialized with Semantic Kernel")
+        except Exception as e:
+            logger.warning(
+                f"Failed to initialize Combat MC agent with Semantic Kernel: {e}. "
+                "Operating in fallback mode."
+            )
+            self.fallback_mode = True
+            self._initialize_fallback_mechanics()
 
         # Active combat tracking
         self.active_combats = {}
 
     def _register_skills(self) -> None:
         """Register necessary skills for the Combat MC agent."""
+        # Skip if in fallback mode
+        if self.fallback_mode or self.kernel is None:
+            logger.info(
+                "Combat MC agent in fallback mode - skipping plugin registration"
+            )
+            return
+
         try:
             # Import plugins
             from app.plugins.rules_engine_plugin import RulesEnginePlugin
@@ -69,41 +101,13 @@ class CombatMCAgent:
         self, modifier: int = 0, advantage: bool = False, disadvantage: bool = False
     ) -> dict[str, Any]:
         """Built-in d20 roll for fallback mode."""
-
-        if advantage and not disadvantage:
-            roll1 = random.randint(1, 20)
-            roll2 = random.randint(1, 20)
-            roll = max(roll1, roll2)
-            rolls = [roll1, roll2]
-            advantage_type = "advantage"
-        elif disadvantage and not advantage:
-            roll1 = random.randint(1, 20)
-            roll2 = random.randint(1, 20)
-            roll = min(roll1, roll2)
-            rolls = [roll1, roll2]
-            advantage_type = "disadvantage"
-        else:
-            roll = random.randint(1, 20)
-            rolls = [roll]
-            advantage_type = "normal"
-
-        total = roll + modifier
-
-        return {
-            "rolls": rolls,
-            "modifier": modifier,
-            "total": total,
-            "advantage_type": advantage_type,
-        }
+        return DiceRoller.roll_d20(modifier, advantage, disadvantage)
 
     def _fallback_roll_damage(self, dice_notation: str) -> dict[str, Any]:
         """Built-in damage roll for fallback mode."""
-
-        # Simple dice parser for basic notation like "1d6+2" or "2d8"
-        pattern = r"(\d*)d(\d+)(?:\+(\d+))?(?:\-(\d+))?"
-        match = re.match(pattern, dice_notation.lower().replace(" ", ""))
-
-        if not match:
+        try:
+            return DiceRoller.roll_damage(dice_notation)
+        except ValueError:
             # Fallback to fixed damage if parsing fails
             return {
                 "total": 4,
@@ -111,22 +115,6 @@ class CombatMCAgent:
                 "notation": dice_notation,
                 "fallback": True,
             }
-
-        num_dice = int(match.group(1)) if match.group(1) else 1
-        dice_type = int(match.group(2))
-        plus_mod = int(match.group(3)) if match.group(3) else 0
-        minus_mod = int(match.group(4)) if match.group(4) else 0
-        modifier = plus_mod - minus_mod
-
-        rolls = [random.randint(1, dice_type) for _ in range(num_dice)]
-        total = sum(rolls) + modifier
-
-        return {
-            "notation": dice_notation,
-            "rolls": rolls,
-            "modifier": modifier,
-            "total": max(total, 1),  # Minimum 1 damage
-        }
 
     async def create_encounter(
         self, party_info: dict[str, Any], narrative_context: dict[str, Any]

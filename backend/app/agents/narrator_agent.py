@@ -3,11 +3,16 @@ Narrator Agent - Manages campaign narrative and story elements.
 """
 
 import logging
-from typing import Any
+from typing import Any, Optional
 
+from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+from semantic_kernel.contents import ChatHistory
+from semantic_kernel.connectors.ai.prompt_execution_settings import (
+    PromptExecutionSettings,
+)
 from semantic_kernel.functions import KernelArguments
 
-from app.azure_openai_client import AzureOpenAIClient
 from app.kernel_setup import kernel_manager
 
 logger = logging.getLogger(__name__)
@@ -23,32 +28,32 @@ class NarratorAgent:
         """Initialize the Narrator agent with its own kernel instance."""
         # Initialize basic attributes first
         self._fallback_mode = False
-        self.kernel = None
-        self.openai_client = None
+        self.kernel: Optional[Kernel] = None
+        self.chat_service: Optional[AzureChatCompletion] = None
 
         try:
-            # Try to create kernel and OpenAI client
-            self.kernel = kernel_manager.create_kernel()
-            self.openai_client = AzureOpenAIClient()
-            self._register_skills()
-
-        except Exception as e:
-            # Check if this is a configuration error
-            error_msg = str(e)
-            if (
-                "validation errors for Settings" in error_msg
-                and ("azure_openai" in error_msg or "openai" in error_msg)
-            ) or "Azure OpenAI configuration is missing or invalid" in error_msg:
-                logger.warning(
-                    "Azure OpenAI configuration is missing or invalid. "
-                    "Narrator agent operating in fallback mode with basic functionality."
-                )
-                # Initialize in fallback mode
+            # Try to get the shared kernel from kernel manager
+            self.kernel = kernel_manager.get_kernel()
+            if self.kernel is None:
+                # Kernel manager is in fallback mode
                 self._fallback_mode = True
+                logger.warning(
+                    "Narrator agent operating in fallback mode - Azure OpenAI not configured"
+                )
                 self._initialize_fallback_components()
             else:
-                # Re-raise other errors as-is
-                raise
+                # Get the chat service from the kernel
+                self.chat_service = self.kernel.get_service(type=AzureChatCompletion)
+                self._register_skills()
+                logger.info("Narrator agent initialized with Semantic Kernel")
+
+        except Exception as e:
+            logger.warning(
+                f"Failed to initialize Narrator agent with Semantic Kernel: {e}. "
+                "Operating in fallback mode."
+            )
+            self._fallback_mode = True
+            self._initialize_fallback_components()
 
     def _initialize_fallback_components(self) -> None:
         """Initialize fallback components when Azure OpenAI is not available."""
@@ -172,22 +177,21 @@ class NarratorAgent:
                     3,
                 )
 
-            # Enhance description with Azure OpenAI if available
-            if not getattr(self, "_fallback_mode", False) and self.openai_client:
-                messages = [
-                    {
-                        "role": "system",
-                        "content": "You are a world class game narrator.",
-                    },
-                    {"role": "user", "content": full_description},
-                ]
+            # Enhance description with Semantic Kernel if available
+            if not getattr(self, "_fallback_mode", False) and self.chat_service:
+                chat_history = ChatHistory()
+                chat_history.add_system_message("You are a world class game narrator.")
+                chat_history.add_user_message(full_description)
+
+                settings = PromptExecutionSettings(temperature=0.7)
                 try:
-                    return await self.openai_client.chat_completion(
-                        messages,
-                        temperature=0.7,
+                    response = await self.chat_service.get_chat_message_contents(
+                        chat_history=chat_history,
+                        settings=settings,
                     )
+                    return str(response[0]) if response else full_description
                 except Exception as error:  # pragma: no cover - fallback path
-                    logger.error("OpenAI enhancement failed: %s", error)
+                    logger.error("AI enhancement failed: %s", error)
                     return full_description
             else:
                 # Fallback mode - return basic description
