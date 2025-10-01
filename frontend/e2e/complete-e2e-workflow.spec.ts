@@ -47,13 +47,13 @@ test.describe('Complete E2E Workflow with Azure OpenAI', () => {
     });
 
     // Fill campaign details
-    const campaignNameInput = page.locator('input[name="name"], input[placeholder*="campaign" i], input[placeholder*="name" i]').first();
+    const campaignNameInput = page.locator('input[name="campaign-name"], input[placeholder*="campaign" i], input[placeholder*="name" i]').first();
     await expect(campaignNameInput).toBeVisible({ timeout: 5000 });
     await campaignNameInput.fill('Test Campaign - E2E Workflow');
     console.log('✅ Entered campaign name');
 
     // Fill setting if available
-    const settingInput = page.locator('input[name="setting"], textarea[name="setting"], input[placeholder*="setting" i]').first();
+    const settingInput = page.locator('textarea[name="setting"], input[name="setting"], input[placeholder*="setting" i]').first();
     if (await settingInput.count() > 0) {
       await settingInput.fill('A mysterious forest realm filled with ancient magic and hidden dangers');
       console.log('✅ Entered campaign setting');

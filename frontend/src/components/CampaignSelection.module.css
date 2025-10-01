@@ -31,11 +31,13 @@
   margin: 0;
 }
 
-.managerHeader h2 {
+.managerHeader h2,
+.sectionTitle {
   color: #E4BB1E; /* Gold color for consistency */
   margin: 0;
   font-family: 'Cinzel', serif;
   font-weight: 600;
+  font-size: 2rem; /* Maintain section header size */
 }
 
 .headerActions {
