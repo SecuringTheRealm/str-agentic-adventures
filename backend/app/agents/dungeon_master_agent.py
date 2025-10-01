@@ -19,6 +19,7 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import (
 )
 
 from app.kernel_setup import kernel_manager
+from app.utils.dice import DiceRoller
 
 logger = logging.getLogger(__name__)
 
@@ -353,10 +354,10 @@ Always respond as a helpful, creative DM who wants players to have an exciting a
     def _handle_fallback_dice_roll(self, text: str) -> dict[str, Any]:
         """Extract dice notation from text and roll."""
         self._initialize_fallback_components()
-        match = re.search(r"(\d*d\d+(?:[+-]\d+)?)", text)
-        if not match:
+        result = DiceRoller.parse_dice_from_text(text)
+        if result is None:
             return {"error": "Invalid dice notation"}
-        return self._fallback_dice_roll(match.group(1))
+        return result
 
     async def _process_input_fallback(
         self, user_input: str, context: dict[str, Any]
