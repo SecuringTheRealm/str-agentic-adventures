@@ -64,8 +64,24 @@ const CampaignCreation: React.FC<CampaignCreationProps> = ({
 
       const result = await createCampaign(campaignData);
       onCampaignCreated(result);
-    } catch (err) {
-      setError("Failed to create campaign. Please try again.");
+    } catch (err: any) {
+      // Extract error message from API response
+      let errorMessage = "Failed to create campaign. Please try again.";
+
+      if (err.response?.data?.detail) {
+        if (typeof err.response.data.detail === "string") {
+          errorMessage = err.response.data.detail;
+        } else if (Array.isArray(err.response.data.detail)) {
+          // Validation errors from FastAPI
+          errorMessage = err.response.data.detail
+            .map((e: any) => e.msg)
+            .join(", ");
+        }
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+
+      setError(errorMessage);
       console.error("Error creating campaign:", err);
     } finally {
       setIsSubmitting(false);
