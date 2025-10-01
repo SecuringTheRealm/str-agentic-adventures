@@ -111,26 +111,27 @@ test.describe('Complete E2E Workflow with Azure OpenAI', () => {
     // Select race
     const raceSelect = page.locator('select[name="race"]');
     if (await raceSelect.count() > 0) {
-      await raceSelect.selectOption('Elf');
+      await raceSelect.selectOption('elf'); // lowercase for API
       console.log('✅ Selected race: Elf');
     }
 
     // Select class
     const classSelect = page.locator('select[name="character_class"], select[name="class"]');
     if (await classSelect.count() > 0) {
-      await classSelect.selectOption('Ranger');
+      await classSelect.selectOption('ranger'); // lowercase for API
       console.log('✅ Selected class: Ranger');
     }
 
-    // Fill ability scores if available
+    // Fill ability scores if available (total must be 78)
     const abilities = {
-      strength: 14,
+      strength: 13,
       dexterity: 16,
       constitution: 13,
       intelligence: 12,
-      wisdom: 15,
+      wisdom: 14,
       charisma: 10
     };
+    // Total: 13+16+13+12+14+10 = 78
 
     for (const [ability, score] of Object.entries(abilities)) {
       const abilityInput = page.locator(
