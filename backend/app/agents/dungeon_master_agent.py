@@ -365,6 +365,9 @@ Always respond as a helpful, creative DM who wants players to have an exciting a
         """Process player input without external services."""
         self._initialize_fallback_components()
 
+        # Add AI model not configured warning prefix
+        ai_warning = "[AI model not configured] "
+
         response = {
             "message": "",
             "narration": "",
@@ -373,7 +376,7 @@ Always respond as a helpful, creative DM who wants players to have an exciting a
         }
 
         if not user_input:
-            response["message"] = "No action taken."
+            response["message"] = f"{ai_warning}No action taken."
             response["narration"] = "Silence hangs in the air."
             return response
 
@@ -382,17 +385,17 @@ Always respond as a helpful, creative DM who wants players to have an exciting a
             dice_result = self._handle_fallback_dice_roll(user_input)
             response["dice_result"] = dice_result
             response["message"] = dice_result.get(
-                "error", f"You rolled {dice_result['total']}"
+                "error", f"{ai_warning}You rolled {dice_result['total']}"
             )
             response["narration"] = "The dice clatter across the table."
             return response
 
         if "attack" in lower:
-            response["message"] = "You attack your foe."
+            response["message"] = f"{ai_warning}You attack your foe."
             response["narration"] = "You lunge forward in a swift strike."
             return response
 
-        response["message"] = "You continue your journey."
+        response["message"] = f"{ai_warning}You continue your journey."
         response["narration"] = self._fallback_generate_response("exploration")
         return response
 
@@ -403,6 +406,13 @@ Always respond as a helpful, creative DM who wants players to have an exciting a
         websocket = context.get("websocket")
         if not websocket:
             return
+
+        # Send initial warning about AI model not being configured
+        await websocket.send_text(
+            json.dumps(
+                {"type": "chat_start_stream", "message": "[AI model not configured] "}
+            )
+        )
 
         result = await self._process_input_fallback(user_input, context)
         await websocket.send_text(
