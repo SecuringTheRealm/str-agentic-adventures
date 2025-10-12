@@ -5,51 +5,42 @@ Narrator Agent - Manages campaign narrative and story elements.
 import logging
 from typing import Any
 
-from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
-from semantic_kernel.connectors.ai.prompt_execution_settings import (
-    PromptExecutionSettings,
-)
-from semantic_kernel.contents import ChatHistory
-from semantic_kernel.functions import KernelArguments
+from azure.ai.inference import ChatCompletionsClient
 
-from app.kernel_setup import kernel_manager
+from app.agent_client_setup import agent_client_manager
 
 logger = logging.getLogger(__name__)
 
 
 class NarratorAgent:
     """
-    Narrator Agent that manages campaign narrative, storylines, and descriptions.
-    This agent is responsible for generating rich descriptions and determining narrative outcomes.
+    Narrator Agent that manages campaign narrative and story elements.
+    Uses Azure AI SDK for narrative generation.
     """
 
     def __init__(self) -> None:
-        """Initialize the Narrator agent with its own kernel instance."""
+        """Initialize the Narrator agent with Azure AI SDK."""
         # Initialize basic attributes first
         self._fallback_mode = False
-        self.kernel: Kernel | None = None
-        self.chat_service: AzureChatCompletion | None = None
+        self.chat_client: ChatCompletionsClient | None = None
 
         try:
-            # Try to get the shared kernel from kernel manager
-            self.kernel = kernel_manager.get_kernel()
-            if self.kernel is None:
-                # Kernel manager is in fallback mode
+            # Try to get the shared chat client from agent client manager
+            self.chat_client = agent_client_manager.get_chat_client()
+            if self.chat_client is None:
+                # Agent client manager is in fallback mode
                 self._fallback_mode = True
                 logger.warning(
                     "Narrator agent operating in fallback mode - Azure OpenAI not configured"
                 )
                 self._initialize_fallback_components()
             else:
-                # Get the chat service from the kernel
-                self.chat_service = self.kernel.get_service(type=AzureChatCompletion)
                 self._register_skills()
-                logger.info("Narrator agent initialized with Semantic Kernel")
+                logger.info("Narrator agent initialized with Azure AI SDK")
 
         except Exception as e:
             logger.warning(
-                f"Failed to initialize Narrator agent with Semantic Kernel: {e}. "
+                f"Failed to initialize Narrator agent with Azure AI SDK: {e}. "
                 "Operating in fallback mode."
             )
             self._fallback_mode = True
@@ -63,31 +54,24 @@ class NarratorAgent:
 
     def _register_skills(self) -> None:
         """Register necessary skills for the Narrator agent."""
+        # Note: Plugins will be converted to tool functions when needed
+        # For now, maintain compatibility by storing plugin references
         try:
-            # Import plugins
+            # Import plugins (they still work as standalone modules)
             from app.plugins.narrative_generation_plugin import (
                 NarrativeGenerationPlugin,
             )
             from app.plugins.narrative_memory_plugin import NarrativeMemoryPlugin
             from app.plugins.rules_engine_plugin import RulesEnginePlugin
 
-            # Create plugin instances
-            narrative_memory = NarrativeMemoryPlugin()
-            rules_engine = RulesEnginePlugin()
-            narrative_generation = NarrativeGenerationPlugin()
+            # Create plugin instances for direct method access
+            self.narrative_memory = NarrativeMemoryPlugin()
+            self.rules_engine = RulesEnginePlugin()
+            self.narrative_generation = NarrativeGenerationPlugin()
 
-            # Register plugins with the kernel using new API
-            self.kernel.add_plugin(narrative_memory, "Memory")
-            self.kernel.add_plugin(rules_engine, "Rules")
-            self.kernel.add_plugin(narrative_generation, "Narrative")
-
-            # Store references for direct access
-            self.narrative_memory = narrative_memory
-            self.narrative_generation = narrative_generation
-
-            logger.info("Narrator agent plugins registered successfully")
+            logger.info("Narrator agent plugins initialized for direct access")
         except Exception as e:
-            logger.error(f"Error registering Narrator agent plugins: {str(e)}")
+            logger.error(f"Error initializing Narrator agent plugins: {str(e)}")
             # Don't raise - enter fallback mode instead
             self._fallback_mode = True
             logger.warning(
