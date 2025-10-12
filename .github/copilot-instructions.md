@@ -59,6 +59,8 @@ These environment variables enable:
 
 **Note**: These secrets are automatically masked in GitHub logs to prevent exposure. They are only available when the Copilot agent workflow runs and are not stored in the repository.
 
+**Important**: The workflow accesses secrets from the repository secrets using the `secrets.*` context. All Azure secrets should be configured as regular repository secrets (not Copilot-specific secrets) to ensure they can be properly propagated to the Copilot agent environment.
+
 For manual setup outside the workflow, follow the steps below.
 
 ### Bootstrap, Build, and Test the Repository
