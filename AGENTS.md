@@ -19,6 +19,15 @@ For detailed, domain-specific coding standards, refer to the instruction files i
 - **[Database Guidelines](.github/instructions/database.instructions.md)** - Database and migration management
 - **[ADR Guidelines](.github/instructions/adr.instructions.md)** - Architecture Decision Record standards
 
+## Project Documentation
+
+For comprehensive project documentation, refer to the docs in `docs/`:
+
+- **[Azure OpenAI Requirements](docs/AZURE_OPENAI_REQUIREMENTS.md)** - Which endpoints require Azure OpenAI, configuration guide, and testing implications
+- **[Testing Strategy](docs/TESTING_STRATEGY.md)** - Testing best practices, patterns, coverage requirements, and troubleshooting
+
+**Note for AI Agents**: When creating new documentation files in the `docs/` directory, add references to them in this section of `AGENTS.md` and in the corresponding section of `.github/copilot-instructions.md`. When removing documentation files, remove their references from both files.
+
 ## Project Overview
 
 AI-powered tabletop RPG application with Python FastAPI backend using Semantic Kernel and TypeScript React frontend. The system uses 6 specialized AI agents to replace a human Dungeon Master while maintaining creativity and D&D 5e SRD compliance.

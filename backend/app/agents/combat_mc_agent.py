@@ -27,6 +27,7 @@ class CombatMCAgent:
         self.kernel: Optional[Kernel] = None
         self.chat_service: Optional[AzureChatCompletion] = None
         self.fallback_mode = False  # Track if we're using fallback mechanics
+        self.rules_engine: Optional[Any] = None  # Store rules engine plugin instance
 
         # Try to get the shared kernel from kernel manager
         try:
@@ -67,6 +68,9 @@ class CombatMCAgent:
 
             # Create plugin instances
             rules_engine = RulesEnginePlugin()
+            
+            # Store reference to the rules engine instance
+            self.rules_engine = rules_engine
 
             # Register plugins with the kernel
             self.kernel.add_plugin(rules_engine, "Rules")
@@ -384,31 +388,25 @@ class CombatMCAgent:
         }
 
         try:
-            # Get the rules engine plugin directly
-            rules_plugin = None
-            for plugin_name, plugin in self.kernel.plugins.items():
-                if plugin_name == "Rules":
-                    rules_plugin = plugin
-                    break
-
-            if not rules_plugin:
-                logger.error("Rules plugin not found")
+            # Use the stored rules engine plugin instance
+            if not self.rules_engine:
+                logger.error("Rules engine not initialized")
                 result["message"] = "Rules engine not available"
                 return result
 
             if action_type == "attack":
-                return self._process_attack_action(action_data, result, rules_plugin)
+                return self._process_attack_action(action_data, result, self.rules_engine)
             if action_type == "spell_attack":
                 return self._process_spell_attack_action(
-                    action_data, result, rules_plugin
+                    action_data, result, self.rules_engine
                 )
             if action_type == "spell_damage":
                 return self._process_spell_damage_action(
-                    action_data, result, rules_plugin
+                    action_data, result, self.rules_engine
                 )
             if action_type == "spell_healing":
                 return self._process_spell_healing_action(
-                    action_data, result, rules_plugin
+                    action_data, result, self.rules_engine
                 )
             if action_type == "skill_check":
                 return self._process_skill_check_action(
@@ -779,15 +777,10 @@ class CombatMCAgent:
                 "proficiency_bonus": action_data.get("proficiency_bonus", 2),
                 "dc": action_data.get("perception_dc", 15),
             }
-            # Get the rules plugin for stealth check
-            rules_plugin = None
-            for plugin_name, plugin in self.kernel.plugins.items():
-                if plugin_name == "Rules":
-                    rules_plugin = plugin
-                    break
-            if rules_plugin:
+            # Use the stored rules engine plugin instance
+            if self.rules_engine:
                 return self._process_skill_check_action(
-                    stealth_data, result, rules_plugin
+                    stealth_data, result, self.rules_engine
                 )
             result.update({"success": True, "message": "Hide action attempted"})
 

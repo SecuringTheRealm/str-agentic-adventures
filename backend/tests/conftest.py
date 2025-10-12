@@ -102,58 +102,6 @@ def spell_attack_action_factory():
 
 
 def create_test_config():
-    """Factory for creating character data."""
-    if not _FACTORIES_AVAILABLE:
-        pytest.skip("factory_boy not available in this environment")
-    return CharacterFactory
-
-
-@pytest.fixture
-def fighter_character_factory():
-    """Factory for creating fighter character data."""
-    if not _FACTORIES_AVAILABLE:
-        pytest.skip("factory_boy not available in this environment")
-    return FighterCharacterFactory
-
-
-@pytest.fixture
-def wizard_character_factory():
-    """Factory for creating wizard character data."""
-    if not _FACTORIES_AVAILABLE:
-        pytest.skip("factory_boy not available in this environment")
-    return WizardCharacterFactory
-
-
-@pytest.fixture
-def campaign_factory():
-    """Factory for creating campaign data."""
-    if not _FACTORIES_AVAILABLE:
-        pytest.skip("factory_boy not available in this environment")
-    return CampaignFactory
-
-
-@pytest.fixture
-def combat_encounter_factory():
-    """Factory for creating combat encounter data."""
-    if not _FACTORIES_AVAILABLE:
-        pytest.skip("factory_boy not available in this environment")
-    return CombatEncounterFactory
-
-
-@pytest.fixture
-def attack_action_factory():
-    """Factory for creating attack action data."""
-    if not _FACTORIES_AVAILABLE:
-        pytest.skip("factory_boy not available in this environment")
-    return AttackActionFactory
-
-
-@pytest.fixture
-def spell_attack_action_factory():
-    """Factory for creating spell attack action data."""
-    if not _FACTORIES_AVAILABLE:
-        pytest.skip("factory_boy not available in this environment")
-    return SpellAttackActionFactory
     """Create a test configuration with minimal Azure OpenAI settings."""
     return Settings(
         azure_openai_endpoint="https://test.openai.azure.com",

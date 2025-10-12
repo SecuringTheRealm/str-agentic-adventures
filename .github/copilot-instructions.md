@@ -284,6 +284,15 @@ AZURE_OPENAI_EMBEDDING_DEPLOYMENT=text-embedding-ada-002
 - **Modern Python**: Uses UV package manager for faster, reproducible builds
 - **Testing Strategy**: Unit tests, integration tests, and E2E tests with Playwright
 
+## Project Documentation
+
+For comprehensive project documentation, refer to `docs/`:
+
+- **[Azure OpenAI Requirements](docs/AZURE_OPENAI_REQUIREMENTS.md)** - Which endpoints require Azure OpenAI, configuration guide, and testing implications
+- **[Testing Strategy](docs/TESTING_STRATEGY.md)** - Testing best practices, patterns, coverage requirements, and troubleshooting
+
+**Note for AI Agents**: When creating new documentation files in the `docs/` directory, add references to them in this section of `.github/copilot-instructions.md` and in the corresponding section of `AGENTS.md`. When removing documentation files, remove their references from both files.
+
 **Remember**: This is a working application that requires both backend and frontend to be running for complete functionality. Always validate your changes with manual testing of the user workflows.
 
 Review the appropriate coding instructions in .github/instructions/ 

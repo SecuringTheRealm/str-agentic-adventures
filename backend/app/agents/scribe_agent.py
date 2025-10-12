@@ -255,7 +255,7 @@ class ScribeAgent:
             logger.info("Scribe agent in fallback mode - skipping plugin registration")
             return
 
-        from semantic_kernel import kernel_function
+        from semantic_kernel.functions import kernel_function
 
         @kernel_function(
             description="Create a new NPC with generated personality and stats",
