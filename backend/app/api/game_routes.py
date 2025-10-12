@@ -466,7 +466,9 @@ async def process_player_input(player_input: PlayerInput):
             logger.warning(
                 f"Could not retrieve character {player_input.character_id}: {str(e)}"
             )
-            # Use fallback character info
+        
+        # Use fallback character info if character not found or error occurred
+        if character is None:
             character = {
                 "id": player_input.character_id,
                 "name": "Adventurer",

@@ -88,8 +88,8 @@ export const createCharacter = async (
   // Normalize race and character_class to lowercase as backend expects
   const normalizedData = {
     ...characterData,
-    race: characterData.race?.toLowerCase(),
-    character_class: characterData.character_class?.toLowerCase(),
+    race: characterData.race?.toLowerCase() as import("../api-client").Race,
+    character_class: characterData.character_class?.toLowerCase() as import("../api-client").CharacterClass,
   };
   const response =
     await gameApi.createCharacterGameCharacterPost(normalizedData);
