@@ -32,5 +32,8 @@ yarn-error.log*
 screenshots/*.png
 !screenshots/.gitkeep
 
-# Generated API client
-/src/api-client/
+# Generated API client (exclude generated files but keep manually written extensions)
+/src/api-client/*
+!/src/api-client/websocketClient.ts
+!/src/api-client/__tests__/
+
