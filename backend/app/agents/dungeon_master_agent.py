@@ -289,12 +289,12 @@ Always respond as a helpful, creative DM who wants players to have an exciting a
         self._fallback_mode = True
 
         self._fallback_dice = {
-            "d4": lambda: random.randint(1, 4),
-            "d6": lambda: random.randint(1, 6),
-            "d8": lambda: random.randint(1, 8),
-            "d10": lambda: random.randint(1, 10),
-            "d12": lambda: random.randint(1, 12),
-            "d20": lambda: random.randint(1, 20),
+            "d4": lambda: random.randint(1, 4),  # noqa: S311
+            "d6": lambda: random.randint(1, 6),  # noqa: S311
+            "d8": lambda: random.randint(1, 8),  # noqa: S311
+            "d10": lambda: random.randint(1, 10),  # noqa: S311
+            "d12": lambda: random.randint(1, 12),  # noqa: S311
+            "d20": lambda: random.randint(1, 20),  # noqa: S311
         }
 
         self._fallback_responses = {
@@ -335,7 +335,7 @@ Always respond as a helpful, creative DM who wants players to have an exciting a
         num = int(match.group(1)) if match.group(1) else 1
         sides = int(match.group(2))
         modifier = int(match.group(3)) if match.group(3) else 0
-        rolls = [random.randint(1, sides) for _ in range(num)]
+        rolls = [random.randint(1, sides) for _ in range(num)]  # noqa: S311
         total = sum(rolls) + modifier
         return {
             "notation": notation,

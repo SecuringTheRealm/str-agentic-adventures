@@ -29,19 +29,19 @@ class DiceRoller:
             Dict containing rolls, modifier, total, and advantage type
         """
         if advantage and not disadvantage:
-            roll1 = random.randint(1, 20)
-            roll2 = random.randint(1, 20)
+            roll1 = random.randint(1, 20)  # noqa: S311
+            roll2 = random.randint(1, 20)  # noqa: S311
             roll = max(roll1, roll2)
             rolls = [roll1, roll2]
             advantage_type = "advantage"
         elif disadvantage and not advantage:
-            roll1 = random.randint(1, 20)
-            roll2 = random.randint(1, 20)
+            roll1 = random.randint(1, 20)  # noqa: S311
+            roll2 = random.randint(1, 20)  # noqa: S311
             roll = min(roll1, roll2)
             rolls = [roll1, roll2]
             advantage_type = "disadvantage"
         else:
-            roll = random.randint(1, 20)
+            roll = random.randint(1, 20)  # noqa: S311
             rolls = [roll]
             advantage_type = "normal"
 
@@ -81,7 +81,7 @@ class DiceRoller:
         modifier = int(modifier_str)
 
         # Roll the dice
-        rolls = [random.randint(1, dice_type) for _ in range(num_dice)]
+        rolls = [random.randint(1, dice_type) for _ in range(num_dice)]  # noqa: S311
         total = sum(rolls) + modifier
 
         return {

@@ -110,12 +110,12 @@ class ScribeAgent:
                 "ideals": random.sample(ideals_pool, 1),
                 "bonds": [f"Loyal to {npc_data.get('location', 'their home')}"],
                 "flaws": [
-                    random.choice(
+                    random.choice(  # noqa: S311
                         ["Quick to anger", "Overly trusting", "Greedy", "Secretive"]
                     )
                 ],
                 "mannerisms": [
-                    random.choice(
+                    random.choice(  # noqa: S311
                         [
                             "Speaks softly",
                             "Gestures wildly",
@@ -218,14 +218,14 @@ class ScribeAgent:
         template = role_templates.get(role, role_templates["civilian"])
 
         # Generate stats
-        hit_points = template["hp_base"] * level + random.randint(0, level)
+        hit_points = template["hp_base"] * level + random.randint(0, level)  # noqa: S311
         abilities = {
-            "strength": template["str"] + random.randint(-2, 2),
-            "dexterity": template["dex"] + random.randint(-2, 2),
-            "constitution": template["con"] + random.randint(-2, 2),
-            "intelligence": 10 + random.randint(-2, 2),
-            "wisdom": 10 + random.randint(-2, 2),
-            "charisma": 10 + random.randint(-2, 2),
+            "strength": template["str"] + random.randint(-2, 2),  # noqa: S311
+            "dexterity": template["dex"] + random.randint(-2, 2),  # noqa: S311
+            "constitution": template["con"] + random.randint(-2, 2),  # noqa: S311
+            "intelligence": 10 + random.randint(-2, 2),  # noqa: S311
+            "wisdom": 10 + random.randint(-2, 2),  # noqa: S311
+            "charisma": 10 + random.randint(-2, 2),  # noqa: S311
         }
 
         return {

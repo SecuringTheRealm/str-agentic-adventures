@@ -149,7 +149,7 @@ class CombatMCAgent:
             num_enemies = self._calculate_enemy_count(party_size, avg_level)
 
             for i in range(num_enemies):
-                enemy_type = random.choice(enemy_types)
+                enemy_type = random.choice(enemy_types)  # noqa: S311
                 enemies.append(
                     {
                         "id": f"enemy_{i + 1}",
@@ -221,7 +221,7 @@ class CombatMCAgent:
                     dex_mod = (
                         player.get("abilities", {}).get("dexterity", 10) - 10
                     ) // 2
-                    initiative = random.randint(1, 20) + dex_mod
+                    initiative = random.randint(1, 20) + dex_mod  # noqa: S311
 
                 participants.append(
                     {
@@ -236,12 +236,12 @@ class CombatMCAgent:
             for enemy in encounter["enemies"]:
                 if self.fallback_mode:
                     # Use fallback d20 roll with simple modifier
-                    initiative_mod = random.randint(-2, 2)
+                    initiative_mod = random.randint(-2, 2)  # noqa: S311
                     roll_result = self._fallback_roll_d20(initiative_mod)
                     initiative = roll_result["total"]
                 else:
                     # Use simple random roll
-                    initiative = random.randint(1, 20) + random.randint(-2, 2)
+                    initiative = random.randint(1, 20) + random.randint(-2, 2)  # noqa: S311
 
                 enemy["initiative"] = initiative
                 participants.append(

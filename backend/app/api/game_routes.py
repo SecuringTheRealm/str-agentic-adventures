@@ -867,7 +867,7 @@ async def initialize_combat(combat_data: dict[str, Any]):
                         "type": "npc",
                         "id": participant["id"],
                         "name": participant.get("name", "NPC"),
-                        "initiative": randint(1, 20)
+                        "initiative": randint(1, 20)  # noqa: S311
                         + participant.get("dex_modifier", 0),
                     }
                 )
@@ -1615,7 +1615,7 @@ async def manage_concentration(character_id: str, request: ConcentrationRequest)
             # For now, returning a simulated result
             import random
 
-            roll_result = random.randint(1, 20) + 3  # Assuming +3 Constitution modifier
+            roll_result = random.randint(1, 20) + 3  # Assuming +3 Constitution modifier  # noqa: S311
             maintained = roll_result >= dc
 
             return ConcentrationCheckResponse(
@@ -1979,16 +1979,16 @@ async def create_campaign_npc(campaign_id: str, request: CreateNPCRequest):
         from app.models.game_models import Abilities, HitPoints
 
         abilities = Abilities(
-            strength=random.randint(8, 16),
-            dexterity=random.randint(8, 16),
-            constitution=random.randint(8, 16),
-            intelligence=random.randint(8, 16),
-            wisdom=random.randint(8, 16),
-            charisma=random.randint(8, 16),
+            strength=random.randint(8, 16),  # noqa: S311
+            dexterity=random.randint(8, 16),  # noqa: S311
+            constitution=random.randint(8, 16),  # noqa: S311
+            intelligence=random.randint(8, 16),  # noqa: S311
+            wisdom=random.randint(8, 16),  # noqa: S311
+            charisma=random.randint(8, 16),  # noqa: S311
         )
 
         hit_points = HitPoints(
-            current=random.randint(4, 12), maximum=random.randint(4, 12)
+            current=random.randint(4, 12), maximum=random.randint(4, 12)  # noqa: S311
         )
 
         return NPC(
@@ -2057,7 +2057,7 @@ async def log_npc_interaction(npc_id: str, request: NPCInteractionRequest):
         # Calculate new relationship level (simulated)
         import random
 
-        current_level = random.randint(-50, 50)  # Would be retrieved from database
+        current_level = random.randint(-50, 50)  # Would be retrieved from database  # noqa: S311
         new_level = max(-100, min(100, current_level + request.relationship_change))
 
         return NPCInteractionResponse(
@@ -2121,18 +2121,18 @@ async def generate_npc_stats(npc_id: str, request: GenerateNPCStatsRequest):
 
         # Generate hit points
         hit_dice_num = int(template["hit_dice"].split("d")[1])
-        hit_points = sum(random.randint(1, hit_dice_num) for _ in range(level))
+        hit_points = sum(random.randint(1, hit_dice_num) for _ in range(level))  # noqa: S311
         hit_points += level * 1  # Constitution modifier (assumed +1)
 
         # Generate abilities
         base_stat = 10 + template["abilities_mod"]
         abilities = {
-            "strength": base_stat + random.randint(-2, 2),
-            "dexterity": base_stat + random.randint(-2, 2),
-            "constitution": base_stat + random.randint(-2, 2),
-            "intelligence": base_stat + random.randint(-2, 2),
-            "wisdom": base_stat + random.randint(-2, 2),
-            "charisma": base_stat + random.randint(-2, 2),
+            "strength": base_stat + random.randint(-2, 2),  # noqa: S311
+            "dexterity": base_stat + random.randint(-2, 2),  # noqa: S311
+            "constitution": base_stat + random.randint(-2, 2),  # noqa: S311
+            "intelligence": base_stat + random.randint(-2, 2),  # noqa: S311
+            "wisdom": base_stat + random.randint(-2, 2),  # noqa: S311
+            "charisma": base_stat + random.randint(-2, 2),  # noqa: S311
         }
 
         # Role-specific stat adjustments
