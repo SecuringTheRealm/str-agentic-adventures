@@ -100,11 +100,11 @@ async def create_character(character_data: CreateCharacterRequest, config: Confi
         if "Azure OpenAI configuration" in error_msg:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=error_msg
-            )
+            ) from None
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to create character: {str(e)}",
-        )
+        ) from e
 
 
 @router.get("/character/{character_id}", response_model=dict[str, Any])

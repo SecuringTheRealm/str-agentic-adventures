@@ -82,24 +82,7 @@ extend-exclude = [
 
 [tool.ruff.lint]
 select = ["E", "F", "B", "I", "N", "UP", "ANN", "S", "A", "C4", "T10", "RET", "SIM", "ERA"]
-ignore = [
-    "S311",  # Allow standard pseudo-random generators for game logic
-    "ANN001",  # Allow missing type annotations for function arguments (too many to fix)
-    "ANN201",  # Allow missing return type annotations (too many to fix) 
-    "ANN202",  # Allow missing return type for private functions
-    "ANN204",  # Allow missing return type for special methods
-    "ANN401",  # Allow Any type in some cases
-    "E501",  # Allow lines longer than 88 chars (formatter handles this)
-    "B904",  # Allow raise without from inside except (common pattern)
-    "S104",  # Allow binding to all interfaces (needed for development)
-    "S110",  # Allow try-except-pass in some cases
-    "ANN002",  # Allow missing type for *args
-    "ANN003",  # Allow missing type for **kwargs
-    "SIM102",  # Allow nested if statements
-    "SIM105",  # Allow try-except-pass patterns
-    "SIM117",  # Allow nested with statements
-    "ERA001",  # Allow commented code
-]
+ignore = []  # Removed deprecated ANN101/ANN102 rules, removed COM to avoid formatter conflicts
 
 [tool.ruff.format]
 quote-style = "double"

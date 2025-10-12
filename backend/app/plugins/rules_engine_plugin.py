@@ -427,7 +427,7 @@ class RulesEnginePlugin:
                 "proficiency_bonus": proficiency_bonus,
                 "character_level": character_level,
                 "formula": "8 + proficiency_bonus + spellcasting_ability_modifier",
-                    }
+            }
         except Exception as e:
             logger.error(f"Error calculating spell save DC: {str(e)}")
             return {"error": f"Error calculating spell save DC: {str(e)}"}

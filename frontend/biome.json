@@ -21,27 +21,14 @@
       "recommended": true,
       "style": {
         "noInferrableTypes": "error",
-        "useConst": "error",
-        "noNonNullAssertion": "off",
-        "noDescendingSpecificity": "off"
+        "useConst": "error"
       },
       "correctness": {
-        "noUnusedVariables": "off",
-        "useExhaustiveDependencies": "off",
-        "noUnusedFunctionParameters": "off",
-        "useUniqueElementIds": "off",
-        "noInvalidUseBeforeDeclaration": "off"
+        "noUnusedVariables": "warn",
+        "useExhaustiveDependencies": "warn"
       },
       "suspicious": {
-        "noExplicitAny": "off",
-        "noArrayIndexKey": "off",
-        "noDuplicateProperties": "off"
-      },
-      "a11y": {
-        "noStaticElementInteractions": "off",
-        "useButtonType": "off",
-        "useKeyWithClickEvents": "off",
-        "noLabelWithoutControl": "off"
+        "noExplicitAny": "warn"
       }
     }
   },

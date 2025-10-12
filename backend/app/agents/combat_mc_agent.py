@@ -420,7 +420,9 @@ class CombatMCAgent:
             if action_type in ["move", "dash", "dodge", "hide", "help", "ready"]:
                 return self._process_movement_or_simple_action(action_data, result)
             if action_type in ["grapple", "shove"]:
-                return self._process_contested_action(action_data, result, self.rules_engine)
+                return self._process_contested_action(
+                    action_data, result, self.rules_engine
+                )
             result.update(
                 {
                     "success": True,
