@@ -210,7 +210,8 @@ class TestProjectStructure:
         critical_deps = [
             "fastapi",
             "pydantic",
-            "semantic-kernel",
+            "azure-ai-agents",
+            "azure-ai-inference",
             "azure-identity",
             "openai",
             "sqlalchemy",
