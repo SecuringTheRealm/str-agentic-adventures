@@ -1,6 +1,6 @@
 .gameStateDisplay {
   background: #2c2c2c;
-  border: 2px solid #8B4513;
+  border: 2px solid #8b4513;
   border-radius: 8px;
   padding: 1rem;
   margin: 1rem 0;
@@ -25,7 +25,7 @@
 .sessionHeader h3 {
   color: #d4af37;
   margin: 0;
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
 }
 
 .sessionStatus {
@@ -113,7 +113,7 @@
 .combatHeader h3 {
   color: #dc3545;
   margin: 0;
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
 }
 
 .combatInfo {
@@ -218,8 +218,13 @@
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .currentTurnInfo {
@@ -316,7 +321,7 @@
 .submitActionButton {
   width: 100%;
   padding: 0.75rem;
-  background: linear-gradient(135deg, #8B4513, #A0522D);
+  background: linear-gradient(135deg, #8b4513, #a0522d);
   color: white;
   border: none;
   border-radius: 4px;
@@ -327,7 +332,7 @@
 }
 
 .submitActionButton:hover:not(:disabled) {
-  background: linear-gradient(135deg, #A0522D, #CD853F);
+  background: linear-gradient(135deg, #a0522d, #cd853f);
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
@@ -419,28 +424,28 @@
     padding: 0.75rem;
     margin: 0.5rem 0;
   }
-  
+
   .sessionHeader {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
   }
-  
+
   .combatHeader {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
   }
-  
+
   .quickActionButtons {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .quickActionButton {
     padding: 0.4rem;
     font-size: 0.8rem;
   }
-  
+
   .initiativeItem {
     padding: 0.4rem;
     font-size: 0.9rem;

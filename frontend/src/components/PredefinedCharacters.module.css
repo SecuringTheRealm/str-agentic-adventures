@@ -194,15 +194,15 @@
     grid-template-columns: 1fr;
     gap: 20px;
   }
-  
+
   .characterCard {
     padding: 15px;
   }
-  
+
   .predefinedCharacters {
     padding: 15px;
   }
-  
+
   .abilitiesGrid {
     grid-template-columns: repeat(2, 1fr);
   }

@@ -1,17 +1,17 @@
-import { render, screen, fireEvent } from '@testing-library/react';
-import React from 'react';
-import CharacterSelection from './CharacterSelection';
-import type { Campaign } from '../services/api';
+import { fireEvent, render, screen } from "@testing-library/react";
+import React from "react";
+import type { Campaign } from "../services/api";
+import CharacterSelection from "./CharacterSelection";
 import styles from "./CharacterSelection.module.css";
 
-describe('CharacterSelection', () => {
+describe("CharacterSelection", () => {
   const mockCampaign: Campaign = {
-    id: '1',
-    name: 'Test Campaign',
-    setting: 'Fantasy',
-    tone: 'Heroic',
+    id: "1",
+    name: "Test Campaign",
+    setting: "Fantasy",
+    tone: "Heroic",
     homebrew_rules: [],
-    characters: []
+    characters: [],
   };
 
   const mockOnCharacterSelected = vi.fn();
@@ -21,7 +21,7 @@ describe('CharacterSelection', () => {
     vi.clearAllMocks();
   });
 
-  it('renders campaign name and character options', () => {
+  it("renders campaign name and character options", () => {
     render(
       <CharacterSelection
         campaign={mockCampaign}
@@ -30,13 +30,15 @@ describe('CharacterSelection', () => {
       />
     );
 
-    expect(screen.getByText('Choose Your Character')).toBeInTheDocument();
-    expect(screen.getByText('Test Campaign')).toBeInTheDocument();
-    expect(screen.getByText('Create New Character')).toBeInTheDocument();
-    expect(screen.getByText('Choose Pre-Defined Character')).toBeInTheDocument();
+    expect(screen.getByText("Choose Your Character")).toBeInTheDocument();
+    expect(screen.getByText("Test Campaign")).toBeInTheDocument();
+    expect(screen.getByText("Create New Character")).toBeInTheDocument();
+    expect(
+      screen.getByText("Choose Pre-Defined Character")
+    ).toBeInTheDocument();
   });
 
-  it('shows create character button', () => {
+  it("shows create character button", () => {
     render(
       <CharacterSelection
         campaign={mockCampaign}
@@ -45,11 +47,13 @@ describe('CharacterSelection', () => {
       />
     );
 
-    const createButton = screen.getByRole('button', { name: 'Create Character' });
+    const createButton = screen.getByRole("button", {
+      name: "Create Character",
+    });
     expect(createButton).toBeInTheDocument();
   });
 
-  it('shows browse characters button', () => {
+  it("shows browse characters button", () => {
     render(
       <CharacterSelection
         campaign={mockCampaign}
@@ -58,11 +62,13 @@ describe('CharacterSelection', () => {
       />
     );
 
-    const browseButton = screen.getByRole('button', { name: 'Browse Characters' });
+    const browseButton = screen.getByRole("button", {
+      name: "Browse Characters",
+    });
     expect(browseButton).toBeInTheDocument();
   });
 
-  it('calls onBackToCampaigns when back button is clicked', () => {
+  it("calls onBackToCampaigns when back button is clicked", () => {
     render(
       <CharacterSelection
         campaign={mockCampaign}
@@ -71,9 +77,11 @@ describe('CharacterSelection', () => {
       />
     );
 
-    const backButton = screen.getByRole('button', { name: '← Back to Campaigns' });
+    const backButton = screen.getByRole("button", {
+      name: "← Back to Campaigns",
+    });
     fireEvent.click(backButton);
-    
+
     expect(mockOnBackToCampaigns).toHaveBeenCalledTimes(1);
   });
 });

@@ -27,33 +27,33 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px 15px;
-  background: linear-gradient(135deg, #0F404F, #1a2f3a); /* Fantasy gradient */
-  border-bottom: 2px solid #E4BB1E; /* Gold border */
+  background: linear-gradient(135deg, #0f404f, #1a2f3a); /* Fantasy gradient */
+  border-bottom: 2px solid #e4bb1e; /* Gold border */
 }
 
 .battleMapHeader h3 {
   margin: 0;
-  color: #E4BB1E; /* Gold for headings */
+  color: #e4bb1e; /* Gold for headings */
   font-size: 1rem;
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-weight: 600;
 }
 
 .toggleButton {
-  background: linear-gradient(135deg, #B15005, #D67C2D); /* Wood gradient */
+  background: linear-gradient(135deg, #b15005, #d67c2d); /* Wood gradient */
   color: white;
-  border: 1px solid #E4BB1E; /* Gold border */
+  border: 1px solid #e4bb1e; /* Gold border */
   padding: 5px 10px;
   border-radius: 3px;
   cursor: pointer;
   font-size: 0.8rem;
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-weight: 500;
   transition: all 0.3s ease;
 }
 
 .toggleButton:hover {
-  background: linear-gradient(135deg, #D67C2D, #E4953F); /* Lighter wood on hover */
+  background: linear-gradient(135deg, #d67c2d, #e4953f); /* Lighter wood on hover */
   box-shadow: 0 2px 4px rgba(228, 187, 30, 0.3);
 }
 
@@ -79,10 +79,10 @@
   justify-content: center;
   height: 100%;
   width: 100%;
-  color: #908C6B; /* Stone color for empty state */
+  color: #908c6b; /* Stone color for empty state */
   padding: 20px;
   text-align: center;
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
 }
 
 .emptyMapState p {

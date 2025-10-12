@@ -119,11 +119,11 @@
     grid-template-columns: 1fr;
     gap: 20px;
   }
-  
+
   .characterOptionCard {
     padding: 20px;
   }
-  
+
   .characterSelection {
     padding: 15px;
   }

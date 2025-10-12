@@ -4,7 +4,7 @@
   padding: 2rem;
   background: rgba(15, 64, 79, 0.8); /* Semi-transparent primary fantasy color */
   border-radius: 8px;
-  border: 2px solid #E4BB1E; /* Gold border to match theme */
+  border: 2px solid #e4bb1e; /* Gold border to match theme */
 }
 
 .managerHeader {
@@ -13,14 +13,14 @@
   align-items: flex-start;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid #E4BB1E; /* Gold accent border */
+  border-bottom: 2px solid #e4bb1e; /* Gold accent border */
 }
 
 .headerContent h1 {
   font-size: 2.5rem;
-  color: #E4BB1E; /* Gold accent color for main title */
+  color: #e4bb1e; /* Gold accent color for main title */
   margin: 0 0 0.5rem 0;
-  font-family: 'Cinzel', serif; /* Match fantasy theme font */
+  font-family: "Cinzel", serif; /* Match fantasy theme font */
   font-weight: 600;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* Better readability */
 }
@@ -33,9 +33,9 @@
 
 .managerHeader h2,
 .sectionTitle {
-  color: #E4BB1E; /* Gold color for consistency */
+  color: #e4bb1e; /* Gold color for consistency */
   margin: 0;
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-weight: 600;
   font-size: 2rem; /* Maintain section header size */
 }
@@ -55,18 +55,18 @@
   cursor: pointer;
   transition: all 0.2s ease;
   font-weight: 500;
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
 }
 
 .viewToggle:hover {
-  border-color: #E4BB1E; /* Gold on hover */
+  border-color: #e4bb1e; /* Gold on hover */
   background: rgba(15, 64, 79, 0.8);
 }
 
 .viewToggle.active {
-  background: #E4BB1E; /* Gold background when active */
-  color: #0F404F; /* Dark text for contrast on gold */
-  border-color: #E4BB1E;
+  background: #e4bb1e; /* Gold background when active */
+  color: #0f404f; /* Dark text for contrast on gold */
+  border-color: #e4bb1e;
   font-weight: 600;
 }
 
@@ -84,17 +84,17 @@
   text-decoration: none;
   text-align: center;
   justify-content: center;
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
 }
 
 .actionButton.primary {
-  background: linear-gradient(135deg, #B15005, #D67C2D); /* Wood gradient to match theme */
+  background: linear-gradient(135deg, #b15005, #d67c2d); /* Wood gradient to match theme */
   color: white;
-  border-color: #E4BB1E; /* Gold border */
+  border-color: #e4bb1e; /* Gold border */
 }
 
 .actionButton.primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #D67C2D, #E4953F); /* Lighter wood on hover */
+  background: linear-gradient(135deg, #d67c2d, #e4953f); /* Lighter wood on hover */
   box-shadow: 0 2px 4px rgba(228, 187, 30, 0.3);
 }
 
@@ -106,18 +106,18 @@
 
 .actionButton.secondary:hover:not(:disabled) {
   background: rgba(144, 140, 107, 0.9); /* Stone color on hover */
-  border-color: #E4BB1E;
+  border-color: #e4bb1e;
 }
 
 .actionButton.danger {
-  background: linear-gradient(135deg, #8B4513, #A0522D); /* Brown gradients for danger */
+  background: linear-gradient(135deg, #8b4513, #a0522d); /* Brown gradients for danger */
   color: white;
-  border-color: #A0522D;
+  border-color: #a0522d;
 }
 
 .actionButton.danger:hover:not(:disabled) {
-  background: linear-gradient(135deg, #A0522D, #CD853F);
-  border-color: #CD853F;
+  background: linear-gradient(135deg, #a0522d, #cd853f);
+  border-color: #cd853f;
 }
 
 .actionButton.small {
@@ -175,8 +175,12 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .campaignList {
@@ -197,7 +201,7 @@
 }
 
 .campaignItem:hover {
-  border-color: #E4BB1E; /* Gold border on hover */
+  border-color: #e4bb1e; /* Gold border on hover */
   box-shadow: 0 4px 6px rgba(228, 187, 30, 0.2);
   background: rgba(26, 47, 58, 0.8);
 }
@@ -209,9 +213,9 @@
 
 .campaignInfo h3 {
   margin: 0 0 0.5rem 0;
-  color: #E4BB1E; /* Gold color for campaign names */
+  color: #e4bb1e; /* Gold color for campaign names */
   font-size: 1.25rem;
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-weight: 600;
 }
 
@@ -289,9 +293,9 @@
 }
 
 .emptyState h3 {
-  color: #E4BB1E; /* Gold color for headings */
+  color: #e4bb1e; /* Gold color for headings */
   margin: 0 0 0.5rem 0;
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-weight: 600;
 }
 

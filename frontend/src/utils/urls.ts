@@ -1,20 +1,20 @@
 /**
  * URL configuration utilities for consistent API and WebSocket URL construction
  */
-import { getConfiguredApiUrl } from './environment';
+import { getConfiguredApiUrl } from "./environment";
 
 // Get the base URL from environment, defaulting to localhost
 const getBaseUrl = (): string => {
   const url = getConfiguredApiUrl();
 
   // Remove trailing slash to ensure consistent URL construction
-  return url.replace(/\/+$/, '');
+  return url.replace(/\/+$/, "");
 };
 
 // Convert HTTP URLs to WebSocket URLs
 const httpToWs = (url: string): string => {
   return url.replace(/^https?:\/\//, (match) =>
-    match === 'https://' ? 'wss://' : 'ws://'
+    match === "https://" ? "wss://" : "ws://"
   );
 };
 

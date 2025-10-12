@@ -6,21 +6,21 @@
 }
 
 .App-header {
-  background-color: #0F404F; /* Primary fantasy color */
+  background-color: #0f404f; /* Primary fantasy color */
   padding: 1rem 2rem;
   color: white;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 2px solid #E4BB1E; /* Gold accent border */
+  border-bottom: 2px solid #e4bb1e; /* Gold accent border */
 }
 
 .App-header h1 {
   margin: 0;
   font-size: 1.8rem;
-  color: #E4BB1E; /* Gold accent color for the main title */
-  font-family: 'Cinzel Decorative', serif;
+  color: #e4bb1e; /* Gold accent color for the main title */
+  font-family: "Cinzel Decorative", serif;
   font-weight: 700;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
@@ -33,21 +33,21 @@
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.9rem;
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-weight: 500;
   transition: all 0.3s ease;
-  border: 1px solid #E4BB1E;
+  border: 1px solid #e4bb1e;
 }
 
 .back-button:hover {
-  background-color: #908C6B; /* Stone color on hover */
+  background-color: #908c6b; /* Stone color on hover */
   box-shadow: 0 2px 4px rgba(228, 187, 30, 0.3);
 }
 
 .App-main {
   flex: 1;
   padding: 2rem;
-  background: linear-gradient(135deg, #1a2f3a 0%, #0F404F 100%); /* Fantasy gradient background */
+  background: linear-gradient(135deg, #1a2f3a 0%, #0f404f 100%); /* Fantasy gradient background */
   min-height: calc(100vh - 80px);
 }
 
@@ -57,15 +57,15 @@
   background: rgba(15, 64, 79, 0.8); /* Semi-transparent primary color */
   padding: 2rem;
   border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-  border: 2px solid #E4BB1E; /* Gold border */
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  border: 2px solid #e4bb1e; /* Gold border */
 }
 
 .campaign-setup h2 {
   text-align: center;
-  color: #E4BB1E; /* Gold color for headings */
+  color: #e4bb1e; /* Gold color for headings */
   margin-bottom: 2rem;
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-weight: 600;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
