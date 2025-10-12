@@ -130,8 +130,7 @@ class TestSpellSystemEndpoints:
         assert data["spellcasting_ability_score"] == 16
 
         # Verify calculation: 8 + proficiency_bonus + ability_modifier
-        # Level 5 = +3 proficiency, 16 ability = +3 modifier
-        # Expected: 8 + 3 + 3 = 14
+        # Level 5 = +3 proficiency, 16 ability = +3 modifier, Expected: 8 + 3 + 3 = 14
         assert data["save_dc"] == 14
 
     def test_manage_concentration_start(self, client) -> None:
