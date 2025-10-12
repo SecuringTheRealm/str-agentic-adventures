@@ -4,6 +4,14 @@ import { Configuration, GameApi } from "../api-client";
 import { getRuntimeMode } from "../utils/environment";
 import { getApiBaseUrl } from "../utils/urls";
 
+// Import WebSocket client for unified SDK
+import {
+  WebSocketClient,
+  websocketClient,
+  type WebSocketMessage,
+  type WebSocketConnectionOptions,
+} from "../api-client/websocketClient";
+
 // Create configuration for the generated API client
 const configuration = new Configuration({
   basePath: getApiBaseUrl(),
@@ -11,6 +19,11 @@ const configuration = new Configuration({
 
 // Create the API client instance
 export const gameApi = new GameApi(configuration);
+
+// Export WebSocket client for unified SDK access
+export const wsClient = websocketClient;
+export { WebSocketClient };
+export type { WebSocketMessage, WebSocketConnectionOptions };
 
 // Create a compatible apiClient for existing code that uses direct axios calls
 export const apiClient = axios.create({
