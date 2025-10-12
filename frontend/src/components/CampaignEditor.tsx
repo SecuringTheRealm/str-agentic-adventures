@@ -57,7 +57,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
       return () => clearTimeout(timeoutId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData, autoSave, hasUnsavedChanges, isEditing]);
+  }, [autoSave, hasUnsavedChanges, isEditing]);
 
   // Track changes
   useEffect(() => {

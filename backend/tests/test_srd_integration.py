@@ -1,9 +1,8 @@
 """Integration test demonstrating complete SRD-compliant character creation."""
 
-import pytest
-import asyncio
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
+import pytest
 from app.agents.scribe_agent import ScribeAgent
 
 
@@ -97,7 +96,7 @@ class TestSRDIntegration:
             assert result["hit_dice"] == "1d10"
 
             # Print summary for visual verification
-            print(f"\n=== Character Creation Summary ===")
+            print("\n=== Character Creation Summary ===")
             print(f"Name: {result['name']}")
             print(f"Race: {result['race'].title()}")
             print(f"Class: {result['character_class'].title()}")

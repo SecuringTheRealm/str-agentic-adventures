@@ -51,7 +51,7 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
     setSelectedAction("");
     setActionDescription("");
     setTargetId("");
-  }, [session, combatState]);
+  }, []);
 
   const handleActionSubmit = () => {
     if (!selectedAction.trim()) return;

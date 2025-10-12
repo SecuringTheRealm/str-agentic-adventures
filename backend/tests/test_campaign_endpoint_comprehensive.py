@@ -7,11 +7,12 @@ from fastapi.testclient import TestClient
 
 def test_campaign_endpoint_with_missing_config() -> bool | None:
     """Test that campaign endpoint works without Azure OpenAI configuration.
-    
+
     Note: Basic campaign creation doesn't require Azure OpenAI. Only character
     creation and AI-powered features require Azure OpenAI configuration.
     """
     from app.main import app
+
     client = TestClient(app)
 
     # Test campaign creation - should work without Azure config
@@ -30,15 +31,13 @@ def test_campaign_endpoint_with_missing_config() -> bool | None:
     assert "id" in response_data, "Response should contain campaign ID"
     assert response_data["name"] == "Test Campaign"
 
-    print(
-        "✓ Test passed: Campaign endpoint works without Azure OpenAI configuration"
-    )
+    print("✓ Test passed: Campaign endpoint works without Azure OpenAI configuration")
     return True
 
 
 def test_campaign_endpoint_with_config() -> bool | None:
     """Test that campaign endpoint works with configuration.
-    
+
     Note: Campaign creation doesn't require Azure OpenAI configuration,
     so this test simply verifies the endpoint works correctly.
     """

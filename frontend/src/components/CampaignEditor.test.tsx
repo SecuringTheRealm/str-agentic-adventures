@@ -5,11 +5,8 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import React from "react";
 import * as api from "../services/api";
 import CampaignEditor from "./CampaignEditor";
-import styles from "./CampaignEditor.module.css";
 
 // Mock the API module
 vi.mock("../services/api");

@@ -164,7 +164,7 @@ test.describe("D&D 5e SRD Compliance Tests", () => {
             // Set a valid value
             await abilityInput.fill("13");
             const value = await abilityInput.inputValue();
-            const numValue = Number.parseInt(value);
+            const numValue = Number.parseInt(value, 10);
             expect(numValue).toBeGreaterThanOrEqual(3);
             expect(numValue).toBeLessThanOrEqual(20);
           }
@@ -198,9 +198,10 @@ test.describe("D&D 5e SRD Compliance Tests", () => {
             const resultText = await result.textContent();
             if (resultText) {
               const rollValue = Number.parseInt(
-                resultText.match(/\d+/)?.[0] || "0"
+                resultText.match(/\d+/)?.[0] || "0",
+                10
               );
-              const maxValue = Number.parseInt(die.substring(1));
+              const maxValue = Number.parseInt(die.substring(1), 10);
 
               expect(rollValue).toBeGreaterThanOrEqual(1);
               expect(rollValue).toBeLessThanOrEqual(maxValue);

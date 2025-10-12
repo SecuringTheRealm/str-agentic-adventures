@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import "./App.css";
 import CampaignSelection from "./components/CampaignSelection";
 import CharacterSelection from "./components/CharacterSelection";

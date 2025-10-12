@@ -1,6 +1,6 @@
 import type React from "react";
 import { useEffect, useState } from "react";
-import { type WebSocketMessage, useWebSocket } from "../hooks/useWebSocket";
+import { useWebSocket, type WebSocketMessage } from "../hooks/useWebSocket";
 import {
   type Campaign,
   type Character,

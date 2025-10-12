@@ -2,10 +2,6 @@
 Test campaign endpoint functionality and error handling.
 """
 
-import os
-from unittest.mock import patch
-
-import pytest
 from fastapi.testclient import TestClient
 
 
@@ -14,11 +10,12 @@ class TestCampaignEndpoint:
 
     def test_campaign_endpoint_with_missing_config(self) -> None:
         """Test that basic campaign creation works without Azure OpenAI.
-        
+
         Note: Campaign creation doesn't require Azure OpenAI for basic functionality.
         Only character creation and AI-powered features require Azure OpenAI.
         """
         from app.main import app
+
         client = TestClient(app)
 
         # Test campaign creation - should succeed without Azure config
@@ -34,7 +31,7 @@ class TestCampaignEndpoint:
         assert response.status_code == 200, (
             f"Campaign creation should succeed without Azure OpenAI, got: {response.status_code}"
         )
-        
+
         response_data = response.json()
         assert response_data["name"] == "Test Campaign"
         assert "id" in response_data
@@ -42,6 +39,7 @@ class TestCampaignEndpoint:
     def test_campaign_endpoint_with_valid_data(self) -> None:
         """Test campaign creation with valid data."""
         from app.main import app
+
         client = TestClient(app)
 
         campaign_data = {
@@ -53,10 +51,8 @@ class TestCampaignEndpoint:
         response = client.post("/api/game/campaign", json=campaign_data)
 
         # Campaign creation should succeed
-        assert response.status_code == 200, (
-            f"Unexpected status: {response.status_code}"
-        )
-        
+        assert response.status_code == 200, f"Unexpected status: {response.status_code}"
+
         response_data = response.json()
         assert response_data["name"] == "Test Campaign"
         assert response_data["setting"] == "A magical fantasy world"
@@ -65,6 +61,7 @@ class TestCampaignEndpoint:
     def test_campaign_endpoint_validation(self) -> None:
         """Test campaign endpoint input validation."""
         from app.main import app
+
         client = TestClient(app)
 
         # Test missing required fields

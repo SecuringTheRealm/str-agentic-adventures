@@ -4,8 +4,7 @@ Combat MC Agent - Manages combat encounters, tactics, and battle flow.
 
 import logging
 import random
-import re
-from typing import Any, Optional
+from typing import Any
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
@@ -24,10 +23,10 @@ class CombatMCAgent:
 
     def __init__(self) -> None:
         """Initialize the Combat MC agent with its own kernel instance."""
-        self.kernel: Optional[Kernel] = None
-        self.chat_service: Optional[AzureChatCompletion] = None
+        self.kernel: Kernel | None = None
+        self.chat_service: AzureChatCompletion | None = None
         self.fallback_mode = False  # Track if we're using fallback mechanics
-        self.rules_engine: Optional[Any] = None  # Store rules engine plugin instance
+        self.rules_engine: Any | None = None  # Store rules engine plugin instance
 
         # Try to get the shared kernel from kernel manager
         try:
@@ -68,7 +67,7 @@ class CombatMCAgent:
 
             # Create plugin instances
             rules_engine = RulesEnginePlugin()
-            
+
             # Store reference to the rules engine instance
             self.rules_engine = rules_engine
 
@@ -395,7 +394,9 @@ class CombatMCAgent:
                 return result
 
             if action_type == "attack":
-                return self._process_attack_action(action_data, result, self.rules_engine)
+                return self._process_attack_action(
+                    action_data, result, self.rules_engine
+                )
             if action_type == "spell_attack":
                 return self._process_spell_attack_action(
                     action_data, result, self.rules_engine

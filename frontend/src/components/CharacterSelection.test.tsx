@@ -1,8 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import React from "react";
 import type { Campaign } from "../services/api";
 import CharacterSelection from "./CharacterSelection";
-import styles from "./CharacterSelection.module.css";
 
 describe("CharacterSelection", () => {
   const mockCampaign: Campaign = {

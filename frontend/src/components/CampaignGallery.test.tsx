@@ -1,5 +1,4 @@
 import { render, screen } from "@testing-library/react";
-import React from "react";
 import * as api from "../services/api";
 import CampaignGallery from "./CampaignGallery";
 import styles from "./CampaignGallery.module.css";

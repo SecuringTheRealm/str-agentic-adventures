@@ -40,7 +40,7 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({
 
   useEffect(() => {
     loadCampaigns();
-  }, []);
+  }, [loadCampaigns]);
 
   const handleCampaignSelected = (campaign: Campaign) => {
     onCampaignCreated(campaign);

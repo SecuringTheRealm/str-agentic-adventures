@@ -14,7 +14,6 @@ from fastapi.middleware.cors import CORSMiddleware
 # Local imports
 from app.api import game_routes, websocket_routes
 from app.config import init_settings
-from app.database import init_db
 from app.services.campaign_service import campaign_service
 
 # Load environment variables
