@@ -12,6 +12,7 @@ User-facing guides and instructions:
 ### `/specs/`
 Technical specifications and implementation details:
 - [TESTING_STRATEGY.md](specs/TESTING_STRATEGY.md) - Test organization and strategy
+- [E2E_TEST_SUMMARY.md](specs/E2E_TEST_SUMMARY.md) - End-to-end testing results and improvements
 - [OPENAPI_CLIENT.md](specs/OPENAPI_CLIENT.md) - API client generation and usage
 - [UV_MIGRATION.md](specs/UV_MIGRATION.md) - Migration to UV package manager
 
@@ -30,7 +31,8 @@ Architecture Decision Records:
 
 - [product_requirements_document.md](product_requirements_document.md) - Product specification
 - [deployment.md](deployment.md) - Production deployment instructions
+- [AZURE_OPENAI_REQUIREMENTS.md](AZURE_OPENAI_REQUIREMENTS.md) - Azure OpenAI configuration guide
 
 ## Agent Documentation
 
-See [../AGENTS.md](../AGENTS.md) for detailed information about the AI agents (kept in repository root for codex support).
+See [AGENTS.md](AGENTS.md) for detailed information about the AI agents and coding instructions.
