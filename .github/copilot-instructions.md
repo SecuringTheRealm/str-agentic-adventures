@@ -89,6 +89,7 @@ For manual setup outside the workflow, follow the steps below.
    npm run generate:api
    ```
    **TIMING**: Takes ~5 seconds. Requires backend server running. Set timeout to 2+ minutes.
+   **NOTE**: The OpenAPI client is NOT committed to git. It must be generated dynamically from the backend's OpenAPI schema. The frontend will not build or test without this step.
 
 5. **Build frontend:**
    ```bash

@@ -12,25 +12,30 @@ This unified approach provides a single, consistent interface for all backend in
 
 ## 🔄 Developer Workflow
 
-**IMPORTANT**: When the backend API changes, developers must regenerate the frontend client to maintain synchronization.
+**IMPORTANT**: The OpenAPI client is **NOT committed to git**. It is generated dynamically at build time and test time.
 
-### When to Regenerate the Client
+### Generated Files are NOT in Git
 
-You must regenerate the client when:
-- ✅ Adding new API endpoints
-- ✅ Modifying existing endpoint parameters or responses
-- ✅ Changing data models (request/response types)
-- ✅ Updating enum values or field names
-- ✅ After pulling backend changes from other developers
+The `frontend/src/api-client/` directory contains:
+- ✅ **Generated files** (api.ts, base.ts, configuration.ts, etc.) - **NOT in git**, excluded via .gitignore
+- ✅ **Manual extensions** (websocketClient.ts, __tests__/) - **IN git**, manually maintained
 
-### How to Regenerate the Client
+### When the Client is Generated
+
+The OpenAPI client is automatically generated:
+- 📦 **During local setup**: Run `npm run generate:api` after cloning the repo
+- 🏗️ **During CI/CD builds**: Generated before building the frontend
+- 🧪 **Before tests run**: Generated to ensure tests have latest API types
+- 🔄 **After backend API changes**: Developers regenerate to get new types
+
+### How to Generate the Client Locally
 
 1. **Start the backend server:**
    ```bash
-   cd backend && python -m app.main
+   cd backend && uv run python -m app.main
    ```
 
-2. **Regenerate the frontend client:**
+2. **Generate the frontend client:**
    ```bash
    cd frontend && npm run generate:api
    ```
@@ -45,39 +50,65 @@ You must regenerate the client when:
    cd frontend && npm test
    ```
 
-### Troubleshooting
+### First-Time Setup
 
-If the generation fails:
-- Ensure the backend is running on `http://localhost:8000`
-- Check that `/openapi.json` endpoint is accessible
-- Verify no TypeScript compilation errors in the backend
-- Review any API breaking changes that may require frontend updates
-
-### Automated Validation
-
-To validate the entire workflow automatically:
+After cloning the repository:
 ```bash
-./scripts/validate-openapi-client.sh
+# Backend setup
+cd backend
+uv sync
+uv run python -m app.main  # Start backend in one terminal
+
+# Frontend setup (in another terminal)
+cd frontend
+npm ci
+npm run generate:api  # Generate OpenAPI client
+npm start  # Start frontend dev server
 ```
 
-This script checks:
-- ✅ Backend server accessibility
-- ✅ OpenAPI schema validity
-- ✅ Client generation success
-- ✅ TypeScript compilation
+### Troubleshooting
 
-## Files Changed
+If generation fails:
+- Ensure the backend is running on `http://localhost:8000`
+- Check that `/openapi.json` endpoint is accessible (visit in browser)
+- Verify no TypeScript compilation errors in the backend
+- Check backend console for errors
 
-### Generated REST Client
-- `frontend/src/api-client/` - Complete generated client from OpenAPI schema
-- `frontend/package.json` - Added `@openapitools/openapi-generator-cli` and npm script
+### CI/CD Integration
 
-### WebSocket Client SDK
-- `frontend/src/api-client/websocketClient.ts` - Manually implemented WebSocket client
-- `frontend/src/hooks/useWebSocketSDK.ts` - React hook for WebSocket connections
-- `frontend/src/services/api.ts` - Unified export of both REST and WebSocket clients
+**GitHub Actions** automatically:
+1. Starts the backend server
+2. Generates the OpenAPI client
+3. Builds the frontend
+4. Runs all tests
 
-### Updated Files
+The generated client is **never committed** - it's created fresh for each build.
+
+## Repository Structure
+
+### Generated vs. Manual Files
+
+**Generated Files** (NOT in git):
+- `frontend/src/api-client/api.ts` - Generated API classes
+- `frontend/src/api-client/base.ts` - Generated base classes  
+- `frontend/src/api-client/configuration.ts` - Generated configuration
+- `frontend/src/api-client/common.ts` - Generated common types
+- `frontend/src/api-client/index.ts` - Generated exports
+- `frontend/src/api-client/docs/*` - Generated documentation
+
+**Manual Files** (IN git):
+- `frontend/src/api-client/websocketClient.ts` - WebSocket client implementation
+- `frontend/src/api-client/__tests__/` - Tests for manual extensions
+- `frontend/src/api-client/.gitignore` - Excludes generated files
+- `frontend/src/hooks/useWebSocketSDK.ts` - React hook for WebSocket
+- `frontend/src/services/api.ts` - Unified exports
+
+### Why Generated Files Aren't Committed
+
+1. **Prevents merge conflicts** - No conflicts in auto-generated code
+2. **Reduces repo size** - ~9,000 lines of generated code excluded
+3. **Ensures synchronization** - Always generated fresh from backend schema
+4. **Follows best practices** - Generated code shouldn't be in version control
 - `frontend/src/components/GameInterface.tsx` - Updated to use unified SDK
 - Various component files - Updated for stricter TypeScript types
 
