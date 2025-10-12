@@ -2,7 +2,11 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: linear-gradient(135deg, #1a2f3a 0%, #0F404F 100%); /* Fantasy gradient */
+  background: linear-gradient(
+    135deg,
+    #1a2f3a 0%,
+    #0f404f 100%
+  ); /* Fantasy gradient */
 }
 
 .gameContainer {
@@ -17,7 +21,7 @@
   color: #f4f1e8; /* Warm off-white */
   overflow-y: auto;
   transition: width 0.3s ease;
-  border-right: 2px solid #E4BB1E; /* Gold border */
+  border-right: 2px solid #e4bb1e; /* Gold border */
 }
 
 .centerPanel {
@@ -34,21 +38,21 @@
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  border-left: 2px solid #E4BB1E; /* Gold border */
+  border-left: 2px solid #e4bb1e; /* Gold border */
 }
 
 .visualControls {
   padding: 15px;
-  border-bottom: 1px solid #908C6B; /* Stone color border */
+  border-bottom: 1px solid #908c6b; /* Stone color border */
 }
 
 .visualControls h4 {
   margin: 0 0 10px 0;
-  color: #E4BB1E; /* Gold color for headings */
+  color: #e4bb1e; /* Gold color for headings */
   font-size: 14px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-weight: 600;
 }
 
@@ -60,24 +64,32 @@
 
 .visualButton {
   padding: 8px 12px;
-  background: linear-gradient(135deg, #B15005, #D67C2D); /* Wood gradient */
+  background: linear-gradient(135deg, #b15005, #d67c2d); /* Wood gradient */
   color: white;
-  border: 1px solid #E4BB1E; /* Gold border */
+  border: 1px solid #e4bb1e; /* Gold border */
   border-radius: 4px;
   cursor: pointer;
   font-size: 12px;
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-weight: 500;
   transition: all 0.3s ease;
 }
 
 .visualButton:hover:not(:disabled) {
-  background: linear-gradient(135deg, #D67C2D, #E4953F); /* Lighter wood on hover */
+  background: linear-gradient(
+    135deg,
+    #d67c2d,
+    #e4953f
+  ); /* Lighter wood on hover */
   box-shadow: 0 2px 4px rgba(228, 187, 30, 0.3);
 }
 
 .visualButton:disabled {
-  background: linear-gradient(135deg, #788070, #98A090); /* Steel colors when disabled */
+  background: linear-gradient(
+    135deg,
+    #788070,
+    #98a090
+  ); /* Steel colors when disabled */
   cursor: not-allowed;
   border-color: #788070;
 }
@@ -95,7 +107,7 @@
   min-height: 200px;
   padding: 10px;
   box-sizing: border-box;
-  border-top: 1px solid #908C6B; /* Stone color border */
+  border-top: 1px solid #908c6b; /* Stone color border */
   background: rgba(26, 47, 58, 0.3); /* Subtle background */
 }
 
@@ -104,12 +116,12 @@
   .gameContainer {
     flex-direction: column;
   }
-  
+
   .leftPanel {
     width: 100%;
     max-height: 150px;
   }
-  
+
   .rightPanel {
     width: 100%;
     max-height: 200px;

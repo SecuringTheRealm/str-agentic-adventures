@@ -25,28 +25,38 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .playerMessage {
   align-self: flex-end;
-  background: linear-gradient(135deg, #0F404F, #1a5a6b); /* Primary color gradient */
+  background: linear-gradient(
+    135deg,
+    #0f404f,
+    #1a5a6b
+  ); /* Primary color gradient */
   color: #f4f1e8; /* Warm off-white text */
   margin-left: auto;
   border-bottom-right-radius: 0;
-  border: 1px solid #E4BB1E; /* Gold border */
-  font-family: 'Cinzel', serif;
+  border: 1px solid #e4bb1e; /* Gold border */
+  font-family: "Cinzel", serif;
 }
 
 .dmMessage {
   align-self: flex-start;
-  background: linear-gradient(135deg, #B15005, #8B4513); /* Wood gradient */
+  background: linear-gradient(135deg, #b15005, #8b4513); /* Wood gradient */
   color: #f4f1e8; /* Warm off-white text */
   margin-right: auto;
   border-bottom-left-radius: 0;
-  border: 1px solid #908C6B; /* Stone border */
-  font-family: 'Cinzel', serif;
+  border: 1px solid #908c6b; /* Stone border */
+  font-family: "Cinzel", serif;
 }
 
 .messageSender {
@@ -54,59 +64,67 @@
   margin-bottom: 5px;
   font-weight: bold;
   opacity: 0.9;
-  color: #E4BB1E; /* Gold color for sender names */
-  font-family: 'Cinzel', serif;
+  color: #e4bb1e; /* Gold color for sender names */
+  font-family: "Cinzel", serif;
 }
 
 .messageText {
   line-height: 1.4;
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
 }
 
 .inputForm {
   display: flex;
   padding: 10px;
-  background: linear-gradient(135deg, #0F404F, #1a2f3a); /* Fantasy gradient */
-  border-top: 2px solid #E4BB1E; /* Gold border */
+  background: linear-gradient(135deg, #0f404f, #1a2f3a); /* Fantasy gradient */
+  border-top: 2px solid #e4bb1e; /* Gold border */
 }
 
 .inputForm input {
   flex: 1;
   padding: 10px;
-  border: 1px solid #908C6B; /* Stone color border */
+  border: 1px solid #908c6b; /* Stone color border */
   border-radius: 4px;
   font-size: 14px;
   background: rgba(26, 47, 58, 0.8); /* Dark fantasy background */
   color: #f4f1e8; /* Light text */
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
 }
 
 .inputForm input:focus {
   outline: none;
-  border-color: #E4BB1E; /* Gold focus border */
+  border-color: #e4bb1e; /* Gold focus border */
   box-shadow: 0 0 0 2px rgba(228, 187, 30, 0.2);
 }
 
 .inputForm button {
   margin-left: 10px;
   padding: 10px 16px;
-  background: linear-gradient(135deg, #B15005, #D67C2D); /* Wood gradient */
+  background: linear-gradient(135deg, #b15005, #d67c2d); /* Wood gradient */
   color: white;
-  border: 1px solid #E4BB1E; /* Gold border */
+  border: 1px solid #e4bb1e; /* Gold border */
   border-radius: 4px;
   cursor: pointer;
   font-weight: bold;
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   transition: all 0.3s ease;
 }
 
 .inputForm button:hover {
-  background: linear-gradient(135deg, #D67C2D, #E4953F); /* Lighter wood on hover */
+  background: linear-gradient(
+    135deg,
+    #d67c2d,
+    #e4953f
+  ); /* Lighter wood on hover */
   box-shadow: 0 2px 4px rgba(228, 187, 30, 0.3);
 }
 
 .inputForm button:disabled {
-  background: linear-gradient(135deg, #788070, #98A090); /* Steel colors when disabled */
+  background: linear-gradient(
+    135deg,
+    #788070,
+    #98a090
+  ); /* Steel colors when disabled */
   cursor: not-allowed;
   border-color: #788070;
 }
@@ -121,7 +139,7 @@
   width: 10px;
   float: left;
   margin: 0 1px;
-  background-color: #9E9EA1;
+  background-color: #9e9ea1;
   display: block;
   border-radius: 50%;
   opacity: 0.4;
@@ -137,9 +155,15 @@
 }
 
 @keyframes blink {
-  0% { opacity: 0.4; }
-  20% { opacity: 1; }
-  100% { opacity: 0.4; }
+  0% {
+    opacity: 0.4;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.4;
+  }
 }
 
 /* Streaming message styles */
@@ -150,12 +174,18 @@
 .streamingCursor {
   display: inline-block;
   animation: cursor-blink 1s infinite;
-  color: #E4BB1E; /* Gold cursor */
+  color: #e4bb1e; /* Gold cursor */
   font-weight: bold;
   margin-left: 2px;
 }
 
 @keyframes cursor-blink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0; }
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0;
+  }
 }

@@ -7,10 +7,6 @@
     "node": ">=22.0.0"
   },
   "dependencies": {
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.0",
-    "@mui/icons-material": "^7.3.4",
-    "@mui/material": "^7.3.4",
     "axios": "^1.12.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
@@ -31,11 +27,12 @@
     "lint:fix": "biome check --fix .",
     "format": "biome format --write ."
   },
-  "eslintConfig": {
-    "extends": ["react-app", "react-app/jest"]
-  },
   "browserslist": {
-    "production": [">0.2%", "not dead", "not op_mini all"],
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
     "development": [
       "last 1 chrome version",
       "last 1 firefox version",
@@ -43,8 +40,8 @@
     ]
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
-    "@openapitools/openapi-generator-cli": "^2.24.0",
+    "@biomejs/biome": "^2.2.5",
+    "@openapitools/openapi-generator-cli": "^2.25.0",
     "@playwright/test": "^1.56.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",

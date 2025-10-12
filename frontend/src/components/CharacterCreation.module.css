@@ -179,16 +179,16 @@
   .characterCreation {
     padding: 15px;
   }
-  
+
   .characterForm {
     padding: 20px;
   }
-  
+
   .formRow {
     grid-template-columns: 1fr;
     gap: 15px;
   }
-  
+
   .abilitiesGrid {
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;

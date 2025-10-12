@@ -1,6 +1,6 @@
 .diceRoller {
   background: #2c2c2c;
-  border: 2px solid #8B4513;
+  border: 2px solid #8b4513;
   border-radius: 8px;
   padding: 1rem;
   margin: 1rem 0;
@@ -11,25 +11,28 @@
   color: #d4af37;
   margin: 0 0 1rem 0;
   text-align: center;
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
 }
 
 .diceInputSection {
   margin-bottom: 1rem;
 }
 
-.notationInput, .skillInput {
+.notationInput,
+.skillInput {
   margin-bottom: 0.5rem;
 }
 
-.notationInput label, .skillInput label {
+.notationInput label,
+.skillInput label {
   display: block;
   color: #e6e6e6;
   margin-bottom: 0.25rem;
   font-weight: bold;
 }
 
-.notationInput input, .skillInput select {
+.notationInput input,
+.skillInput select {
   width: 100%;
   padding: 0.5rem;
   border: 1px solid #666;
@@ -39,7 +42,8 @@
   font-size: 1rem;
 }
 
-.notationInput input:focus, .skillInput select:focus {
+.notationInput input:focus,
+.skillInput select:focus {
   outline: none;
   border-color: #d4af37;
   box-shadow: 0 0 5px rgba(212, 175, 55, 0.3);
@@ -48,7 +52,7 @@
 .rollButton {
   width: 100%;
   padding: 0.75rem;
-  background: linear-gradient(135deg, #8B4513, #A0522D);
+  background: linear-gradient(135deg, #8b4513, #a0522d);
   color: white;
   border: none;
   border-radius: 4px;
@@ -60,7 +64,7 @@
 }
 
 .rollButton:hover:not(:disabled) {
-  background: linear-gradient(135deg, #A0522D, #CD853F);
+  background: linear-gradient(135deg, #a0522d, #cd853f);
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
@@ -135,7 +139,7 @@
   color: #e6e6e6;
   font-size: 1.1rem;
   margin-bottom: 0.5rem;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
 }
 
 .resultTotal {
@@ -191,7 +195,7 @@
 
 .historyNotation {
   flex: 1;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   color: #ccc;
 }
 
@@ -210,8 +214,12 @@
 
 /* Animations for rolling state */
 @keyframes rolling {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .rollButton:disabled.rolling {
@@ -219,7 +227,7 @@
 }
 
 .rollButton:disabled.rolling::before {
-  content: '🎲';
+  content: "🎲";
   position: absolute;
   left: 50%;
   top: 50%;
@@ -233,21 +241,21 @@
     padding: 0.75rem;
     margin: 0.5rem 0;
   }
-  
+
   .quickRollButtons {
     grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
     gap: 0.25rem;
   }
-  
+
   .quickRollButton {
     padding: 0.4rem;
     font-size: 0.8rem;
   }
-  
+
   .resultTotal {
     font-size: 1.5rem;
   }
-  
+
   .historyItem {
     padding: 0.4rem;
     font-size: 0.8rem;

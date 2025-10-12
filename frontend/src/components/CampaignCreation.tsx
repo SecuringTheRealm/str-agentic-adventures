@@ -64,21 +64,26 @@ const CampaignCreation: React.FC<CampaignCreationProps> = ({
 
       const result = await createCampaign(campaignData);
       onCampaignCreated(result);
-    } catch (err: any) {
+    } catch (err: unknown) {
       // Extract error message from API response
       let errorMessage = "Failed to create campaign. Please try again.";
 
-      if (err.response?.data?.detail) {
-        if (typeof err.response.data.detail === "string") {
-          errorMessage = err.response.data.detail;
-        } else if (Array.isArray(err.response.data.detail)) {
+      const error = err as {
+        response?: { data?: { detail?: string | Array<{ msg: string }> } };
+        message?: string;
+      };
+
+      if (error.response?.data?.detail) {
+        if (typeof error.response.data.detail === "string") {
+          errorMessage = error.response.data.detail;
+        } else if (Array.isArray(error.response.data.detail)) {
           // Validation errors from FastAPI
-          errorMessage = err.response.data.detail
-            .map((e: any) => e.msg)
+          errorMessage = error.response.data.detail
+            .map((e) => e.msg)
             .join(", ");
         }
-      } else if (err.message) {
-        errorMessage = err.message;
+      } else if (error.message) {
+        errorMessage = error.message;
       }
 
       setError(errorMessage);
@@ -196,7 +201,7 @@ const CampaignCreation: React.FC<CampaignCreationProps> = ({
         >
           {isSubmitting ? (
             <span className={styles.buttonContent}>
-              <span className={styles.loadingSpinner}></span>
+              <span className={styles.loadingSpinner} />
               Creating...
             </span>
           ) : (

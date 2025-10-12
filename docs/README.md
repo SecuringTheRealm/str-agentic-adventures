@@ -7,6 +7,7 @@ This directory contains all project documentation organized by category.
 ### `/user/`
 User-facing guides and instructions:
 - [BUILD.md](user/BUILD.md) - Build system and development setup guide
+- [FRONTEND.md](user/FRONTEND.md) - Frontend development guide and documentation
 
 ### `/specs/`
 Technical specifications and implementation details:

@@ -6,26 +6,14 @@
     "useIgnoreFile": true
   },
   "files": {
-    "ignoreUnknown": false,
-    "ignore": [
-      "node_modules/",
-      "build/",
-      "dist/",
-      "coverage/",
-      "src/api-client/"
-    ]
+    "ignoreUnknown": false
   },
   "formatter": {
     "enabled": true,
-    "formatWithErrors": false,
     "indentStyle": "space",
     "indentWidth": 2,
     "lineEnding": "lf",
-    "lineWidth": 80,
-    "attributePosition": "auto"
-  },
-  "organizeImports": {
-    "enabled": true
+    "lineWidth": 80
   },
   "linter": {
     "enabled": true,
@@ -33,8 +21,7 @@
       "recommended": true,
       "style": {
         "noInferrableTypes": "error",
-        "useConst": "error",
-        "useShorthandArrayType": "error"
+        "useConst": "error"
       },
       "correctness": {
         "noUnusedVariables": "warn",
@@ -53,14 +40,7 @@
       "semicolons": "always",
       "arrowParentheses": "always",
       "bracketSpacing": true,
-      "bracketSameLine": false,
-      "quoteStyle": "double",
-      "attributePosition": "auto"
-    }
-  },
-  "json": {
-    "formatter": {
-      "trailingCommas": "none"
+      "quoteStyle": "double"
     }
   }
 }

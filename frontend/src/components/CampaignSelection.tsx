@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { Campaign, getCampaigns, deleteCampaign } from "../services/api";
-import CampaignGallery from "./CampaignGallery";
+import type React from "react";
+import { useEffect, useState } from "react";
+import { type Campaign, deleteCampaign, getCampaigns } from "../services/api";
 import CampaignEditor from "./CampaignEditor";
+import CampaignGallery from "./CampaignGallery";
 import styles from "./CampaignSelection.module.css";
 
 interface CampaignSelectionProps {
@@ -133,7 +134,7 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({
 
         {loading ? (
           <div className={styles.loadingState}>
-            <div className={styles.loadingSpinner}></div>
+            <div className={styles.loadingSpinner} />
             <p>Loading campaigns...</p>
           </div>
         ) : (

@@ -2,9 +2,14 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
-  background: rgba(15, 64, 79, 0.8); /* Semi-transparent primary fantasy color */
+  background: rgba(
+    15,
+    64,
+    79,
+    0.8
+  ); /* Semi-transparent primary fantasy color */
   border-radius: 8px;
-  border: 2px solid #E4BB1E; /* Gold border to match theme */
+  border: 2px solid #e4bb1e; /* Gold border to match theme */
 }
 
 .galleryHeader {
@@ -13,14 +18,14 @@
   padding: 2rem;
   background: rgba(26, 47, 58, 0.6); /* Darker background for emphasis */
   border-radius: 12px;
-  border: 2px solid #E4BB1E; /* Gold border for prominence */
+  border: 2px solid #e4bb1e; /* Gold border for prominence */
 }
 
 .galleryHeader h2 {
   font-size: 3rem; /* Larger size for prominence */
-  color: #E4BB1E; /* Gold accent color */
+  color: #e4bb1e; /* Gold accent color */
   margin-bottom: 0.5rem;
-  font-family: 'Cinzel Decorative', serif; /* More decorative font */
+  font-family: "Cinzel Decorative", serif; /* More decorative font */
   font-weight: 700;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Strong shadow for readability */
   letter-spacing: 1px; /* Better spacing */
@@ -29,7 +34,7 @@
 .galleryHeader p {
   font-size: 1.2rem; /* Slightly larger */
   color: #f4f1e8; /* Warm off-white for better contrast */
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-weight: 500;
 }
 
@@ -40,25 +45,33 @@
   margin-bottom: 2rem;
 }
 
-.campaignCard, .customCampaignCard {
+.campaignCard,
+.customCampaignCard {
   background: rgba(26, 47, 58, 0.7); /* Darker fantasy background */
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
   overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
   border: 2px solid #788070; /* Steel border */
 }
 
-.campaignCard:hover, .customCampaignCard:hover {
+.campaignCard:hover,
+.customCampaignCard:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 25px rgba(228, 187, 30, 0.3); /* Gold shadow */
-  border-color: #E4BB1E; /* Gold border on hover */
+  border-color: #e4bb1e; /* Gold border on hover */
 }
 
 .customCampaignCard {
-  background: linear-gradient(135deg, #B15005 0%, #D67C2D 100%); /* Wood gradient to match theme */
+  background: linear-gradient(
+    135deg,
+    #b15005 0%,
+    #d67c2d 100%
+  ); /* Wood gradient to match theme */
   color: white;
-  border-color: #E4BB1E; /* Gold border */
+  border-color: #e4bb1e; /* Gold border */
 }
 
 .customCampaignCard .cardContent {
@@ -88,9 +101,9 @@
 .cardHeader h3 {
   font-size: 1.3rem;
   margin: 0;
-  color: #E4BB1E; /* Gold color for card titles */
+  color: #e4bb1e; /* Gold color for card titles */
   flex: 1;
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-weight: 600;
 }
 
@@ -155,10 +168,10 @@
 
 .detailItem strong {
   display: block;
-  color: #E4BB1E; /* Gold color for labels */
+  color: #e4bb1e; /* Gold color for labels */
   margin-bottom: 0.25rem;
   font-weight: 600;
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
 }
 
 .detailItem span {
@@ -178,9 +191,13 @@
 }
 
 .selectButton {
-  background: linear-gradient(135deg, #B15005, #D67C2D); /* Wood gradient to match theme */
+  background: linear-gradient(
+    135deg,
+    #b15005,
+    #d67c2d
+  ); /* Wood gradient to match theme */
   color: white;
-  border: 1px solid #E4BB1E; /* Gold border */
+  border: 1px solid #e4bb1e; /* Gold border */
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
   font-size: 1rem;
@@ -192,11 +209,15 @@
   justify-content: center;
   gap: 0.5rem;
   margin-top: auto;
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
 }
 
 .selectButton:hover:not(:disabled) {
-  background: linear-gradient(135deg, #D67C2D, #E4953F); /* Lighter wood on hover */
+  background: linear-gradient(
+    135deg,
+    #d67c2d,
+    #e4953f
+  ); /* Lighter wood on hover */
   box-shadow: 0 2px 4px rgba(228, 187, 30, 0.3);
 }
 
@@ -234,8 +255,12 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .campaignGallery.loading {
@@ -293,8 +318,8 @@
 
 .noTemplates h3 {
   margin: 0 0 1rem 0;
-  color: #E4BB1E; /* Gold color for headings */
-  font-family: 'Cinzel', serif;
+  color: #e4bb1e; /* Gold color for headings */
+  font-family: "Cinzel", serif;
   font-weight: 600;
 }
 
@@ -306,21 +331,21 @@
   .campaignGallery {
     padding: 1rem;
   }
-  
+
   .galleryHeader h2 {
     font-size: 2rem;
   }
-  
+
   .campaignOptions {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
-  
+
   .cardHeader {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .toneBadge {
     margin: 0.5rem 0 0 0;
   }

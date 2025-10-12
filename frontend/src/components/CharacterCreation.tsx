@@ -1,11 +1,12 @@
-import React, { useState } from "react";
-import styles from "./CharacterCreation.module.css";
+import type React from "react";
+import { useState } from "react";
 import type {
+  Campaign,
   Character,
   CharacterCreateRequest,
-  Campaign,
 } from "../services/api";
 import { createCharacter } from "../services/api";
+import styles from "./CharacterCreation.module.css";
 
 interface CharacterCreationProps {
   campaign: Campaign;
@@ -76,7 +77,7 @@ const CharacterCreation: React.FC<CharacterCreationProps> = ({
         ...prev,
         abilities: {
           ...prev.abilities,
-          [abilityName]: parseInt(value) || 8,
+          [abilityName]: Number.parseInt(value) || 8,
         },
       }));
     } else {

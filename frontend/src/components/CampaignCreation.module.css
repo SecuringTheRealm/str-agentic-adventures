@@ -2,19 +2,24 @@
   max-width: 600px;
   margin: 0 auto;
   padding: 20px;
-  background: rgba(15, 64, 79, 0.9); /* Primary fantasy color with transparency */
+  background: rgba(
+    15,
+    64,
+    79,
+    0.9
+  ); /* Primary fantasy color with transparency */
   color: #f4f1e8; /* Warm off-white for readability */
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  border: 2px solid #E4BB1E; /* Gold border */
+  border: 2px solid #e4bb1e; /* Gold border */
 }
 
 .campaignCreation h2 {
-  color: #E4BB1E; /* Gold for the main heading */
+  color: #e4bb1e; /* Gold for the main heading */
   margin-bottom: 20px;
   text-align: center;
   font-size: 1.8rem;
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-weight: 600;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
@@ -33,8 +38,8 @@
   display: block;
   margin-bottom: 8px;
   font-weight: bold;
-  color: #E4BB1E; /* Gold for labels */
-  font-family: 'Cinzel', serif;
+  color: #e4bb1e; /* Gold for labels */
+  font-family: "Cinzel", serif;
   font-weight: 500;
 }
 
@@ -52,7 +57,7 @@
   justify-content: center;
   width: 18px;
   height: 18px;
-  background: #E4BB1E;
+  background: #e4bb1e;
   color: #2a3c47;
   border-radius: 50%;
   font-size: 12px;
@@ -62,7 +67,7 @@
 }
 
 .helpIcon:hover {
-  background: #F4D03F;
+  background: #f4d03f;
 }
 
 .tooltip {
@@ -76,19 +81,19 @@
   border-radius: 4px;
   font-size: 12px;
   white-space: nowrap;
-  border: 1px solid #E4BB1E;
+  border: 1px solid #e4bb1e;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   z-index: 1000;
 }
 
 .tooltip::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 100%;
   left: 50%;
   transform: translateX(-50%);
   border: 5px solid transparent;
-  border-top-color: #E4BB1E;
+  border-top-color: #e4bb1e;
 }
 
 .formGroup input,
@@ -96,7 +101,7 @@
 .formGroup textarea {
   width: 100%;
   padding: 10px;
-  border: 1px solid #908C6B; /* Stone color border */
+  border: 1px solid #908c6b; /* Stone color border */
   border-radius: 4px;
   background-color: #2a3c47; /* Darker background for inputs */
   color: #f4f1e8; /* Light text */
@@ -114,7 +119,7 @@
 .formGroup select:focus,
 .formGroup textarea:focus {
   outline: none;
-  border-color: #E4BB1E; /* Gold focus border */
+  border-color: #e4bb1e; /* Gold focus border */
   box-shadow: 0 0 0 2px rgba(228, 187, 30, 0.2);
 }
 
@@ -123,7 +128,7 @@
 }
 
 .optionalField:focus {
-  border-color: #E4BB1E !important;
+  border-color: #e4bb1e !important;
   box-shadow: 0 0 0 2px rgba(228, 187, 30, 0.2) !important;
 }
 
@@ -162,7 +167,7 @@
   font-size: 14px;
   margin-top: 5px;
   padding: 5px 0;
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
 }
 
 .createButton {
@@ -170,28 +175,36 @@
   padding: 12px;
   border: none;
   border-radius: 4px;
-  background: linear-gradient(135deg, #B15005, #D67C2D); /* Wood gradient */
+  background: linear-gradient(135deg, #b15005, #d67c2d); /* Wood gradient */
   color: white;
   font-size: 16px;
   font-weight: bold;
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   cursor: pointer;
   transition: all 0.3s ease;
-  border: 2px solid #E4BB1E; /* Gold border */
+  border: 2px solid #e4bb1e; /* Gold border */
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
   position: relative;
   overflow: hidden;
 }
 
 .createButton:hover:not(:disabled) {
-  background: linear-gradient(135deg, #D67C2D, #E4953F); /* Lighter wood on hover */
+  background: linear-gradient(
+    135deg,
+    #d67c2d,
+    #e4953f
+  ); /* Lighter wood on hover */
   box-shadow: 0 4px 8px rgba(228, 187, 30, 0.3);
   transform: translateY(-1px);
   filter: brightness(1.1);
 }
 
 .createButton:disabled {
-  background: linear-gradient(135deg, #788070, #98A090); /* Steel colors when disabled */
+  background: linear-gradient(
+    135deg,
+    #788070,
+    #98a090
+  ); /* Steel colors when disabled */
   cursor: not-allowed;
   border-color: #788070;
   transform: none;
@@ -215,8 +228,12 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .createButton.submitting {
@@ -225,7 +242,8 @@
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 5px rgba(228, 187, 30, 0.3);
   }
   50% {
@@ -262,5 +280,5 @@
   border-left: 4px solid #dc3545;
   border-radius: 4px;
   color: #ffcccb; /* Light red text for better contrast */
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
 }

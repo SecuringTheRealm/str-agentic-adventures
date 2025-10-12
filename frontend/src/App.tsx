@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
-import './App.css';
-import CampaignSelection from './components/CampaignSelection';
-import CharacterSelection from './components/CharacterSelection';
-import GameInterface from './components/GameInterface';
-import type { Campaign, Character } from './services/api';
+import React, { useState } from "react";
+import "./App.css";
+import CampaignSelection from "./components/CampaignSelection";
+import CharacterSelection from "./components/CharacterSelection";
+import GameInterface from "./components/GameInterface";
+import type { Campaign, Character } from "./services/api";
 
 function App() {
   const [currentCampaign, setCurrentCampaign] = useState<Campaign | null>(null);
-  const [currentCharacter, setCurrentCharacter] = useState<Character | null>(null);
+  const [currentCharacter, setCurrentCharacter] = useState<Character | null>(
+    null
+  );
   const [gameStarted, setGameStarted] = useState(false);
   const [showCharacterSelection, setShowCharacterSelection] = useState(false);
 
@@ -34,12 +36,16 @@ function App() {
       <header className="App-header">
         <h1>Securing the Realm - Agentic Adventures</h1>
         {gameStarted && (
-          <button onClick={handleBackToCampaigns} className="back-button">
+          <button
+            type="button"
+            onClick={handleBackToCampaigns}
+            className="back-button"
+          >
             ← Back to Campaigns
           </button>
         )}
       </header>
-      
+
       <main className="App-main">
         {!gameStarted && !showCharacterSelection ? (
           <div className="campaign-setup">
@@ -47,17 +53,18 @@ function App() {
           </div>
         ) : showCharacterSelection && currentCampaign ? (
           <div className="character-setup">
-            <CharacterSelection 
+            <CharacterSelection
               campaign={currentCampaign}
               onCharacterSelected={handleCharacterSelected}
               onBackToCampaigns={handleBackToCampaigns}
             />
           </div>
         ) : (
-          currentCampaign && currentCharacter && (
-            <GameInterface 
-              campaign={currentCampaign} 
-              character={currentCharacter} 
+          currentCampaign &&
+          currentCharacter && (
+            <GameInterface
+              campaign={currentCampaign}
+              character={currentCharacter}
             />
           )
         )}

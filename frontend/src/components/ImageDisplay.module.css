@@ -12,7 +12,7 @@
   overflow: hidden;
   background: rgba(15, 64, 79, 0.3); /* Primary color background */
   border-radius: 5px;
-  border: 1px solid #908C6B; /* Stone border */
+  border: 1px solid #908c6b; /* Stone border */
 }
 
 .imageContainer img {
@@ -28,10 +28,10 @@
   align-items: center;
   justify-content: center;
   height: 100%;
-  color: #908C6B; /* Stone color for empty state */
+  color: #908c6b; /* Stone color for empty state */
   padding: 20px;
   text-align: center;
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
 }
 
 .emptyImageState p {
