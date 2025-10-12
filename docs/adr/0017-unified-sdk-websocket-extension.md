@@ -7,7 +7,7 @@
 
 The frontend application uses an auto-generated OpenAPI TypeScript client for REST API calls, which provides excellent type safety and automatic synchronization with backend changes. However, the backend also exposes WebSocket endpoints (`/api/ws/*`) for real-time features like chat streaming, dice rolls, and game state updates. These WebSocket endpoints are not covered by OpenAPI specifications, leading to:
 
-1. **Inconsistent Development Experience**: Developers use the generated REST client for HTTP calls but must manually construct WebSocket URLs and handle connections using a custom React hook (`useWebSocket`)
+1. **Inconsistent Development Experience**: Developers use the generated REST client for HTTP calls but must manually construct WebSocket URLs and handle connections
 2. **Type Duplication**: WebSocket message formats are defined in the backend but must be manually mirrored in the frontend
 3. **Manual Synchronization**: When backend WebSocket protocols change, developers must manually update frontend code with no compile-time validation
 4. **Testing Gaps**: REST endpoints have comprehensive tests via the OpenAPI client, but WebSocket functionality lacks equivalent test coverage
@@ -28,7 +28,7 @@ The goal is to provide a unified SDK that gives developers a consistent interfac
 ## Considered Options
 
 * **Option 1: Continue Manual WebSocket Handling**
-    * Keep the current approach with `useWebSocket` hook and manual URL construction
+    * Keep manually written WebSocket connection code with manual URL construction
     * Pros: 
       * No additional code changes required
       * Familiar to current developers
@@ -140,7 +140,7 @@ This ensures:
 * **Risk**: WebSocket protocol changes break frontend without compile-time detection
   * **Mitigation**: Document WebSocket message schemas in shared location; add integration tests; establish process for coordinating WebSocket changes
 * **Risk**: Developers bypass SDK and use WebSocket directly
-  * **Mitigation**: Update documentation to recommend SDK; deprecate old `useWebSocket` hook; code reviews enforce SDK usage
+  * **Mitigation**: Update documentation to recommend SDK; code reviews enforce SDK usage
 * **Risk**: Message type interfaces become outdated
   * **Mitigation**: Include WebSocket message type review in backend PR checklist; maintain reference documentation
 * **Risk**: Reconnection logic doesn't handle all edge cases
