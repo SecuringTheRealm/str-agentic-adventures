@@ -59,6 +59,8 @@ These environment variables enable:
 
 **Note**: These secrets are automatically masked in GitHub logs to prevent exposure. They are only available when the Copilot agent workflow runs and are not stored in the repository.
 
+**Important**: The workflow uses `secrets.COPILOT.*` context (uppercase) to access Copilot-specific secrets. This is the correct syntax as documented in [GitHub's Copilot agent environment customization guide](https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/customize-the-agent-environment#setting-environment-variables-in-copilots-environment). Using lowercase `secrets.copilot.*` will not work.
+
 For manual setup outside the workflow, follow the steps below.
 
 ### Bootstrap, Build, and Test the Repository
