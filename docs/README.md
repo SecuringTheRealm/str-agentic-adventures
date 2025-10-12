@@ -35,4 +35,4 @@ Architecture Decision Records:
 
 ## Agent Documentation
 
-See [AGENTS.md](AGENTS.md) for detailed information about the AI agents and coding instructions.
+See [../AGENTS.md](../AGENTS.md) for detailed information about the AI agents and coding instructions.

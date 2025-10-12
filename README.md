@@ -202,7 +202,7 @@ See [docs/specs/OPENAPI_CLIENT.md](docs/specs/OPENAPI_CLIENT.md) for detailed do
 
 ### User Guides
 - [Build System Guide](docs/user/BUILD.md) - How to build and run the application
-- [Agent Documentation](docs/AGENTS.md) - Detailed information about the AI agents
+- [Agent Documentation](AGENTS.md) - Detailed information about the AI agents
 
 ### Technical Specifications
 - [Testing Strategy](docs/specs/TESTING_STRATEGY.md) - Test organization and strategy

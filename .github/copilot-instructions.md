@@ -291,9 +291,9 @@ For comprehensive project documentation, refer to `docs/`:
 - **[Azure OpenAI Requirements](docs/AZURE_OPENAI_REQUIREMENTS.md)** - Which endpoints require Azure OpenAI, configuration guide, and testing implications
 - **[Testing Strategy](docs/specs/TESTING_STRATEGY.md)** - Testing best practices, patterns, coverage requirements, and troubleshooting
 - **[E2E Test Summary](docs/specs/E2E_TEST_SUMMARY.md)** - End-to-end testing results and improvements
-- **[Agent Documentation](docs/AGENTS.md)** - Detailed information about the AI agents
+- **[Agent Documentation](AGENTS.md)** - Detailed information about the AI agents
 
-**Note for AI Agents**: When creating new documentation files in the `docs/` directory, add references to them in this section of `.github/copilot-instructions.md` and in the corresponding section of `docs/AGENTS.md`. When removing documentation files, remove their references from both files.
+**Note for AI Agents**: When creating new documentation files in the `docs/` directory, add references to them in this section of `.github/copilot-instructions.md` and in the corresponding section of `AGENTS.md`. When removing documentation files, remove their references from both files.
 
 **Remember**: This is a working application that requires both backend and frontend to be running for complete functionality. Always validate your changes with manual testing of the user workflows.
 
