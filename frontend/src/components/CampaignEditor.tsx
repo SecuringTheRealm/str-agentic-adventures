@@ -55,16 +55,6 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
 
   const isEditing = !!campaign;
 
-  // Auto-save functionality
-  useEffect(() => {
-    if (autoSave && hasUnsavedChanges && isEditing) {
-      const timeoutId = setTimeout(async () => {
-        await handleSave(true); // silent save
-      }, 3000);
-      return () => clearTimeout(timeoutId);
-    }
-  }, [autoSave, hasUnsavedChanges, isEditing, handleSave]);
-
   // Track changes
   useEffect(() => {
     if (isEditing) {
@@ -376,6 +366,16 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
     ]
   );
 
+  // Auto-save functionality (must be after handleSave declaration)
+  useEffect(() => {
+    if (autoSave && hasUnsavedChanges && isEditing) {
+      const timeoutId = setTimeout(async () => {
+        await handleSave(true); // silent save
+      }, 3000);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [autoSave, hasUnsavedChanges, isEditing, handleSave]);
+
   return (
     <div className={styles.campaignEditor}>
       <div className={styles.editorHeader}>
@@ -645,9 +645,11 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
       {/* AI Assistant Modal */}
       {showAIAssistant && (
         <div className={styles.aiAssistantModal}>
-          <div
+          <button
+            type="button"
             className={styles.modalOverlay}
             onClick={() => setShowAIAssistant(false)}
+            aria-label="Close AI Assistant"
           />
           <div className={styles.modalContent}>
             <div className={styles.modalHeader}>

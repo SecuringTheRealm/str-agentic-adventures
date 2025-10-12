@@ -18,7 +18,7 @@ const CampaignCreation: React.FC<CampaignCreationProps> = ({
   const settingId = useId();
   const toneId = useId();
   const homebrewRulesId = useId();
-  
+
   const [campaignName, setCampaignName] = useState("");
   const [setting, setSetting] = useState("");
   const [tone, setTone] = useState("heroic");
@@ -129,10 +129,12 @@ const CampaignCreation: React.FC<CampaignCreationProps> = ({
         <div className={styles.formGroup}>
           <div className={styles.labelWithHelp}>
             <label htmlFor={settingId}>Campaign Setting</label>
-            <div
+            <button
+              type="button"
               className={styles.helpIcon}
               onMouseEnter={() => setShowTooltip(true)}
               onMouseLeave={() => setShowTooltip(false)}
+              aria-label="Show help for campaign setting"
             >
               ⓘ
               {showTooltip && (
@@ -140,7 +142,7 @@ const CampaignCreation: React.FC<CampaignCreationProps> = ({
                   Example: 'Medieval fantasy city threatened by dragons'
                 </div>
               )}
-            </div>
+            </button>
           </div>
           <div className={styles.textareaContainer}>
             <textarea
