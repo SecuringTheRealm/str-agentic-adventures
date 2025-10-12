@@ -1,5 +1,5 @@
 import type React from "react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useId, useState } from "react";
 import {
   type AIAssistanceRequest,
   type AIContentGenerationRequest,
@@ -24,6 +24,13 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
   onCampaignSaved,
   onCancel,
 }) => {
+  const nameId = useId();
+  const descriptionId = useId();
+  const settingId = useId();
+  const worldDescriptionId = useId();
+  const toneId = useId();
+  const homebrewRulesId = useId();
+  
   const [formData, setFormData] = useState({
     name: campaign?.name || "",
     description: campaign?.description || "",
@@ -399,9 +406,9 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
         }}
       >
         <div className={styles.formGroup}>
-          <label htmlFor="name">Campaign Name *</label>
+          <label htmlFor={nameId}>Campaign Name *</label>
           <input
-            id="name"
+            id={nameId}
             type="text"
             value={formData.name}
             onChange={(e) => handleInputChange("name", e.target.value)}
@@ -417,7 +424,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
         </div>
 
         <div className={styles.formGroup}>
-          <label htmlFor="description">Description</label>
+          <label htmlFor={descriptionId}>Description</label>
           <div className={styles.editorToolbar}>
             <button
               type="button"
@@ -457,7 +464,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
             </button>
           </div>
           <textarea
-            id="description"
+            id={descriptionId}
             value={formData.description}
             onChange={(e) => handleInputChange("description", e.target.value)}
             placeholder="Brief description of your campaign..."
@@ -467,7 +474,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
         </div>
 
         <div className={styles.formGroup}>
-          <label htmlFor="setting">Campaign Setting *</label>
+          <label htmlFor={settingId}>Campaign Setting *</label>
           <div className={styles.editorToolbar}>
             <button
               type="button"
@@ -507,7 +514,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
             </button>
           </div>
           <textarea
-            id="setting"
+            id={settingId}
             value={formData.setting}
             onChange={(e) => handleInputChange("setting", e.target.value)}
             placeholder="Describe the world and setting for your campaign..."
@@ -523,7 +530,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
         </div>
 
         <div className={styles.formGroup}>
-          <label htmlFor="world_description">World Description</label>
+          <label htmlFor={worldDescriptionId}>World Description</label>
           <div className={styles.editorToolbar}>
             <button
               type="button"
@@ -563,7 +570,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
             </button>
           </div>
           <textarea
-            id="world_description"
+            id={worldDescriptionId}
             value={formData.world_description}
             onChange={(e) =>
               handleInputChange("world_description", e.target.value)
@@ -575,9 +582,9 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
         </div>
 
         <div className={styles.formGroup}>
-          <label htmlFor="tone">Campaign Tone</label>
+          <label htmlFor={toneId}>Campaign Tone</label>
           <select
-            id="tone"
+            id={toneId}
             value={formData.tone}
             onChange={(e) => handleInputChange("tone", e.target.value)}
             disabled={isSubmitting}
@@ -591,9 +598,9 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
         </div>
 
         <div className={styles.formGroup}>
-          <label htmlFor="homebrew_rules">Homebrew Rules (Optional)</label>
+          <label htmlFor={homebrewRulesId}>Homebrew Rules (Optional)</label>
           <textarea
-            id="homebrew_rules"
+            id={homebrewRulesId}
             value={formData.homebrew_rules}
             onChange={(e) =>
               handleInputChange("homebrew_rules", e.target.value)
