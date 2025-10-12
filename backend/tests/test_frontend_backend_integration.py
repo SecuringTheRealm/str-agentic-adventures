@@ -5,7 +5,7 @@ Tests API endpoint compatibility and route configuration.
 
 import os
 import sys
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from fastapi.testclient import TestClient
@@ -178,18 +178,18 @@ class TestFrontendBackendIntegration:
         if response.status_code == 503:
             assert "Azure OpenAI configuration" in response.json().get("detail", "")
 
-    @patch("app.agents.dungeon_master_agent.get_dungeon_master")
+    @patch("app.api.game_routes.get_dungeon_master")
     def test_player_input_endpoint_compatibility(self, mock_dm, client) -> None:
         """Test player input endpoint matches frontend expectations."""
-        # Mock dungeon master agent
+        # Mock dungeon master agent with proper async support
         mock_dm_instance = MagicMock()
         mock_dm.return_value = mock_dm_instance
-        mock_dm_instance.process_input.return_value = {
+        mock_dm_instance.process_input = AsyncMock(return_value={
             "message": "You enter the tavern and see a bustling crowd.",
             "visuals": [{"image_url": "http://example.com/tavern.jpg"}],
             "state_updates": {"location": "tavern"},
             "combat_updates": None,
-        }
+        })
 
         # Frontend request format (matches api.ts)
         frontend_request = {
