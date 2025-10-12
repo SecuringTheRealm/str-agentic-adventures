@@ -15,7 +15,7 @@ export const logApiConfiguration = () => {
   console.log("Resolved base URL:", baseUrl);
   console.log(
     "Expected API endpoint:",
-    `${baseUrl}/api/game/campaign/templates`
+    `${baseUrl}/game/campaign/templates`
   );
   console.groupEnd();
 };
@@ -47,7 +47,7 @@ export const testApiConnectivity = async (
 
     // Test the specific templates endpoint
     const templatesResponse = await fetch(
-      `${baseUrl}/api/game/campaign/templates`,
+      `${baseUrl}/game/campaign/templates`,
       {
         method: "GET",
         headers: {
@@ -94,9 +94,6 @@ export const validateApiUrl = (
   if (url.endsWith("/")) {
     issues.push("API URL should not end with a trailing slash");
   }
-
-  // Note: The API URL should include /api as per the OpenAPI servers configuration
-  // The backend uses root_path="/api" and the generated client expects this
 
   try {
     new URL(url);
