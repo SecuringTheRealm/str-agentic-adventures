@@ -380,7 +380,7 @@ class TestSpellEffectResolution:
         result = self.plugin.calculate_spell_attack_bonus(
             spellcasting_ability_modifier=3, proficiency_bonus=2
         )
-        assert result["attack_bonus"] == 5  # 3 + 2 = 5
+        assert result["spell_attack_bonus"] == 5  # 3 + 2 = 5
         assert result["spellcasting_modifier"] == 3
         assert result["proficiency_bonus"] == 2
 
@@ -488,7 +488,7 @@ class TestSpellEffectResolution:
         attack_result = self.plugin.calculate_spell_attack_bonus(
             spellcasting_ability_modifier=3, proficiency_bonus=2
         )
-        assert attack_result["attack_bonus"] == 5
+        assert attack_result["spell_attack_bonus"] == 5
 
         # Could simulate spell attack by rolling d20 + attack bonus
         # This would be done by calling roll_dice("1d20+5") in practice

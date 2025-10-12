@@ -516,7 +516,7 @@ class CombatMCAgent:
                 )
                 return result
 
-            attack_bonus = spell_attack_bonus_result["attack_bonus"]
+            attack_bonus = spell_attack_bonus_result["spell_attack_bonus"]
 
             # Resolve the spell attack using the calculated bonus
             attack_result = rules_plugin.resolve_attack(

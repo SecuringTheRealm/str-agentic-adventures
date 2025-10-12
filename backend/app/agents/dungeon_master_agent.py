@@ -373,6 +373,8 @@ Always respond as a helpful, creative DM who wants players to have an exciting a
             "message": "",
             "narration": "",
             "state_updates": {},
+            "visuals": [],
+            "combat_updates": None,
             "fallback_mode": True,
         }
 
