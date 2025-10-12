@@ -1027,7 +1027,8 @@ class ScribeAgent:
 
         Args:
             character_id: The ID of the character to level up
-            ability_improvements: Dictionary of ability score improvements (max 2 points total)
+            ability_improvements: Dictionary of ability score improvements
+                (maximum of 2 points total)
             use_average_hp: Whether to use average HP gain or roll for it
 
         Returns:
@@ -1038,15 +1039,15 @@ class ScribeAgent:
 
             rules_engine = RulesEnginePlugin()
 
-            with next(get_session()) as db:
+            with get_session() as db:
                 db_character = db.get(Character, character_id)
                 if not db_character:
                     return {"error": f"Character {character_id} not found"}
                 character = db_character.data
+
             current_experience = character.get("experience", 0)
             current_level = character.get("level", 1)
 
-            # Check if character can level up
             level_info = rules_engine.calculate_level(current_experience)
             if level_info.get("error"):
                 return level_info
@@ -1061,127 +1062,155 @@ class ScribeAgent:
                     "experience_needed": level_info.get("experience_needed", 0),
                 }
 
-            new_level = current_level + 1
-
-            # Calculate ability modifier for Constitution (needed for HP calculation)
-            constitution = character.get("abilities", {}).get("constitution", 10)
-            constitution_modifier = (constitution - 10) // 2
-
-            # Calculate HP gain
+            target_level = calculated_level
             character_class = character.get("character_class", "fighter")
-            hp_result = rules_engine.calculate_level_up_hp(
-                character_class, constitution_modifier, use_average_hp
-            )
-            if hp_result.get("error"):
-                return hp_result
 
-            hp_gained = hp_result["total_hp_gain"]
-
-            # Calculate new proficiency bonus
-            prof_result = rules_engine.calculate_proficiency_bonus(new_level)
-            if prof_result.get("error"):
-                return prof_result
-
-            new_proficiency_bonus = prof_result["proficiency_bonus"]
-
-            # Handle ability score improvements
+            ability_changes: dict[str, int] = {}
+            features_gained: list[str] = []
+            hp_gain_details: list[dict[str, Any]] = []
+            total_hp_gained = 0
+            new_proficiency_bonus = character.get("proficiency_bonus", 2)
             asi_used = character.get("ability_score_improvements_used", 0)
-            asi_info = rules_engine.check_asi_eligibility(new_level, asi_used)
+            remaining_improvements = (
+                ability_improvements.copy() if ability_improvements else None
+            )
 
-            ability_changes = {}
-            features_gained = []
-
-            # Check if this level grants ASI and if improvements were provided
-            if (
-                new_level in rules_engine.asi_levels
-                and asi_info.get("asi_remaining", 0) > 0
-            ):
-                if ability_improvements:
-                    # Validate ability improvements
-                    total_improvements = sum(ability_improvements.values())
-                    if total_improvements > 2:
-                        return {
-                            "error": "Cannot improve ability scores by more than 2 points total"
-                        }
-
-                    # Apply ability improvements
-                    abilities = character.get("abilities", {})
-                    for ability, improvement in ability_improvements.items():
-                        if ability in abilities:
-                            current_score = abilities[ability]
-                            new_score = min(
-                                current_score + improvement, 20
-                            )  # Max ability score is 20
-                            abilities[ability] = new_score
-                            ability_changes[ability] = new_score - current_score
-
-                    character["abilities"] = abilities
-                    character["ability_score_improvements_used"] = asi_used + 1
-                    features_gained.append(
-                        f"Ability Score Improvement: {', '.join(f'{ability.title()} +{change}' for ability, change in ability_changes.items())}"
-                    )
-                else:
-                    features_gained.append(
-                        "Ability Score Improvement Available (not used)"
-                    )
-
-            # Add class features for the new level
             from app.srd_data import get_class_features
 
-            character_class = character.get("character_class", "fighter")
-            level_features = get_class_features(character_class, new_level)
+            for next_level in range(current_level + 1, target_level + 1):
+                constitution = character.get("abilities", {}).get("constitution", 10)
+                constitution_modifier = (constitution - 10) // 2
 
-            # Initialize features list if it doesn't exist
-            if "features" not in character:
-                character["features"] = []
-
-            # Add new class features
-            for feature in level_features:
-                character["features"].append(
-                    {
-                        "name": feature["name"],
-                        "description": feature["description"],
-                        "type": feature["type"],
-                        "source": "class",
-                        "level_gained": new_level,
-                    }
+                hp_result = rules_engine.calculate_level_up_hp(
+                    character_class, constitution_modifier, use_average_hp
                 )
-                features_gained.append(f"Class Feature: {feature['name']}")
+                if hp_result.get("error"):
+                    return hp_result
 
-            # Update character
-            character["level"] = new_level
-            character["hitPoints"]["maximum"] += hp_gained
-            character["hitPoints"]["current"] += (
-                hp_gained  # Assume full heal on level up
-            )
-            character["proficiency_bonus"] = new_proficiency_bonus
+                hp_gain = hp_result["total_hp_gain"]
+                total_hp_gained += hp_gain
+                hp_gain_details.append({"level": next_level, **hp_result})
 
-            # Add level-specific features
-            if new_level == 5:
-                features_gained.append("Proficiency Bonus increased to +3")
-            elif new_level == 9:
-                features_gained.append("Proficiency Bonus increased to +4")
-            elif new_level == 13:
-                features_gained.append("Proficiency Bonus increased to +5")
-            elif new_level == 17:
-                features_gained.append("Proficiency Bonus increased to +6")
+                prof_result = rules_engine.calculate_proficiency_bonus(next_level)
+                if prof_result.get("error"):
+                    return prof_result
 
-            with next(get_session()) as db:
+                proficiency_bonus = prof_result["proficiency_bonus"]
+
+                asi_info = rules_engine.check_asi_eligibility(next_level, asi_used)
+                if asi_info.get("error"):
+                    return asi_info
+
+                if (
+                    remaining_improvements
+                    and next_level in getattr(rules_engine, "asi_levels", [])
+                    and asi_info.get("asi_remaining", 0) > 0
+                ):
+                    total_improvements = sum(remaining_improvements.values())
+                    if total_improvements > 2:
+                        return {
+                            "error": (
+                                "Cannot improve ability scores by more than "
+                                "2 points total"
+                            )
+                        }
+
+                    applied_changes: list[str] = []
+                    abilities = character.get("abilities", {})
+                    for ability, improvement in remaining_improvements.items():
+                        if ability in abilities and improvement:
+                            current_score = abilities[ability]
+                            new_score = min(current_score + improvement, 20)
+                            change = new_score - current_score
+                            if change:
+                                abilities[ability] = new_score
+                                ability_changes[ability] = (
+                                    ability_changes.get(ability, 0) + change
+                                )
+                                applied_changes.append(f"{ability.title()} +{change}")
+
+                    if applied_changes:
+                        character["abilities"] = abilities
+                        features_gained.append(
+                            "Ability Score Improvement: " + ", ".join(applied_changes)
+                        )
+                        asi_used += 1
+                        remaining_improvements = None
+
+                level_features = get_class_features(character_class, next_level) or []
+                character.setdefault("features", [])
+                existing_features = {
+                    (feature.get("name"), feature.get("level_gained"))
+                    for feature in character["features"]
+                }
+
+                for feature in level_features:
+                    feature_key = (feature["name"], next_level)
+                    if feature_key in existing_features:
+                        continue
+
+                    character["features"].append(
+                        {
+                            "name": feature["name"],
+                            "description": feature["description"],
+                            "type": feature["type"],
+                            "source": "class",
+                            "level_gained": next_level,
+                        }
+                    )
+                    features_gained.append(f"Class Feature: {feature['name']}")
+                    existing_features.add(feature_key)
+
+                hit_points = character.setdefault(
+                    "hitPoints", {"current": 0, "maximum": 0}
+                )
+                hit_points["maximum"] += hp_gain
+                hit_points["current"] = min(
+                    hit_points["maximum"], hit_points.get("current", 0) + hp_gain
+                )
+
+                previous_proficiency = character.get(
+                    "proficiency_bonus", new_proficiency_bonus
+                )
+                new_proficiency_bonus = proficiency_bonus
+                character["proficiency_bonus"] = proficiency_bonus
+                if proficiency_bonus > previous_proficiency:
+                    features_gained.append(
+                        f"Proficiency Bonus increased to +{proficiency_bonus}"
+                    )
+
+                character["level"] = next_level
+
+            character["ability_score_improvements_used"] = asi_used
+
+            with get_session() as db:
                 db_character = db.get(Character, character_id)
                 if db_character:
                     db_character.data = character
                     db.commit()
 
+            hp_calculation: dict[str, Any] = {
+                "total_hp_gain": total_hp_gained,
+                "per_level": hp_gain_details,
+            }
+            if hp_gain_details:
+                last_calc = hp_gain_details[-1].copy()
+                level_specific_gain = last_calc.pop("total_hp_gain", None)
+                hp_calculation.update(last_calc)
+                if level_specific_gain is not None:
+                    last_calc["total_hp_gain"] = level_specific_gain
+                hp_calculation["last_level"] = last_calc
+
             return {
                 "success": True,
                 "character_id": character_id,
                 "old_level": current_level,
-                "new_level": new_level,
-                "hit_points_gained": hp_gained,
+                "new_level": target_level,
+                "hit_points_gained": total_hp_gained,
                 "ability_improvements": ability_changes,
                 "new_proficiency_bonus": new_proficiency_bonus,
                 "features_gained": features_gained,
-                "hp_calculation": hp_result,
+                "hp_calculation": hp_calculation,
                 "updated_character": character,
             }
 
