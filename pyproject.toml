@@ -21,7 +21,8 @@ classifiers = [
 # Core dependencies
 dependencies = [
     "fastapi>=0.100.0",
-    "uvicorn>=0.22.0",
+    "uvicorn[standard]>=0.22.0",
+    "websockets>=11.0.0",
     "pydantic>=2.0.0",
     "pydantic-settings>=2.0.0",
     "python-dotenv>=1.0.0",
