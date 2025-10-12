@@ -28,15 +28,26 @@ The workflow automatically handles:
 1. Python and Node.js environment setup
 2. Dependency installation with caching (Python via UV, Node.js via npm)
 3. Repository checkout for dependency installation
-4. Azure secrets exposure for local development and testing
+4. Azure secrets exposure for local development and testing (only the secrets configured in the repository are surfaced)
 
 #### Available Azure Environment Variables
 
-The following Azure secrets are automatically available as environment variables during Copilot agent sessions for local testing and Playwright E2E tests:
+The GitHub Actions setup job runs immediately before the Copilot coding agent session starts. Because the coding agent reuses the same runner that executed the workflow, any variables written to the runner environment via `$GITHUB_ENV` become available to the agent automatically.
 
-- `AZURE_CLIENT_ID` - Application (client) ID from service principal
+During the "Propagate configured Azure secrets" step, the workflow writes each configured secret from the list below into the environment. Secrets that are not configured in the repository are skipped, so you can maintain the minimal three-secret configuration without errors while still allowing additional deployments to be surfaced in the future.
+
+Currently configured secrets:
+
 - `AZURE_OPENAI_API_KEY` - Azure AI Foundry API key for OpenAI services
 - `AZURE_OPENAI_ENDPOINT` - Azure OpenAI endpoint URL (e.g., `https://your-project.openai.azure.com/`)
+- `AZURE_OPENAI_CHAT_DEPLOYMENT` - Chat model deployment name (e.g., `gpt-4o-mini`)
+
+Optionally supported secrets (add these in repository settings to expose them to the agent):
+
+- `AZURE_CLIENT_ID` - Application (client) ID from service principal
+- `AZURE_OPENAI_API_VERSION` - Azure OpenAI API version for deployed models
+- `AZURE_OPENAI_EMBEDDING_DEPLOYMENT` - Embedding model deployment name (e.g., `text-embedding-3-large`)
+- `AZURE_OPENAI_DALLE_DEPLOYMENT` - Image generation deployment name (e.g., `dall-e-3`)
 - `AZURE_SUBSCRIPTION_ID` - Azure subscription ID
 - `AZURE_TENANT_ID` - Directory (tenant) ID
 
