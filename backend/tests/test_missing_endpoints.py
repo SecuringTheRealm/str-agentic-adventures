@@ -276,7 +276,7 @@ class TestFrontendBackendAPICompatibility:
             except (TypeError, ValueError) as e:
                 raise AssertionError(
                     f"{model_class.__name__} schema is not JSON serializable: {e}"
-                )
+                ) from None
 
             # Check that all fields have proper type annotations
             type_hints = get_type_hints(model_class)
