@@ -111,12 +111,14 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({
           <h2>My Campaigns</h2>
           <div className={styles.headerActions}>
             <button
+              type="button"
               className="action-button secondary"
               onClick={handleBackToGallery}
             >
               ← Browse Templates
             </button>
             <button
+              type="button"
               className="action-button primary"
               onClick={handleCreateCustom}
             >
@@ -128,7 +130,9 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({
         {error && (
           <div className={styles.errorMessage}>
             {error}
-            <button onClick={() => setError(null)}>×</button>
+            <button type="button" onClick={() => setError(null)}>
+              ×
+            </button>
           </div>
         )}
 
@@ -148,6 +152,7 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({
                   started!
                 </p>
                 <button
+                  type="button"
                   className="action-button primary"
                   onClick={handleBackToGallery}
                 >
@@ -175,18 +180,21 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({
                   </div>
                   <div className={styles.campaignActions}>
                     <button
+                      type="button"
                       className="action-button primary small"
                       onClick={() => handleCampaignSelected(campaign)}
                     >
                       Play
                     </button>
                     <button
+                      type="button"
                       className="action-button secondary small"
                       onClick={() => handleEditCampaign(campaign)}
                     >
                       Edit
                     </button>
                     <button
+                      type="button"
                       className="action-button danger small"
                       onClick={() => handleDeleteCampaign(campaign.id!)}
                     >
@@ -213,12 +221,14 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({
         </div>
         <div className={styles.headerActions}>
           <button
+            type="button"
             className={`view-toggle ${viewMode === "gallery" ? "active" : ""}`}
             onClick={() => setViewMode("gallery")}
           >
             Gallery
           </button>
           <button
+            type="button"
             className={`view-toggle ${(viewMode as string) === "list" ? "active" : ""}`}
             onClick={() => setViewMode("list")}
           >
@@ -230,7 +240,9 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({
       {error && (
         <div className={styles.errorMessage}>
           {error}
-          <button onClick={() => setError(null)}>×</button>
+          <button type="button" onClick={() => setError(null)}>
+            ×
+          </button>
         </div>
       )}
 
@@ -250,6 +262,7 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({
                 started!
               </p>
               <button
+                type="button"
                 className="action-button primary"
                 onClick={handleBackToGallery}
               >
@@ -277,18 +290,21 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({
                 </div>
                 <div className={styles.campaignActions}>
                   <button
+                    type="button"
                     className="action-button primary small"
                     onClick={() => handleCampaignSelected(campaign)}
                   >
                     Play
                   </button>
                   <button
+                    type="button"
                     className="action-button secondary small"
                     onClick={() => handleEditCampaign(campaign)}
                   >
                     Edit
                   </button>
                   <button
+                    type="button"
                     className="action-button danger small"
                     onClick={() => handleDeleteCampaign(campaign.id!)}
                   >
