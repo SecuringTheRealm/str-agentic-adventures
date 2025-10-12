@@ -1,5 +1,5 @@
 import type React from "react";
-import { useState } from "react";
+import { useId, useState } from "react";
 import type {
   Campaign,
   Character,
@@ -19,6 +19,11 @@ const CharacterCreation: React.FC<CharacterCreationProps> = ({
   onCharacterCreated,
   onBack,
 }) => {
+  const nameId = useId();
+  const raceId = useId();
+  const classId = useId();
+  const backstoryId = useId();
+  
   const [formData, setFormData] = useState<CharacterCreateRequest>({
     name: "",
     race: "human",
@@ -164,10 +169,10 @@ const CharacterCreation: React.FC<CharacterCreationProps> = ({
           <h3>Basic Information</h3>
 
           <div className={styles.formGroup}>
-            <label htmlFor="name">Character Name</label>
+            <label htmlFor={nameId}>Character Name</label>
             <input
               type="text"
-              id="name"
+              id={nameId}
               name="name"
               value={formData.name}
               onChange={handleInputChange}
@@ -178,9 +183,9 @@ const CharacterCreation: React.FC<CharacterCreationProps> = ({
 
           <div className={styles.formRow}>
             <div className={styles.formGroup}>
-              <label htmlFor="race">Race</label>
+              <label htmlFor={raceId}>Race</label>
               <select
-                id="race"
+                id={raceId}
                 name="race"
                 value={formData.race}
                 onChange={handleInputChange}
@@ -194,9 +199,9 @@ const CharacterCreation: React.FC<CharacterCreationProps> = ({
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="character_class">Class</label>
+              <label htmlFor={classId}>Class</label>
               <select
-                id="character_class"
+                id={classId}
                 name="character_class"
                 value={formData.character_class}
                 onChange={handleInputChange}
@@ -243,9 +248,9 @@ const CharacterCreation: React.FC<CharacterCreationProps> = ({
         <div className={styles.formSection}>
           <h3>Backstory (Optional)</h3>
           <div className={styles.formGroup}>
-            <label htmlFor="backstory">Character Background</label>
+            <label htmlFor={backstoryId}>Character Background</label>
             <textarea
-              id="backstory"
+              id={backstoryId}
               name="backstory"
               value={formData.backstory || ""}
               onChange={handleInputChange}
