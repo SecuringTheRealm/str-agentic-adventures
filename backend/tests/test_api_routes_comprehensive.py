@@ -172,7 +172,7 @@ class TestAPIRouteErrorHandling:
 
     def test_character_creation_agent_error(self) -> None:
         """Test character creation when agent returns error."""
-        with patch("app.agents.scribe_agent.get_scribe") as mock_get_scribe:
+        with patch("app.api.game_routes.get_scribe") as mock_get_scribe:
             # Mock agent returning error
             mock_scribe = Mock()
             mock_scribe.create_character = AsyncMock(
@@ -212,7 +212,7 @@ class TestAPIRouteErrorHandling:
 
     def test_character_creation_agent_exception(self) -> None:
         """Test character creation when agent raises exception."""
-        with patch("app.agents.scribe_agent.get_scribe") as mock_get_scribe:
+        with patch("app.api.game_routes.get_scribe") as mock_get_scribe:
             # Mock agent raising exception
             mock_scribe = Mock()
             mock_scribe.create_character = AsyncMock(
@@ -276,7 +276,7 @@ class TestAPIRouteDataTransformation:
 
     def test_character_class_field_transformation(self) -> None:
         """Test that character_class is properly transformed to class for agents."""
-        with patch("app.agents.scribe_agent.get_scribe") as mock_get_scribe:
+        with patch("app.api.game_routes.get_scribe") as mock_get_scribe:
             mock_scribe = Mock()
             mock_scribe.create_character = AsyncMock(
                 return_value={
