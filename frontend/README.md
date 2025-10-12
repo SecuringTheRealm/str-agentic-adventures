@@ -13,7 +13,8 @@ This is the React TypeScript frontend for the AI Dungeon Master application. It 
 
 ## Architecture
 
-- **React 18** with TypeScript for type safety
+- **React 19** with TypeScript for type safety
+- **Vite** for development server and build tooling
 - **CSS Modules** for component styling
 - **REST API Integration** with Python backend
 - **WebSocket Support** for real-time multiplayer communication
@@ -22,13 +23,17 @@ This is the React TypeScript frontend for the AI Dungeon Master application. It 
 
 In the project directory, you can run:
 
+### `npm run dev`
+
+Runs the app in development mode using Vite.\
+Open [http://127.0.0.1:5173](http://127.0.0.1:5173) to view it in the browser.
+
+The page supports instant hot module replacement when you make edits.\
+You will also see any lint errors in the console.
+
 ### `npm start`
 
-Runs the app in development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+Alias for `npm run dev` to ease the transition from previous Create React App tooling.
 
 ### `npm test`
 
@@ -57,11 +62,12 @@ Runs E2E tests in debug mode with browser visible.
 
 ### `npm run build`
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Runs TypeScript type-checking followed by a production build powered by Vite.\
+The optimized assets are emitted to the `dist` directory with hashed filenames.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### `npm run preview`
+
+Serves the built assets locally to validate production output.
 
 ## Testing
 
@@ -107,4 +113,4 @@ The frontend expects the backend to be running on `http://localhost:8000` for lo
 
 ## Legacy Notes
 
-This project was originally bootstrapped with [Create React App](https://github.com/facebook/create-react-app). The `npm run eject` command is available but not recommended unless you need advanced configuration customization.
+The frontend previously used Create React App. The tooling has been modernized to use Vite for a smaller dependency footprint and faster builds. `REACT_APP_*` environment variables are still read for backwards compatibility, but new deployments should prefer the Vite-compatible `VITE_API_URL` variable.

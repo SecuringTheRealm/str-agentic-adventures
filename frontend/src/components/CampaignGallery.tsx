@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Campaign, getCampaignTemplates, getCampaignTemplatesWithRetry, cloneCampaign } from '../services/api';
 import { logApiConfiguration, testApiConnectivity, validateApiUrl } from '../utils/api-debug';
+import { getRuntimeMode } from '../utils/environment';
 import { getApiBaseUrl } from '../utils/urls';
 import styles from './CampaignGallery.module.css';
 
@@ -42,7 +43,7 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
         }
 
         // Test API connectivity in development or when explicitly debugging
-        if (process.env.NODE_ENV === 'development') {
+        if (getRuntimeMode() === 'development') {
           const isConnected = await testApiConnectivity(baseUrl);
           if (!isConnected) {
             setError('Cannot connect to the backend API. Please ensure the backend server is running.');
@@ -52,7 +53,7 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
         }
 
         // Load templates with retry logic for production reliability
-        const isProduction = process.env.NODE_ENV === 'production';
+        const isProduction = getRuntimeMode() === 'production';
         const templateData = isProduction 
           ? await getCampaignTemplatesWithRetry()
           : await getCampaignTemplates();

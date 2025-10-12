@@ -65,7 +65,7 @@ Based on the Product Requirements Document and D&D 5e SRD, these tests cover:
 ## Running the Tests
 
 ### Prerequisites
-1. Frontend application running on `http://localhost:3000`
+1. Frontend application running on `http://127.0.0.1:5173`
 2. Playwright browsers installed (`npx playwright install`)
 
 ### Commands
@@ -88,7 +88,7 @@ npx playwright test --headed
 
 ### Test Configuration
 Tests are configured in `playwright.config.ts` with:
-- Base URL: `http://localhost:3000`
+- Base URL: `http://127.0.0.1:5173`
 - Multiple browser testing (Chromium, Firefox, WebKit)
 - Automatic dev server startup
 - Screenshot capture on failure
@@ -113,7 +113,7 @@ These tests are designed to:
 ## Troubleshooting
 
 ### Common Issues
-1. **Application not starting**: Ensure `npm start` is running on port 3000
+1. **Application not starting**: Ensure `npm run dev -- --host 127.0.0.1 --port 5173` is running
 2. **Browser download fails**: Try `npx playwright install chromium` individually
 3. **Tests timeout**: Increase timeout in playwright.config.ts
 4. **Screenshots missing**: Check file permissions in screenshots directory

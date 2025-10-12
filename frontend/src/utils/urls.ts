@@ -1,11 +1,12 @@
 /**
  * URL configuration utilities for consistent API and WebSocket URL construction
  */
+import { getConfiguredApiUrl } from './environment';
 
 // Get the base URL from environment, defaulting to localhost
 const getBaseUrl = (): string => {
-  const url = process.env.REACT_APP_API_URL || 'http://localhost:8000';
-  
+  const url = getConfiguredApiUrl();
+
   // Remove trailing slash to ensure consistent URL construction
   return url.replace(/\/+$/, '');
 };
