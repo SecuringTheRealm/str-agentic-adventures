@@ -5,6 +5,8 @@ This module replaces the previous Semantic Kernel implementation with
 Azure AI Agents SDK for production-grade agent orchestration.
 """
 
+from __future__ import annotations
+
 import logging
 
 from azure.ai.agents import AgentsClient

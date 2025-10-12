@@ -28,11 +28,12 @@ These barriers prevent many interested players from experiencing the rich storyt
 
 The Secure the Realm platform leverages:
 - **Frontend**: TypeScript & React for a responsive user interface
-- **Backend**: Python with Microsoft Semantic Kernel framework
-- **AI Integration**: Azure OpenAI LLMs via Semantic Kernel plugins
+- **Backend**: Python with Microsoft Azure AI Agents SDK
+- **AI Integration**: Azure OpenAI LLMs via Azure AI Inference
 - **Game Rules**: D&D 5e OGL SRD ruleset implementation ([reference docs](docs/reference/srd-5.2.1.md))
 - **Real-time Features**: Immediate response to player actions
 - **Data Management**: Structured storage for game elements and character data
+- **Observability**: OpenTelemetry integration for agent monitoring
 
 ### Multi-Agent System
 
