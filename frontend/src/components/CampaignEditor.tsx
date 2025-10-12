@@ -646,6 +646,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
             <div className={styles.modalHeader}>
               <h3>✨ AI Writing Assistant</h3>
               <button
+                type="button"
                 className={styles.closeButton}
                 onClick={() => setShowAIAssistant(false)}
               >
@@ -673,6 +674,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
                         <li key={index}>
                           <span>{suggestion}</span>
                           <button
+                            type="button"
                             onClick={() => applySuggestion(suggestion)}
                             className={styles.applySuggestion}
                             disabled={aiGenerating || isEmpty}

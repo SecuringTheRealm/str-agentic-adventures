@@ -546,6 +546,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
             <h4>Generate Visuals</h4>
             <div className={styles.visualButtons}>
               <button
+                type="button"
                 onClick={handleGenerateCharacterPortrait}
                 disabled={imageLoading}
                 className={styles.visualButton}
@@ -553,6 +554,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
                 {imageLoading ? "Generating..." : "Character Portrait"}
               </button>
               <button
+                type="button"
                 onClick={handleGenerateSceneIllustration}
                 disabled={imageLoading}
                 className={styles.visualButton}
@@ -560,6 +562,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
                 {imageLoading ? "Generating..." : "Scene Illustration"}
               </button>
               <button
+                type="button"
                 onClick={handleGenerateBattleMap}
                 disabled={imageLoading}
                 className={styles.visualButton}

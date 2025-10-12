@@ -238,6 +238,7 @@ const DiceRoller: React.FC<DiceRollerProps> = ({
         )}
 
         <button
+          type="button"
           className={styles.rollButton}
           onClick={() => rollDice()}
           disabled={isRolling || !notation.trim()}
@@ -252,6 +253,7 @@ const DiceRoller: React.FC<DiceRollerProps> = ({
           {commonRolls.map((roll) => (
             <button
               key={roll.notation}
+              type="button"
               className={styles.quickRollButton}
               onClick={() => rollDice(roll.notation)}
               disabled={isRolling}

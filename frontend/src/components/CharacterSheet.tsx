@@ -451,7 +451,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
                   <li key={index} className="spell-item cantrip">
                     <span className={styles.spellName}>{spell.name}</span>
                     <span className={styles.spellSchool}>{spell.school}</span>
-                    <button className={styles.castButton}>Cast</button>
+                    <button type="button" className={styles.castButton}>
+                      Cast
+                    </button>
                   </li>
                 )
               ) || <li>No cantrips known</li>}
@@ -491,6 +493,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
                           <span className={styles.ritualIndicator}>R</span>
                         )}
                         <button
+                          type="button"
                           className={styles.castButton}
                           disabled={!hasSpellSlot(character, level)}
                         >
