@@ -1,5 +1,5 @@
 import type React from "react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useId, useState } from "react";
 import { apiClient } from "../services/api";
 import styles from "./DiceRoller.module.css";
 
@@ -33,6 +33,8 @@ const DiceRoller: React.FC<DiceRollerProps> = ({
   websocket,
   webSocketDiceResult,
 }) => {
+  const notationId = useId();
+  const skillId = useId();
   const [notation, setNotation] = useState("1d20");
   const [skill, setSkill] = useState("");
   const [isRolling, setIsRolling] = useState(false);
@@ -205,9 +207,9 @@ const DiceRoller: React.FC<DiceRollerProps> = ({
 
       <div className={styles.diceInputSection}>
         <div className={styles.notationInput}>
-          <label htmlFor="dice-notation">Dice Notation:</label>
+          <label htmlFor={notationId}>Dice Notation:</label>
           <input
-            id="dice-notation"
+            id={notationId}
             type="text"
             value={notation}
             onChange={(e) => setNotation(e.target.value)}
@@ -218,9 +220,9 @@ const DiceRoller: React.FC<DiceRollerProps> = ({
 
         {characterId && (
           <div className={styles.skillInput}>
-            <label htmlFor="skill-select">Skill (optional):</label>
+            <label htmlFor={skillId}>Skill (optional):</label>
             <select
-              id="skill-select"
+              id={skillId}
               value={skill}
               onChange={(e) => setSkill(e.target.value)}
               disabled={isRolling}
