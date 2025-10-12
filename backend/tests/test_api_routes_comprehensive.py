@@ -285,6 +285,15 @@ class TestAPIRouteDataTransformation:
                     "character_class": "fighter",
                     "race": "human",
                     "level": 1,
+                    "abilities": {
+                        "strength": 16,
+                        "dexterity": 14,
+                        "constitution": 15,
+                        "intelligence": 12,
+                        "wisdom": 13,
+                        "charisma": 10,
+                    },
+                    "hit_points": {"current": 12, "maximum": 12},
                 }
             )
             mock_get_scribe.return_value = mock_scribe
