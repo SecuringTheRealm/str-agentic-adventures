@@ -1618,8 +1618,8 @@ async def manage_concentration(character_id: str, request: ConcentrationRequest)
             import random
 
             roll_result = (
-                random.randint(1, 20) + 3
-            )  # Assuming +3 Constitution modifier  # noqa: S311
+                random.randint(1, 20) + 3  # noqa: S311
+            )  # Assuming +3 Constitution modifier
             maintained = roll_result >= dc
 
             return ConcentrationCheckResponse(
@@ -1992,7 +1992,7 @@ async def create_campaign_npc(campaign_id: str, request: CreateNPCRequest):
         )
 
         hit_points = HitPoints(
-            current=random.randint(4, 12),
+            current=random.randint(4, 12),  # noqa: S311
             maximum=random.randint(4, 12),  # noqa: S311
         )
 
@@ -2062,9 +2062,9 @@ async def log_npc_interaction(npc_id: str, request: NPCInteractionRequest):
         # Calculate new relationship level (simulated)
         import random
 
-        current_level = random.randint(
+        current_level = random.randint(  # noqa: S311
             -50, 50
-        )  # Would be retrieved from database  # noqa: S311
+        )  # Would be retrieved from database
         new_level = max(-100, min(100, current_level + request.relationship_change))
 
         return NPCInteractionResponse(
