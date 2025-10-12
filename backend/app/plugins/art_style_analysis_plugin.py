@@ -7,7 +7,7 @@ import json
 import logging
 from typing import Any
 
-from semantic_kernel.functions import kernel_function
+# Note: Converted from Semantic Kernel plugin to direct function calls
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +25,7 @@ class ArtStyleAnalysisPlugin:
         self.style_history = []
         self.consistency_metrics = {}
 
-    @kernel_function(
+    # @kernel_function(
         description="Analyze the art style characteristics of a generated image.",
         name="analyze_art_style",
     )
@@ -84,7 +84,7 @@ class ArtStyleAnalysisPlugin:
             logger.error(f"Error analyzing art style: {str(e)}")
             return {"status": "error", "error": f"Art style analysis failed: {str(e)}"}
 
-    @kernel_function(
+    # @kernel_function(
         description="Check style consistency across multiple generated images.",
         name="check_style_consistency",
     )
@@ -150,7 +150,7 @@ class ArtStyleAnalysisPlugin:
                 "error": f"Style consistency check failed: {str(e)}",
             }
 
-    @kernel_function(
+    # @kernel_function(
         description="Create a style profile for maintaining consistency.",
         name="create_style_profile",
     )
@@ -207,7 +207,7 @@ class ArtStyleAnalysisPlugin:
                 "error": f"Style profile creation failed: {str(e)}",
             }
 
-    @kernel_function(
+    # @kernel_function(
         description="Get recommendations for maintaining style consistency.",
         name="get_style_recommendations",
     )

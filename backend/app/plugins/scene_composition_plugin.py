@@ -6,7 +6,7 @@ This plugin provides scene illustration and composition capabilities for RPG env
 import logging
 from typing import Any
 
-from semantic_kernel.functions import kernel_function
+# Note: Converted from Semantic Kernel plugin to direct function calls
 
 from app.azure_openai_client import AzureOpenAIClient
 
@@ -26,7 +26,7 @@ class SceneCompositionPlugin:
         self.location_templates = {}
         self.composition_history = []
 
-    @kernel_function(
+    # @kernel_function(
         description="Generate a detailed scene illustration based on location and context.",
         name="illustrate_scene",
     )
@@ -127,7 +127,7 @@ class SceneCompositionPlugin:
             logger.error(f"Error illustrating scene: {str(e)}")
             return {"status": "error", "error": f"Scene illustration failed: {str(e)}"}
 
-    @kernel_function(
+    # @kernel_function(
         description="Create a location template for consistent scene generation.",
         name="create_location_template",
     )
@@ -188,7 +188,7 @@ class SceneCompositionPlugin:
                 "error": f"Location template creation failed: {str(e)}",
             }
 
-    @kernel_function(
+    # @kernel_function(
         description="Generate a scene variation with different lighting or weather.",
         name="generate_scene_variation",
     )
@@ -264,7 +264,7 @@ class SceneCompositionPlugin:
                 "error": f"Scene variation generation failed: {str(e)}",
             }
 
-    @kernel_function(
+    # @kernel_function(
         description="Create a cinematic establishing shot for a location.",
         name="create_establishing_shot",
     )
@@ -347,7 +347,7 @@ class SceneCompositionPlugin:
                 "error": f"Establishing shot creation failed: {str(e)}",
             }
 
-    @kernel_function(
+    # @kernel_function(
         description="Generate a battle map overview for tactical combat.",
         name="generate_battle_map",
     )
@@ -427,7 +427,7 @@ class SceneCompositionPlugin:
                 "error": f"Battle map generation failed: {str(e)}",
             }
 
-    @kernel_function(
+    # @kernel_function(
         description="Get composition analysis and recommendations for scenes.",
         name="analyze_scene_composition",
     )

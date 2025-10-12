@@ -263,7 +263,7 @@ class RulesEnginePlugin:
         # Kept for backward compatibility
         return SPELL_SLOTS_BY_CLASS_LEVEL
 
-    @kernel_function(
+    # @kernel_function(
         description="Get spell slots for a character by class and level.",
         name="get_spell_slots_for_level",
     )
@@ -305,7 +305,7 @@ class RulesEnginePlugin:
             logger.error(f"Error getting spell slots: {str(e)}")
             return {"error": f"Error getting spell slots: {str(e)}"}
 
-    @kernel_function(
+    # @kernel_function(
         description="Calculate spell attack bonus for a character.",
         name="calculate_spell_attack_bonus",
     )
@@ -342,7 +342,7 @@ class RulesEnginePlugin:
             logger.error(f"Error calculating spell attack bonus: {str(e)}")
             return {"error": f"Error calculating spell attack bonus: {str(e)}"}
 
-    @kernel_function(
+    # @kernel_function(
         description="Process spell effect resolution.",
         name="resolve_spell_effect",
     )
@@ -395,7 +395,7 @@ class RulesEnginePlugin:
             logger.error(f"Error resolving spell effect: {str(e)}")
             return {"error": f"Error resolving spell effect: {str(e)}"}
 
-    @kernel_function(
+    # @kernel_function(
         description="Calculate spell save DC for a character.",
         name="calculate_spell_save_dc",
     )
@@ -432,7 +432,7 @@ class RulesEnginePlugin:
             logger.error(f"Error calculating spell save DC: {str(e)}")
             return {"error": f"Error calculating spell save DC: {str(e)}"}
 
-    @kernel_function(
+    # @kernel_function(
         description="Resolve spell damage effects.",
         name="resolve_spell_damage",
     )
@@ -470,7 +470,7 @@ class RulesEnginePlugin:
             logger.error(f"Error resolving spell damage: {str(e)}")
             return {"error": f"Error resolving spell damage: {str(e)}"}
 
-    @kernel_function(
+    # @kernel_function(
         description="Resolve spell healing effects.",
         name="resolve_spell_healing",
     )
@@ -515,7 +515,7 @@ class RulesEnginePlugin:
             logger.error(f"Error resolving spell healing: {str(e)}")
             return {"error": f"Error resolving spell healing: {str(e)}"}
 
-    @kernel_function(
+    # @kernel_function(
         description="Resolve saving throw against spell effects.",
         name="resolve_saving_throw",
     )
@@ -569,7 +569,7 @@ class RulesEnginePlugin:
             logger.error(f"Error resolving saving throw: {str(e)}")
             return {"error": f"Error resolving saving throw: {str(e)}"}
 
-    @kernel_function(
+    # @kernel_function(
         description="Roll dice using standard D&D notation with advanced features (e.g., '1d20', '2d6+3', '4d6dl1', '2d20kh1').",
         name="roll_dice",
     )
@@ -833,7 +833,7 @@ class RulesEnginePlugin:
 
         return modifiers
 
-    @kernel_function(
+    # @kernel_function(
         description="Perform a skill check against a target difficulty class (DC).",
         name="skill_check",
     )
@@ -903,7 +903,7 @@ class RulesEnginePlugin:
             logger.error(f"Error performing skill check: {str(e)}")
             return {"error": f"Error performing skill check: {str(e)}"}
 
-    @kernel_function(
+    # @kernel_function(
         description="Calculate whether an attack hits based on the attack roll and target's armor class.",
         name="resolve_attack",
     )
@@ -972,7 +972,7 @@ class RulesEnginePlugin:
             logger.error(f"Error resolving attack: {str(e)}")
             return {"error": f"Error resolving attack: {str(e)}"}
 
-    @kernel_function(
+    # @kernel_function(
         description="Calculate damage for an attack based on the damage dice and modifiers.",
         name="calculate_damage",
     )
@@ -1023,7 +1023,7 @@ class RulesEnginePlugin:
             logger.error(f"Error calculating damage: {str(e)}")
             return {"error": f"Error calculating damage: {str(e)}"}
 
-    @kernel_function(
+    # @kernel_function(
         description="Calculate the level for a character based on their experience points.",
         name="calculate_level",
     )
@@ -1061,7 +1061,7 @@ class RulesEnginePlugin:
             logger.error(f"Error calculating level: {str(e)}")
             return {"error": f"Error calculating level: {str(e)}"}
 
-    @kernel_function(
+    # @kernel_function(
         description="Calculate proficiency bonus for a given level.",
         name="calculate_proficiency_bonus",
     )
@@ -1089,7 +1089,7 @@ class RulesEnginePlugin:
             logger.error(f"Error calculating proficiency bonus: {str(e)}")
             return {"error": f"Error calculating proficiency bonus: {str(e)}"}
 
-    @kernel_function(
+    # @kernel_function(
         description="Check if a character can gain ability score improvement at their level.",
         name="check_asi_eligibility",
     )
@@ -1123,7 +1123,7 @@ class RulesEnginePlugin:
             logger.error(f"Error checking ASI eligibility: {str(e)}")
             return {"error": f"Error checking ASI eligibility: {str(e)}"}
 
-    @kernel_function(
+    # @kernel_function(
         description="Calculate hit points gained on level up.",
         name="calculate_level_up_hp",
     )
@@ -1287,7 +1287,7 @@ class RulesEnginePlugin:
         if len(self.roll_history) > self.max_history:
             self.roll_history = self.roll_history[-self.max_history :]
 
-    @kernel_function(
+    # @kernel_function(
         description="Start concentration on a spell for a character.",
         name="start_concentration",
     )
@@ -1343,7 +1343,7 @@ class RulesEnginePlugin:
                 "error": f"Error starting concentration: {str(e)}",
             }
 
-    @kernel_function(
+    # @kernel_function(
         description="End concentration on a spell for a character.",
         name="end_concentration",
     )
@@ -1382,7 +1382,7 @@ class RulesEnginePlugin:
             logger.error(f"Error ending concentration: {str(e)}")
             return {"success": False, "error": f"Error ending concentration: {str(e)}"}
 
-    @kernel_function(
+    # @kernel_function(
         description="Check current concentration status for a character.",
         name="check_concentration",
     )
@@ -1419,7 +1419,7 @@ class RulesEnginePlugin:
             logger.error(f"Error checking concentration: {str(e)}")
             return {"error": f"Error checking concentration: {str(e)}"}
 
-    @kernel_function(
+    # @kernel_function(
         description="Perform a concentration saving throw when character takes damage.",
         name="concentration_saving_throw",
     )
@@ -1491,7 +1491,7 @@ class RulesEnginePlugin:
                 "error": f"Error with concentration saving throw: {str(e)}",
             }
 
-    @kernel_function(
+    # @kernel_function(
         description="Reduce spell duration for all concentrating characters (call each round).",
         name="advance_concentration_round",
     )

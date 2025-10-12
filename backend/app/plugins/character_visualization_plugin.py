@@ -6,7 +6,7 @@ This plugin provides specialized character portrait generation and visualization
 import logging
 from typing import Any
 
-from semantic_kernel.functions import kernel_function
+# Note: Converted from Semantic Kernel plugin to direct function calls
 
 from app.azure_openai_client import AzureOpenAIClient
 
@@ -25,7 +25,7 @@ class CharacterVisualizationPlugin:
         self.character_portraits = {}
         self.character_variations = {}
 
-    @kernel_function(
+    # @kernel_function(
         description="Generate a detailed character portrait based on character details.",
         name="generate_character_portrait",
     )
@@ -119,7 +119,7 @@ class CharacterVisualizationPlugin:
                 "error": f"Character portrait generation failed: {str(e)}",
             }
 
-    @kernel_function(
+    # @kernel_function(
         description="Generate a character portrait variation for different scenarios.",
         name="generate_character_variation",
     )
@@ -198,7 +198,7 @@ class CharacterVisualizationPlugin:
                 "error": f"Character variation generation failed: {str(e)}",
             }
 
-    @kernel_function(
+    # @kernel_function(
         description="Generate a group portrait with multiple characters.",
         name="generate_group_portrait",
     )
@@ -291,7 +291,7 @@ class CharacterVisualizationPlugin:
                 "error": f"Group portrait generation failed: {str(e)}",
             }
 
-    @kernel_function(
+    # @kernel_function(
         description="Get character portrait gallery for a character.",
         name="get_character_gallery",
     )
@@ -347,7 +347,7 @@ class CharacterVisualizationPlugin:
                 "error": f"Character gallery retrieval failed: {str(e)}",
             }
 
-    @kernel_function(
+    # @kernel_function(
         description="Generate character expression study showing different emotions.",
         name="generate_expression_study",
     )

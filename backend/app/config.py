@@ -30,11 +30,6 @@ class Settings(BaseSettings):
         "AZURE_OPENAI_DALLE_DEPLOYMENT", "dall-e-3"
     )
 
-    # Semantic Kernel Settings
-    semantic_kernel_debug: bool = (
-        os.getenv("SEMANTIC_KERNEL_DEBUG", "False").lower() == "true"
-    )
-
     # Storage Settings
     storage_connection_string: str = os.getenv("STORAGE_CONNECTION_STRING", "")
 

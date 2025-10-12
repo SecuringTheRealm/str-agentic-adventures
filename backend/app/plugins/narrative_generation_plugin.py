@@ -9,7 +9,7 @@ import logging
 import random
 from typing import Any
 
-from semantic_kernel.functions import kernel_function
+# Note: Converted from Semantic Kernel plugin to direct function calls
 
 from app.models.game_models import (
     NarrativeChoice,
@@ -123,7 +123,7 @@ class NarrativeGenerationPlugin:
             },
         }
 
-    @kernel_function(
+    # @kernel_function(
         description="Create a new story arc with plot points and narrative structure.",
         name="create_story_arc",
     )
@@ -182,7 +182,7 @@ class NarrativeGenerationPlugin:
                 "message": f"Failed to create story arc: {str(e)}",
             }
 
-    @kernel_function(
+    # @kernel_function(
         description="Generate narrative choices for a given situation.",
         name="generate_choices",
     )
@@ -251,7 +251,7 @@ class NarrativeGenerationPlugin:
                 "message": f"Failed to generate choices: {str(e)}",
             }
 
-    @kernel_function(
+    # @kernel_function(
         description="Process a player's narrative choice and determine consequences.",
         name="process_choice",
     )
@@ -323,7 +323,7 @@ class NarrativeGenerationPlugin:
             logger.error(f"Error processing choice: {str(e)}")
             return {"status": "error", "message": f"Failed to process choice: {str(e)}"}
 
-    @kernel_function(
+    # @kernel_function(
         description="Advance the narrative by checking plot point triggers and updating story state.",
         name="advance_narrative",
     )
@@ -402,7 +402,7 @@ class NarrativeGenerationPlugin:
                 "message": f"Failed to advance narrative: {str(e)}",
             }
 
-    @kernel_function(
+    # @kernel_function(
         description="Get the current narrative state for a campaign.",
         name="get_narrative_state",
     )

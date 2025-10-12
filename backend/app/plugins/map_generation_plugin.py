@@ -6,7 +6,7 @@ This plugin provides map generation capabilities for combat encounters.
 import logging
 from typing import Any
 
-from semantic_kernel.functions import kernel_function
+# Note: Converted from Semantic Kernel plugin to direct function calls
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ class MapGenerationPlugin:
         """Initialize the map generation plugin."""
         self.map_cache = {}
 
-    @kernel_function(
+    # @kernel_function(
         description="Generate a tactical battle map based on environment context.",
         name="generate_tactical_map",
     )
@@ -90,7 +90,7 @@ class MapGenerationPlugin:
             logger.error(f"Error generating tactical map: {str(e)}")
             return {"status": "error", "error": f"Map generation failed: {str(e)}"}
 
-    @kernel_function(
+    # @kernel_function(
         description="Create a map grid system with positioning coordinates.",
         name="create_grid_system",
     )

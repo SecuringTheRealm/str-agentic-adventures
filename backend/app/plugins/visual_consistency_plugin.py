@@ -7,7 +7,7 @@ import json
 import logging
 from typing import Any
 
-from semantic_kernel.functions import kernel_function
+# Note: Converted from Semantic Kernel plugin to direct function calls
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ class VisualConsistencyPlugin:
         self.campaign_visual_contexts = {}
         self.consistency_violations = []
 
-    @kernel_function(
+    # @kernel_function(
         description="Create a visual consistency profile for a character.",
         name="create_character_visual_profile",
     )
@@ -91,7 +91,7 @@ class VisualConsistencyPlugin:
                 "error": f"Character visual profile creation failed: {str(e)}",
             }
 
-    @kernel_function(
+    # @kernel_function(
         description="Validate visual consistency for a character portrait.",
         name="validate_character_consistency",
     )
@@ -164,7 +164,7 @@ class VisualConsistencyPlugin:
                 "error": f"Character consistency validation failed: {str(e)}",
             }
 
-    @kernel_function(
+    # @kernel_function(
         description="Create a visual theme for a campaign or world.",
         name="create_world_visual_theme",
     )
@@ -231,7 +231,7 @@ class VisualConsistencyPlugin:
                 "error": f"World visual theme creation failed: {str(e)}",
             }
 
-    @kernel_function(
+    # @kernel_function(
         description="Validate visual consistency with world theme.",
         name="validate_world_consistency",
     )
@@ -305,7 +305,7 @@ class VisualConsistencyPlugin:
                 "error": f"World consistency validation failed: {str(e)}",
             }
 
-    @kernel_function(
+    # @kernel_function(
         description="Get consistency report for a campaign.",
         name="get_campaign_consistency_report",
     )

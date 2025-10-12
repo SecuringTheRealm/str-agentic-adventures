@@ -7,7 +7,7 @@ Azure AI Agents SDK for production-grade agent orchestration.
 
 import logging
 
-from azure.ai.agents import AIAgentsClient
+from azure.ai.agents import AgentsClient
 from azure.ai.inference import ChatCompletionsClient
 from azure.core.credentials import AzureKeyCredential
 from azure.identity import DefaultAzureCredential
@@ -62,12 +62,12 @@ class AgentClientManager:
 
         return self._chat_client
 
-    def get_agents_client(self) -> AIAgentsClient | None:
+    def get_agents_client(self) -> AgentsClient | None:
         """
         Get the Azure AI Agents client, creating it if necessary.
 
         Returns:
-            Optional[AIAgentsClient]: Agents client, or None in fallback mode
+            Optional[AgentsClient]: Agents client, or None in fallback mode
         """
         if self._agents_client is not None:
             return self._agents_client
@@ -127,12 +127,12 @@ class AgentClientManager:
             logger.error(f"Failed to configure chat client: {str(e)}")
             raise
 
-    def _create_agents_client(self) -> AIAgentsClient:
+    def _create_agents_client(self) -> AgentsClient:
         """
         Create and configure Azure AI Agents client.
 
         Returns:
-            AIAgentsClient: Configured agents client
+            AgentsClient: Configured agents client
         """
         if not settings.is_azure_openai_configured():
             raise ValueError(
@@ -147,7 +147,7 @@ class AgentClientManager:
             except Exception:
                 credential = AzureKeyCredential(settings.azure_openai_api_key)
 
-            agents_client = AIAgentsClient(
+            agents_client = AgentsClient(
                 endpoint=settings.azure_openai_endpoint,
                 credential=credential,
             )

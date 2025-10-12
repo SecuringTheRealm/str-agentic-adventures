@@ -7,7 +7,7 @@ import datetime
 import logging
 from typing import Any
 
-from semantic_kernel.functions import kernel_function
+# Note: Converted from Semantic Kernel plugin to direct function calls
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ class NarrativeMemoryPlugin:
         self.story_arcs = {}  # For tracking story arc memories
         self.character_arcs = {}  # For tracking character development arcs
 
-    @kernel_function(
+    # @kernel_function(
         description="Store a narrative fact in memory.", name="remember_fact"
     )
     def remember_fact(
@@ -71,7 +71,7 @@ class NarrativeMemoryPlugin:
             logger.error(f"Error storing fact in memory: {str(e)}")
             return {"status": "error", "message": f"Failed to store fact: {str(e)}"}
 
-    @kernel_function(
+    # @kernel_function(
         description="Record a narrative event in the campaign timeline.",
         name="record_event",
     )
@@ -118,7 +118,7 @@ class NarrativeMemoryPlugin:
             logger.error(f"Error recording event: {str(e)}")
             return {"status": "error", "message": f"Failed to record event: {str(e)}"}
 
-    @kernel_function(
+    # @kernel_function(
         description="Retrieve facts related to a specific query or category.",
         name="recall_facts",
     )
@@ -164,7 +164,7 @@ class NarrativeMemoryPlugin:
                 "facts": [],
             }
 
-    @kernel_function(
+    # @kernel_function(
         description="Retrieve a timeline of recent events.", name="recall_timeline"
     )
     def recall_timeline(
@@ -216,7 +216,7 @@ class NarrativeMemoryPlugin:
                 "events": [],
             }
 
-    @kernel_function(
+    # @kernel_function(
         description="Add or update an NPC in the campaign.", name="update_npc"
     )
     def update_npc(
@@ -262,7 +262,7 @@ class NarrativeMemoryPlugin:
             logger.error(f"Error updating NPC: {str(e)}")
             return {"status": "error", "message": f"Failed to update NPC: {str(e)}"}
 
-    @kernel_function(
+    # @kernel_function(
         description="Retrieve information about a specific NPC.", name="get_npc"
     )
     def get_npc(self, name: str) -> dict[str, Any]:
@@ -288,7 +288,7 @@ class NarrativeMemoryPlugin:
             logger.error(f"Error retrieving NPC: {str(e)}")
             return {"status": "error", "message": f"Failed to retrieve NPC: {str(e)}"}
 
-    @kernel_function(
+    # @kernel_function(
         description="Track progress of a story arc in the narrative memory.",
         name="track_story_arc",
     )
@@ -349,7 +349,7 @@ class NarrativeMemoryPlugin:
                 "message": f"Failed to track story arc: {str(e)}",
             }
 
-    @kernel_function(
+    # @kernel_function(
         description="Record a character development moment or arc progression.",
         name="record_character_development",
     )
@@ -403,7 +403,7 @@ class NarrativeMemoryPlugin:
                 "message": f"Failed to record character development: {str(e)}",
             }
 
-    @kernel_function(
+    # @kernel_function(
         description="Retrieve story arc memories for narrative continuity.",
         name="recall_story_arcs",
     )
