@@ -6,7 +6,7 @@ This plugin provides tactical analysis capabilities for combat encounters.
 import logging
 from typing import Any
 
-from semantic_kernel.functions import kernel_function
+# Note: Converted from Semantic Kernel plugin to direct function calls
 
 logger = logging.getLogger(__name__)
 
@@ -21,10 +21,10 @@ class TacticalAnalysisPlugin:
         """Initialize the tactical analysis plugin."""
         self.analysis_cache = {}
 
-    @kernel_function(
-        description="Analyze tactical positions and provide strategic recommendations.",
-        name="analyze_tactical_positions",
-    )
+#     # @kernel_function(
+#         description="Analyze tactical positions and provide strategic recommendations.",
+#         name="analyze_tactical_positions",
+#     )
     def analyze_tactical_positions(
         self, combatant_positions: str, map_features: str
     ) -> dict[str, Any]:
@@ -78,10 +78,10 @@ class TacticalAnalysisPlugin:
             logger.error(f"Error analyzing tactical positions: {str(e)}")
             return {"status": "error", "error": f"Tactical analysis failed: {str(e)}"}
 
-    @kernel_function(
-        description="Assess threat levels and priority targets in combat.",
-        name="assess_combat_threats",
-    )
+#     # @kernel_function(
+#         description="Assess threat levels and priority targets in combat.",
+#         name="assess_combat_threats",
+#     )
     def assess_combat_threats(
         self, enemy_positions: str, ally_positions: str, combat_state: str = "active"
     ) -> dict[str, Any]:
@@ -119,10 +119,10 @@ class TacticalAnalysisPlugin:
             logger.error(f"Error assessing combat threats: {str(e)}")
             return {"status": "error", "error": f"Threat assessment failed: {str(e)}"}
 
-    @kernel_function(
-        description="Calculate optimal movement paths and positioning.",
-        name="calculate_optimal_positioning",
-    )
+#     # @kernel_function(
+#         description="Calculate optimal movement paths and positioning.",
+#         name="calculate_optimal_positioning",
+#     )
     def calculate_optimal_positioning(
         self, unit_type: str, objectives: str, constraints: str = ""
     ) -> dict[str, Any]:

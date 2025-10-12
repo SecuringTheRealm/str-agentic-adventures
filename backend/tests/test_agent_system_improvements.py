@@ -13,7 +13,7 @@ class TestAgentSystemImprovements:
     @pytest.fixture
     def dm_agent_mock(self):
         """Create a mock Dungeon Master agent instance."""
-        with patch("app.agents.dungeon_master_agent.kernel_manager"):
+        with patch("app.agents.dungeon_master_agent.agent_client_manager"):
             # Mock the DungeonMasterAgent to avoid Azure dependencies
             from app.agents.dungeon_master_agent import DungeonMasterAgent
 

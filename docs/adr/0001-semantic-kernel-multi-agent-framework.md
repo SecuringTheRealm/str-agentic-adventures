@@ -1,6 +1,6 @@
 # Use Microsoft Semantic Kernel for Multi-Agent Architecture
 
-* Status: accepted
+* Status: superseded by [ADR-0018](0018-azure-ai-agents-sdk-adoption.md)
 * Date: 2025-06-10
 
 ## Context and Problem Statement

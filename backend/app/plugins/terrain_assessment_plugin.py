@@ -6,7 +6,7 @@ This plugin provides terrain analysis capabilities for combat encounters.
 import logging
 from typing import Any
 
-from semantic_kernel.functions import kernel_function
+# Note: Converted from Semantic Kernel plugin to direct function calls
 
 logger = logging.getLogger(__name__)
 
@@ -21,10 +21,10 @@ class TerrainAssessmentPlugin:
         """Initialize the terrain assessment plugin."""
         self.terrain_database = {}
 
-    @kernel_function(
-        description="Assess terrain features and their tactical implications.",
-        name="assess_terrain_features",
-    )
+#     # @kernel_function(
+#         description="Assess terrain features and their tactical implications.",
+#         name="assess_terrain_features",
+#     )
     def assess_terrain_features(
         self, terrain_description: str, map_size: str = "medium"
     ) -> dict[str, Any]:
@@ -64,10 +64,10 @@ class TerrainAssessmentPlugin:
             logger.error(f"Error assessing terrain features: {str(e)}")
             return {"status": "error", "error": f"Terrain assessment failed: {str(e)}"}
 
-    @kernel_function(
-        description="Analyze movement costs and restrictions across terrain types.",
-        name="analyze_movement_costs",
-    )
+#     # @kernel_function(
+#         description="Analyze movement costs and restrictions across terrain types.",
+#         name="analyze_movement_costs",
+#     )
     def analyze_movement_costs(
         self, terrain_types: str, unit_types: str = "standard"
     ) -> dict[str, Any]:
@@ -106,10 +106,10 @@ class TerrainAssessmentPlugin:
             logger.error(f"Error analyzing movement costs: {str(e)}")
             return {"status": "error", "error": f"Movement analysis failed: {str(e)}"}
 
-    @kernel_function(
-        description="Evaluate terrain for defensive positioning and fortification potential.",
-        name="evaluate_defensive_terrain",
-    )
+#     # @kernel_function(
+#         description="Evaluate terrain for defensive positioning and fortification potential.",
+#         name="evaluate_defensive_terrain",
+#     )
     def evaluate_defensive_terrain(
         self, terrain_description: str, defensive_objectives: str = "general"
     ) -> dict[str, Any]:

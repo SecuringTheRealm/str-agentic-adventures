@@ -6,7 +6,7 @@ This plugin provides environmental hazard assessment and management for combat e
 import logging
 from typing import Any
 
-from semantic_kernel.functions import kernel_function
+# Note: Converted from Semantic Kernel plugin to direct function calls
 
 logger = logging.getLogger(__name__)
 
@@ -22,10 +22,10 @@ class EnvironmentalHazardsPlugin:
         self.hazard_database = {}
         self.mitigation_strategies = {}
 
-    @kernel_function(
-        description="Identify and assess environmental hazards in the combat area.",
-        name="identify_environmental_hazards",
-    )
+#     # @kernel_function(
+#         description="Identify and assess environmental hazards in the combat area.",
+#         name="identify_environmental_hazards",
+#     )
     def identify_environmental_hazards(
         self, environment_description: str, weather_conditions: str = "normal"
     ) -> dict[str, Any]:
@@ -71,10 +71,10 @@ class EnvironmentalHazardsPlugin:
                 "error": f"Hazard identification failed: {str(e)}",
             }
 
-    @kernel_function(
-        description="Provide hazard mitigation strategies and safety protocols.",
-        name="provide_hazard_mitigation",
-    )
+#     # @kernel_function(
+#         description="Provide hazard mitigation strategies and safety protocols.",
+#         name="provide_hazard_mitigation",
+#     )
     def provide_hazard_mitigation(
         self,
         hazard_types: str,
@@ -119,10 +119,10 @@ class EnvironmentalHazardsPlugin:
             logger.error(f"Error providing hazard mitigation: {str(e)}")
             return {"status": "error", "error": f"Mitigation planning failed: {str(e)}"}
 
-    @kernel_function(
-        description="Monitor dynamic hazards and provide real-time updates.",
-        name="monitor_dynamic_hazards",
-    )
+#     # @kernel_function(
+#         description="Monitor dynamic hazards and provide real-time updates.",
+#         name="monitor_dynamic_hazards",
+#     )
     def monitor_dynamic_hazards(
         self,
         current_hazards: str,

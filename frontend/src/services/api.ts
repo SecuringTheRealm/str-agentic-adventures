@@ -85,21 +85,27 @@ export interface InventoryItem {
 export const createCharacter = async (
   characterData: import("../api-client").CreateCharacterRequest
 ) => {
+  // Normalize race and character_class to lowercase as backend expects
+  const normalizedData = {
+    ...characterData,
+    race: characterData.race?.toLowerCase(),
+    character_class: characterData.character_class?.toLowerCase(),
+  };
   const response =
-    await gameApi.createCharacterApiGameCharacterPost(characterData);
+    await gameApi.createCharacterGameCharacterPost(normalizedData);
   return response.data;
 };
 
 export const getCharacter = async (characterId: string) => {
   const response =
-    await gameApi.getCharacterApiGameCharacterCharacterIdGet(characterId);
+    await gameApi.getCharacterGameCharacterCharacterIdGet(characterId);
   return response.data;
 };
 
 export const sendPlayerInput = async (
   input: import("../api-client").PlayerInput
 ) => {
-  const response = await gameApi.processPlayerInputApiGameInputPost(input);
+  const response = await gameApi.processPlayerInputGameInputPost(input);
   return response.data;
 };
 
@@ -107,18 +113,18 @@ export const createCampaign = async (
   campaignData: import("../api-client").CreateCampaignRequest
 ) => {
   const response =
-    await gameApi.createCampaignApiGameCampaignPost(campaignData);
+    await gameApi.createCampaignGameCampaignPost(campaignData);
   return response.data;
 };
 
 export const getCampaigns = async () => {
-  const response = await gameApi.listCampaignsApiGameCampaignsGet();
+  const response = await gameApi.listCampaignsGameCampaignsGet();
   return response.data;
 };
 
 export const getCampaign = async (campaignId: string) => {
   const response =
-    await gameApi.getCampaignApiGameCampaignCampaignIdGet(campaignId);
+    await gameApi.getCampaignGameCampaignCampaignIdGet(campaignId);
   return response.data;
 };
 
@@ -126,7 +132,7 @@ export const updateCampaign = async (
   campaignId: string,
   updates: import("../api-client").CampaignUpdateRequest
 ) => {
-  const response = await gameApi.updateCampaignApiGameCampaignCampaignIdPut(
+  const response = await gameApi.updateCampaignGameCampaignCampaignIdPut(
     campaignId,
     updates
   );
@@ -137,19 +143,19 @@ export const cloneCampaign = async (
   cloneData: import("../api-client").CloneCampaignRequest
 ) => {
   const response =
-    await gameApi.cloneCampaignApiGameCampaignClonePost(cloneData);
+    await gameApi.cloneCampaignGameCampaignClonePost(cloneData);
   return response.data;
 };
 
 export const deleteCampaign = async (campaignId: string) => {
   const response =
-    await gameApi.deleteCampaignApiGameCampaignCampaignIdDelete(campaignId);
+    await gameApi.deleteCampaignGameCampaignCampaignIdDelete(campaignId);
   return response.data;
 };
 
 export const getCampaignTemplates = async () => {
   const response =
-    await gameApi.getCampaignTemplatesApiGameCampaignTemplatesGet();
+    await gameApi.getCampaignTemplatesGameCampaignTemplatesGet();
   // The API returns {templates: [...]} but we need to return just the array
   return response.data.templates || [];
 };
@@ -213,7 +219,7 @@ export const getAIAssistance = async (
   request: import("../api-client").AIAssistanceRequest
 ) => {
   const response =
-    await gameApi.getAiAssistanceApiGameCampaignAiAssistPost(request);
+    await gameApi.getAiAssistanceGameCampaignAiAssistPost(request);
   return response.data;
 };
 
@@ -221,13 +227,13 @@ export const generateAIContent = async (
   request: import("../api-client").AIContentGenerationRequest
 ) => {
   const response =
-    await gameApi.generateAiContentApiGameCampaignAiGeneratePost(request);
+    await gameApi.generateAiContentGameCampaignAiGeneratePost(request);
   return response.data;
 };
 
 export const generateImage = async (imageRequest: Record<string, unknown>) => {
   const response =
-    await gameApi.generateImageApiGameGenerateImagePost(imageRequest);
+    await gameApi.generateImageGameGenerateImagePost(imageRequest);
   return response.data;
 };
 
@@ -235,6 +241,6 @@ export const generateBattleMap = async (
   mapRequest: Record<string, unknown>
 ) => {
   const response =
-    await gameApi.generateBattleMapApiGameBattleMapPost(mapRequest);
+    await gameApi.generateBattleMapGameBattleMapPost(mapRequest);
   return response.data;
 };

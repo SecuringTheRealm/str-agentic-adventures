@@ -20,17 +20,16 @@ const httpToWs = (url: string): string => {
 
 /**
  * Get the API base URL for OpenAPI client
- * With servers configuration in OpenAPI schema, the base includes /api
  */
 export const getApiBaseUrl = (): string => {
-  return `${getBaseUrl()}/api`;
+  return getBaseUrl();
 };
 
 /**
- * Get the WebSocket base URL with /api suffix
+ * Get the WebSocket base URL
  */
 export const getWebSocketBaseUrl = (): string => {
-  return `${httpToWs(getBaseUrl())}/api`;
+  return httpToWs(getBaseUrl());
 };
 
 /**

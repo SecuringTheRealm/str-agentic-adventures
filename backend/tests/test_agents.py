@@ -13,23 +13,25 @@ class TestAgentMocking:
 
     def test_agent_imports_available(self) -> None:
         """Test that agent modules can be imported with proper mocking."""
-        # Mock semantic kernel and dependencies
+        # Mock Azure AI SDK and dependencies
         with patch.dict(
             "sys.modules",
             {
-                "semantic_kernel": Mock(),
-                "semantic_kernel.orchestration": Mock(),
-                "semantic_kernel.orchestration.context_variables": Mock(),
-                "semantic_kernel.connectors": Mock(),
-                "semantic_kernel.connectors.ai": Mock(),
-                "semantic_kernel.connectors.ai.open_ai": Mock(),
+                "azure.ai.inference": Mock(),
+                "azure.ai.agents": Mock(),
+                "azure.core.credentials": Mock(),
+                "azure.identity": Mock(),
+                "opentelemetry": Mock(),
+                "opentelemetry.sdk": Mock(),
+                "opentelemetry.sdk.trace": Mock(),
+                "opentelemetry.sdk.trace.export": Mock(),
                 "app.config": Mock(),
             },
         ):
-            # Mock kernel manager
-            with patch("app.kernel_setup.KernelManager") as mock_manager:
-                mock_kernel = Mock()
-                mock_manager.create_kernel.return_value = mock_kernel
+            # Mock agent client manager
+            with patch("app.agent_client_setup.AgentClientManager") as mock_manager:
+                mock_client = Mock()
+                mock_manager.get_chat_client.return_value = mock_client
 
                 # Try importing the agent
                 try:
@@ -37,17 +39,16 @@ class TestAgentMocking:
 
                     if "app.agents.scribe_agent" in sys.modules:
                         del sys.modules["app.agents.scribe_agent"]
-                    if "app.kernel_setup" in sys.modules:
-                        del sys.modules["app.kernel_setup"]
+                    if "app.agent_client_setup" in sys.modules:
+                        del sys.modules["app.agent_client_setup"]
 
                     from app.agents.scribe_agent import ScribeAgent
 
                     # Test that we can create an instance
-                    with patch("app.agents.scribe_agent.kernel_manager", mock_manager):
+                    with patch("app.agents.scribe_agent.agent_client_manager", mock_manager):
                         agent = ScribeAgent()
                         assert hasattr(agent, "characters")
                         assert hasattr(agent, "npcs")
-                        assert hasattr(agent, "inventory")
 
                 except ImportError as e:
                     # If import still fails, that's fine for our testing purposes

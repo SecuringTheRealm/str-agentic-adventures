@@ -6,10 +6,9 @@ import logging
 import random
 from typing import Any
 
-from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+from azure.ai.inference import ChatCompletionsClient
 
-from app.kernel_setup import kernel_manager
+from app.agent_client_setup import agent_client_manager
 from app.utils.dice import DiceRoller
 
 logger = logging.getLogger(__name__)
@@ -22,28 +21,26 @@ class CombatMCAgent:
     """
 
     def __init__(self) -> None:
-        """Initialize the Combat MC agent with its own kernel instance."""
-        self.kernel: Kernel | None = None
-        self.chat_service: AzureChatCompletion | None = None
+        """Initialize the Combat MC agent with Azure AI SDK."""
+        self.chat_client: ChatCompletionsClient | None = None
         self.fallback_mode = False  # Track if we're using fallback mechanics
         self.rules_engine: Any | None = None  # Store rules engine plugin instance
 
-        # Try to get the shared kernel from kernel manager
+        # Try to get the shared chat client from agent client manager
         try:
-            self.kernel = kernel_manager.get_kernel()
-            if self.kernel is None:
+            self.chat_client = agent_client_manager.get_chat_client()
+            if self.chat_client is None:
                 self.fallback_mode = True
                 logger.warning(
                     "Combat MC agent operating in fallback mode - Azure OpenAI not configured"
                 )
                 self._initialize_fallback_mechanics()
             else:
-                self.chat_service = self.kernel.get_service(type=AzureChatCompletion)
                 self._register_skills()
-                logger.info("Combat MC agent initialized with Semantic Kernel")
+                logger.info("Combat MC agent initialized with Azure AI SDK")
         except Exception as e:
             logger.warning(
-                f"Failed to initialize Combat MC agent with Semantic Kernel: {e}. "
+                f"Failed to initialize Combat MC agent with Azure AI SDK: {e}. "
                 "Operating in fallback mode."
             )
             self.fallback_mode = True
@@ -55,28 +52,25 @@ class CombatMCAgent:
     def _register_skills(self) -> None:
         """Register necessary skills for the Combat MC agent."""
         # Skip if in fallback mode
-        if self.fallback_mode or self.kernel is None:
+        if self.fallback_mode or self.chat_client is None:
             logger.info(
                 "Combat MC agent in fallback mode - skipping plugin registration"
             )
             return
 
         try:
-            # Import plugins
+            # Import plugins for direct method access
             from app.plugins.rules_engine_plugin import RulesEnginePlugin
 
             # Create plugin instances
             rules_engine = RulesEnginePlugin()
 
-            # Store reference to the rules engine instance
+            # Store reference to the rules engine instance for direct access
             self.rules_engine = rules_engine
 
-            # Register plugins with the kernel
-            self.kernel.add_plugin(rules_engine, "Rules")
-
-            logger.info("Combat MC agent plugins registered successfully")
+            logger.info("Combat MC agent plugins initialized for direct access")
         except Exception as e:
-            logger.error(f"Error registering Combat MC agent plugins: {str(e)}")
+            logger.error(f"Error initializing Combat MC agent plugins: {str(e)}")
             logger.warning("Enabling fallback mode with built-in combat mechanics")
             self.fallback_mode = True
             self._initialize_fallback_mechanics()
@@ -522,7 +516,7 @@ class CombatMCAgent:
                 )
                 return result
 
-            attack_bonus = spell_attack_bonus_result["attack_bonus"]
+            attack_bonus = spell_attack_bonus_result["spell_attack_bonus"]
 
             # Resolve the spell attack using the calculated bonus
             attack_result = rules_plugin.resolve_attack(

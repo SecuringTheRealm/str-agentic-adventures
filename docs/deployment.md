@@ -407,6 +407,77 @@ The deployment creates the following Azure resources:
    - Verify all required Azure providers are registered in your subscription
    - Review Azure Activity Log for detailed error messages
 
+## API Endpoint Structure
+
+### Development Environment
+
+When running locally, the backend serves API endpoints directly without a prefix:
+
+**HTTP API Endpoints:**
+- Base URL: `http://localhost:8000`
+- Game routes: `/game/*` (e.g., `/game/campaign`, `/game/character`, `/game/input`)
+- Health check: `/health`
+- Root: `/`
+
+**WebSocket Endpoints:**
+- Base URL: `ws://localhost:8000`
+- Chat WebSocket: `/ws/chat/{campaign_id}`
+- Legacy WebSocket: `/ws/{campaign_id}`
+
+**Example URLs:**
+```
+http://localhost:8000/health
+http://localhost:8000/game/campaign/templates
+http://localhost:8000/game/character
+http://localhost:8000/game/input
+ws://localhost:8000/ws/chat/12345
+```
+
+### Production Deployment with Reverse Proxy
+
+When deploying behind a reverse proxy (e.g., Azure Application Gateway, nginx), the backend application should still expose endpoints at the root level as shown above. The reverse proxy configuration should handle URL routing:
+
+**Reverse Proxy Configuration Example (nginx):**
+```nginx
+# Route /api/* requests to backend at /game/*
+location /api/game/ {
+    proxy_pass http://backend:8000/game/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+}
+
+# Route /ws/* WebSocket requests to backend /ws/*
+location /ws/ {
+    proxy_pass http://backend:8000/ws/;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+}
+```
+
+**Important Notes:**
+1. **Backend Configuration**: The FastAPI application does NOT use `root_path="/api"` - it serves routes at the root level
+2. **Reverse Proxy Responsibility**: The reverse proxy (Azure Application Gateway, nginx, etc.) handles `/api` prefix routing
+3. **Frontend Configuration**: The frontend should be configured to use `/api` prefix in production via environment variables
+4. **WebSocket Handling**: WebSocket connections require special proxy configuration to handle the `Upgrade` header
+
+### Frontend Configuration
+
+The frontend uses environment-based URL configuration:
+
+**Development (`src/utils/urls.ts`):**
+```typescript
+export const getApiBaseUrl = (): string => {
+  return "http://localhost:8000";  // No /api prefix
+};
+
+export const getWebSocketBaseUrl = (): string => {
+  return "ws://localhost:8000";  // No /api prefix
+};
+```
+
+**Production:** Configure frontend build with environment variables to use `/api` prefix when deployed behind reverse proxy.
+
 ## Security Considerations
 
 1. **Secrets Management**: All sensitive data stored as GitHub secrets or Azure Key Vault

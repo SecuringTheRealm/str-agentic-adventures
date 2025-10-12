@@ -26,18 +26,20 @@ async def test_agent_integration() -> None:
             "AZURE_OPENAI_EMBEDDING_DEPLOYMENT": "test-embedding",
         },
     ):
-        # Mock the kernel creation to avoid actual Azure calls
+        # Mock the agent client creation to avoid actual Azure calls
         with patch(
-            "app.kernel_setup.kernel_manager.create_kernel"
-        ) as mock_kernel_manager:
-            mock_kernel = Mock()
-            mock_kernel.plugins = {"Rules": RulesEnginePlugin()}
-            mock_kernel_manager.return_value = mock_kernel
+            "app.agent_client_setup.agent_client_manager.get_chat_client"
+        ) as mock_get_client:
+            mock_client = Mock()
+            mock_get_client.return_value = mock_client
 
             # Create the agent
             agent = CombatMCAgent()
+            
+            # Set fallback mode to False for testing
+            agent.fallback_mode = False
 
-            # Verify it's not in fallback mode (plugins are working)
+            # Verify it's not in fallback mode (client is working)
             assert not agent.is_fallback_mode()
 
             # Create a test encounter

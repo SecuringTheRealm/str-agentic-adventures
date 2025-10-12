@@ -5,11 +5,10 @@ Combat Cartographer Agent - Generates tactical battle maps for combat encounters
 import logging
 from typing import Any
 
-from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+from azure.ai.inference import ChatCompletionsClient
 
+from app.agent_client_setup import agent_client_manager
 from app.azure_openai_client import AzureOpenAIClient
-from app.kernel_setup import kernel_manager
 
 logger = logging.getLogger(__name__)
 
@@ -21,32 +20,30 @@ class CombatCartographerAgent:
     """
 
     def __init__(self) -> None:
-        """Initialize the Combat Cartographer agent with its own kernel instance."""
-        self.kernel: Kernel | None = None
-        self.chat_service: AzureChatCompletion | None = None
+        """Initialize the Combat Cartographer agent with Azure AI SDK."""
+        self.chat_client: ChatCompletionsClient | None = None
         self._fallback_mode = False
 
-        # Try to get the shared kernel from kernel manager
+        # Try to get the shared chat client from agent client manager
         try:
-            self.kernel = kernel_manager.get_kernel()
-            if self.kernel is None:
+            self.chat_client = agent_client_manager.get_chat_client()
+            if self.chat_client is None:
                 self._fallback_mode = True
                 logger.warning(
                     "Combat Cartographer agent operating in fallback mode - Azure OpenAI not configured"
                 )
             else:
-                self.chat_service = self.kernel.get_service(type=AzureChatCompletion)
                 logger.info(
-                    "Combat Cartographer agent initialized with Semantic Kernel"
+                    "Combat Cartographer agent initialized with Azure AI SDK"
                 )
         except Exception as e:
             logger.warning(
-                f"Failed to initialize Combat Cartographer agent with Semantic Kernel: {e}. "
+                f"Failed to initialize Combat Cartographer agent with Azure AI SDK: {e}. "
                 "Operating in fallback mode."
             )
             self._fallback_mode = True
 
-        # Image generation still uses AzureOpenAIClient (SK doesn't support DALL-E yet)
+        # Image generation uses AzureOpenAIClient (for DALL-E support)
         if not self._fallback_mode:
             try:
                 self.azure_client = AzureOpenAIClient()
@@ -64,14 +61,14 @@ class CombatCartographerAgent:
     def _register_skills(self) -> None:
         """Register necessary skills for the Combat Cartographer agent."""
         # Skip plugin registration if in fallback mode
-        if self._fallback_mode or self.kernel is None:
+        if self._fallback_mode or self.chat_client is None:
             logger.info(
-                "Combat Cartographer agent in fallback mode - skipping plugin registration"
+                "Combat Cartographer agent in fallback mode - using basic functionality"
             )
             return
 
         try:
-            # Import combat cartographer-specific plugins
+            # Import combat cartographer-specific plugins for direct access
             from app.plugins.battle_positioning_plugin import BattlePositioningPlugin
             from app.plugins.environmental_hazards_plugin import (
                 EnvironmentalHazardsPlugin,
@@ -80,37 +77,30 @@ class CombatCartographerAgent:
             from app.plugins.tactical_analysis_plugin import TacticalAnalysisPlugin
             from app.plugins.terrain_assessment_plugin import TerrainAssessmentPlugin
 
-            # Define plugin configuration: (PluginClass, attribute_name, skill_name)
+            # Define plugin configuration: (PluginClass, attribute_name)
             plugins_config = [
-                (MapGenerationPlugin, "map_generation", "MapGeneration"),
-                (TacticalAnalysisPlugin, "tactical_analysis", "TacticalAnalysis"),
-                (TerrainAssessmentPlugin, "terrain_assessment", "TerrainAssessment"),
-                (BattlePositioningPlugin, "battle_positioning", "BattlePositioning"),
-                (
-                    EnvironmentalHazardsPlugin,
-                    "environmental_hazards",
-                    "EnvironmentalHazards",
-                ),
+                (MapGenerationPlugin, "map_generation"),
+                (TacticalAnalysisPlugin, "tactical_analysis"),
+                (TerrainAssessmentPlugin, "terrain_assessment"),
+                (BattlePositioningPlugin, "battle_positioning"),
+                (EnvironmentalHazardsPlugin, "environmental_hazards"),
             ]
 
-            # Register plugins using the configuration
-            for plugin_class, attribute_name, skill_name in plugins_config:
+            # Create plugin instances for direct method access
+            for plugin_class, attribute_name in plugins_config:
                 # Create plugin instance
                 plugin_instance = plugin_class()
 
-                # Register plugin with the kernel
-                self.kernel.add_plugin(plugin_instance, skill_name)
-
-                # Store reference for direct access
+                # Store reference for direct access (no kernel registration needed)
                 setattr(self, attribute_name, plugin_instance)
 
-            logger.info("Combat Cartographer agent skills registered successfully")
+            logger.info("Combat Cartographer agent plugins initialized for direct access")
         except ImportError as e:
-            logger.error(f"Error importing Combat Cartographer agent skills: {str(e)}")
+            logger.error(f"Error importing Combat Cartographer agent plugins: {str(e)}")
             raise
         except (AttributeError, ValueError) as e:
             logger.error(
-                f"Error registering Combat Cartographer agent skills: {str(e)}"
+                f"Error initializing Combat Cartographer agent plugins: {str(e)}"
             )
             raise
 

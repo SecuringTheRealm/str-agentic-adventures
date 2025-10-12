@@ -13,27 +13,42 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 class TestADRCompliance:
     """Test ADR implementation compliance."""
 
-    def test_adr_0001_semantic_kernel_implementation(self) -> None:
-        """Test that ADR 0001 (Semantic Kernel) is implemented."""
-        # Test that kernel setup exists
-        assert Path("backend/app/kernel_setup.py").exists(), (
-            "Semantic Kernel setup file should exist"
+    def test_adr_0001_semantic_kernel_superseded_by_0018(self) -> None:
+        """Test that ADR 0001 (Semantic Kernel) has been superseded by ADR 0018."""
+        # ADR 0001 should now be superseded
+        adr_0001 = Path("docs/adr/0001-semantic-kernel-multi-agent-framework.md")
+        assert adr_0001.exists(), "ADR 0001 should still exist for historical reference"
+        
+        with open(adr_0001) as f:
+            content = f.read()
+            assert "superseded" in content.lower(), (
+                "ADR 0001 should be marked as superseded"
+            )
+            assert "0018" in content, (
+                "ADR 0001 should reference ADR 0018"
+            )
+
+    def test_adr_0018_azure_ai_agents_implementation(self) -> None:
+        """Test that ADR 0018 (Azure AI Agents SDK) is implemented."""
+        # Test that agent client setup exists
+        assert Path("backend/app/agent_client_setup.py").exists(), (
+            "Azure AI Agent client setup file should exist"
         )
 
         # Test that the file contains actual implementation
-        with open("backend/app/kernel_setup.py") as f:
+        with open("backend/app/agent_client_setup.py") as f:
             content = f.read()
-            assert "KernelManager" in content, (
-                "KernelManager class should be implemented"
+            assert "AgentClientManager" in content, (
+                "AgentClientManager class should be implemented"
             )
-            assert "create_kernel" in content, (
-                "create_kernel method should be implemented"
+            assert "get_chat_client" in content, (
+                "get_chat_client method should be implemented"
             )
-            assert "AzureChatCompletion" in content, (
-                "Azure OpenAI integration should be present"
+            assert "ChatCompletionsClient" in content, (
+                "Azure AI Inference integration should be present"
             )
-            assert "AzureTextEmbedding" in content, (
-                "Azure embedding service should be present"
+            assert "OpenTelemetry" in content or "opentelemetry" in content, (
+                "OpenTelemetry observability should be present"
             )
 
     def test_adr_0002_multi_agent_architecture(self) -> None:
@@ -62,10 +77,11 @@ class TestADRCompliance:
                     f"Agent {agent_file} should contain a class definition"
                 )
                 assert (
-                    "kernel_manager" in content
-                    or "KernelManager" in content
+                    "agent_client_manager" in content
+                    or "AgentClientManager" in content
+                    or "ChatCompletionsClient" in content
                     or "openai_client" in content
-                ), f"Agent {agent_file} should integrate with Semantic Kernel or OpenAI"
+                ), f"Agent {agent_file} should integrate with Azure AI SDK or OpenAI"
 
     def test_adr_0003_data_storage_implementation(self) -> None:
         """Test that ADR 0003 (Data Storage Strategy) is implemented."""

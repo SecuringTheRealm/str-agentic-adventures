@@ -6,11 +6,10 @@ import json
 import logging
 from typing import Any
 
-from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+from azure.ai.inference import ChatCompletionsClient
 
+from app.agent_client_setup import agent_client_manager
 from app.database import get_session, init_db
-from app.kernel_setup import kernel_manager
 from app.models.db_models import NPC, Character, NPCInteraction
 
 logger = logging.getLogger(__name__)
@@ -23,25 +22,23 @@ class ScribeAgent:
     """
 
     def __init__(self) -> None:
-        """Initialize the Scribe agent with its own kernel instance."""
-        self.kernel: Kernel | None = None
-        self.chat_service: AzureChatCompletion | None = None
+        """Initialize the Scribe agent with Azure AI SDK."""
+        self.chat_client: ChatCompletionsClient | None = None
         self._fallback_mode = False
 
-        # Try to get the shared kernel from kernel manager
+        # Try to get the shared chat client from agent client manager
         try:
-            self.kernel = kernel_manager.get_kernel()
-            if self.kernel is None:
+            self.chat_client = agent_client_manager.get_chat_client()
+            if self.chat_client is None:
                 self._fallback_mode = True
                 logger.warning(
                     "Scribe agent operating in fallback mode - Azure OpenAI not configured"
                 )
             else:
-                self.chat_service = self.kernel.get_service(type=AzureChatCompletion)
-                logger.info("Scribe agent initialized with Semantic Kernel")
+                logger.info("Scribe agent initialized with Azure AI SDK")
         except Exception as e:
             logger.warning(
-                f"Failed to initialize Scribe agent with Semantic Kernel: {e}. "
+                f"Failed to initialize Scribe agent with Azure AI SDK: {e}. "
                 "Operating in fallback mode."
             )
             self._fallback_mode = True
@@ -251,93 +248,16 @@ class ScribeAgent:
 
     def _register_skills(self) -> None:
         """Register necessary skills for the Scribe agent."""
-        # Skip plugin registration if in fallback mode
-        if self._fallback_mode or self.kernel is None:
-            logger.info("Scribe agent in fallback mode - skipping plugin registration")
+        # Note: In Azure AI Agents SDK, these deterministic functions don't need
+        # to be registered as tools - they are called directly by the agent logic.
+        # Tools are only needed when the LLM needs to invoke them autonomously.
+        
+        # Skip registration if in fallback mode
+        if self._fallback_mode or self.chat_client is None:
+            logger.info("Scribe agent in fallback mode - using direct function calls")
             return
 
-        from semantic_kernel.functions import kernel_function
-
-        @kernel_function(
-            description="Create a new NPC with generated personality and stats",
-            name="create_npc",
-        )
-        def create_npc_skill(npc_data: str) -> str:
-            """Create an NPC from JSON data."""
-            import json
-
-            try:
-                npc_dict = json.loads(npc_data)
-                result = self.create_npc(npc_dict)
-                return json.dumps(result)
-            except Exception as e:
-                return f"Error creating NPC: {str(e)}"
-
-        @kernel_function(
-            description="Update relationship level between NPC and character",
-            name="update_npc_relationship",
-        )
-        def update_relationship_skill(
-            npc_id: str, character_id: str, change: str
-        ) -> str:
-            """Update NPC-character relationship."""
-            try:
-                change_amount = int(change)
-                result = self.update_npc_relationship(
-                    npc_id, character_id, change_amount
-                )
-                return json.dumps(result)
-            except Exception as e:
-                return f"Error updating relationship: {str(e)}"
-
-        @kernel_function(
-            description="Log an interaction between character and NPC",
-            name="log_npc_interaction",
-        )
-        def log_interaction_skill(interaction_data: str) -> str:
-            """Log NPC interaction."""
-            import json
-
-            try:
-                interaction_dict = json.loads(interaction_data)
-                interaction_id = self.log_npc_interaction(interaction_dict)
-                return f"Interaction logged with ID: {interaction_id}"
-            except Exception as e:
-                return f"Error logging interaction: {str(e)}"
-
-        @kernel_function(
-            description="Generate combat stats for an NPC", name="generate_npc_stats"
-        )
-        def generate_stats_skill(npc_id: str, level: str, role: str) -> str:
-            """Generate NPC combat statistics."""
-            import json
-
-            try:
-                level_int = int(level)
-                result = self.generate_npc_stats(npc_id, level_int, role)
-                return json.dumps(result)
-            except Exception as e:
-                return f"Error generating stats: {str(e)}"
-
-        # Register skills with the kernel (if available)
-        try:
-            if hasattr(self, "kernel") and self.kernel:
-                self.kernel.add_function(
-                    plugin_name="scribe_npc", function=create_npc_skill
-                )
-                self.kernel.add_function(
-                    plugin_name="scribe_npc", function=update_relationship_skill
-                )
-                self.kernel.add_function(
-                    plugin_name="scribe_npc", function=log_interaction_skill
-                )
-                self.kernel.add_function(
-                    plugin_name="scribe_npc", function=generate_stats_skill
-                )
-                logger.info("Scribe NPC skills registered successfully")
-        except Exception as e:
-            logger.warning(f"Could not register Scribe NPC skills: {str(e)}")
-            # Continue without skills registration - fallback behavior
+        logger.info("Scribe agent tools available for direct invocation")
 
     async def create_character(self, character_data: dict[str, Any]) -> dict[str, Any]:
         """
@@ -366,9 +286,9 @@ class ScribeAgent:
                 "id", f"character_{str(uuid.uuid4())[:8]}"
             )
 
-            race = character_data.get("race", "human").lower()
-            character_class = character_data.get("class", "fighter").lower()
-            background = character_data.get("background", "").lower()
+            race = (character_data.get("race") or "human").lower()
+            character_class = (character_data.get("class") or "fighter").lower()
+            background = (character_data.get("background") or "").lower()
             level = character_data.get("level", 1)
 
             # Get base abilities from input

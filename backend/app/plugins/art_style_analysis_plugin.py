@@ -7,7 +7,7 @@ import json
 import logging
 from typing import Any
 
-from semantic_kernel.functions import kernel_function
+# Note: Converted from Semantic Kernel plugin to direct function calls
 
 logger = logging.getLogger(__name__)
 
@@ -25,10 +25,10 @@ class ArtStyleAnalysisPlugin:
         self.style_history = []
         self.consistency_metrics = {}
 
-    @kernel_function(
-        description="Analyze the art style characteristics of a generated image.",
-        name="analyze_art_style",
-    )
+#     # @kernel_function(
+#         description="Analyze the art style characteristics of a generated image.",
+#         name="analyze_art_style",
+#     )
     def analyze_art_style(
         self, image_description: str, prompt: str, art_metadata: str = ""
     ) -> dict[str, Any]:
@@ -84,10 +84,10 @@ class ArtStyleAnalysisPlugin:
             logger.error(f"Error analyzing art style: {str(e)}")
             return {"status": "error", "error": f"Art style analysis failed: {str(e)}"}
 
-    @kernel_function(
-        description="Check style consistency across multiple generated images.",
-        name="check_style_consistency",
-    )
+#     # @kernel_function(
+#         description="Check style consistency across multiple generated images.",
+#         name="check_style_consistency",
+#     )
     def check_style_consistency(
         self, image_group: str = "current_session", threshold: float = 0.7
     ) -> dict[str, Any]:
@@ -150,10 +150,10 @@ class ArtStyleAnalysisPlugin:
                 "error": f"Style consistency check failed: {str(e)}",
             }
 
-    @kernel_function(
-        description="Create a style profile for maintaining consistency.",
-        name="create_style_profile",
-    )
+#     # @kernel_function(
+#         description="Create a style profile for maintaining consistency.",
+#         name="create_style_profile",
+#     )
     def create_style_profile(
         self, profile_name: str, style_description: str, reference_images: str = ""
     ) -> dict[str, Any]:
@@ -207,10 +207,10 @@ class ArtStyleAnalysisPlugin:
                 "error": f"Style profile creation failed: {str(e)}",
             }
 
-    @kernel_function(
-        description="Get recommendations for maintaining style consistency.",
-        name="get_style_recommendations",
-    )
+#     # @kernel_function(
+#         description="Get recommendations for maintaining style consistency.",
+#         name="get_style_recommendations",
+#     )
     def get_style_recommendations(
         self, target_style: str = "", current_prompt: str = ""
     ) -> dict[str, Any]:

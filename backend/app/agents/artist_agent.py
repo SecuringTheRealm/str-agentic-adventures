@@ -5,11 +5,10 @@ Artist Agent - Generates visual imagery for the game.
 import logging
 from typing import Any
 
-from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+from azure.ai.inference import ChatCompletionsClient
 
+from app.agent_client_setup import agent_client_manager
 from app.azure_openai_client import AzureOpenAIClient
-from app.kernel_setup import kernel_manager
 
 logger = logging.getLogger(__name__)
 
@@ -17,36 +16,33 @@ logger = logging.getLogger(__name__)
 class ArtistAgent:
     """
     Artist Agent that generates visual imagery based on narrative moments.
-    This agent is responsible for creating character portraits, scene
-    illustrations, and visual aids.
+    Uses Azure AI SDK and DALL-E for image generation.
     """
 
     def __init__(self) -> None:
-        """Initialize the Artist agent with its own kernel instance."""
-        self.kernel: Kernel | None = None
-        self.chat_service: AzureChatCompletion | None = None
+        """Initialize the Artist agent with Azure AI SDK."""
+        self.chat_client: ChatCompletionsClient | None = None
         self._fallback_mode = False
 
-        # Try to get the shared kernel from kernel manager
+        # Try to get the shared chat client from agent client manager
         try:
-            self.kernel = kernel_manager.get_kernel()
-            if self.kernel is None:
+            self.chat_client = agent_client_manager.get_chat_client()
+            if self.chat_client is None:
                 self._fallback_mode = True
                 logger.warning(
                     "Artist agent operating in fallback mode - "
                     "Azure OpenAI not configured"
                 )
             else:
-                self.chat_service = self.kernel.get_service(type=AzureChatCompletion)
-                logger.info("Artist agent initialized with Semantic Kernel")
+                logger.info("Artist agent initialized with Azure AI SDK")
         except Exception as e:
             logger.warning(
-                f"Failed to initialize Artist agent with Semantic Kernel: {e}. "
+                f"Failed to initialize Artist agent with Azure AI SDK: {e}. "
                 "Operating in fallback mode."
             )
             self._fallback_mode = True
 
-        # Image generation uses AzureOpenAIClient (SK doesn't support DALL-E)
+        # Image generation uses AzureOpenAIClient (for DALL-E support)
         # Only initialize if not in fallback mode
         if not self._fallback_mode:
             try:
@@ -65,13 +61,13 @@ class ArtistAgent:
 
     def _register_skills(self) -> None:
         """Register necessary skills for the Artist agent."""
-        # Skip plugin registration if in fallback mode
-        if self._fallback_mode or self.kernel is None:
-            logger.info("Artist agent in fallback mode - skipping plugin registration")
+        # Note: Plugins converted to direct method access
+        if self._fallback_mode or self.chat_client is None:
+            logger.info("Artist agent in fallback mode - using basic functionality")
             return
 
         try:
-            # Import artist-specific plugins
+            # Import artist-specific plugins for direct access
             from app.plugins.art_style_analysis_plugin import ArtStyleAnalysisPlugin
             from app.plugins.character_visualization_plugin import (
                 CharacterVisualizationPlugin,
@@ -87,23 +83,16 @@ class ArtistAgent:
             character_visualization = CharacterVisualizationPlugin()
             scene_composition = SceneCompositionPlugin()
 
-            # Register plugins with the kernel using the new API
-            self.kernel.add_plugin(image_generation, "ImageGeneration")
-            self.kernel.add_plugin(art_style_analysis, "ArtStyleAnalysis")
-            self.kernel.add_plugin(visual_consistency, "VisualConsistency")
-            self.kernel.add_plugin(character_visualization, "CharacterVisualization")
-            self.kernel.add_plugin(scene_composition, "SceneComposition")
-
-            # Store references for direct access
+            # Store references for direct method access (no kernel registration needed)
             self.image_generation = image_generation
             self.art_style_analysis = art_style_analysis
             self.visual_consistency = visual_consistency
             self.character_visualization = character_visualization
             self.scene_composition = scene_composition
 
-            logger.info("Artist agent skills registered successfully")
+            logger.info("Artist agent plugins initialized for direct access")
         except Exception as e:
-            logger.error(f"Error registering Artist agent skills: {str(e)}")
+            logger.error(f"Error initializing Artist agent plugins: {str(e)}")
             # Don't raise - enter fallback mode instead
             self._fallback_mode = True
             logger.warning(
