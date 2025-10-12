@@ -1,16 +1,15 @@
 // API client using generated OpenAPI client
 import axios from "axios";
 import { Configuration, GameApi } from "../api-client";
-import { getRuntimeMode } from "../utils/environment";
-import { getApiBaseUrl } from "../utils/urls";
-
 // Import WebSocket client for unified SDK
 import {
   WebSocketClient,
-  websocketClient,
-  type WebSocketMessage,
   type WebSocketConnectionOptions,
+  type WebSocketMessage,
+  websocketClient,
 } from "../api-client/websocketClient";
+import { getRuntimeMode } from "../utils/environment";
+import { getApiBaseUrl } from "../utils/urls";
 
 // Create configuration for the generated API client
 const configuration = new Configuration({

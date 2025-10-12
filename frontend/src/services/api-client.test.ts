@@ -324,9 +324,9 @@ describe("OpenAPI Generated Client Integration", () => {
     it("should share base URL configuration with REST client", () => {
       const wsBaseUrl = wsClient.getWebSocketBaseUrl();
       expect(wsBaseUrl).toBeDefined();
-      expect(wsBaseUrl.startsWith("ws://") || wsBaseUrl.startsWith("wss://")).toBe(
-        true
-      );
+      expect(
+        wsBaseUrl.startsWith("ws://") || wsBaseUrl.startsWith("wss://")
+      ).toBe(true);
     });
   });
 });
