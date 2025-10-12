@@ -85,8 +85,14 @@ export interface InventoryItem {
 export const createCharacter = async (
   characterData: import("../api-client").CreateCharacterRequest
 ) => {
+  // Normalize race and character_class to lowercase as backend expects
+  const normalizedData = {
+    ...characterData,
+    race: characterData.race?.toLowerCase(),
+    character_class: characterData.character_class?.toLowerCase(),
+  };
   const response =
-    await gameApi.createCharacterGameCharacterPost(characterData);
+    await gameApi.createCharacterGameCharacterPost(normalizedData);
   return response.data;
 };
 
