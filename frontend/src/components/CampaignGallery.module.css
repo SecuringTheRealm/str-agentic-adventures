@@ -74,11 +74,17 @@
   border-color: #e4bb1e; /* Gold border */
 }
 
+/* More specific selector for custom campaign cards */
 .customCampaignCard .cardContent {
   background: rgba(0, 0, 0, 0.2); /* Darker overlay for better readability */
+  padding: 1.5rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
-.cardContent {
+/* Base card content styles */
+.card .cardContent {
   padding: 1.5rem;
   height: 100%;
   display: flex;

@@ -1,5 +1,5 @@
 import type React from "react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { type Campaign, deleteCampaign, getCampaigns } from "../services/api";
 import CampaignEditor from "./CampaignEditor";
 import CampaignGallery from "./CampaignGallery";
@@ -25,7 +25,7 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({
   // Cache filtered custom campaigns to avoid repeated filtering
   const customCampaigns = campaigns.filter((c) => c.is_custom || false);
 
-  const loadCampaigns = async () => {
+  const loadCampaigns = useCallback(async () => {
     try {
       setLoading(true);
       const data = await getCampaigns();
@@ -36,7 +36,7 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadCampaigns();
@@ -196,7 +196,13 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({
                     <button
                       type="button"
                       className="action-button danger small"
-                      onClick={() => handleDeleteCampaign(campaign.id!)}
+                      onClick={() => {
+                        if (!campaign.id) {
+                          console.error("Cannot delete campaign: ID is missing");
+                          return;
+                        }
+                        handleDeleteCampaign(campaign.id);
+                      }}
                     >
                       Delete
                     </button>
@@ -306,7 +312,13 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({
                   <button
                     type="button"
                     className="action-button danger small"
-                    onClick={() => handleDeleteCampaign(campaign.id!)}
+                    onClick={() => {
+                      if (!campaign.id) {
+                        console.error("Cannot delete campaign: ID is missing");
+                        return;
+                      }
+                      handleDeleteCampaign(campaign.id);
+                    }}
                   >
                     Delete
                   </button>

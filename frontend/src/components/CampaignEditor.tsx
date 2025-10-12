@@ -304,7 +304,10 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
             world_description: formData.world_description.trim() || undefined,
           };
 
-          const updatedCampaign = await updateCampaign(campaign.id!, updates);
+          if (!campaign.id) {
+            throw new Error("Campaign ID is required for updates");
+          }
+          const updatedCampaign = await updateCampaign(campaign.id, updates);
           onCampaignSaved(updatedCampaign);
           setHasUnsavedChanges(false);
 

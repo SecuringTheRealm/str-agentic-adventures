@@ -109,9 +109,12 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
 
   const handleSelectTemplate = async (template: Campaign) => {
     try {
-      setCloning(template.id!);
+      if (!template.id) {
+        throw new Error("Template ID is required");
+      }
+      setCloning(template.id);
       const clonedCampaign = await cloneCampaign({
-        template_id: template.id!,
+        template_id: template.id,
         new_name: `${template.name} (My Campaign)`,
       });
       onCampaignSelected(clonedCampaign);
