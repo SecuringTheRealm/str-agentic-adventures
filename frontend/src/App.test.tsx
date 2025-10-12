@@ -31,7 +31,6 @@ vi.mock("./components/CampaignSelection", () => ({
 
 vi.mock("./components/CharacterSelection", () => ({
   default: ({
-    campaign,
     onCharacterSelected,
   }: {
     campaign: any;

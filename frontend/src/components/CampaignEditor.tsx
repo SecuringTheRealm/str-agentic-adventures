@@ -1,5 +1,5 @@
 import type React from "react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useId, useState } from "react";
 import {
   type AIAssistanceRequest,
   type AIContentGenerationRequest,
@@ -24,6 +24,13 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
   onCampaignSaved,
   onCancel,
 }) => {
+  const nameId = useId();
+  const descriptionId = useId();
+  const settingId = useId();
+  const worldDescriptionId = useId();
+  const toneId = useId();
+  const homebrewRulesId = useId();
+
   const [formData, setFormData] = useState({
     name: campaign?.name || "",
     description: campaign?.description || "",
@@ -47,17 +54,6 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   const isEditing = !!campaign;
-
-  // Auto-save functionality
-  useEffect(() => {
-    if (autoSave && hasUnsavedChanges && isEditing) {
-      const timeoutId = setTimeout(async () => {
-        await handleSave(true); // silent save
-      }, 3000);
-      return () => clearTimeout(timeoutId);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoSave, hasUnsavedChanges, isEditing]);
 
   // Track changes
   useEffect(() => {
@@ -272,77 +268,91 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
     }
   };
 
-  const validateForm = () => {
-    const errors: Record<string, string> = {};
+  const handleSave = useCallback(
+    async (silent = false) => {
+      const errors: Record<string, string> = {};
 
-    if (!formData.name.trim()) {
-      errors.name = "Campaign name is required";
-    }
-
-    if (!formData.setting.trim()) {
-      errors.setting = "Campaign setting is required";
-    }
-
-    setValidationErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
-  const handleSave = async (silent = false) => {
-    if (!validateForm() && !silent) return;
-
-    setIsSubmitting(true);
-    setError(null);
-
-    try {
-      const homebrewRulesList = formData.homebrew_rules
-        .split("\n")
-        .map((rule) => rule.trim())
-        .filter((rule) => rule !== "");
-
-      if (isEditing && campaign) {
-        const updates: CampaignUpdateRequest = {
-          name: formData.name.trim(),
-          description: formData.description.trim() || undefined,
-          setting: formData.setting.trim(),
-          tone: formData.tone,
-          homebrew_rules: homebrewRulesList,
-          world_description: formData.world_description.trim() || undefined,
-        };
-
-        const updatedCampaign = await updateCampaign(campaign.id!, updates);
-        onCampaignSaved(updatedCampaign);
-        setHasUnsavedChanges(false);
-
-        if (!silent) {
-          // Show success message briefly
-          const originalName = formData.name;
-          setFormData((prev) => ({ ...prev, name: "✓ Saved!" }));
-          setTimeout(
-            () => setFormData((prev) => ({ ...prev, name: originalName })),
-            1000
-          );
-        }
-      } else {
-        const campaignData: CampaignCreateRequest = {
-          name: formData.name.trim(),
-          description: formData.description.trim() || undefined,
-          setting: formData.setting.trim(),
-          tone: formData.tone,
-          homebrew_rules: homebrewRulesList,
-        };
-
-        const newCampaign = await createCampaign(campaignData);
-        onCampaignSaved(newCampaign);
+      if (!formData.name.trim()) {
+        errors.name = "Campaign name is required";
       }
-    } catch (err) {
-      setError(
-        isEditing ? "Failed to update campaign" : "Failed to create campaign"
-      );
-      console.error("Error saving campaign:", err);
-    } finally {
-      setIsSubmitting(false);
+
+      if (!formData.setting.trim()) {
+        errors.setting = "Campaign setting is required";
+      }
+
+      if (Object.keys(errors).length > 0 && !silent) {
+        setValidationErrors(errors);
+        return;
+      }
+
+      setIsSubmitting(true);
+      setError(null);
+
+      try {
+        const homebrewRulesList = formData.homebrew_rules
+          .split("\n")
+          .map((rule) => rule.trim())
+          .filter((rule) => rule !== "");
+
+        if (isEditing && campaign) {
+          const updates: CampaignUpdateRequest = {
+            name: formData.name.trim(),
+            description: formData.description.trim() || undefined,
+            setting: formData.setting.trim(),
+            tone: formData.tone,
+            homebrew_rules: homebrewRulesList,
+            world_description: formData.world_description.trim() || undefined,
+          };
+
+          if (!campaign.id) {
+            throw new Error("Campaign ID is required for updates");
+          }
+          const updatedCampaign = await updateCampaign(campaign.id, updates);
+          onCampaignSaved(updatedCampaign);
+          setHasUnsavedChanges(false);
+
+          if (!silent) {
+            // Show success message briefly
+            const originalName = formData.name;
+            setFormData((prev) => ({ ...prev, name: "✓ Saved!" }));
+            setTimeout(
+              () => setFormData((prev) => ({ ...prev, name: originalName })),
+              1000
+            );
+          }
+        } else {
+          const campaignData: CampaignCreateRequest = {
+            name: formData.name.trim(),
+            description: formData.description.trim() || undefined,
+            setting: formData.setting.trim(),
+            tone: formData.tone,
+            homebrew_rules: homebrewRulesList,
+          };
+
+          const newCampaign = await createCampaign(campaignData);
+          onCampaignSaved(newCampaign);
+        }
+      } catch (err) {
+        setError(
+          isEditing ? "Failed to update campaign" : "Failed to create campaign"
+        );
+        console.error("Error saving campaign:", err);
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [formData, isEditing, campaign, onCampaignSaved]
+  );
+
+  // Auto-save functionality (must be after handleSave declaration)
+  useEffect(() => {
+    if (autoSave && hasUnsavedChanges && isEditing) {
+      const timeoutId = setTimeout(async () => {
+        await handleSave(true); // silent save
+      }, 3000);
+      return () => clearTimeout(timeoutId);
     }
-  };
+  }, [autoSave, hasUnsavedChanges, isEditing, handleSave]);
 
   return (
     <div className={styles.campaignEditor}>
@@ -374,9 +384,9 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
         }}
       >
         <div className={styles.formGroup}>
-          <label htmlFor="name">Campaign Name *</label>
+          <label htmlFor={nameId}>Campaign Name *</label>
           <input
-            id="name"
+            id={nameId}
             type="text"
             value={formData.name}
             onChange={(e) => handleInputChange("name", e.target.value)}
@@ -392,7 +402,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
         </div>
 
         <div className={styles.formGroup}>
-          <label htmlFor="description">Description</label>
+          <label htmlFor={descriptionId}>Description</label>
           <div className={styles.editorToolbar}>
             <button
               type="button"
@@ -432,7 +442,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
             </button>
           </div>
           <textarea
-            id="description"
+            id={descriptionId}
             value={formData.description}
             onChange={(e) => handleInputChange("description", e.target.value)}
             placeholder="Brief description of your campaign..."
@@ -442,7 +452,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
         </div>
 
         <div className={styles.formGroup}>
-          <label htmlFor="setting">Campaign Setting *</label>
+          <label htmlFor={settingId}>Campaign Setting *</label>
           <div className={styles.editorToolbar}>
             <button
               type="button"
@@ -482,7 +492,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
             </button>
           </div>
           <textarea
-            id="setting"
+            id={settingId}
             value={formData.setting}
             onChange={(e) => handleInputChange("setting", e.target.value)}
             placeholder="Describe the world and setting for your campaign..."
@@ -498,7 +508,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
         </div>
 
         <div className={styles.formGroup}>
-          <label htmlFor="world_description">World Description</label>
+          <label htmlFor={worldDescriptionId}>World Description</label>
           <div className={styles.editorToolbar}>
             <button
               type="button"
@@ -538,7 +548,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
             </button>
           </div>
           <textarea
-            id="world_description"
+            id={worldDescriptionId}
             value={formData.world_description}
             onChange={(e) =>
               handleInputChange("world_description", e.target.value)
@@ -550,9 +560,9 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
         </div>
 
         <div className={styles.formGroup}>
-          <label htmlFor="tone">Campaign Tone</label>
+          <label htmlFor={toneId}>Campaign Tone</label>
           <select
-            id="tone"
+            id={toneId}
             value={formData.tone}
             onChange={(e) => handleInputChange("tone", e.target.value)}
             disabled={isSubmitting}
@@ -566,9 +576,9 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
         </div>
 
         <div className={styles.formGroup}>
-          <label htmlFor="homebrew_rules">Homebrew Rules (Optional)</label>
+          <label htmlFor={homebrewRulesId}>Homebrew Rules (Optional)</label>
           <textarea
-            id="homebrew_rules"
+            id={homebrewRulesId}
             value={formData.homebrew_rules}
             onChange={(e) =>
               handleInputChange("homebrew_rules", e.target.value)
@@ -613,14 +623,17 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
       {/* AI Assistant Modal */}
       {showAIAssistant && (
         <div className={styles.aiAssistantModal}>
-          <div
+          <button
+            type="button"
             className={styles.modalOverlay}
             onClick={() => setShowAIAssistant(false)}
+            aria-label="Close AI Assistant"
           />
           <div className={styles.modalContent}>
             <div className={styles.modalHeader}>
               <h3>✨ AI Writing Assistant</h3>
               <button
+                type="button"
                 className={styles.closeButton}
                 onClick={() => setShowAIAssistant(false)}
               >
@@ -637,7 +650,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
                 <div className={styles.suggestions}>
                   <h4>Suggestions:</h4>
                   <ul>
-                    {aiSuggestions.map((suggestion, index) => {
+                    {aiSuggestions.map((suggestion) => {
                       const currentValue = activeField
                         ? formData[activeField as keyof typeof formData]
                         : "";
@@ -645,9 +658,10 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
                         !currentValue || currentValue.trim() === "";
 
                       return (
-                        <li key={index}>
+                        <li key={suggestion}>
                           <span>{suggestion}</span>
                           <button
+                            type="button"
                             onClick={() => applySuggestion(suggestion)}
                             className={styles.applySuggestion}
                             disabled={aiGenerating || isEmpty}

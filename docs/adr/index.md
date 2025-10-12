@@ -33,6 +33,7 @@ This directory contains Architecture Decision Records (ADRs) for the Agentic Adv
 | 0014 | [Multi-Platform AI Instruction Architecture](0014-multi-platform-ai-instruction-architecture.md) | Accepted | 2025-01-27 | Hierarchical instruction structure supporting OpenAI Codex, GitHub Copilot Chat, coding agent, and code review |
 | 0015 | [Copilot Workflow Optimization with Dependency Caching](0015-copilot-workflow-optimization-with-dependency-caching.md) | Accepted | 2025-08-10 | Optimize Copilot agent setup workflow with GitHub Actions dependency caching to reduce startup times |
 | 0016 | [Frontend Build Modernization with Vite](0016-frontend-build-modernization.md) | Accepted | 2025-10-11 | Replace Create React App with Vite to reduce dependencies and resolve audit alerts |
+| 0017 | [Unified SDK with WebSocket Client Extension](0017-unified-sdk-websocket-extension.md) | Accepted | 2025-10-12 | Extend OpenAPI-generated REST client with manual WebSocket module for unified developer experience |
 
 ## ADR Statuses
 

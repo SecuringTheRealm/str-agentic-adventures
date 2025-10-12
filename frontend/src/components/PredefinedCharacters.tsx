@@ -37,8 +37,11 @@ const PredefinedCharacters: React.FC<PredefinedCharactersProps> = ({
       </div>
 
       <div className={styles.charactersGrid}>
-        {predefinedCharacters.map((character, index) => (
-          <div key={index} className={styles.characterCard}>
+        {predefinedCharacters.map((character) => (
+          <div
+            key={character.id || character.name}
+            className={styles.characterCard}
+          >
             <div className={styles.characterHeader}>
               <h3>{character.name}</h3>
               <div className={styles.characterBasics}>
@@ -115,14 +118,12 @@ const PredefinedCharacters: React.FC<PredefinedCharactersProps> = ({
               <div className={styles.equipmentPreview}>
                 <h4>Equipment</h4>
                 <ul>
-                  {(character.inventory || [])
-                    .slice(0, 4)
-                    .map((item, itemIndex) => (
-                      <li key={itemIndex}>
-                        {(item as any).name || item.item_id}
-                        {item.quantity > 1 && ` (${item.quantity})`}
-                      </li>
-                    ))}
+                  {(character.inventory || []).slice(0, 4).map((item) => (
+                    <li key={item.item_id || (item as any).name}>
+                      {(item as any).name || item.item_id}
+                      {item.quantity > 1 && ` (${item.quantity})`}
+                    </li>
+                  ))}
                   {(character.inventory || []).length > 4 && (
                     <li>
                       ...and {(character.inventory || []).length - 4} more items

@@ -192,8 +192,8 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
               className={styles.actionSelect}
             >
               <option value="">Select an action...</option>
-              {session.available_actions.map((action, index) => (
-                <option key={index} value={action}>
+              {session.available_actions.map((action) => (
+                <option key={action} value={action}>
                   {action}
                 </option>
               ))}
@@ -229,6 +229,7 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
                   )}
 
                 <button
+                  type="button"
                   onClick={handleActionSubmit}
                   className={styles.submitActionButton}
                   disabled={!selectedAction.trim()}
@@ -247,6 +248,7 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
           <h4>Quick Combat Actions:</h4>
           <div className={styles.quickActionButtons}>
             <button
+              type="button"
               onClick={() => {
                 setSelectedAction("Attack");
                 setActionDescription("Make a melee attack");
@@ -256,6 +258,7 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
               ⚔️ Attack
             </button>
             <button
+              type="button"
               onClick={() => {
                 setSelectedAction("Cast a spell");
                 setActionDescription("Cast a spell");
@@ -265,6 +268,7 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
               ✨ Spell
             </button>
             <button
+              type="button"
               onClick={() => {
                 setSelectedAction("Move");
                 setActionDescription("Move to a new position");
@@ -274,6 +278,7 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
               🏃 Move
             </button>
             <button
+              type="button"
               onClick={() => {
                 setSelectedAction("Defend");
                 setActionDescription("Take a defensive stance");
@@ -283,6 +288,7 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
               🛡️ Defend
             </button>
             <button
+              type="button"
               onClick={() => {
                 setSelectedAction("Use an item");
                 setActionDescription("Use an item from inventory");

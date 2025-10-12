@@ -32,5 +32,10 @@ yarn-error.log*
 screenshots/*.png
 !screenshots/.gitkeep
 
-# Generated API client
-/src/api-client/
+# Generated API client (exclude all generated files, keep only manual extensions)
+# The OpenAPI client is generated dynamically at build/test time via npm run generate:api
+/src/api-client/*
+!/src/api-client/websocketClient.ts
+!/src/api-client/__tests__/
+!/src/api-client/.gitignore
+

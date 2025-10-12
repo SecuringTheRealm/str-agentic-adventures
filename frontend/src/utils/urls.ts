@@ -19,10 +19,11 @@ const httpToWs = (url: string): string => {
 };
 
 /**
- * Get the API base URL without /api suffix for OpenAPI client
+ * Get the API base URL for OpenAPI client
+ * With servers configuration in OpenAPI schema, the base includes /api
  */
 export const getApiBaseUrl = (): string => {
-  return getBaseUrl();
+  return `${getBaseUrl()}/api`;
 };
 
 /**

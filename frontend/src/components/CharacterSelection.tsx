@@ -51,6 +51,7 @@ const CharacterSelection: React.FC<CharacterSelectionProps> = ({
           Campaign: <strong>{campaign.name}</strong>
         </p>
         <button
+          type="button"
           onClick={onBackToCampaigns}
           className={`${styles.backButton} ${styles.secondary}`}
         >
@@ -73,6 +74,7 @@ const CharacterSelection: React.FC<CharacterSelectionProps> = ({
               <li>Full control over your character's build</li>
             </ul>
             <button
+              type="button"
               onClick={() => setSelectionMode("create")}
               className={`${styles.characterOptionButton} ${styles.primary}`}
             >
@@ -95,6 +97,7 @@ const CharacterSelection: React.FC<CharacterSelectionProps> = ({
               <li>Jump straight into the adventure</li>
             </ul>
             <button
+              type="button"
               onClick={() => setSelectionMode("predefined")}
               className={`${styles.characterOptionButton} ${styles.primary}`}
             >

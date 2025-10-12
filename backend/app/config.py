@@ -7,10 +7,13 @@ from typing import Annotated
 
 from dotenv import load_dotenv
 from fastapi import Depends
+from pydantic import ConfigDict
 from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
+    model_config = ConfigDict(env_file=".env")
+
     # Azure OpenAI Settings
     azure_openai_endpoint: str = os.getenv("AZURE_OPENAI_ENDPOINT", "")
     azure_openai_api_key: str = os.getenv("AZURE_OPENAI_API_KEY", "")
@@ -36,13 +39,13 @@ class Settings(BaseSettings):
     storage_connection_string: str = os.getenv("STORAGE_CONNECTION_STRING", "")
 
     # App Settings
-    app_host: str = os.getenv("APP_HOST", "0.0.0.0")
+    # Note: Default binds to all interfaces (0.0.0.0) for development convenience.
+    # Production deployments MUST override via APP_HOST environment variable
+    # to bind to specific interface (e.g., 127.0.0.1 or specific IP).
+    app_host: str = os.getenv("APP_HOST", "0.0.0.0")  # noqa: S104
     app_port: int = int(os.getenv("APP_PORT", "8000"))
     app_debug: bool = os.getenv("APP_DEBUG", "False").lower() == "true"
     app_log_level: str = os.getenv("APP_LOG_LEVEL", "info").upper()
-
-    class Config:
-        env_file = ".env"
 
     def is_azure_openai_configured(self) -> bool:
         """Check if Azure OpenAI is properly configured."""

@@ -434,19 +434,19 @@ class TestCombatMCAgentFallback:
                 import random
 
                 if advantage and not disadvantage:
-                    roll1 = random.randint(1, 20)
-                    roll2 = random.randint(1, 20)
+                    roll1 = random.randint(1, 20)  # noqa: S311
+                    roll2 = random.randint(1, 20)  # noqa: S311
                     roll = max(roll1, roll2)
                     rolls = [roll1, roll2]
                     advantage_type = "advantage"
                 elif disadvantage and not advantage:
-                    roll1 = random.randint(1, 20)
-                    roll2 = random.randint(1, 20)
+                    roll1 = random.randint(1, 20)  # noqa: S311
+                    roll2 = random.randint(1, 20)  # noqa: S311
                     roll = min(roll1, roll2)
                     rolls = [roll1, roll2]
                     advantage_type = "disadvantage"
                 else:
-                    roll = random.randint(1, 20)
+                    roll = random.randint(1, 20)  # noqa: S311
                     rolls = [roll]
                     advantage_type = "normal"
 
@@ -483,19 +483,19 @@ class TestCombatMCAgentFallback:
                 import random
 
                 if advantage and not disadvantage:
-                    roll1 = random.randint(1, 20)
-                    roll2 = random.randint(1, 20)
+                    roll1 = random.randint(1, 20)  # noqa: S311
+                    roll2 = random.randint(1, 20)  # noqa: S311
                     roll = max(roll1, roll2)
                     rolls = [roll1, roll2]
                     advantage_type = "advantage"
                 elif disadvantage and not advantage:
-                    roll1 = random.randint(1, 20)
-                    roll2 = random.randint(1, 20)
+                    roll1 = random.randint(1, 20)  # noqa: S311
+                    roll2 = random.randint(1, 20)  # noqa: S311
                     roll = min(roll1, roll2)
                     rolls = [roll1, roll2]
                     advantage_type = "disadvantage"
                 else:
-                    roll = random.randint(1, 20)
+                    roll = random.randint(1, 20)  # noqa: S311
                     rolls = [roll]
                     advantage_type = "normal"
 
@@ -533,19 +533,19 @@ class TestCombatMCAgentFallback:
                 import random
 
                 if advantage and not disadvantage:
-                    roll1 = random.randint(1, 20)
-                    roll2 = random.randint(1, 20)
+                    roll1 = random.randint(1, 20)  # noqa: S311
+                    roll2 = random.randint(1, 20)  # noqa: S311
                     roll = max(roll1, roll2)
                     rolls = [roll1, roll2]
                     advantage_type = "advantage"
                 elif disadvantage and not advantage:
-                    roll1 = random.randint(1, 20)
-                    roll2 = random.randint(1, 20)
+                    roll1 = random.randint(1, 20)  # noqa: S311
+                    roll2 = random.randint(1, 20)  # noqa: S311
                     roll = min(roll1, roll2)
                     rolls = [roll1, roll2]
                     advantage_type = "disadvantage"
                 else:
-                    roll = random.randint(1, 20)
+                    roll = random.randint(1, 20)  # noqa: S311
                     rolls = [roll]
                     advantage_type = "normal"
 
@@ -597,7 +597,7 @@ class TestCombatMCAgentFallback:
                 minus_mod = int(match.group(4)) if match.group(4) else 0
                 modifier = plus_mod - minus_mod
 
-                rolls = [random.randint(1, dice_type) for _ in range(num_dice)]
+                rolls = [random.randint(1, dice_type) for _ in range(num_dice)]  # noqa: S311
                 total = sum(rolls) + modifier
 
                 return {
@@ -645,7 +645,7 @@ class TestCombatMCAgentFallback:
                 minus_mod = int(match.group(4)) if match.group(4) else 0
                 modifier = plus_mod - minus_mod
 
-                rolls = [random.randint(1, dice_type) for _ in range(num_dice)]
+                rolls = [random.randint(1, dice_type) for _ in range(num_dice)]  # noqa: S311
                 total = sum(rolls) + modifier
 
                 return {
@@ -692,7 +692,7 @@ class TestCombatMCAgentFallback:
                 minus_mod = int(match.group(4)) if match.group(4) else 0
                 modifier = plus_mod - minus_mod
 
-                rolls = [random.randint(1, dice_type) for _ in range(num_dice)]
+                rolls = [random.randint(1, dice_type) for _ in range(num_dice)]  # noqa: S311
                 total = sum(rolls) + modifier
 
                 return {

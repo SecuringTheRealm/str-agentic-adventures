@@ -1,32 +1,41 @@
-# OpenAPI Client Integration
+# Unified API Client SDK (REST + WebSocket)
 
-This document describes the integration of a generated TypeScript client from the FastAPI OpenAPI schema.
+This document describes the unified SDK that provides both REST API and WebSocket communication with the FastAPI backend.
 
 ## Overview
 
-The frontend now uses a generated TypeScript client instead of manually building fetch calls. This eliminates type duplication and ensures the frontend automatically updates when the backend API changes.
+The frontend uses a unified SDK that combines:
+1. **REST API Client** - Auto-generated TypeScript client from OpenAPI schema
+2. **WebSocket Client** - Manually implemented client for real-time features
+
+This unified approach provides a single, consistent interface for all backend interactions, whether via HTTP or WebSocket.
 
 ## 🔄 Developer Workflow
 
-**IMPORTANT**: When the backend API changes, developers must regenerate the frontend client to maintain synchronization.
+**IMPORTANT**: The OpenAPI client is **NOT committed to git**. It is generated dynamically at build time and test time.
 
-### When to Regenerate the Client
+### Generated Files are NOT in Git
 
-You must regenerate the client when:
-- ✅ Adding new API endpoints
-- ✅ Modifying existing endpoint parameters or responses
-- ✅ Changing data models (request/response types)
-- ✅ Updating enum values or field names
-- ✅ After pulling backend changes from other developers
+The `frontend/src/api-client/` directory contains:
+- ✅ **Generated files** (api.ts, base.ts, configuration.ts, etc.) - **NOT in git**, excluded via .gitignore
+- ✅ **Manual extensions** (websocketClient.ts, __tests__/) - **IN git**, manually maintained
 
-### How to Regenerate the Client
+### When the Client is Generated
+
+The OpenAPI client is automatically generated:
+- 📦 **During local setup**: Run `npm run generate:api` after cloning the repo
+- 🏗️ **During CI/CD builds**: Generated before building the frontend
+- 🧪 **Before tests run**: Generated to ensure tests have latest API types
+- 🔄 **After backend API changes**: Developers regenerate to get new types
+
+### How to Generate the Client Locally
 
 1. **Start the backend server:**
    ```bash
-   cd backend && python -m app.main
+   cd backend && uv run python -m app.main
    ```
 
-2. **Regenerate the frontend client:**
+2. **Generate the frontend client:**
    ```bash
    cd frontend && npm run generate:api
    ```
@@ -41,43 +50,218 @@ You must regenerate the client when:
    cd frontend && npm test
    ```
 
-### Troubleshooting
+### First-Time Setup
 
-If the generation fails:
-- Ensure the backend is running on `http://localhost:8000`
-- Check that `/openapi.json` endpoint is accessible
-- Verify no TypeScript compilation errors in the backend
-- Review any API breaking changes that may require frontend updates
-
-### Automated Validation
-
-To validate the entire workflow automatically:
+After cloning the repository:
 ```bash
-./scripts/validate-openapi-client.sh
+# Backend setup
+cd backend
+uv sync
+uv run python -m app.main  # Start backend in one terminal
+
+# Frontend setup (in another terminal)
+cd frontend
+npm ci
+npm run generate:api  # Generate OpenAPI client
+npm start  # Start frontend dev server
 ```
 
-This script checks:
-- ✅ Backend server accessibility
-- ✅ OpenAPI schema validity
-- ✅ Client generation success
-- ✅ TypeScript compilation
+### Troubleshooting
 
-## Files Changed
+If generation fails:
+- Ensure the backend is running on `http://localhost:8000`
+- Check that `/openapi.json` endpoint is accessible (visit in browser)
+- Verify no TypeScript compilation errors in the backend
+- Check backend console for errors
 
-### Generated Client
-- `frontend/src/api-client/` - Complete generated client from OpenAPI schema
-- `frontend/package.json` - Added `@openapitools/openapi-generator-cli` and npm script
+### CI/CD Integration
 
-### Updated Files
-- `frontend/src/services/api.ts` - Replaced with wrapper around generated client
+**GitHub Actions** automatically:
+1. Starts the backend server
+2. Generates the OpenAPI client
+3. Builds the frontend
+4. Runs all tests
+
+The generated client is **never committed** - it's created fresh for each build.
+
+## Repository Structure
+
+### Generated vs. Manual Files
+
+**Generated Files** (NOT in git):
+- `frontend/src/api-client/api.ts` - Generated API classes
+- `frontend/src/api-client/base.ts` - Generated base classes  
+- `frontend/src/api-client/configuration.ts` - Generated configuration
+- `frontend/src/api-client/common.ts` - Generated common types
+- `frontend/src/api-client/index.ts` - Generated exports
+- `frontend/src/api-client/docs/*` - Generated documentation
+
+**Manual Files** (IN git):
+- `frontend/src/api-client/websocketClient.ts` - WebSocket client implementation
+- `frontend/src/api-client/__tests__/` - Tests for manual extensions
+- `frontend/src/api-client/.gitignore` - Excludes generated files
+- `frontend/src/hooks/useWebSocketSDK.ts` - React hook for WebSocket
+- `frontend/src/services/api.ts` - Unified exports
+
+### Why Generated Files Aren't Committed
+
+1. **Prevents merge conflicts** - No conflicts in auto-generated code
+2. **Reduces repo size** - ~9,000 lines of generated code excluded
+3. **Ensures synchronization** - Always generated fresh from backend schema
+4. **Follows best practices** - Generated code shouldn't be in version control
+- `frontend/src/components/GameInterface.tsx` - Updated to use unified SDK
 - Various component files - Updated for stricter TypeScript types
 
 ## How It Works
 
+### REST API
 1. **Backend provides OpenAPI schema** at `http://localhost:8000/openapi.json`
-2. **Generate client** with `npm run generate:api` 
-3. **Wrapper functions** in `api.ts` maintain compatibility with existing frontend code
-4. **Type aliases** provide backward compatibility for renamed types
+2. **FastAPI uses `root_path` and `servers` configuration** to define `/api` as the base path
+3. **OpenAPI paths are relative** to the server base (e.g., `/game/character` instead of `/api/game/character`)
+4. **Generate client** with `npm run generate:api` 
+5. **Client uses configured base URL** (`http://localhost:8000/api`) + relative paths from OpenAPI
+6. **Wrapper functions** in `api.ts` maintain compatibility with existing frontend code
+7. **Type aliases** provide backward compatibility for renamed types
+
+### WebSocket API
+1. **WebSocket client** provides strongly-typed message interfaces
+2. **Connection methods** (`connectToCampaign`, `connectToChat`, `connectToGlobal`)
+3. **Shared configuration** with REST client for consistent base URL
+4. **React hook** (`useWebSocketSDK`) provides component-friendly interface
+
+## FastAPI Server Configuration
+
+The backend uses FastAPI's `root_path` and `servers` configuration to properly structure the API:
+
+```python
+app = FastAPI(
+    title="AI Dungeon Master API",
+    description="Backend API for the AI Dungeon Master application",
+    version="0.1.0",
+    root_path="/api",  # All routes are relative to /api
+    servers=[
+        {
+            "url": "/api",
+            "description": "API base path"
+        }
+    ],
+)
+
+# Routes are registered without the /api prefix
+app.include_router(game_routes.router, prefix="/game")  # Results in /api/game/*
+app.include_router(websocket_routes.router)  # Results in /api/ws/*
+```
+
+This configuration ensures:
+- **OpenAPI schema has relative paths**: `/game/character` instead of `/api/game/character`
+- **Servers field indicates base path**: Generated clients know to use `/api` as the base
+- **Actual runtime routes**: Still served at `/api/game/*` and `/api/ws/*`
+- **Client URL construction**: `baseURL + serverPath + relativePath = http://localhost:8000 + /api + /game/character`
+
+## Usage Examples
+
+### Using the REST Client
+
+```typescript
+import { gameApi, createCharacter } from "./services/api";
+
+// Direct API call
+const character = await gameApi.createCharacterApiGameCharacterPost({
+  name: "Aragorn",
+  race: Race.Human,
+  characterClass: CharacterClass.Fighter,
+  // ...
+});
+
+// Using wrapper function
+const character = await createCharacter({
+  name: "Aragorn",
+  race: Race.Human,
+  characterClass: CharacterClass.Fighter,
+  // ...
+});
+```
+
+### Using the WebSocket Client
+
+```typescript
+import { wsClient, type WebSocketMessage } from "./services/api";
+
+// Connect to campaign WebSocket
+const connection = wsClient.connectToCampaign(campaignId, {
+  onMessage: (message: WebSocketMessage) => {
+    switch (message.type) {
+      case "dice_result":
+        console.log("Dice rolled:", message.result);
+        break;
+      case "game_update":
+        console.log("Game state updated:", message.data);
+        break;
+    }
+  },
+  onConnect: () => console.log("Connected"),
+  onDisconnect: () => console.log("Disconnected"),
+});
+
+// Send a message
+connection.send({
+  type: "dice_roll",
+  notation: "1d20",
+  player_name: "Aragorn",
+});
+
+// Disconnect when done
+connection.disconnect();
+```
+
+### Using the React Hook
+
+```typescript
+import { useWebSocketSDK } from "./hooks/useWebSocketSDK";
+
+const MyComponent = () => {
+  const { isConnected, sendMessage } = useWebSocketSDK({
+    connectionType: "chat",
+    campaignId: campaign.id,
+    onMessage: (message) => {
+      // Handle incoming messages
+    },
+  });
+
+  const handleSendChat = () => {
+    sendMessage({
+      type: "chat_input",
+      message: "Hello, world!",
+      character_id: character.id,
+    });
+  };
+
+  return <div>{isConnected ? "Connected" : "Disconnected"}</div>;
+};
+```
+
+## WebSocket Message Types
+
+The SDK provides TypeScript interfaces for all WebSocket message types:
+
+### Chat Messages
+- `ChatStartMessage` - Chat processing started
+- `ChatStreamMessage` - Streaming chat content
+- `ChatCompleteMessage` - Chat response complete
+- `ChatInputMessage` - Send chat input to backend
+- `ChatErrorMessage` - Chat error occurred
+
+### Game Updates
+- `DiceRollMessage` - Request dice roll
+- `DiceResultMessage` - Dice roll result
+- `GameUpdateMessage` - Game state update
+- `CharacterUpdateMessage` - Character data update
+
+### Connection Control
+- `PingMessage` / `PongMessage` - Keep-alive heartbeat
+- `ErrorMessage` - WebSocket error
+
+All message types are exported from `frontend/src/api-client/websocketClient.ts`.
 
 ## Type Mappings
 
@@ -111,10 +295,23 @@ When the backend API changes:
 
 ## Benefits
 
+### REST API
 1. **Automatic synchronization** - Frontend types update when backend changes
 2. **Type safety** - All API calls are strongly typed
 3. **No duplication** - Single source of truth for API types
 4. **Documentation** - Generated docs in `src/api-client/docs/`
+
+### WebSocket API
+1. **Type safety** - All message types are strongly typed
+2. **Consistent interface** - Same patterns as REST client
+3. **Automatic reconnection** - Built-in reconnection logic
+4. **Shared configuration** - Uses same base URL as REST client
+
+### Unified SDK
+1. **Single import** - Both REST and WebSocket from `services/api`
+2. **Consistent patterns** - Similar API for both communication methods
+3. **Better maintainability** - All API code in one place
+4. **Reduced duplication** - No manual URL construction or type definitions
 
 ## 🧪 API Compatibility Testing
 

@@ -51,7 +51,8 @@ describe("App Character Flow Integration", () => {
   });
 
   it("displays character selection options with campaign name", async () => {
-    const { createCampaign } = await import("./services/api");
+    // Import not needed here - keeping for potential future use
+    await import("./services/api");
 
     render(<App />);
 

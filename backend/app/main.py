@@ -56,6 +56,8 @@ app = FastAPI(
     description="Backend API for the AI Dungeon Master application",
     version="0.1.0",
     lifespan=lifespan,
+    root_path="/api",
+    servers=[{"url": "/api", "description": "API base path"}],
 )
 
 # Add CORS middleware
@@ -69,8 +71,10 @@ app.add_middleware(
 
 
 # Include routers
-app.include_router(game_routes.router, prefix="/api/game")
-app.include_router(websocket_routes.router, prefix="/api")
+# The /api prefix is defined in the servers configuration
+# Paths in OpenAPI will be relative to the /api server base
+app.include_router(game_routes.router, prefix="/game")
+app.include_router(websocket_routes.router)
 
 
 # Health check endpoint
@@ -86,7 +90,9 @@ async def root():
 
 
 if __name__ == "__main__":
-    host = os.getenv("APP_HOST", "0.0.0.0")
+    # Development server defaults to all interfaces for convenience
+    # Production should use specific interface via APP_HOST env var
+    host = os.getenv("APP_HOST", "0.0.0.0")  # noqa: S104
     port = int(os.getenv("APP_PORT", "8000"))
     debug = os.getenv("APP_DEBUG", "False").lower() == "true"
 

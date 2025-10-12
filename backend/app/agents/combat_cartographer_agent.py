@@ -5,6 +5,9 @@ Combat Cartographer Agent - Generates tactical battle maps for combat encounters
 import logging
 from typing import Any
 
+from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+
 from app.azure_openai_client import AzureOpenAIClient
 from app.kernel_setup import kernel_manager
 
@@ -19,8 +22,8 @@ class CombatCartographerAgent:
 
     def __init__(self) -> None:
         """Initialize the Combat Cartographer agent with its own kernel instance."""
-        self.kernel: Optional[Kernel] = None
-        self.chat_service: Optional[AzureChatCompletion] = None
+        self.kernel: Kernel | None = None
+        self.chat_service: AzureChatCompletion | None = None
         self._fallback_mode = False
 
         # Try to get the shared kernel from kernel manager

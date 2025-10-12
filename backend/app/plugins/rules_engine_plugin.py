@@ -433,38 +433,6 @@ class RulesEnginePlugin:
             return {"error": f"Error calculating spell save DC: {str(e)}"}
 
     @kernel_function(
-        description="Calculate spell attack bonus for a character.",
-        name="calculate_spell_attack_bonus",
-    )
-    def calculate_spell_attack_bonus(
-        self, spellcasting_ability_modifier: int, proficiency_bonus: int
-    ) -> dict[str, Any]:
-        """
-        Calculate spell attack bonus using D&D 5e rules.
-
-        Formula: proficiency bonus + spellcasting ability modifier
-
-        Args:
-            spellcasting_ability_modifier: The modifier for the character's spellcasting ability
-            proficiency_bonus: The character's proficiency bonus
-
-        Returns:
-            Dict[str, Any]: Spell attack bonus information
-        """
-        try:
-            attack_bonus = proficiency_bonus + spellcasting_ability_modifier
-
-            return {
-                "attack_bonus": attack_bonus,
-                "spellcasting_modifier": spellcasting_ability_modifier,
-                "proficiency_bonus": proficiency_bonus,
-                "formula": "proficiency_bonus + spellcasting_ability_modifier",
-            }
-        except Exception as e:
-            logger.error(f"Error calculating spell attack bonus: {str(e)}")
-            return {"error": f"Error calculating spell attack bonus: {str(e)}"}
-
-    @kernel_function(
         description="Resolve spell damage effects.",
         name="resolve_spell_damage",
     )
@@ -742,7 +710,7 @@ class RulesEnginePlugin:
         dice_type = int(dice_type)
 
         # Roll initial dice
-        rolls = [random.randint(1, dice_type) for _ in range(num_dice)]
+        rolls = [random.randint(1, dice_type) for _ in range(num_dice)]  # noqa: S311
 
         # Apply advanced modifiers
         result = {
@@ -760,7 +728,7 @@ class RulesEnginePlugin:
             # Keep rerolling until no more reroll values
             for i, roll in enumerate(rolls):
                 while roll == reroll_value:
-                    new_roll = random.randint(1, dice_type)
+                    new_roll = random.randint(1, dice_type)  # noqa: S311
                     rerolls.append({"original": roll, "new": new_roll, "index": i})
                     roll = new_roll
                     rolls[i] = roll  # Update the roll
@@ -902,21 +870,21 @@ class RulesEnginePlugin:
             # Roll the dice based on advantage/disadvantage
             if advantage and not disadvantage:
                 # Roll with advantage (take the higher of two d20 rolls)
-                roll1 = random.randint(1, 20)
-                roll2 = random.randint(1, 20)
+                roll1 = random.randint(1, 20)  # noqa: S311
+                roll2 = random.randint(1, 20)  # noqa: S311
                 roll = max(roll1, roll2)
                 rolls = [roll1, roll2]
                 advantage_type = "advantage"
             elif disadvantage and not advantage:
                 # Roll with disadvantage (take the lower of two d20 rolls)
-                roll1 = random.randint(1, 20)
-                roll2 = random.randint(1, 20)
+                roll1 = random.randint(1, 20)  # noqa: S311
+                roll2 = random.randint(1, 20)  # noqa: S311
                 roll = min(roll1, roll2)
                 rolls = [roll1, roll2]
                 advantage_type = "disadvantage"
             else:
                 # Normal roll
-                roll = random.randint(1, 20)
+                roll = random.randint(1, 20)  # noqa: S311
                 rolls = [roll]
                 advantage_type = "normal"
 
@@ -962,21 +930,21 @@ class RulesEnginePlugin:
             # Roll the dice based on advantage/disadvantage
             if advantage and not disadvantage:
                 # Roll with advantage (take the higher of two d20 rolls)
-                roll1 = random.randint(1, 20)
-                roll2 = random.randint(1, 20)
+                roll1 = random.randint(1, 20)  # noqa: S311
+                roll2 = random.randint(1, 20)  # noqa: S311
                 roll = max(roll1, roll2)
                 rolls = [roll1, roll2]
                 advantage_type = "advantage"
             elif disadvantage and not advantage:
                 # Roll with disadvantage (take the lower of two d20 rolls)
-                roll1 = random.randint(1, 20)
-                roll2 = random.randint(1, 20)
+                roll1 = random.randint(1, 20)  # noqa: S311
+                roll2 = random.randint(1, 20)  # noqa: S311
                 roll = min(roll1, roll2)
                 rolls = [roll1, roll2]
                 advantage_type = "disadvantage"
             else:
                 # Normal roll
-                roll = random.randint(1, 20)
+                roll = random.randint(1, 20)  # noqa: S311
                 rolls = [roll]
                 advantage_type = "normal"
 
@@ -1044,7 +1012,8 @@ class RulesEnginePlugin:
 
                     # Roll the extra dice for critical hit
                     extra_rolls = [
-                        random.randint(1, dice_type) for _ in range(num_dice)
+                        random.randint(1, dice_type)  # noqa: S311
+                        for _ in range(num_dice)
                     ]
                     damage_roll["critical_rolls"] = extra_rolls
                     damage_roll["total"] += sum(extra_rolls)

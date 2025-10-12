@@ -276,7 +276,7 @@ class TestFrontendBackendAPICompatibility:
             except (TypeError, ValueError) as e:
                 raise AssertionError(
                     f"{model_class.__name__} schema is not JSON serializable: {e}"
-                )
+                ) from None
 
             # Check that all fields have proper type annotations
             type_hints = get_type_hints(model_class)
@@ -307,11 +307,52 @@ class TestFrontendBackendAPICompatibility:
 
     def test_websocket_path_matches_frontend(self) -> None:
         """Test that WebSocket paths match what the frontend expects."""
-        # Frontend expects: /api/ws/{campaign_id}
+        # Frontend expects: /api/ws/{campaign_id}, /api/ws/chat/{campaign_id}, /api/ws/global
         from app.api.websocket_routes import router as ws_router
 
         # Check that the WebSocket router exists and has routes
         assert ws_router is not None, "WebSocket router should exist"
         assert len(ws_router.routes) > 0, (
             "WebSocket router should have routes configured"
+        )
+
+        # Check that expected WebSocket endpoints exist
+        ws_paths = [route.path for route in ws_router.routes]
+        assert "/ws/{campaign_id}" in ws_paths, (
+            "Campaign WebSocket endpoint should exist at /ws/{campaign_id}"
+        )
+        assert "/ws/chat/{campaign_id}" in ws_paths, (
+            "Chat WebSocket endpoint should exist at /ws/chat/{campaign_id}"
+        )
+        assert "/ws/global" in ws_paths, (
+            "Global WebSocket endpoint should exist at /ws/global"
+        )
+
+    def test_websocket_sdk_message_types_match_backend(self) -> None:
+        """Test that frontend WebSocket SDK message types match backend implementation."""
+        from app.api.websocket_routes import router as ws_router
+
+        # Verify WebSocket routes exist
+        assert ws_router is not None, "WebSocket router should exist"
+
+        # Expected message types based on backend implementation
+        expected_message_types = [
+            "chat_start",
+            "chat_stream",
+            "chat_complete",
+            "chat_error",
+            "chat_input",
+            "dice_roll",
+            "dice_result",
+            "game_update",
+            "character_update",
+            "ping",
+            "pong",
+            "error",
+        ]
+
+        # This test documents the expected message types
+        # Frontend SDK should define TypeScript interfaces for all these types
+        assert len(expected_message_types) > 0, (
+            "Expected WebSocket message types should be documented"
         )

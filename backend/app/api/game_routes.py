@@ -100,11 +100,11 @@ async def create_character(character_data: CreateCharacterRequest, config: Confi
         if "Azure OpenAI configuration" in error_msg:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=error_msg
-            )
+            ) from None
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to create character: {str(e)}",
-        )
+        ) from e
 
 
 @router.get("/character/{character_id}", response_model=dict[str, Any])
@@ -137,11 +137,11 @@ async def get_character(character_id: str, config: ConfigDep):
         if "Azure OpenAI configuration" in error_msg:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=error_msg
-            )
+            ) from None
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to retrieve character: {str(e)}",
-        )
+        ) from None
 
     return character
 
@@ -168,15 +168,17 @@ async def create_campaign(campaign_data: CreateCampaignRequest, config: ConfigDe
             logger.exception("Configuration error during campaign creation")
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=error_msg
-            )
+            ) from None
         logger.exception("Validation error during campaign creation")
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        ) from None
     except Exception as e:
         logger.exception("Unexpected error during campaign creation")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to create campaign: {str(e)}",
-        )
+        ) from None
 
 
 @router.get("/campaigns", response_model=CampaignListResponse)
@@ -192,7 +194,7 @@ async def list_campaigns():
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to list campaigns: {str(e)}",
-        )
+        ) from e
 
 
 @router.get("/campaign/templates")
@@ -206,7 +208,7 @@ async def get_campaign_templates():
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get templates: {str(e)}",
-        )
+        ) from None
 
 
 @router.get("/campaign/{campaign_id}", response_model=Campaign)
@@ -218,7 +220,7 @@ async def get_campaign(campaign_id: str):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Campaign {campaign_id} not found",
-            )
+            ) from None
         return campaign
     except HTTPException:
         raise
@@ -226,7 +228,7 @@ async def get_campaign(campaign_id: str):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get campaign: {str(e)}",
-        )
+        ) from None
 
 
 @router.put("/campaign/{campaign_id}", response_model=Campaign)
@@ -240,7 +242,7 @@ async def update_campaign(campaign_id: str, updates: CampaignUpdateRequest):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="No valid updates provided",
-            )
+            ) from None
 
         updated_campaign = campaign_service.update_campaign(campaign_id, update_data)
         if not updated_campaign:
@@ -256,7 +258,7 @@ async def update_campaign(campaign_id: str, updates: CampaignUpdateRequest):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to update campaign: {str(e)}",
-        )
+        ) from None
 
 
 @router.post("/campaign/clone", response_model=Campaign)
@@ -280,7 +282,7 @@ async def clone_campaign(clone_data: CloneCampaignRequest):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to clone campaign: {str(e)}",
-        )
+        ) from None
 
 
 @router.delete("/campaign/{campaign_id}")
@@ -292,7 +294,7 @@ async def delete_campaign(campaign_id: str):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Campaign {campaign_id} not found or cannot be deleted",
-            )
+            ) from None
 
         return {"message": "Campaign deleted successfully"}
     except HTTPException:
@@ -301,7 +303,7 @@ async def delete_campaign(campaign_id: str):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to delete campaign: {str(e)}",
-        )
+        ) from None
 
 
 @router.post("/campaign/ai-assist", response_model=AIAssistanceResponse)
@@ -368,7 +370,7 @@ async def get_ai_assistance(request: AIAssistanceRequest):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get AI assistance: {str(e)}",
-        )
+        ) from e
 
 
 @router.post("/campaign/ai-generate", response_model=AIContentGenerationResponse)
@@ -452,7 +454,7 @@ async def generate_image(image_request: dict[str, Any]):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to generate image: {str(e)}",
-        )
+        ) from e
 
 
 @router.post("/battle-map", response_model=dict[str, Any])
@@ -470,7 +472,7 @@ async def generate_battle_map(map_request: dict[str, Any]):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to generate battle map: {str(e)}",
-        )
+        ) from e
 
 
 @router.post("/input", response_model=GameResponse)
@@ -526,7 +528,7 @@ async def process_player_input(player_input: PlayerInput):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to process input: {str(e)}",
-        )
+        ) from None
 
 
 @router.post("/character/{character_id}/level-up", response_model=dict[str, Any])
@@ -552,7 +554,7 @@ async def level_up_character(character_id: str, level_up_data: LevelUpRequest):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to level up character: {str(e)}",
-        )
+        ) from None
 
 
 @router.post(
@@ -566,7 +568,7 @@ async def award_experience(character_id: str, experience_data: dict[str, int]):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Experience points must be greater than 0",
-            )
+            ) from None
 
         result = await get_scribe().award_experience(character_id, experience_points)
 
@@ -582,7 +584,7 @@ async def award_experience(character_id: str, experience_data: dict[str, int]):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to award experience: {str(e)}",
-        )
+        ) from None
 
 
 @router.get("/character/{character_id}/progression-info", response_model=dict[str, Any])
@@ -594,7 +596,7 @@ async def get_progression_info(character_id: str):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Character {character_id} not found",
-            )
+            ) from None
 
         from app.plugins.rules_engine_plugin import RulesEnginePlugin
 
@@ -621,7 +623,7 @@ async def get_progression_info(character_id: str):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get progression info: {str(e)}",
-        )
+        ) from None
 
 
 # Dice rolling endpoints
@@ -653,7 +655,7 @@ async def roll_dice(dice_data: dict[str, str]):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to roll dice: {str(e)}",
-        )
+        ) from None
 
 
 @router.post("/dice/roll-with-character", response_model=dict[str, Any])
@@ -694,7 +696,7 @@ async def roll_dice_with_character(roll_data: dict[str, Any]):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to roll dice with character: {str(e)}",
-        )
+        ) from None
 
 
 @router.post("/dice/manual-roll", response_model=dict[str, Any])
@@ -721,7 +723,7 @@ async def input_manual_roll(manual_data: dict[str, Any]):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to input manual roll: {str(e)}",
-        )
+        ) from None
 
 
 # Campaign creation and world generation endpoints
@@ -754,7 +756,7 @@ async def generate_campaign_world(campaign_data: dict[str, Any]):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to generate campaign world: {str(e)}",
-        )
+        ) from e
 
 
 @router.post("/campaign/{campaign_id}/start-session", response_model=dict[str, Any])
@@ -783,7 +785,7 @@ async def start_game_session(campaign_id: str, session_data: dict[str, Any]):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to start game session: {str(e)}",
-        )
+        ) from e
 
 
 @router.post("/session/{session_id}/action", response_model=dict[str, Any])
@@ -820,7 +822,7 @@ async def process_player_action(session_id: str, action_data: dict[str, Any]):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to process player action: {str(e)}",
-        )
+        ) from e
 
 
 # Combat workflow endpoints
@@ -867,7 +869,7 @@ async def initialize_combat(combat_data: dict[str, Any]):
                         "type": "npc",
                         "id": participant["id"],
                         "name": participant.get("name", "NPC"),
-                        "initiative": randint(1, 20)
+                        "initiative": randint(1, 20)  # noqa: S311
                         + participant.get("dex_modifier", 0),
                     }
                 )
@@ -891,7 +893,7 @@ async def initialize_combat(combat_data: dict[str, Any]):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to initialize combat: {str(e)}",
-        )
+        ) from e
 
 
 @router.post("/combat/{combat_id}/turn", response_model=dict[str, Any])
@@ -951,7 +953,7 @@ async def process_combat_turn(combat_id: str, turn_data: dict[str, Any]):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to process combat turn: {str(e)}",
-        )
+        ) from e
 
 
 # Helper functions for campaign generation
@@ -1206,7 +1208,7 @@ async def manage_character_spells(character_id: str, request: ManageSpellsReques
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to manage character spells: {str(e)}",
-        )
+        ) from e
 
 
 @router.post("/character/{character_id}/spell-slots", response_model=dict[str, Any])
@@ -1227,7 +1229,7 @@ async def manage_spell_slots(character_id: str, request: ManageSpellSlotsRequest
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to manage spell slots: {str(e)}",
-        )
+        ) from e
 
 
 @router.post("/combat/{combat_id}/cast-spell", response_model=SpellCastingResponse)
@@ -1512,7 +1514,7 @@ async def get_spell_list(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get spell list: {str(e)}",
-        )
+        ) from e
 
 
 @router.post("/spells/save-dc", response_model=dict[str, Any])
@@ -1576,7 +1578,7 @@ async def calculate_spell_save_dc_endpoint(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to calculate spell save DC: {str(e)}",
-        )
+        ) from None
 
 
 @router.post(
@@ -1590,7 +1592,7 @@ async def manage_concentration(character_id: str, request: ConcentrationRequest)
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="spell_id required for starting concentration",
-                )
+                ) from None
 
             return ConcentrationCheckResponse(
                 success=True, concentration_maintained=True, dc=10, spell_ended=False
@@ -1615,7 +1617,9 @@ async def manage_concentration(character_id: str, request: ConcentrationRequest)
             # For now, returning a simulated result
             import random
 
-            roll_result = random.randint(1, 20) + 3  # Assuming +3 Constitution modifier
+            roll_result = (
+                random.randint(1, 20) + 3  # noqa: S311
+            )  # Assuming +3 Constitution modifier
             maintained = roll_result >= dc
 
             return ConcentrationCheckResponse(
@@ -1698,7 +1702,7 @@ async def calculate_spell_attack_bonus(request: SpellAttackBonusRequest):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to calculate spell attack bonus: {str(e)}",
-        )
+        ) from None
 
 
 # Enhanced Inventory System API Endpoints
@@ -1782,7 +1786,7 @@ async def get_encumbrance(character_id: str):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to calculate encumbrance: {str(e)}",
-        )
+        ) from e
 
 
 @router.post("/items/magical-effects", response_model=MagicalEffectsResponse)
@@ -1931,7 +1935,7 @@ async def get_item_catalog(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get item catalog: {str(e)}",
-        )
+        ) from e
 
 
 # Enhanced NPC Management API Endpoints
@@ -1979,16 +1983,17 @@ async def create_campaign_npc(campaign_id: str, request: CreateNPCRequest):
         from app.models.game_models import Abilities, HitPoints
 
         abilities = Abilities(
-            strength=random.randint(8, 16),
-            dexterity=random.randint(8, 16),
-            constitution=random.randint(8, 16),
-            intelligence=random.randint(8, 16),
-            wisdom=random.randint(8, 16),
-            charisma=random.randint(8, 16),
+            strength=random.randint(8, 16),  # noqa: S311
+            dexterity=random.randint(8, 16),  # noqa: S311
+            constitution=random.randint(8, 16),  # noqa: S311
+            intelligence=random.randint(8, 16),  # noqa: S311
+            wisdom=random.randint(8, 16),  # noqa: S311
+            charisma=random.randint(8, 16),  # noqa: S311
         )
 
         hit_points = HitPoints(
-            current=random.randint(4, 12), maximum=random.randint(4, 12)
+            current=random.randint(4, 12),  # noqa: S311
+            maximum=random.randint(4, 12),  # noqa: S311
         )
 
         return NPC(
@@ -2011,7 +2016,7 @@ async def create_campaign_npc(campaign_id: str, request: CreateNPCRequest):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to create NPC: {str(e)}",
-        )
+        ) from e
 
 
 @router.get("/npc/{npc_id}/personality", response_model=NPCPersonality)
@@ -2034,7 +2039,7 @@ async def get_npc_personality(npc_id: str):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get NPC personality: {str(e)}",
-        )
+        ) from e
 
 
 @router.post("/npc/{npc_id}/interaction", response_model=NPCInteractionResponse)
@@ -2057,7 +2062,9 @@ async def log_npc_interaction(npc_id: str, request: NPCInteractionRequest):
         # Calculate new relationship level (simulated)
         import random
 
-        current_level = random.randint(-50, 50)  # Would be retrieved from database
+        current_level = random.randint(  # noqa: S311
+            -50, 50
+        )  # Would be retrieved from database
         new_level = max(-100, min(100, current_level + request.relationship_change))
 
         return NPCInteractionResponse(
@@ -2121,18 +2128,18 @@ async def generate_npc_stats(npc_id: str, request: GenerateNPCStatsRequest):
 
         # Generate hit points
         hit_dice_num = int(template["hit_dice"].split("d")[1])
-        hit_points = sum(random.randint(1, hit_dice_num) for _ in range(level))
+        hit_points = sum(random.randint(1, hit_dice_num) for _ in range(level))  # noqa: S311
         hit_points += level * 1  # Constitution modifier (assumed +1)
 
         # Generate abilities
         base_stat = 10 + template["abilities_mod"]
         abilities = {
-            "strength": base_stat + random.randint(-2, 2),
-            "dexterity": base_stat + random.randint(-2, 2),
-            "constitution": base_stat + random.randint(-2, 2),
-            "intelligence": base_stat + random.randint(-2, 2),
-            "wisdom": base_stat + random.randint(-2, 2),
-            "charisma": base_stat + random.randint(-2, 2),
+            "strength": base_stat + random.randint(-2, 2),  # noqa: S311
+            "dexterity": base_stat + random.randint(-2, 2),  # noqa: S311
+            "constitution": base_stat + random.randint(-2, 2),  # noqa: S311
+            "intelligence": base_stat + random.randint(-2, 2),  # noqa: S311
+            "wisdom": base_stat + random.randint(-2, 2),  # noqa: S311
+            "charisma": base_stat + random.randint(-2, 2),  # noqa: S311
         }
 
         # Role-specific stat adjustments

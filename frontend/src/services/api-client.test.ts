@@ -13,7 +13,7 @@ import {
   GameApi,
   Race,
 } from "../api-client";
-import { createCampaign, createCharacter } from "./api";
+import { createCampaign, createCharacter, wsClient } from "./api";
 
 // Mock axios to avoid actual HTTP calls in tests
 vi.mock("axios");
@@ -302,6 +302,31 @@ describe("OpenAPI Generated Client Integration", () => {
 
       expect(requestWithoutOptionals).toBeDefined();
       expect(requestWithoutOptionals.backstory).toBeUndefined();
+    });
+  });
+
+  describe("WebSocket Client Integration", () => {
+    it("should export WebSocket client instance", () => {
+      expect(wsClient).toBeDefined();
+    });
+
+    it("should provide WebSocket connection methods", () => {
+      expect(wsClient.connectToCampaign).toBeDefined();
+      expect(typeof wsClient.connectToCampaign).toBe("function");
+
+      expect(wsClient.connectToChat).toBeDefined();
+      expect(typeof wsClient.connectToChat).toBe("function");
+
+      expect(wsClient.connectToGlobal).toBeDefined();
+      expect(typeof wsClient.connectToGlobal).toBe("function");
+    });
+
+    it("should share base URL configuration with REST client", () => {
+      const wsBaseUrl = wsClient.getWebSocketBaseUrl();
+      expect(wsBaseUrl).toBeDefined();
+      expect(
+        wsBaseUrl.startsWith("ws://") || wsBaseUrl.startsWith("wss://")
+      ).toBe(true);
     });
   });
 });

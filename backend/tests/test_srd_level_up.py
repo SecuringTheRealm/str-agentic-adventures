@@ -20,11 +20,10 @@ class TestSRDLevelUp:
             patch("app.agents.scribe_agent.ScribeAgent._register_skills"),
         ):
             mock_kernel.return_value = MagicMock()
-            agent = ScribeAgent()
-            return agent
+            return ScribeAgent()
 
     @pytest.mark.asyncio
-    async def test_level_up_adds_class_features(self, scribe_agent):
+    async def test_level_up_adds_class_features(self, scribe_agent) -> None:
         """Test that leveling up adds appropriate class features."""
         # Mock a fighter character leveling up to level 2
         fighter_data = {
@@ -106,7 +105,7 @@ class TestSRDLevelUp:
                 )
 
     @pytest.mark.asyncio
-    async def test_level_up_preserves_existing_features(self, scribe_agent):
+    async def test_level_up_preserves_existing_features(self, scribe_agent) -> None:
         """Test that leveling up preserves existing features."""
         # Mock a wizard character leveling up to level 2
         wizard_data = {
@@ -176,7 +175,9 @@ class TestSRDLevelUp:
             assert "Arcane Tradition" in feature_names
 
     @pytest.mark.asyncio
-    async def test_level_up_multiple_levels_adds_all_features(self, scribe_agent):
+    async def test_level_up_multiple_levels_adds_all_features(
+        self, scribe_agent
+    ) -> None:
         """Test that when a character gains multiple levels, all features are added."""
         # Mock a rogue gaining level 3 (which gives both level 2 and 3 features if leveling from 1)
         rogue_data = {

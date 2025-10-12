@@ -1,5 +1,5 @@
 import type React from "react";
-import { useState } from "react";
+import { useId, useState } from "react";
 import {
   type Campaign,
   type CampaignCreateRequest,
@@ -14,6 +14,11 @@ interface CampaignCreationProps {
 const CampaignCreation: React.FC<CampaignCreationProps> = ({
   onCampaignCreated,
 }) => {
+  const campaignNameId = useId();
+  const settingId = useId();
+  const toneId = useId();
+  const homebrewRulesId = useId();
+
   const [campaignName, setCampaignName] = useState("");
   const [setting, setSetting] = useState("");
   const [tone, setTone] = useState("heroic");
@@ -101,9 +106,9 @@ const CampaignCreation: React.FC<CampaignCreationProps> = ({
 
       <form onSubmit={handleSubmit}>
         <div className={styles.formGroup}>
-          <label htmlFor="campaign-name">Campaign Name</label>
+          <label htmlFor={campaignNameId}>Campaign Name</label>
           <input
-            id="campaign-name"
+            id={campaignNameId}
             name="campaign-name"
             type="text"
             value={campaignName}
@@ -123,11 +128,13 @@ const CampaignCreation: React.FC<CampaignCreationProps> = ({
 
         <div className={styles.formGroup}>
           <div className={styles.labelWithHelp}>
-            <label htmlFor="setting">Campaign Setting</label>
-            <div
+            <label htmlFor={settingId}>Campaign Setting</label>
+            <button
+              type="button"
               className={styles.helpIcon}
               onMouseEnter={() => setShowTooltip(true)}
               onMouseLeave={() => setShowTooltip(false)}
+              aria-label="Show help for campaign setting"
             >
               ⓘ
               {showTooltip && (
@@ -135,11 +142,11 @@ const CampaignCreation: React.FC<CampaignCreationProps> = ({
                   Example: 'Medieval fantasy city threatened by dragons'
                 </div>
               )}
-            </div>
+            </button>
           </div>
           <div className={styles.textareaContainer}>
             <textarea
-              id="setting"
+              id={settingId}
               name="setting"
               value={setting}
               onChange={(e) => setSetting(e.target.value)}
@@ -162,10 +169,10 @@ const CampaignCreation: React.FC<CampaignCreationProps> = ({
         </div>
 
         <div className={styles.formGroup}>
-          <label htmlFor="tone">Campaign Tone</label>
+          <label htmlFor={toneId}>Campaign Tone</label>
           <div className={styles.customSelect}>
             <select
-              id="tone"
+              id={toneId}
               name="tone"
               value={tone}
               onChange={(e) => setTone(e.target.value)}
@@ -181,9 +188,9 @@ const CampaignCreation: React.FC<CampaignCreationProps> = ({
         </div>
 
         <div className="form-group optional">
-          <label htmlFor="homebrew-rules">Homebrew Rules (Optional)</label>
+          <label htmlFor={homebrewRulesId}>Homebrew Rules (Optional)</label>
           <textarea
-            id="homebrew-rules"
+            id={homebrewRulesId}
             name="homebrew-rules"
             value={homebrewRules}
             onChange={(e) => setHomebrewRules(e.target.value)}

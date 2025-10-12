@@ -1,6 +1,7 @@
 import type React from "react";
 import { useEffect, useState } from "react";
-import { useWebSocket, type WebSocketMessage } from "../hooks/useWebSocket";
+import { useWebSocketSDK } from "../hooks/useWebSocketSDK";
+import type { WebSocketMessage } from "../services/api";
 import {
   type Campaign,
   type Character,
@@ -8,7 +9,6 @@ import {
   generateImage,
   sendPlayerInput,
 } from "../services/api";
-import { getCampaignWebSocketUrl, getChatWebSocketUrl } from "../utils/urls";
 import BattleMap from "./BattleMap";
 import CharacterSheet from "./CharacterSheet";
 import ChatBox from "./ChatBox";
@@ -72,11 +72,6 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
   const [streamingMessage, setStreamingMessage] = useState<string>("");
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
   const [webSocketDiceResult, setWebSocketDiceResult] = useState<any>(null);
-
-  // WebSocket integration for campaign updates (non-chat)
-  const wsUrl = getCampaignWebSocketUrl(campaign.id!);
-  // WebSocket integration for chat streaming
-  const chatWsUrl = getChatWebSocketUrl(campaign.id!);
 
   // Add fallback mode when WebSocket isn't available
   const [useWebSocketFallback, setUseWebSocketFallback] =
@@ -180,28 +175,29 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
     }
   };
 
-  const { socket, isConnected } = useWebSocket(wsUrl, {
+  const { socket, isConnected } = useWebSocketSDK({
+    connectionType: "campaign",
+    campaignId: campaign.id!,
     onMessage: handleWebSocketMessage,
     onConnect: () => console.log("Connected to campaign WebSocket"),
     onDisconnect: () => console.log("Disconnected from campaign WebSocket"),
     onError: (error) => console.error("WebSocket error:", error),
   });
 
-  const { socket: chatSocket, isConnected: chatConnected } = useWebSocket(
-    chatWsUrl,
-    {
-      onMessage: handleChatWebSocketMessage,
-      onConnect: () => console.log("Connected to chat WebSocket"),
-      onDisconnect: () => {
-        console.log("Disconnected from chat WebSocket");
-        setUseWebSocketFallback(true);
-      },
-      onError: (error) => {
-        console.error("Chat WebSocket error:", error);
-        setUseWebSocketFallback(true);
-      },
-    }
-  );
+  const { socket: chatSocket, isConnected: chatConnected } = useWebSocketSDK({
+    connectionType: "chat",
+    campaignId: campaign.id!,
+    onMessage: handleChatWebSocketMessage,
+    onConnect: () => console.log("Connected to chat WebSocket"),
+    onDisconnect: () => {
+      console.log("Disconnected from chat WebSocket");
+      setUseWebSocketFallback(true);
+    },
+    onError: (error) => {
+      console.error("Chat WebSocket error:", error);
+      setUseWebSocketFallback(true);
+    },
+  });
 
   // Fallback to REST API if WebSocket fails
   const effectiveChatConnected = chatConnected || useWebSocketFallback;
@@ -550,6 +546,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
             <h4>Generate Visuals</h4>
             <div className={styles.visualButtons}>
               <button
+                type="button"
                 onClick={handleGenerateCharacterPortrait}
                 disabled={imageLoading}
                 className={styles.visualButton}
@@ -557,6 +554,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
                 {imageLoading ? "Generating..." : "Character Portrait"}
               </button>
               <button
+                type="button"
                 onClick={handleGenerateSceneIllustration}
                 disabled={imageLoading}
                 className={styles.visualButton}
@@ -564,6 +562,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
                 {imageLoading ? "Generating..." : "Scene Illustration"}
               </button>
               <button
+                type="button"
                 onClick={handleGenerateBattleMap}
                 disabled={imageLoading}
                 className={styles.visualButton}

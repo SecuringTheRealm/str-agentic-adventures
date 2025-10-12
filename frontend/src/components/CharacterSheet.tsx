@@ -284,49 +284,49 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
           <h4>Equipment</h4>
           <div className={styles.equipmentGrid}>
             <div className={styles.equipmentSlot}>
-              <label>Main Hand:</label>
+              <div className={styles.slotLabel}>Main Hand:</div>
               <span>
                 {(character as any).equipment?.mainHand?.name || "Empty"}
               </span>
             </div>
             <div className={styles.equipmentSlot}>
-              <label>Off Hand:</label>
+              <div className={styles.slotLabel}>Off Hand:</div>
               <span>
                 {(character as any).equipment?.offHand?.name || "Empty"}
               </span>
             </div>
             <div className={styles.equipmentSlot}>
-              <label>Armor:</label>
+              <div className={styles.slotLabel}>Armor:</div>
               <span>
                 {(character as any).equipment?.armor?.name || "Unarmored"}
               </span>
             </div>
             <div className={styles.equipmentSlot}>
-              <label>Shield:</label>
+              <div className={styles.slotLabel}>Shield:</div>
               <span>
                 {(character as any).equipment?.shield?.name || "None"}
               </span>
             </div>
             <div className={styles.equipmentSlot}>
-              <label>Ring 1:</label>
+              <div className={styles.slotLabel}>Ring 1:</div>
               <span>
                 {(character as any).equipment?.ring1?.name || "Empty"}
               </span>
             </div>
             <div className={styles.equipmentSlot}>
-              <label>Ring 2:</label>
+              <div className={styles.slotLabel}>Ring 2:</div>
               <span>
                 {(character as any).equipment?.ring2?.name || "Empty"}
               </span>
             </div>
             <div className={styles.equipmentSlot}>
-              <label>Amulet:</label>
+              <div className={styles.slotLabel}>Amulet:</div>
               <span>
                 {(character as any).equipment?.amulet?.name || "Empty"}
               </span>
             </div>
             <div className={styles.equipmentSlot}>
-              <label>Cloak:</label>
+              <div className={styles.slotLabel}>Cloak:</div>
               <span>
                 {(character as any).equipment?.cloak?.name || "Empty"}
               </span>
@@ -394,15 +394,15 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
           {/* Spell Save DC and Attack Bonus */}
           <div className={styles.spellStats}>
             <div className={styles.spellStat}>
-              <label>Spell Save DC:</label>
+              <div className={styles.statLabel}>Spell Save DC:</div>
               <span>{calculateSpellSaveDC(character)}</span>
             </div>
             <div className={styles.spellStat}>
-              <label>Spell Attack Bonus:</label>
+              <div className={styles.statLabel}>Spell Attack Bonus:</div>
               <span>+{calculateSpellAttackBonus(character)}</span>
             </div>
             <div className={styles.spellStat}>
-              <label>Spellcasting Ability:</label>
+              <div className={styles.statLabel}>Spellcasting Ability:</div>
               <span>
                 {getSpellcastingAbility(character.character_class || "fighter")}
               </span>
@@ -421,7 +421,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
 
                   return (
                     <div key={level} className={styles.spellSlotLevel}>
-                      <label>Level {level}:</label>
+                      <div className={styles.levelLabel}>Level {level}:</div>
                       <div className={styles.slotIndicators}>
                         {Array.from({ length: maxSlots }, (_, i) => (
                           <div
@@ -451,7 +451,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
                   <li key={index} className="spell-item cantrip">
                     <span className={styles.spellName}>{spell.name}</span>
                     <span className={styles.spellSchool}>{spell.school}</span>
-                    <button className={styles.castButton}>Cast</button>
+                    <button type="button" className={styles.castButton}>
+                      Cast
+                    </button>
                   </li>
                 )
               ) || <li>No cantrips known</li>}
@@ -491,6 +493,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
                           <span className={styles.ritualIndicator}>R</span>
                         )}
                         <button
+                          type="button"
                           className={styles.castButton}
                           disabled={!hasSpellSlot(character, level)}
                         >

@@ -488,7 +488,7 @@ class NarrativeGenerationPlugin:
             if template_type in self.plot_templates:
                 template_options = list(self.plot_templates[template_type].keys())
                 if template_options:
-                    template_key = random.choice(template_options)
+                    template_key = random.choice(template_options)  # noqa: S311
                     template = self.plot_templates[template_type][template_key]
 
                     plot_point = PlotPoint(

@@ -20,11 +20,12 @@ class TestSRDCharacterCreation:
             patch("app.agents.scribe_agent.ScribeAgent._register_skills"),
         ):
             mock_kernel.return_value = MagicMock()
-            agent = ScribeAgent()
-            return agent
+            return ScribeAgent()
 
     @pytest.mark.asyncio
-    async def test_character_creation_applies_racial_bonuses(self, scribe_agent):
+    async def test_character_creation_applies_racial_bonuses(
+        self, scribe_agent
+    ) -> None:
         """Test that character creation applies racial ability bonuses."""
         character_data = {
             "name": "Test Elf",
@@ -51,7 +52,7 @@ class TestSRDCharacterCreation:
             assert result["speed"] == 30  # Elf speed
 
     @pytest.mark.asyncio
-    async def test_character_creation_sets_correct_speed(self, scribe_agent):
+    async def test_character_creation_sets_correct_speed(self, scribe_agent) -> None:
         """Test that character creation sets racial speed correctly."""
         dwarf_data = {"name": "Test Dwarf", "race": "dwarf", "class": "fighter"}
 
@@ -65,7 +66,7 @@ class TestSRDCharacterCreation:
             assert result["speed"] == 25
 
     @pytest.mark.asyncio
-    async def test_character_creation_adds_class_features(self, scribe_agent):
+    async def test_character_creation_adds_class_features(self, scribe_agent) -> None:
         """Test that character creation adds level 1 class features."""
         fighter_data = {"name": "Test Fighter", "race": "human", "class": "fighter"}
 
@@ -83,7 +84,7 @@ class TestSRDCharacterCreation:
             assert "Second Wind" in feature_names
 
     @pytest.mark.asyncio
-    async def test_character_creation_adds_racial_traits(self, scribe_agent):
+    async def test_character_creation_adds_racial_traits(self, scribe_agent) -> None:
         """Test that character creation adds racial traits as features."""
         elf_data = {"name": "Test Elf", "race": "elf", "class": "rogue"}
 
@@ -102,7 +103,7 @@ class TestSRDCharacterCreation:
             assert "Fey Ancestry" in feature_names
 
     @pytest.mark.asyncio
-    async def test_character_creation_sets_saving_throws(self, scribe_agent):
+    async def test_character_creation_sets_saving_throws(self, scribe_agent) -> None:
         """Test that character creation sets class saving throw proficiencies."""
         wizard_data = {"name": "Test Wizard", "race": "human", "class": "wizard"}
 
@@ -118,7 +119,9 @@ class TestSRDCharacterCreation:
             assert "wisdom" in saving_throws
 
     @pytest.mark.asyncio
-    async def test_character_creation_calculates_hp_correctly(self, scribe_agent):
+    async def test_character_creation_calculates_hp_correctly(
+        self, scribe_agent
+    ) -> None:
         """Test that character creation calculates initial HP correctly."""
         barbarian_data = {
             "name": "Test Barbarian",
@@ -140,7 +143,7 @@ class TestSRDCharacterCreation:
             assert result["hit_points"]["current"] == expected_hp
 
     @pytest.mark.asyncio
-    async def test_character_creation_applies_background(self, scribe_agent):
+    async def test_character_creation_applies_background(self, scribe_agent) -> None:
         """Test that character creation applies background skill proficiencies."""
         acolyte_data = {
             "name": "Test Acolyte",

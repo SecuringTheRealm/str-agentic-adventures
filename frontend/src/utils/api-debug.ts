@@ -95,11 +95,8 @@ export const validateApiUrl = (
     issues.push("API URL should not end with a trailing slash");
   }
 
-  if (url.includes("/api")) {
-    issues.push(
-      "API URL should not include /api path (it will be added automatically). This causes double /api paths and 404 errors."
-    );
-  }
+  // Note: The API URL should include /api as per the OpenAPI servers configuration
+  // The backend uses root_path="/api" and the generated client expects this
 
   try {
     new URL(url);
