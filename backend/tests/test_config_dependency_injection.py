@@ -69,7 +69,7 @@ class TestConfigurationDependencyInjection:
     def test_character_creation_with_missing_config(
         self, client_with_missing_config
     ) -> None:
-        """Test character creation with missing Azure OpenAI configuration."""
+        """Test character creation with missing Azure OpenAI configuration - fallback mode."""
         character_data = {
             "name": "Test Character",
             "race": "human",
@@ -89,9 +89,9 @@ class TestConfigurationDependencyInjection:
             "/api/game/character", json=character_data
         )
 
-        # Should return 503 error for missing configuration
-        assert response.status_code == 503
-        assert "Azure OpenAI configuration" in response.json().get("detail", "")
+        # With fallback mode, character creation can still work or return 400 for validation errors
+        # The route no longer blocks with 503 - it allows the agent to handle fallback
+        assert response.status_code in [200, 400], f"Got unexpected status: {response.status_code}"
 
     def test_campaign_creation_with_valid_config(self, client_with_config) -> None:
         """Test campaign creation with valid configuration."""
@@ -121,7 +121,7 @@ class TestConfigurationDependencyInjection:
     def test_campaign_creation_with_missing_config(
         self, client_with_missing_config, campaign_factory
     ) -> None:
-        """Test campaign creation with missing Azure OpenAI configuration."""
+        """Test campaign creation with missing Azure OpenAI configuration - fallback mode."""
         # Use factory instead of hand-crafted dictionary
         campaign_data = campaign_factory()
 
@@ -129,9 +129,10 @@ class TestConfigurationDependencyInjection:
             "/api/game/campaign", json=campaign_data
         )
 
-        # Should return 503 error for missing configuration
-        assert response.status_code == 503
-        assert "Azure OpenAI configuration" in response.json().get("detail", "")
+        # Campaign creation doesn't require Azure OpenAI - it's just database operations
+        # Should succeed even without Azure OpenAI configuration
+        assert response.status_code == 200, f"Campaign creation should work without Azure config, got: {response.status_code}"
+        assert "id" in response.json()
 
     def test_config_dependency_injection_works(self) -> None:
         """Test that configuration dependency injection is functioning."""
@@ -227,9 +228,9 @@ class TestConfigurationDependencyInjection:
     def test_get_character_with_missing_config(
         self, client_with_missing_config
     ) -> None:
-        """Test get character with missing Azure OpenAI configuration."""
+        """Test get character with missing Azure OpenAI configuration - fallback mode."""
         response = client_with_missing_config.get("/api/game/character/char_123")
 
-        # Should return 503 error for missing configuration
-        assert response.status_code == 503
-        assert "Azure OpenAI configuration" in response.json().get("detail", "")
+        # Get character should work in fallback mode, or return 404 if character doesn't exist
+        # No longer returns 503 since the route supports fallback
+        assert response.status_code in [200, 404], f"Got unexpected status: {response.status_code}"

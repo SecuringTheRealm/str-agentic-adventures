@@ -286,9 +286,9 @@ class ScribeAgent:
                 "id", f"character_{str(uuid.uuid4())[:8]}"
             )
 
-            race = character_data.get("race", "human").lower()
-            character_class = character_data.get("class", "fighter").lower()
-            background = character_data.get("background", "").lower()
+            race = (character_data.get("race") or "human").lower()
+            character_class = (character_data.get("class") or "fighter").lower()
+            background = (character_data.get("background") or "").lower()
             level = character_data.get("level", 1)
 
             # Get base abilities from input
