@@ -1012,7 +1012,8 @@ class RulesEnginePlugin:
 
                     # Roll the extra dice for critical hit
                     extra_rolls = [
-                        random.randint(1, dice_type) for _ in range(num_dice)  # noqa: S311
+                        random.randint(1, dice_type)
+                        for _ in range(num_dice)  # noqa: S311
                     ]
                     damage_roll["critical_rolls"] = extra_rolls
                     damage_roll["total"] += sum(extra_rolls)

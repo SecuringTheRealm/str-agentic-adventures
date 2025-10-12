@@ -170,7 +170,9 @@ async def create_campaign(campaign_data: CreateCampaignRequest, config: ConfigDe
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=error_msg
             ) from None
         logger.exception("Validation error during campaign creation")
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from None
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        ) from None
     except Exception as e:
         logger.exception("Unexpected error during campaign creation")
         raise HTTPException(
@@ -1615,7 +1617,9 @@ async def manage_concentration(character_id: str, request: ConcentrationRequest)
             # For now, returning a simulated result
             import random
 
-            roll_result = random.randint(1, 20) + 3  # Assuming +3 Constitution modifier  # noqa: S311
+            roll_result = (
+                random.randint(1, 20) + 3
+            )  # Assuming +3 Constitution modifier  # noqa: S311
             maintained = roll_result >= dc
 
             return ConcentrationCheckResponse(
@@ -1988,7 +1992,8 @@ async def create_campaign_npc(campaign_id: str, request: CreateNPCRequest):
         )
 
         hit_points = HitPoints(
-            current=random.randint(4, 12), maximum=random.randint(4, 12)  # noqa: S311
+            current=random.randint(4, 12),
+            maximum=random.randint(4, 12),  # noqa: S311
         )
 
         return NPC(
@@ -2057,7 +2062,9 @@ async def log_npc_interaction(npc_id: str, request: NPCInteractionRequest):
         # Calculate new relationship level (simulated)
         import random
 
-        current_level = random.randint(-50, 50)  # Would be retrieved from database  # noqa: S311
+        current_level = random.randint(
+            -50, 50
+        )  # Would be retrieved from database  # noqa: S311
         new_level = max(-100, min(100, current_level + request.relationship_change))
 
         return NPCInteractionResponse(
