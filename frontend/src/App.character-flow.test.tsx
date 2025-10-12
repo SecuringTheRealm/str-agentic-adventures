@@ -1,5 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import React from "react";
+import { render, screen, waitFor } from "@testing-library/react";
 import App from "./App";
 import type { Campaign, Character } from "./services/api";
 

@@ -3,7 +3,7 @@ Scribe Agent - Manages character sheets and game data.
 """
 
 import logging
-from typing import Any, Optional
+from typing import Any
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
@@ -23,8 +23,8 @@ class ScribeAgent:
 
     def __init__(self) -> None:
         """Initialize the Scribe agent with its own kernel instance."""
-        self.kernel: Optional[Kernel] = None
-        self.chat_service: Optional[AzureChatCompletion] = None
+        self.kernel: Kernel | None = None
+        self.chat_service: AzureChatCompletion | None = None
         self._fallback_mode = False
 
         # Try to get the shared kernel from kernel manager
@@ -350,14 +350,15 @@ class ScribeAgent:
         """
         try:
             import uuid
+
             from app.srd_data import (
                 apply_racial_ability_bonuses,
-                get_racial_speed,
+                get_background_info,
+                get_class_features,
                 get_class_hit_die,
                 get_class_saving_throws,
-                get_class_features,
+                get_racial_speed,
                 get_racial_traits,
-                get_background_info,
             )
 
             character_id = character_data.get(

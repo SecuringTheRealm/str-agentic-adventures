@@ -4,21 +4,21 @@ Manual test script to demonstrate SRD compliance improvements.
 This script shows the before/after of character creation with SRD features.
 """
 
-import sys
-import os
 import asyncio
-from unittest.mock import patch, MagicMock
+import os
+import sys
+from unittest.mock import MagicMock, patch
 
 # Add backend to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "backend"))
 
 from app.agents.scribe_agent import ScribeAgent
 from app.srd_data import (
+    get_background_info,
     get_class_features,
     get_racial_traits,
-    get_background_info,
-    load_spells,
     get_spells_by_class,
+    load_spells,
 )
 
 
@@ -92,7 +92,7 @@ async def test_character_creation():
 
         # Show ability scores with racial bonuses
         abilities = result["abilities"]
-        print(f"Abilities (with racial bonuses):")
+        print("Abilities (with racial bonuses):")
         print(f"  STR: {abilities['strength']} (no change)")
         print(f"  DEX: {abilities['dexterity']} (no change)")
         print(f"  CON: {abilities['constitution']} (15 + 2 racial = 17)")

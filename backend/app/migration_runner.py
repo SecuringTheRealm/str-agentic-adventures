@@ -2,11 +2,10 @@
 
 import logging
 import os
-from typing import Any
 
 from alembic import command, config
 from alembic.script import ScriptDirectory
-from sqlalchemy import create_engine, inspect, text
+from sqlalchemy import inspect, text
 
 from app.database import DATABASE_URL, engine
 

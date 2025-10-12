@@ -124,12 +124,12 @@
 }
 
 .optionalField {
-  border-color: #6c757d !important;
+  border-color: #6c757d;
 }
 
 .optionalField:focus {
-  border-color: #e4bb1e !important;
-  box-shadow: 0 0 0 2px rgba(228, 187, 30, 0.2) !important;
+  border-color: #e4bb1e;
+  box-shadow: 0 0 0 2px rgba(228, 187, 30, 0.2);
 }
 
 .textareaContainer {

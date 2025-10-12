@@ -3,14 +3,14 @@ Narrator Agent - Manages campaign narrative and story elements.
 """
 
 import logging
-from typing import Any, Optional
+from typing import Any
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
-from semantic_kernel.contents import ChatHistory
 from semantic_kernel.connectors.ai.prompt_execution_settings import (
     PromptExecutionSettings,
 )
+from semantic_kernel.contents import ChatHistory
 from semantic_kernel.functions import KernelArguments
 
 from app.kernel_setup import kernel_manager
@@ -28,8 +28,8 @@ class NarratorAgent:
         """Initialize the Narrator agent with its own kernel instance."""
         # Initialize basic attributes first
         self._fallback_mode = False
-        self.kernel: Optional[Kernel] = None
-        self.chat_service: Optional[AzureChatCompletion] = None
+        self.kernel: Kernel | None = None
+        self.chat_service: AzureChatCompletion | None = None
 
         try:
             # Try to get the shared kernel from kernel manager

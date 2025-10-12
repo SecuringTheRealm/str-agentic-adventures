@@ -77,7 +77,7 @@ const CharacterCreation: React.FC<CharacterCreationProps> = ({
         ...prev,
         abilities: {
           ...prev.abilities,
-          [abilityName]: Number.parseInt(value) || 8,
+          [abilityName]: Number.parseInt(value, 10) || 8,
         },
       }));
     } else {

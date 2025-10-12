@@ -124,14 +124,14 @@
 }
 
 .aiAssistBtn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-  color: white !important;
-  border-color: transparent !important;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: transparent;
   font-weight: 600;
 }
 
 .aiAssistBtn:hover {
-  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%) !important;
+  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
 }
 
 .validationError {

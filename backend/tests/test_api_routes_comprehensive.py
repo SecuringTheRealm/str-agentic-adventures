@@ -125,7 +125,7 @@ class TestAPIRouteValidation:
             {"name": "", "setting": "Fantasy"},  # Empty name
             {"name": "Test", "setting": ""},  # Empty setting
         ]
-        
+
         for edge_case in edge_cases:
             response = client.post("/api/game/campaign", json=edge_case)
             # Accept either success or validation error
@@ -248,7 +248,7 @@ class TestAPIRouteErrorHandling:
 
     def test_campaign_creation_missing_dependencies(self) -> None:
         """Test campaign creation works without Azure dependencies.
-        
+
         Note: Campaign creation doesn't require Azure OpenAI, only character creation does.
         """
         from app.main import app
@@ -338,7 +338,7 @@ class TestAPIRouteDataTransformation:
         assert response.status_code == 200, (
             f"Campaign creation should succeed, got: {response.status_code}"
         )
-        
+
         data = response.json()
         # Verify homebrew rules are preserved
         assert "homebrew_rules" in data

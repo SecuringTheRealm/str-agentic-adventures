@@ -3,7 +3,6 @@ Semantic Kernel setup and initialization for the AI Dungeon Master.
 """
 
 import logging
-from typing import Optional
 
 import semantic_kernel as sk
 from semantic_kernel.connectors.ai.open_ai import (
@@ -25,7 +24,7 @@ class KernelManager:
         self._is_configured = False
         self._fallback_mode = False
 
-    def get_kernel(self) -> Optional[sk.Kernel]:
+    def get_kernel(self) -> sk.Kernel | None:
         """
         Get the shared Semantic Kernel instance, creating it if necessary.
 

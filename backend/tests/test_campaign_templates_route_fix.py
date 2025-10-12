@@ -45,7 +45,7 @@ class TestCampaignTemplatesRouteOrdering:
         }
         create_response = client.post("/api/game/campaign", json=campaign_data)
         assert create_response.status_code == 200
-        
+
         campaign_id = create_response.json()["id"]
 
         # Now try to get this specific campaign

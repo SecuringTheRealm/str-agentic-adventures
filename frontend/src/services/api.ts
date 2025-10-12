@@ -52,15 +52,14 @@ try {
   }
 }
 
-// Export all types from the generated client
-export * from "../api-client";
-
 // Export compatibility aliases for types that have different names
 export type {
   CharacterSheet as Character,
-  CreateCharacterRequest as CharacterCreateRequest,
   CreateCampaignRequest as CampaignCreateRequest,
+  CreateCharacterRequest as CharacterCreateRequest,
 } from "../api-client";
+// Export all types from the generated client
+export * from "../api-client";
 
 // Define legacy interface types for compatibility
 export interface InventoryItem {
@@ -168,8 +167,7 @@ const retryApiCall = async <T>(
         message?: string;
       };
       if (
-        errorWithResponse.response &&
-        errorWithResponse.response.status &&
+        errorWithResponse.response?.status &&
         errorWithResponse.response.status >= 400 &&
         errorWithResponse.response.status < 500
       ) {

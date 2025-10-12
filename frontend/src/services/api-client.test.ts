@@ -4,11 +4,13 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { Configuration, DefaultApi, GameApi } from "../api-client";
 import {
   CharacterClass,
   type CharacterSheet,
+  Configuration,
   type CreateCharacterRequest,
+  DefaultApi,
+  GameApi,
   Race,
 } from "../api-client";
 import { createCampaign, createCharacter } from "./api";

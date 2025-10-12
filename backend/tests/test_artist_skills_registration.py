@@ -10,12 +10,14 @@ import pytest
 
 class TestArtistAgentSkillsRegistration:
     """Test class for Artist Agent skills registration.
-    
+
     Note: These tests are skipped as they test implementation details that have changed.
     The current agent architecture uses a different pattern for skills registration.
     """
 
-    @pytest.mark.skip(reason="Implementation details changed - agent architecture refactored")
+    @pytest.mark.skip(
+        reason="Implementation details changed - agent architecture refactored"
+    )
     def test_artist_agent_skills_registration(self) -> None:
         """Test that ArtistAgent properly registers all required skills."""
 
@@ -94,7 +96,9 @@ class TestArtistAgentSkillsRegistration:
                     "Missing scene_composition plugin reference"
                 )
 
-    @pytest.mark.skip(reason="Implementation details changed - agent architecture refactored")
+    @pytest.mark.skip(
+        reason="Implementation details changed - agent architecture refactored"
+    )
     def test_artist_skills_plugin_types(self) -> None:
         """Test that the registered plugins are of the correct types."""
 
@@ -151,7 +155,9 @@ class TestArtistAgentSkillsRegistration:
                 )
                 assert isinstance(artist.scene_composition, SceneCompositionPlugin)
 
-    @pytest.mark.skip(reason="Implementation details changed - agent architecture refactored")
+    @pytest.mark.skip(
+        reason="Implementation details changed - agent architecture refactored"
+    )
     def test_artist_skills_registration_error_handling(self) -> None:
         """Test that skills registration handles errors gracefully."""
 

@@ -3,7 +3,7 @@ Artist Agent - Generates visual imagery for the game.
 """
 
 import logging
-from typing import Any, Optional
+from typing import Any
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
@@ -17,13 +17,14 @@ logger = logging.getLogger(__name__)
 class ArtistAgent:
     """
     Artist Agent that generates visual imagery based on narrative moments.
-    This agent is responsible for creating character portraits, scene illustrations, and visual aids.
+    This agent is responsible for creating character portraits, scene
+    illustrations, and visual aids.
     """
 
     def __init__(self) -> None:
         """Initialize the Artist agent with its own kernel instance."""
-        self.kernel: Optional[Kernel] = None
-        self.chat_service: Optional[AzureChatCompletion] = None
+        self.kernel: Kernel | None = None
+        self.chat_service: AzureChatCompletion | None = None
         self._fallback_mode = False
 
         # Try to get the shared kernel from kernel manager
@@ -32,7 +33,8 @@ class ArtistAgent:
             if self.kernel is None:
                 self._fallback_mode = True
                 logger.warning(
-                    "Artist agent operating in fallback mode - Azure OpenAI not configured"
+                    "Artist agent operating in fallback mode - "
+                    "Azure OpenAI not configured"
                 )
             else:
                 self.chat_service = self.kernel.get_service(type=AzureChatCompletion)
@@ -44,14 +46,15 @@ class ArtistAgent:
             )
             self._fallback_mode = True
 
-        # Image generation still uses AzureOpenAIClient (SK doesn't support DALL-E yet)
+        # Image generation uses AzureOpenAIClient (SK doesn't support DALL-E)
         # Only initialize if not in fallback mode
         if not self._fallback_mode:
             try:
                 self.azure_client = AzureOpenAIClient()
             except Exception as e:
                 logger.warning(
-                    f"Failed to initialize Azure OpenAI client for image generation: {e}"
+                    "Failed to initialize Azure OpenAI client "
+                    f"for image generation: {e}"
                 )
                 self._fallback_mode = True
 
@@ -104,7 +107,8 @@ class ArtistAgent:
             # Don't raise - enter fallback mode instead
             self._fallback_mode = True
             logger.warning(
-                "Artist agent entering fallback mode - using basic functionality without advanced plugins"
+                "Artist agent entering fallback mode - "
+                "using basic functionality without advanced plugins"
             )
 
     async def generate_character_portrait(
@@ -122,7 +126,9 @@ class ArtistAgent:
         # Return error if in fallback mode
         if self._fallback_mode:
             return {
-                "error": "Artist agent in fallback mode - image generation not available"
+                "error": (
+                    "Artist agent in fallback mode - image generation not available"
+                )
             }
 
         try:
@@ -139,14 +145,21 @@ class ArtistAgent:
             # Create a detailed prompt for DALL-E
             prompt = f"Fantasy character portrait of {name}, a {race} {character_class}"
             if gender:
-                prompt = f"Fantasy character portrait of {name}, a {gender} {race} {character_class}"
+                prompt = (
+                    f"Fantasy character portrait of {name}, "
+                    f"a {gender} {race} {character_class}"
+                )
 
             # Add physical description if available
             if description:
                 prompt += f". {description}"
 
             # Add D&D fantasy styling
-            prompt += ". High quality digital art, fantasy RPG character, detailed armor or clothing, atmospheric lighting, professional character portrait"
+            prompt += (
+                ". High quality digital art, fantasy RPG character, "
+                "detailed armor or clothing, atmospheric lighting, "
+                "professional character portrait"
+            )
 
             # Generate the image using Azure OpenAI DALL-E
             image_result = await self.azure_client.generate_image(
@@ -201,7 +214,8 @@ class ArtistAgent:
             scene_context: Details of the scene to illustrate
 
         Returns:
-            Dict[str, Any]: Details of the generated illustration, including image reference
+            Dict[str, Any]: Details of the generated illustration,
+                including image reference
         """
         try:
             # Generate a unique ID for this artwork
@@ -222,7 +236,11 @@ class ArtistAgent:
                 prompt += f", {weather} weather"
 
             # Add D&D fantasy styling
-            prompt += ". High quality digital art, fantasy RPG environment, detailed textures, atmospheric lighting, cinematic composition, concept art style"
+            prompt += (
+                ". High quality digital art, fantasy RPG environment, "
+                "detailed textures, atmospheric lighting, "
+                "cinematic composition, concept art style"
+            )
 
             # Generate the image using Azure OpenAI DALL-E
             image_result = await self.azure_client.generate_image(
@@ -291,7 +309,8 @@ class ArtistAgent:
             item_details: Details of the item to visualize
 
         Returns:
-            Dict[str, Any]: Details of the generated item visualization, including image reference
+            Dict[str, Any]: Details of the generated item visualization,
+                including image reference
         """
         try:
             # Generate a unique ID for this artwork
@@ -312,7 +331,11 @@ class ArtistAgent:
                 prompt += f". {description}"
 
             # Add D&D fantasy styling
-            prompt += ". High quality digital art, fantasy RPG item, detailed textures, studio lighting, clean background, item showcase style"
+            prompt += (
+                ". High quality digital art, fantasy RPG item, "
+                "detailed textures, studio lighting, clean background, "
+                "item showcase style"
+            )
 
             # Generate the image using Azure OpenAI DALL-E
             image_result = await self.azure_client.generate_image(
@@ -376,7 +399,7 @@ class ArtistAgent:
 _artist = None
 
 
-def get_artist():
+def get_artist() -> ArtistAgent:
     """Get the artist instance, creating it if necessary."""
     global _artist
     if _artist is None:
