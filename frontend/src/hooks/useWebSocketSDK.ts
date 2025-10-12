@@ -41,7 +41,8 @@ export const useWebSocketSDK = (options: UseWebSocketSDKOptions) => {
     onDisconnect,
     onMessage,
     onError,
-    ...connectionOptions
+    reconnectInterval,
+    maxReconnectAttempts,
   } = options;
 
   const connect = useCallback(() => {
@@ -54,7 +55,8 @@ export const useWebSocketSDK = (options: UseWebSocketSDKOptions) => {
 
     try {
       const wrappedOptions: WebSocketConnectionOptions = {
-        ...connectionOptions,
+        reconnectInterval,
+        maxReconnectAttempts,
         onConnect: () => {
           setIsConnected(true);
           setIsConnecting(false);
@@ -107,7 +109,8 @@ export const useWebSocketSDK = (options: UseWebSocketSDKOptions) => {
     onDisconnect,
     onMessage,
     onError,
-    connectionOptions,
+    reconnectInterval,
+    maxReconnectAttempts,
   ]);
 
   const disconnect = useCallback(() => {

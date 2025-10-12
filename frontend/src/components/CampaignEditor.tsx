@@ -268,21 +268,6 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
     }
   };
 
-  const validateForm = () => {
-    const errors: Record<string, string> = {};
-
-    if (!formData.name.trim()) {
-      errors.name = "Campaign name is required";
-    }
-
-    if (!formData.setting.trim()) {
-      errors.setting = "Campaign setting is required";
-    }
-
-    setValidationErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
   const handleSave = useCallback(
     async (silent = false) => {
       const errors: Record<string, string> = {};
@@ -353,17 +338,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
         setIsSubmitting(false);
       }
     },
-    [
-      formData,
-      isEditing,
-      campaign,
-      onCampaignSaved,
-      setValidationErrors,
-      setIsSubmitting,
-      setError,
-      setHasUnsavedChanges,
-      setFormData,
-    ]
+    [formData, isEditing, campaign, onCampaignSaved]
   );
 
   // Auto-save functionality (must be after handleSave declaration)
@@ -672,7 +647,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
                 <div className={styles.suggestions}>
                   <h4>Suggestions:</h4>
                   <ul>
-                    {aiSuggestions.map((suggestion, index) => {
+                    {aiSuggestions.map((suggestion) => {
                       const currentValue = activeField
                         ? formData[activeField as keyof typeof formData]
                         : "";
@@ -680,7 +655,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
                         !currentValue || currentValue.trim() === "";
 
                       return (
-                        <li key={index}>
+                        <li key={suggestion}>
                           <span>{suggestion}</span>
                           <button
                             type="button"
