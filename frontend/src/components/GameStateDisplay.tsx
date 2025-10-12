@@ -192,8 +192,8 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
               className={styles.actionSelect}
             >
               <option value="">Select an action...</option>
-              {session.available_actions.map((action, index) => (
-                <option key={index} value={action}>
+              {session.available_actions.map((action) => (
+                <option key={action} value={action}>
                   {action}
                 </option>
               ))}

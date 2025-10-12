@@ -30,7 +30,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
   const worldDescriptionId = useId();
   const toneId = useId();
   const homebrewRulesId = useId();
-  
+
   const [formData, setFormData] = useState({
     name: campaign?.name || "",
     description: campaign?.description || "",
