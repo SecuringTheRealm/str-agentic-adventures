@@ -39,7 +39,7 @@ class Settings(BaseSettings):
     storage_connection_string: str = os.getenv("STORAGE_CONNECTION_STRING", "")
 
     # App Settings
-    app_host: str = os.getenv("APP_HOST", "0.0.0.0")
+    app_host: str = os.getenv("APP_HOST", "0.0.0.0")  # noqa: S104
     app_port: int = int(os.getenv("APP_PORT", "8000"))
     app_debug: bool = os.getenv("APP_DEBUG", "False").lower() == "true"
     app_log_level: str = os.getenv("APP_LOG_LEVEL", "info").upper()
