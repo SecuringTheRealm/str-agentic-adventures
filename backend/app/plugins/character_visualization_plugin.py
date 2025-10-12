@@ -25,10 +25,10 @@ class CharacterVisualizationPlugin:
         self.character_portraits = {}
         self.character_variations = {}
 
-    # @kernel_function(
-        description="Generate a detailed character portrait based on character details.",
-        name="generate_character_portrait",
-    )
+#     # @kernel_function(
+#         description="Generate a detailed character portrait based on character details.",
+#         name="generate_character_portrait",
+#     )
     def generate_character_portrait(
         self,
         character_name: str,
@@ -119,10 +119,10 @@ class CharacterVisualizationPlugin:
                 "error": f"Character portrait generation failed: {str(e)}",
             }
 
-    # @kernel_function(
-        description="Generate a character portrait variation for different scenarios.",
-        name="generate_character_variation",
-    )
+#     # @kernel_function(
+#         description="Generate a character portrait variation for different scenarios.",
+#         name="generate_character_variation",
+#     )
     def generate_character_variation(
         self,
         character_id: str,
@@ -198,10 +198,10 @@ class CharacterVisualizationPlugin:
                 "error": f"Character variation generation failed: {str(e)}",
             }
 
-    # @kernel_function(
-        description="Generate a group portrait with multiple characters.",
-        name="generate_group_portrait",
-    )
+#     # @kernel_function(
+#         description="Generate a group portrait with multiple characters.",
+#         name="generate_group_portrait",
+#     )
     def generate_group_portrait(
         self,
         character_ids: str,
@@ -291,10 +291,10 @@ class CharacterVisualizationPlugin:
                 "error": f"Group portrait generation failed: {str(e)}",
             }
 
-    # @kernel_function(
-        description="Get character portrait gallery for a character.",
-        name="get_character_gallery",
-    )
+#     # @kernel_function(
+#         description="Get character portrait gallery for a character.",
+#         name="get_character_gallery",
+#     )
     def get_character_gallery(self, character_id: str) -> dict[str, Any]:
         """
         Get all portraits and variations for a character.
@@ -347,10 +347,10 @@ class CharacterVisualizationPlugin:
                 "error": f"Character gallery retrieval failed: {str(e)}",
             }
 
-    # @kernel_function(
-        description="Generate character expression study showing different emotions.",
-        name="generate_expression_study",
-    )
+#     # @kernel_function(
+#         description="Generate character expression study showing different emotions.",
+#         name="generate_expression_study",
+#     )
     def generate_expression_study(
         self, character_id: str, expressions: str = "happy,sad,angry,surprised"
     ) -> dict[str, Any]:

@@ -15,7 +15,7 @@ class TestSRDIntegration:
         with (
             patch("app.agents.scribe_agent.init_db"),
             patch(
-                "app.agents.scribe_agent.kernel_manager.create_kernel"
+                "app.agents.scribe_agent.agent_client_manager.create_kernel"
             ) as mock_kernel,
             patch("app.agents.scribe_agent.ScribeAgent._register_skills"),
         ):

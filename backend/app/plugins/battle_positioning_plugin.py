@@ -23,10 +23,10 @@ class BattlePositioningPlugin:
         self.formation_templates = {}
         self.positioning_history = []
 
-    # @kernel_function(
-        description="Calculate optimal starting positions for combat units.",
-        name="calculate_starting_positions",
-    )
+#     # @kernel_function(
+#         description="Calculate optimal starting positions for combat units.",
+#         name="calculate_starting_positions",
+#     )
     def calculate_starting_positions(
         self,
         party_composition: str,
@@ -80,10 +80,10 @@ class BattlePositioningPlugin:
                 "error": f"Position calculation failed: {str(e)}",
             }
 
-    # @kernel_function(
-        description="Recommend formation adjustments during combat.",
-        name="recommend_formation_adjustments",
-    )
+#     # @kernel_function(
+#         description="Recommend formation adjustments during combat.",
+#         name="recommend_formation_adjustments",
+#     )
     def recommend_formation_adjustments(
         self,
         current_positions: str,
@@ -136,10 +136,10 @@ class BattlePositioningPlugin:
                 "error": f"Formation adjustment failed: {str(e)}",
             }
 
-    # @kernel_function(
-        description="Optimize unit spacing and formation coherence.",
-        name="optimize_unit_spacing",
-    )
+#     # @kernel_function(
+#         description="Optimize unit spacing and formation coherence.",
+#         name="optimize_unit_spacing",
+#     )
     def optimize_unit_spacing(
         self,
         unit_types: str,

@@ -28,11 +28,11 @@ async def test_agent_integration() -> None:
     ):
         # Mock the kernel creation to avoid actual Azure calls
         with patch(
-            "app.kernel_setup.kernel_manager.create_kernel"
-        ) as mock_kernel_manager:
+            "app.kernel_setup.agent_client_manager.create_kernel"
+        ) as mock_agent_client_manager:
             mock_kernel = Mock()
             mock_kernel.plugins = {"Rules": RulesEnginePlugin()}
-            mock_kernel_manager.return_value = mock_kernel
+            mock_agent_client_manager.return_value = mock_kernel
 
             # Create the agent
             agent = CombatMCAgent()

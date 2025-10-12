@@ -49,7 +49,7 @@ class TestCombatCartographerAgentSkillsRegistration:
             mock_kernel.add_plugin = add_plugin_mock
 
             with (
-                patch("app.kernel_setup.kernel_manager") as mock_manager,
+                patch("app.agent_client_setup.agent_client_manager") as mock_manager,
                 patch("app.azure_openai_client.AzureOpenAIClient"),
             ):
                 mock_manager.create_kernel.return_value = mock_kernel
@@ -128,7 +128,7 @@ class TestCombatCartographerAgentSkillsRegistration:
             mock_kernel.add_plugin = Mock()
 
             with (
-                patch("app.kernel_setup.kernel_manager") as mock_manager,
+                patch("app.agent_client_setup.agent_client_manager") as mock_manager,
                 patch("app.azure_openai_client.AzureOpenAIClient"),
             ):
                 mock_manager.create_kernel.return_value = mock_kernel
@@ -196,7 +196,7 @@ class TestCombatCartographerAgentSkillsRegistration:
             mock_kernel.add_plugin.side_effect = Exception("Plugin registration failed")
 
             with (
-                patch("app.kernel_setup.kernel_manager") as mock_manager,
+                patch("app.agent_client_setup.agent_client_manager") as mock_manager,
                 patch("app.azure_openai_client.AzureOpenAIClient"),
             ):
                 mock_manager.create_kernel.return_value = mock_kernel

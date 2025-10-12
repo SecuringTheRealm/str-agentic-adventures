@@ -29,9 +29,9 @@ class NarrativeMemoryPlugin:
         self.story_arcs = {}  # For tracking story arc memories
         self.character_arcs = {}  # For tracking character development arcs
 
-    # @kernel_function(
-        description="Store a narrative fact in memory.", name="remember_fact"
-    )
+#     # @kernel_function(
+#         description="Store a narrative fact in memory.", name="remember_fact"
+#     )
     def remember_fact(
         self, fact: str, category: str, importance: int = 5
     ) -> dict[str, Any]:
@@ -71,10 +71,10 @@ class NarrativeMemoryPlugin:
             logger.error(f"Error storing fact in memory: {str(e)}")
             return {"status": "error", "message": f"Failed to store fact: {str(e)}"}
 
-    # @kernel_function(
-        description="Record a narrative event in the campaign timeline.",
-        name="record_event",
-    )
+#     # @kernel_function(
+#         description="Record a narrative event in the campaign timeline.",
+#         name="record_event",
+#     )
     def record_event(
         self, event: str, location: str, characters: str, importance: int = 5
     ) -> dict[str, Any]:
@@ -118,10 +118,10 @@ class NarrativeMemoryPlugin:
             logger.error(f"Error recording event: {str(e)}")
             return {"status": "error", "message": f"Failed to record event: {str(e)}"}
 
-    # @kernel_function(
-        description="Retrieve facts related to a specific query or category.",
-        name="recall_facts",
-    )
+#     # @kernel_function(
+#         description="Retrieve facts related to a specific query or category.",
+#         name="recall_facts",
+#     )
     def recall_facts(self, query: str = "", category: str = "") -> dict[str, Any]:
         """
         Retrieve facts related to a specific query or category.
@@ -164,9 +164,9 @@ class NarrativeMemoryPlugin:
                 "facts": [],
             }
 
-    # @kernel_function(
-        description="Retrieve a timeline of recent events.", name="recall_timeline"
-    )
+#     # @kernel_function(
+#         description="Retrieve a timeline of recent events.", name="recall_timeline"
+#     )
     def recall_timeline(
         self, character: str = "", location: str = "", limit: int = 5
     ) -> dict[str, Any]:
@@ -216,9 +216,9 @@ class NarrativeMemoryPlugin:
                 "events": [],
             }
 
-    # @kernel_function(
-        description="Add or update an NPC in the campaign.", name="update_npc"
-    )
+#     # @kernel_function(
+#         description="Add or update an NPC in the campaign.", name="update_npc"
+#     )
     def update_npc(
         self, name: str, description: str, location: str, relationships: str = ""
     ) -> dict[str, Any]:
@@ -262,9 +262,9 @@ class NarrativeMemoryPlugin:
             logger.error(f"Error updating NPC: {str(e)}")
             return {"status": "error", "message": f"Failed to update NPC: {str(e)}"}
 
-    # @kernel_function(
-        description="Retrieve information about a specific NPC.", name="get_npc"
-    )
+#     # @kernel_function(
+#         description="Retrieve information about a specific NPC.", name="get_npc"
+#     )
     def get_npc(self, name: str) -> dict[str, Any]:
         """
         Retrieve information about a specific NPC.
@@ -288,10 +288,10 @@ class NarrativeMemoryPlugin:
             logger.error(f"Error retrieving NPC: {str(e)}")
             return {"status": "error", "message": f"Failed to retrieve NPC: {str(e)}"}
 
-    # @kernel_function(
-        description="Track progress of a story arc in the narrative memory.",
-        name="track_story_arc",
-    )
+#     # @kernel_function(
+#         description="Track progress of a story arc in the narrative memory.",
+#         name="track_story_arc",
+#     )
     def track_story_arc(
         self,
         arc_id: str,
@@ -349,10 +349,10 @@ class NarrativeMemoryPlugin:
                 "message": f"Failed to track story arc: {str(e)}",
             }
 
-    # @kernel_function(
-        description="Record a character development moment or arc progression.",
-        name="record_character_development",
-    )
+#     # @kernel_function(
+#         description="Record a character development moment or arc progression.",
+#         name="record_character_development",
+#     )
     def record_character_development(
         self,
         character_id: str,
@@ -403,10 +403,10 @@ class NarrativeMemoryPlugin:
                 "message": f"Failed to record character development: {str(e)}",
             }
 
-    # @kernel_function(
-        description="Retrieve story arc memories for narrative continuity.",
-        name="recall_story_arcs",
-    )
+#     # @kernel_function(
+#         description="Retrieve story arc memories for narrative continuity.",
+#         name="recall_story_arcs",
+#     )
     def recall_story_arcs(
         self, character_id: str = "", status: str = ""
     ) -> dict[str, Any]:

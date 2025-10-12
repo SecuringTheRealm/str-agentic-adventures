@@ -123,10 +123,10 @@ class NarrativeGenerationPlugin:
             },
         }
 
-    # @kernel_function(
-        description="Create a new story arc with plot points and narrative structure.",
-        name="create_story_arc",
-    )
+#     # @kernel_function(
+#         description="Create a new story arc with plot points and narrative structure.",
+#         name="create_story_arc",
+#     )
     def create_story_arc(
         self,
         title: str,
@@ -182,10 +182,10 @@ class NarrativeGenerationPlugin:
                 "message": f"Failed to create story arc: {str(e)}",
             }
 
-    # @kernel_function(
-        description="Generate narrative choices for a given situation.",
-        name="generate_choices",
-    )
+#     # @kernel_function(
+#         description="Generate narrative choices for a given situation.",
+#         name="generate_choices",
+#     )
     def generate_choices(
         self,
         situation: str,
@@ -251,10 +251,10 @@ class NarrativeGenerationPlugin:
                 "message": f"Failed to generate choices: {str(e)}",
             }
 
-    # @kernel_function(
-        description="Process a player's narrative choice and determine consequences.",
-        name="process_choice",
-    )
+#     # @kernel_function(
+#         description="Process a player's narrative choice and determine consequences.",
+#         name="process_choice",
+#     )
     def process_choice(
         self,
         choice_id: str,
@@ -323,10 +323,10 @@ class NarrativeGenerationPlugin:
             logger.error(f"Error processing choice: {str(e)}")
             return {"status": "error", "message": f"Failed to process choice: {str(e)}"}
 
-    # @kernel_function(
-        description="Advance the narrative by checking plot point triggers and updating story state.",
-        name="advance_narrative",
-    )
+#     # @kernel_function(
+#         description="Advance the narrative by checking plot point triggers and updating story state.",
+#         name="advance_narrative",
+#     )
     def advance_narrative(
         self, campaign_id: str, current_situation: str = "", trigger_data: str = ""
     ) -> dict[str, Any]:
@@ -402,10 +402,10 @@ class NarrativeGenerationPlugin:
                 "message": f"Failed to advance narrative: {str(e)}",
             }
 
-    # @kernel_function(
-        description="Get the current narrative state for a campaign.",
-        name="get_narrative_state",
-    )
+#     # @kernel_function(
+#         description="Get the current narrative state for a campaign.",
+#         name="get_narrative_state",
+#     )
     def get_narrative_state(self, campaign_id: str) -> dict[str, Any]:
         """
         Get the current narrative state for a campaign.
