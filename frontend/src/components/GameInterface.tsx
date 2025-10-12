@@ -103,17 +103,20 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 
       case "chat_stream":
         if (typeof message.chunk === "string") {
-          setStreamingMessage(message.full_text || "");
+          setStreamingMessage(
+            (typeof message.full_text === "string" ? message.full_text : "") ||
+              ""
+          );
         }
         break;
 
       case "chat_complete":
         setIsStreaming(false);
         setLoading(false);
-        if (message.message) {
+        if (typeof message.message === "string") {
           setMessages((prev) => [
             ...prev,
-            { text: message.message, sender: "dm" },
+            { text: message.message as string, sender: "dm" },
           ]);
         }
         setStreamingMessage("");
@@ -126,7 +129,9 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
           ...prev,
           {
             text:
-              message.message || "An error occurred processing your message.",
+              (typeof message.message === "string"
+                ? message.message
+                : "An error occurred processing your message."),
             sender: "dm",
           },
         ]);
@@ -142,7 +147,11 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
     switch (message.type) {
       case "dice_result": {
         // Add dice result to chat
-        const diceMessage = `${message.player_name} rolled ${message.notation}: ${message.result.total}`;
+        const result =
+          message.result && typeof message.result === "object"
+            ? (message.result as { total?: number })
+            : undefined;
+        const diceMessage = `${message.player_name || "Player"} rolled ${message.notation || "dice"}: ${result?.total || "?"}`;
         setMessages((prev) => [...prev, { text: diceMessage, sender: "dm" }]);
 
         // Pass the dice result to the DiceRoller component

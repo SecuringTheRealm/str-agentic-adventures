@@ -163,12 +163,12 @@ const retryApiCall = async <T>(
       lastError = error;
 
       // Don't retry on client errors (4xx), only server errors (5xx) and network errors
-      const axiosError = error as { response?: { status?: number } };
+      const errorWithResponse = error as { response?: { status?: number }; message?: string };
       if (
-        axiosError.response &&
-        axiosError.response.status &&
-        axiosError.response.status >= 400 &&
-        axiosError.response.status < 500
+        errorWithResponse.response &&
+        errorWithResponse.response.status &&
+        errorWithResponse.response.status >= 400 &&
+        errorWithResponse.response.status < 500
       ) {
         throw error;
       }
@@ -180,7 +180,7 @@ const retryApiCall = async <T>(
       const delayMs = initialDelay * 2 ** (attempt - 1);
       console.warn(
         `API call failed (attempt ${attempt}/${retries}), retrying in ${delayMs}ms...`,
-        error.message
+        errorWithResponse.message
       );
       await sleep(delayMs);
     }
