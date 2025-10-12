@@ -17,7 +17,7 @@ This directory contains Architecture Decision Records (ADRs) for the Agentic Adv
 | Number | Title | Status | Date | Description |
 |--------|-------|--------|------|-------------|
 | 0000 | [Using ADRs](template.md) | Accepted | 2025-06-10 | Template for architecture decisions |
-| 0001 | [Use Microsoft Semantic Kernel for Multi-Agent Architecture](0001-semantic-kernel-multi-agent-framework.md) | Accepted | 2025-06-10 | Selection of Microsoft Semantic Kernel as the foundation for our multi-agent system |
+| 0001 | [Use Microsoft Semantic Kernel for Multi-Agent Architecture](0001-semantic-kernel-multi-agent-framework.md) | Superseded | 2025-06-10 | Selection of Microsoft Semantic Kernel as the foundation for our multi-agent system - superseded by ADR-0018 |
 | 0002 | [Specialized Multi-Agent Architecture for AI Dungeon Master](0002-specialized-multi-agent-architecture.md) | Accepted | 2025-06-10 | Approach for structuring the different AI agents in the system |
 | 0003 | [Data Storage Strategy for Game State and Assets](0003-data-storage-strategy.md) | Superseded | 2025-06-10 | Strategy for storing and managing game data - updated for SQLAlchemy implementation |
 | 0004 | [React and TypeScript Frontend Architecture](0004-react-typescript-frontend.md) | Accepted | 2025-06-10 | Selection of React with TypeScript for the frontend application |
@@ -34,6 +34,7 @@ This directory contains Architecture Decision Records (ADRs) for the Agentic Adv
 | 0015 | [Copilot Workflow Optimization with Dependency Caching](0015-copilot-workflow-optimization-with-dependency-caching.md) | Accepted | 2025-08-10 | Optimize Copilot agent setup workflow with GitHub Actions dependency caching to reduce startup times |
 | 0016 | [Frontend Build Modernization with Vite](0016-frontend-build-modernization.md) | Accepted | 2025-10-11 | Replace Create React App with Vite to reduce dependencies and resolve audit alerts |
 | 0017 | [Unified SDK with WebSocket Client Extension](0017-unified-sdk-websocket-extension.md) | Accepted | 2025-10-12 | Extend OpenAPI-generated REST client with manual WebSocket module for unified developer experience |
+| 0018 | [Adopt Azure AI Agents SDK for Multi-Agent Architecture](0018-azure-ai-agents-sdk-adoption.md) | Accepted | 2025-10-12 | Migration from Semantic Kernel to Azure AI Agents SDK for production-grade agent orchestration |
 
 ## ADR Statuses
 

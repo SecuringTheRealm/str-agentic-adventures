@@ -8,7 +8,7 @@ license = {text = "MIT"}
 authors = [
     {name = "SecuringTheRealm", email = "contact@securingtherealm.com"}
 ]
-keywords = ["ai", "rpg", "dungeons-and-dragons", "semantic-kernel", "azure-openai"]
+keywords = ["ai", "rpg", "dungeons-and-dragons", "azure-ai-agents", "azure-openai"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: End Users/Desktop",
@@ -24,10 +24,14 @@ dependencies = [
     "uvicorn>=0.22.0",
     "pydantic>=2.0.0",
     "python-dotenv>=1.0.0",
-    # Azure & OpenAI integration
-    "semantic-kernel>=1.0,<2.0",
+    # Azure AI integration
+    "azure-ai-agents>=1.0.0",
+    "azure-ai-projects>=1.0.0",
+    "azure-ai-inference>=1.0.0",
     "azure-identity>=1.13.0",
     "openai>=1.0,<2.0",
+    "opentelemetry-api>=1.20.0",
+    "opentelemetry-sdk>=1.20.0",
     # Database
     "sqlalchemy>=2.0.0",
     "alembic>=1.11.0",

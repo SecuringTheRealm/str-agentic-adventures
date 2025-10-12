@@ -1,8 +1,8 @@
 """
-Dungeon Master Agent - Rebuilt with minimal, barebones functionality.
+Dungeon Master Agent - Migrated to Azure AI Agents SDK.
 
-This is a ground-up rebuild focusing on a simple AI approach using system prompts
-to meet PRD requirements, replacing the complex multi-agent orchestration.
+This agent uses Azure AI Agents SDK for production-grade orchestration of the
+D&D experience through AI guidance.
 """
 
 import json
@@ -11,14 +11,16 @@ import random
 import re
 from typing import Any
 
-from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
-from semantic_kernel.connectors.ai.prompt_execution_settings import (
-    PromptExecutionSettings,
+from azure.ai.inference import ChatCompletionsClient
+from azure.ai.inference.models import (
+    AssistantMessage,
+    ChatCompletions,
+    ChatRequestMessage,
+    SystemMessage,
+    UserMessage,
 )
-from semantic_kernel.contents import ChatHistory
 
-from app.kernel_setup import kernel_manager
+from app.agent_client_setup import agent_client_manager
 from app.utils.dice import DiceRoller
 
 logger = logging.getLogger(__name__)
@@ -26,34 +28,30 @@ logger = logging.getLogger(__name__)
 
 class DungeonMasterAgent:
     """
-    Simplified Dungeon Master Agent using system prompts to fulfill the role
-    of orchestrating the D&D experience through AI guidance rather than
-    complex agent coordination.
+    Dungeon Master Agent using Azure AI Agents SDK to fulfill the role
+    of orchestrating the D&D experience through AI guidance.
     """
 
     def __init__(self) -> None:
         """Initialize the Dungeon Master agent."""
         self._fallback_mode = False
-        self.kernel: Kernel | None = None
-        self.chat_service: AzureChatCompletion | None = None
+        self.chat_client: ChatCompletionsClient | None = None
 
-        # Try to get the shared kernel from kernel manager
+        # Try to get the shared chat client from agent client manager
         try:
-            self.kernel = kernel_manager.get_kernel()
-            if self.kernel is None:
-                # Kernel manager is in fallback mode
+            self.chat_client = agent_client_manager.get_chat_client()
+            if self.chat_client is None:
+                # Agent client manager is in fallback mode
                 self._fallback_mode = True
                 logger.warning(
                     "DM Agent operating in fallback mode - Azure OpenAI not configured"
                 )
             else:
-                # Get the chat service from the kernel
-                self.chat_service = self.kernel.get_service(type=AzureChatCompletion)
-                logger.info("DM Agent initialized with Semantic Kernel")
+                logger.info("DM Agent initialized with Azure AI Agents SDK")
 
         except Exception as e:
             logger.warning(
-                f"Failed to initialize DM Agent with Semantic Kernel: {e}. "
+                f"Failed to initialize DM Agent with Azure AI SDK: {e}. "
                 "Operating in fallback mode."
             )
             self._fallback_mode = True
@@ -97,7 +95,7 @@ Always respond as a helpful, creative DM who wants players to have an exciting a
         self, user_input: str, context: dict[str, Any] = None
     ) -> dict[str, Any]:
         """
-        Process user input using a simple AI approach with system prompts.
+        Process user input using Azure AI Agents SDK.
 
         Args:
             user_input: The player's input text
@@ -124,25 +122,28 @@ Always respond as a helpful, creative DM who wants players to have an exciting a
             if context.get("character_name"):
                 user_message = f"Player ({context['character_name']}): {user_input}"
 
-            # Create chat history with Semantic Kernel
-            chat_history = ChatHistory()
-            chat_history.add_system_message(system_prompt)
-            chat_history.add_user_message(user_message)
+            # Create messages for Azure AI SDK
+            messages: list[ChatRequestMessage] = [
+                SystemMessage(content=system_prompt),
+                UserMessage(content=user_message),
+            ]
 
-            # Configure prompt execution settings
-            settings = PromptExecutionSettings(
+            # Get AI response using Azure AI Inference SDK
+            from app.config import settings
+            
+            response: ChatCompletions = await self.chat_client.complete(
+                messages=messages,
+                model=settings.azure_openai_chat_deployment,
                 temperature=0.7,
                 max_tokens=500,
             )
 
-            # Get AI response using Semantic Kernel
-            response = await self.chat_service.get_chat_message_contents(
-                chat_history=chat_history,
-                settings=settings,
-            )
-
             # Extract the response text
-            ai_response = str(response[0]) if response else "The adventure continues..."
+            ai_response = (
+                response.choices[0].message.content
+                if response.choices
+                else "The adventure continues..."
+            )
 
             # Structure the response in the expected format
             return {
@@ -221,41 +222,41 @@ Always respond as a helpful, creative DM who wants players to have an exciting a
     async def _stream_ai_response(
         self, messages: list[dict[str, str]], websocket
     ) -> None:
-        """Stream AI response using Semantic Kernel."""
+        """Stream AI response using Azure AI Inference SDK."""
         try:
             # Send start streaming message
             await self._send_chat_message(
                 websocket, {"type": "chat_start_stream", "message": ""}
             )
 
-            # Convert messages to ChatHistory
-            chat_history = ChatHistory()
+            # Convert message dicts to ChatRequestMessage objects
+            chat_messages: list[ChatRequestMessage] = []
             for msg in messages:
                 if msg["role"] == "system":
-                    chat_history.add_system_message(msg["content"])
+                    chat_messages.append(SystemMessage(content=msg["content"]))
                 elif msg["role"] == "user":
-                    chat_history.add_user_message(msg["content"])
+                    chat_messages.append(UserMessage(content=msg["content"]))
                 elif msg["role"] == "assistant":
-                    chat_history.add_assistant_message(msg["content"])
+                    chat_messages.append(AssistantMessage(content=msg["content"]))
 
-            # Configure prompt execution settings
-            settings = PromptExecutionSettings(
+            # Get model deployment name from settings
+            from app.config import settings
+
+            # Stream response using Azure AI Inference SDK
+            full_response = ""
+            response = await self.chat_client.complete(
+                messages=chat_messages,
+                model=settings.azure_openai_chat_deployment,
                 temperature=0.7,
                 max_tokens=500,
+                stream=True,
             )
 
-            # Stream response using Semantic Kernel
-            full_response = ""
-            async for (
-                chunk_list
-            ) in self.chat_service.get_streaming_chat_message_contents(
-                chat_history=chat_history,
-                settings=settings,
-            ):
-                # Each chunk is a list of StreamingChatMessageContent
-                for chunk in chunk_list:
-                    chunk_text = str(chunk)
-                    if chunk_text:
+            async for chunk in response:
+                if chunk.choices:
+                    delta = chunk.choices[0].delta
+                    if delta.content:
+                        chunk_text = delta.content
                         full_response += chunk_text
                         await self._send_chat_message(
                             websocket,
