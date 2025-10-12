@@ -374,7 +374,7 @@ export class WebSocketClient {
     campaignId: string,
     options: WebSocketConnectionOptions = {}
   ): WebSocketConnection {
-    const url = `${this.wsBaseUrl}/api/ws/${campaignId}`;
+    const url = `${this.wsBaseUrl}/ws/${campaignId}`;
     const connection = new WebSocketConnection(url, options, this.config);
     connection.connect();
     return connection;
@@ -387,7 +387,7 @@ export class WebSocketClient {
     campaignId: string,
     options: WebSocketConnectionOptions = {}
   ): WebSocketConnection {
-    const url = `${this.wsBaseUrl}/api/ws/chat/${campaignId}`;
+    const url = `${this.wsBaseUrl}/ws/chat/${campaignId}`;
     const connection = new WebSocketConnection(url, options, this.config);
     connection.connect();
     return connection;
@@ -399,7 +399,7 @@ export class WebSocketClient {
   connectToGlobal(
     options: WebSocketConnectionOptions = {}
   ): WebSocketConnection {
-    const url = `${this.wsBaseUrl}/api/ws/global`;
+    const url = `${this.wsBaseUrl}/ws/global`;
     const connection = new WebSocketConnection(url, options, this.config);
     connection.connect();
     return connection;
