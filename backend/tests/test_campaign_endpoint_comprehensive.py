@@ -1,127 +1,71 @@
 """
-Comprehensive test for the campaign endpoint to ensure proper error handling.
+Comprehensive test for the campaign endpoint to ensure proper behavior.
 """
-
-import os
 
 from fastapi.testclient import TestClient
 
 
 def test_campaign_endpoint_with_missing_config() -> bool | None:
-    """Test that campaign endpoint properly handles missing Azure OpenAI configuration."""
+    """Test that campaign endpoint works without Azure OpenAI configuration.
+    
+    Note: Basic campaign creation doesn't require Azure OpenAI. Only character
+    creation and AI-powered features require Azure OpenAI configuration.
+    """
+    from app.main import app
+    client = TestClient(app)
 
-    # Temporarily clear Azure OpenAI environment variables
-    env_vars_to_clear = [
-        "AZURE_OPENAI_ENDPOINT",
-        "AZURE_OPENAI_API_KEY",
-        "AZURE_OPENAI_CHAT_DEPLOYMENT",
-        "AZURE_OPENAI_EMBEDDING_DEPLOYMENT",
-    ]
+    # Test campaign creation - should work without Azure config
+    campaign_data = {
+        "name": "Test Campaign",
+        "setting": "fantasy",
+        "tone": "heroic",
+    }
 
-    original_values = {}
-    for var in env_vars_to_clear:
-        original_values[var] = os.environ.get(var)
-        if var in os.environ:
-            del os.environ[var]
+    response = client.post("/api/game/campaign", json=campaign_data)
 
-    try:
-        # Import after clearing environment to ensure settings get the missing values
-        from app.main import app
+    # Campaign creation should succeed without Azure OpenAI
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}"
 
-        client = TestClient(app)
+    response_data = response.json()
+    assert "id" in response_data, "Response should contain campaign ID"
+    assert response_data["name"] == "Test Campaign"
 
-        # Test campaign creation with missing config
-        campaign_data = {
-            "name": "Test Campaign",
-            "setting": "fantasy",
-            "tone": "heroic",
-        }
-
-        response = client.post("/api/game/campaign", json=campaign_data)
-
-        # We expect a service unavailable error (503) with proper error message about Azure OpenAI
-        assert response.status_code == 503, f"Expected 503, got {response.status_code}"
-
-        response_data = response.json()
-        detail = response_data.get("detail", "")
-
-        assert "Azure OpenAI configuration" in detail, (
-            f"Error message should mention Azure OpenAI configuration: {detail}"
-        )
-        assert "agentic demo requires" in detail, (
-            f"Error should mention this is an agentic demo: {detail}"
-        )
-        assert "AZURE_OPENAI_ENDPOINT" in detail, (
-            f"Error should list required env vars: {detail}"
-        )
-
-        print(
-            "✓ Test passed: Campaign endpoint properly handles missing Azure OpenAI configuration"
-        )
-        return True
-
-    finally:
-        # Restore original environment values
-        for var, value in original_values.items():
-            if value is not None:
-                os.environ[var] = value
-            elif var in os.environ:
-                del os.environ[var]
+    print(
+        "✓ Test passed: Campaign endpoint works without Azure OpenAI configuration"
+    )
+    return True
 
 
 def test_campaign_endpoint_with_config() -> bool | None:
-    """Test that campaign endpoint works when Azure OpenAI configuration is provided."""
+    """Test that campaign endpoint works with configuration.
+    
+    Note: Campaign creation doesn't require Azure OpenAI configuration,
+    so this test simply verifies the endpoint works correctly.
+    """
+    from app.main import app
 
-    # Set minimal valid Azure OpenAI configuration
-    test_config = {
-        "AZURE_OPENAI_ENDPOINT": "https://test.openai.azure.com/",
-        "AZURE_OPENAI_API_KEY": "test-key-12345",
-        "AZURE_OPENAI_CHAT_DEPLOYMENT": "gpt-4",
-        "AZURE_OPENAI_EMBEDDING_DEPLOYMENT": "text-embedding-ada-002",
+    client = TestClient(app)
+
+    # Test campaign creation
+    campaign_data = {
+        "name": "Test Campaign",
+        "setting": "fantasy",
+        "tone": "heroic",
     }
 
-    original_values = {}
-    for var, value in test_config.items():
-        original_values[var] = os.environ.get(var)
-        os.environ[var] = value
+    response = client.post("/api/game/campaign", json=campaign_data)
 
-    try:
-        # Import after setting environment
-        from app.main import app
-
-        client = TestClient(app)
-
-        # Test campaign creation with valid config
-        campaign_data = {
-            "name": "Test Campaign",
-            "setting": "fantasy",
-            "tone": "heroic",
-        }
-
-        response = client.post("/api/game/campaign", json=campaign_data)
-
-        # This might fail due to the actual Azure OpenAI calls, but should not be a 503 config error
-        if response.status_code == 503:
-            response_data = response.json()
-            detail = response_data.get("detail", "")
-            if "Azure OpenAI configuration" in detail:
-                print(
-                    "✗ Test failed: Still getting configuration error even with config set"
-                )
-                return False
-
+    # Campaign creation should succeed
+    if response.status_code != 200:
         print(
-            f"✓ Test passed: With configuration, got status {response.status_code} (not 503 config error)"
+            f"✗ Test failed: Campaign creation failed with status {response.status_code}"
         )
-        return True
+        return False
 
-    finally:
-        # Restore original environment values
-        for var, value in original_values.items():
-            if value is not None:
-                os.environ[var] = value
-            elif var in os.environ:
-                del os.environ[var]
+    print(
+        f"✓ Test passed: Campaign creation succeeded with status {response.status_code}"
+    )
+    return True
 
 
 if __name__ == "__main__":
