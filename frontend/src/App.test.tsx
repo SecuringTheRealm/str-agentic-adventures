@@ -7,7 +7,9 @@ import App from "./App";
 vi.mock("./components/CampaignSelection", () => ({
   default: ({
     onCampaignCreated,
-  }: { onCampaignCreated: (campaign: any) => void }) => (
+  }: {
+    onCampaignCreated: (campaign: any) => void;
+  }) => (
     <div data-testid="campaign-selection">
       <button
         type="button"
@@ -32,7 +34,10 @@ vi.mock("./components/CharacterSelection", () => ({
   default: ({
     campaign,
     onCharacterSelected,
-  }: { campaign: any; onCharacterSelected: (character: any) => void }) => (
+  }: {
+    campaign: any;
+    onCharacterSelected: (character: any) => void;
+  }) => (
     <div data-testid="character-selection">
       <button
         type="button"

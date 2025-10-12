@@ -129,9 +129,9 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
           ...prev,
           {
             text:
-              (typeof message.message === "string"
+              typeof message.message === "string"
                 ? message.message
-                : "An error occurred processing your message."),
+                : "An error occurred processing your message.",
             sender: "dm",
           },
         ]);

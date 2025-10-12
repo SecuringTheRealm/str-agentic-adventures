@@ -6,11 +6,15 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(135deg, #0a0a0a 0%, #1a2f3a 100%); /* Global fantasy background */
+  background: linear-gradient(
+    135deg,
+    #0a0a0a 0%,
+    #1a2f3a 100%
+  ); /* Global fantasy background */
   color: #f4f1e8; /* Default light text */
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
-    monospace;
+  font-family:
+    source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
 }

@@ -47,7 +47,11 @@
 .App-main {
   flex: 1;
   padding: 2rem;
-  background: linear-gradient(135deg, #1a2f3a 0%, #0f404f 100%); /* Fantasy gradient background */
+  background: linear-gradient(
+    135deg,
+    #1a2f3a 0%,
+    #0f404f 100%
+  ); /* Fantasy gradient background */
   min-height: calc(100vh - 80px);
 }
 

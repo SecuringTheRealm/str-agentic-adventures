@@ -2,7 +2,12 @@
   max-width: 600px;
   margin: 0 auto;
   padding: 20px;
-  background: rgba(15, 64, 79, 0.9); /* Primary fantasy color with transparency */
+  background: rgba(
+    15,
+    64,
+    79,
+    0.9
+  ); /* Primary fantasy color with transparency */
   color: #f4f1e8; /* Warm off-white for readability */
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
@@ -184,14 +189,22 @@
 }
 
 .createButton:hover:not(:disabled) {
-  background: linear-gradient(135deg, #d67c2d, #e4953f); /* Lighter wood on hover */
+  background: linear-gradient(
+    135deg,
+    #d67c2d,
+    #e4953f
+  ); /* Lighter wood on hover */
   box-shadow: 0 4px 8px rgba(228, 187, 30, 0.3);
   transform: translateY(-1px);
   filter: brightness(1.1);
 }
 
 .createButton:disabled {
-  background: linear-gradient(135deg, #788070, #98a090); /* Steel colors when disabled */
+  background: linear-gradient(
+    135deg,
+    #788070,
+    #98a090
+  ); /* Steel colors when disabled */
   cursor: not-allowed;
   border-color: #788070;
   transform: none;

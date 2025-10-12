@@ -2,7 +2,12 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
-  background: rgba(15, 64, 79, 0.8); /* Semi-transparent primary fantasy color */
+  background: rgba(
+    15,
+    64,
+    79,
+    0.8
+  ); /* Semi-transparent primary fantasy color */
   border-radius: 8px;
   border: 2px solid #e4bb1e; /* Gold border to match theme */
 }
@@ -46,7 +51,9 @@
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
   overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
   border: 2px solid #788070; /* Steel border */
 }
 
@@ -58,7 +65,11 @@
 }
 
 .customCampaignCard {
-  background: linear-gradient(135deg, #b15005 0%, #d67c2d 100%); /* Wood gradient to match theme */
+  background: linear-gradient(
+    135deg,
+    #b15005 0%,
+    #d67c2d 100%
+  ); /* Wood gradient to match theme */
   color: white;
   border-color: #e4bb1e; /* Gold border */
 }
@@ -180,7 +191,11 @@
 }
 
 .selectButton {
-  background: linear-gradient(135deg, #b15005, #d67c2d); /* Wood gradient to match theme */
+  background: linear-gradient(
+    135deg,
+    #b15005,
+    #d67c2d
+  ); /* Wood gradient to match theme */
   color: white;
   border: 1px solid #e4bb1e; /* Gold border */
   padding: 0.75rem 1.5rem;
@@ -198,7 +213,11 @@
 }
 
 .selectButton:hover:not(:disabled) {
-  background: linear-gradient(135deg, #d67c2d, #e4953f); /* Lighter wood on hover */
+  background: linear-gradient(
+    135deg,
+    #d67c2d,
+    #e4953f
+  ); /* Lighter wood on hover */
   box-shadow: 0 2px 4px rgba(228, 187, 30, 0.3);
 }
 

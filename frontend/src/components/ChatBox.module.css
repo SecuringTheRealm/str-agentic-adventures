@@ -37,7 +37,11 @@
 
 .playerMessage {
   align-self: flex-end;
-  background: linear-gradient(135deg, #0f404f, #1a5a6b); /* Primary color gradient */
+  background: linear-gradient(
+    135deg,
+    #0f404f,
+    #1a5a6b
+  ); /* Primary color gradient */
   color: #f4f1e8; /* Warm off-white text */
   margin-left: auto;
   border-bottom-right-radius: 0;
@@ -107,12 +111,20 @@
 }
 
 .inputForm button:hover {
-  background: linear-gradient(135deg, #d67c2d, #e4953f); /* Lighter wood on hover */
+  background: linear-gradient(
+    135deg,
+    #d67c2d,
+    #e4953f
+  ); /* Lighter wood on hover */
   box-shadow: 0 2px 4px rgba(228, 187, 30, 0.3);
 }
 
 .inputForm button:disabled {
-  background: linear-gradient(135deg, #788070, #98a090); /* Steel colors when disabled */
+  background: linear-gradient(
+    135deg,
+    #788070,
+    #98a090
+  ); /* Steel colors when disabled */
   cursor: not-allowed;
   border-color: #788070;
 }

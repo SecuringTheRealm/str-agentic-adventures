@@ -18,6 +18,11 @@
     "types": ["vite/client"]
   },
   "include": ["src"],
-  "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx", "src/setupTests.ts", "e2e/**/*"],
+  "exclude": [
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/setupTests.ts",
+    "e2e/**/*"
+  ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

@@ -163,7 +163,10 @@ const retryApiCall = async <T>(
       lastError = error;
 
       // Don't retry on client errors (4xx), only server errors (5xx) and network errors
-      const errorWithResponse = error as { response?: { status?: number }; message?: string };
+      const errorWithResponse = error as {
+        response?: { status?: number };
+        message?: string;
+      };
       if (
         errorWithResponse.response &&
         errorWithResponse.response.status &&

@@ -36,7 +36,11 @@ function App() {
       <header className="App-header">
         <h1>Securing the Realm - Agentic Adventures</h1>
         {gameStarted && (
-          <button type="button" onClick={handleBackToCampaigns} className="back-button">
+          <button
+            type="button"
+            onClick={handleBackToCampaigns}
+            className="back-button"
+          >
             ← Back to Campaigns
           </button>
         )}

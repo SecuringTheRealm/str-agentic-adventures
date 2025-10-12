@@ -2,7 +2,11 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: linear-gradient(135deg, #1a2f3a 0%, #0f404f 100%); /* Fantasy gradient */
+  background: linear-gradient(
+    135deg,
+    #1a2f3a 0%,
+    #0f404f 100%
+  ); /* Fantasy gradient */
 }
 
 .gameContainer {
@@ -72,12 +76,20 @@
 }
 
 .visualButton:hover:not(:disabled) {
-  background: linear-gradient(135deg, #d67c2d, #e4953f); /* Lighter wood on hover */
+  background: linear-gradient(
+    135deg,
+    #d67c2d,
+    #e4953f
+  ); /* Lighter wood on hover */
   box-shadow: 0 2px 4px rgba(228, 187, 30, 0.3);
 }
 
 .visualButton:disabled {
-  background: linear-gradient(135deg, #788070, #98a090); /* Steel colors when disabled */
+  background: linear-gradient(
+    135deg,
+    #788070,
+    #98a090
+  ); /* Steel colors when disabled */
   cursor: not-allowed;
   border-color: #788070;
 }

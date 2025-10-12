@@ -10,6 +10,7 @@
 
 # production
 /build
+/dist
 
 # misc
 .DS_Store
@@ -30,3 +31,6 @@ yarn-error.log*
 # Keep screenshots directory structure but ignore large image files in CI
 screenshots/*.png
 !screenshots/.gitkeep
+
+# Generated API client
+/src/api-client/
