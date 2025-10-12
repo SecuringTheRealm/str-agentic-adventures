@@ -204,6 +204,8 @@ If you prefer using client secrets or federated credentials aren't available:
 #### Required Secrets
 Configure these in your GitHub repository (Settings > Secrets and variables > Actions > Repository secrets):
 
+> **Important**: All secrets must be configured as **Repository secrets** (not Copilot-specific secrets). This ensures they are accessible to GitHub Actions workflows AND the GitHub Copilot coding agent. For troubleshooting secret configuration issues, see [`copilot-secrets-troubleshooting.md`](./copilot-secrets-troubleshooting.md).
+
 **For Federated Credentials:**
 - `AZURE_CLIENT_ID`: Application (client) ID from service principal
 - `AZURE_TENANT_ID`: Directory (tenant) ID from service principal
