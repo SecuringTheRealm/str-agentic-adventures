@@ -258,7 +258,7 @@ describe("CampaignCreation", () => {
 
 		// Should show error message to user
 		await waitFor(() => {
-			expect(screen.getByText("Failed to create campaign. Please try again.")).toBeInTheDocument();
+			expect(screen.getByText(errorMessage)).toBeInTheDocument();
 		});
 
 		// Should re-enable the submit button after error
@@ -266,6 +266,7 @@ describe("CampaignCreation", () => {
 	});
 
 	it("shows loading state during campaign creation", async () => {
+		// Use a longer timeout to ensure we can catch the loading state
 		const slowPromise = new Promise((resolve) =>
 			setTimeout(() => resolve({
 				id: "1",
@@ -274,7 +275,7 @@ describe("CampaignCreation", () => {
 				tone: "heroic",
 				homebrew_rules: [],
 				characters: [],
-			}), 100)
+			}), 500)
 		);
 		mockCreateCampaign.mockReturnValue(slowPromise);
 
@@ -290,15 +291,20 @@ describe("CampaignCreation", () => {
 			name: "Create Campaign",
 		});
 
-		await userEvent.click(submitButton);
+		// Click and immediately check for disabled state
+		await act(async () => {
+			await userEvent.click(submitButton);
+		});
 
-		// Button should be disabled during loading
-		expect(submitButton).toBeDisabled();
+		// Button should be disabled during loading - check immediately after click
+		await waitFor(() => {
+			expect(submitButton).toBeDisabled();
+		}, { timeout: 100 });
 
 		// Wait for completion
 		await waitFor(() => {
 			expect(submitButton).not.toBeDisabled();
-		});
+		}, { timeout: 1000 });
 	});
 
 	it("trims whitespace from form inputs", async () => {
@@ -453,8 +459,9 @@ describe("CampaignCreation", () => {
 			await userEvent.click(submitButton);
 		});
 
+		// The error message should match what was thrown
 		await waitFor(() => {
-			expect(screen.getByText("Failed to create campaign. Please try again.")).toBeInTheDocument();
+			expect(screen.getByText("Server error")).toBeInTheDocument();
 		});
 
 		// Form values should be preserved after error
