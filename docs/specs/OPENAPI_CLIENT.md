@@ -1,10 +1,14 @@
-# OpenAPI Client Integration
+# Unified API Client SDK (REST + WebSocket)
 
-This document describes the integration of a generated TypeScript client from the FastAPI OpenAPI schema.
+This document describes the unified SDK that provides both REST API and WebSocket communication with the FastAPI backend.
 
 ## Overview
 
-The frontend now uses a generated TypeScript client instead of manually building fetch calls. This eliminates type duplication and ensures the frontend automatically updates when the backend API changes.
+The frontend uses a unified SDK that combines:
+1. **REST API Client** - Auto-generated TypeScript client from OpenAPI schema
+2. **WebSocket Client** - Manually implemented client for real-time features
+
+This unified approach provides a single, consistent interface for all backend interactions, whether via HTTP or WebSocket.
 
 ## 🔄 Developer Workflow
 
@@ -64,20 +68,137 @@ This script checks:
 
 ## Files Changed
 
-### Generated Client
+### Generated REST Client
 - `frontend/src/api-client/` - Complete generated client from OpenAPI schema
 - `frontend/package.json` - Added `@openapitools/openapi-generator-cli` and npm script
 
+### WebSocket Client SDK
+- `frontend/src/api-client/websocketClient.ts` - Manually implemented WebSocket client
+- `frontend/src/hooks/useWebSocketSDK.ts` - React hook for WebSocket connections
+- `frontend/src/services/api.ts` - Unified export of both REST and WebSocket clients
+
 ### Updated Files
-- `frontend/src/services/api.ts` - Replaced with wrapper around generated client
+- `frontend/src/components/GameInterface.tsx` - Updated to use unified SDK
 - Various component files - Updated for stricter TypeScript types
 
 ## How It Works
 
+### REST API
 1. **Backend provides OpenAPI schema** at `http://localhost:8000/openapi.json`
 2. **Generate client** with `npm run generate:api` 
 3. **Wrapper functions** in `api.ts` maintain compatibility with existing frontend code
 4. **Type aliases** provide backward compatibility for renamed types
+
+### WebSocket API
+1. **WebSocket client** provides strongly-typed message interfaces
+2. **Connection methods** (`connectToCampaign`, `connectToChat`, `connectToGlobal`)
+3. **Shared configuration** with REST client for consistent base URL
+4. **React hook** (`useWebSocketSDK`) provides component-friendly interface
+
+## Usage Examples
+
+### Using the REST Client
+
+```typescript
+import { gameApi, createCharacter } from "./services/api";
+
+// Direct API call
+const character = await gameApi.createCharacterApiGameCharacterPost({
+  name: "Aragorn",
+  race: Race.Human,
+  characterClass: CharacterClass.Fighter,
+  // ...
+});
+
+// Using wrapper function
+const character = await createCharacter({
+  name: "Aragorn",
+  race: Race.Human,
+  characterClass: CharacterClass.Fighter,
+  // ...
+});
+```
+
+### Using the WebSocket Client
+
+```typescript
+import { wsClient, type WebSocketMessage } from "./services/api";
+
+// Connect to campaign WebSocket
+const connection = wsClient.connectToCampaign(campaignId, {
+  onMessage: (message: WebSocketMessage) => {
+    switch (message.type) {
+      case "dice_result":
+        console.log("Dice rolled:", message.result);
+        break;
+      case "game_update":
+        console.log("Game state updated:", message.data);
+        break;
+    }
+  },
+  onConnect: () => console.log("Connected"),
+  onDisconnect: () => console.log("Disconnected"),
+});
+
+// Send a message
+connection.send({
+  type: "dice_roll",
+  notation: "1d20",
+  player_name: "Aragorn",
+});
+
+// Disconnect when done
+connection.disconnect();
+```
+
+### Using the React Hook
+
+```typescript
+import { useWebSocketSDK } from "./hooks/useWebSocketSDK";
+
+const MyComponent = () => {
+  const { isConnected, sendMessage } = useWebSocketSDK({
+    connectionType: "chat",
+    campaignId: campaign.id,
+    onMessage: (message) => {
+      // Handle incoming messages
+    },
+  });
+
+  const handleSendChat = () => {
+    sendMessage({
+      type: "chat_input",
+      message: "Hello, world!",
+      character_id: character.id,
+    });
+  };
+
+  return <div>{isConnected ? "Connected" : "Disconnected"}</div>;
+};
+```
+
+## WebSocket Message Types
+
+The SDK provides TypeScript interfaces for all WebSocket message types:
+
+### Chat Messages
+- `ChatStartMessage` - Chat processing started
+- `ChatStreamMessage` - Streaming chat content
+- `ChatCompleteMessage` - Chat response complete
+- `ChatInputMessage` - Send chat input to backend
+- `ChatErrorMessage` - Chat error occurred
+
+### Game Updates
+- `DiceRollMessage` - Request dice roll
+- `DiceResultMessage` - Dice roll result
+- `GameUpdateMessage` - Game state update
+- `CharacterUpdateMessage` - Character data update
+
+### Connection Control
+- `PingMessage` / `PongMessage` - Keep-alive heartbeat
+- `ErrorMessage` - WebSocket error
+
+All message types are exported from `frontend/src/api-client/websocketClient.ts`.
 
 ## Type Mappings
 
@@ -111,10 +232,23 @@ When the backend API changes:
 
 ## Benefits
 
+### REST API
 1. **Automatic synchronization** - Frontend types update when backend changes
 2. **Type safety** - All API calls are strongly typed
 3. **No duplication** - Single source of truth for API types
 4. **Documentation** - Generated docs in `src/api-client/docs/`
+
+### WebSocket API
+1. **Type safety** - All message types are strongly typed
+2. **Consistent interface** - Same patterns as REST client
+3. **Automatic reconnection** - Built-in reconnection logic
+4. **Shared configuration** - Uses same base URL as REST client
+
+### Unified SDK
+1. **Single import** - Both REST and WebSocket from `services/api`
+2. **Consistent patterns** - Similar API for both communication methods
+3. **Better maintainability** - All API code in one place
+4. **Reduced duplication** - No manual URL construction or type definitions
 
 ## 🧪 API Compatibility Testing
 
