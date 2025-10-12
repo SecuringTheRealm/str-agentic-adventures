@@ -23,7 +23,9 @@ class TestSRDIntegration:
             return ScribeAgent()
 
     @pytest.mark.asyncio
-    async def test_complete_character_creation_with_srd_features(self, scribe_agent):
+    async def test_complete_character_creation_with_srd_features(
+        self, scribe_agent
+    ) -> None:
         """Test complete character creation with all SRD features applied."""
         # Create a comprehensive character with race, class, and background
         character_data = {
@@ -113,7 +115,7 @@ class TestSRDIntegration:
             print(f"Saving Throws: {saving_throws}")
 
     @pytest.mark.asyncio
-    async def test_spellcaster_creation_with_srd_features(self, scribe_agent):
+    async def test_spellcaster_creation_with_srd_features(self, scribe_agent) -> None:
         """Test creating a spellcaster with proper SRD compliance."""
         # Create an Elf Wizard with Sage background
         character_data = {

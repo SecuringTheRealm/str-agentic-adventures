@@ -427,42 +427,10 @@ class RulesEnginePlugin:
                 "proficiency_bonus": proficiency_bonus,
                 "character_level": character_level,
                 "formula": "8 + proficiency_bonus + spellcasting_ability_modifier",
-            }
+                    }
         except Exception as e:
             logger.error(f"Error calculating spell save DC: {str(e)}")
             return {"error": f"Error calculating spell save DC: {str(e)}"}
-
-    @kernel_function(
-        description="Calculate spell attack bonus for a character.",
-        name="calculate_spell_attack_bonus",
-    )
-    def calculate_spell_attack_bonus(
-        self, spellcasting_ability_modifier: int, proficiency_bonus: int
-    ) -> dict[str, Any]:
-        """
-        Calculate spell attack bonus using D&D 5e rules.
-
-        Formula: proficiency bonus + spellcasting ability modifier
-
-        Args:
-            spellcasting_ability_modifier: The modifier for the character's spellcasting ability
-            proficiency_bonus: The character's proficiency bonus
-
-        Returns:
-            Dict[str, Any]: Spell attack bonus information
-        """
-        try:
-            attack_bonus = proficiency_bonus + spellcasting_ability_modifier
-
-            return {
-                "attack_bonus": attack_bonus,
-                "spellcasting_modifier": spellcasting_ability_modifier,
-                "proficiency_bonus": proficiency_bonus,
-                "formula": "proficiency_bonus + spellcasting_ability_modifier",
-            }
-        except Exception as e:
-            logger.error(f"Error calculating spell attack bonus: {str(e)}")
-            return {"error": f"Error calculating spell attack bonus: {str(e)}"}
 
     @kernel_function(
         description="Resolve spell damage effects.",

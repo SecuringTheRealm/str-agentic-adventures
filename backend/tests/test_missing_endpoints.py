@@ -334,7 +334,7 @@ class TestFrontendBackendAPICompatibility:
 
         # Verify WebSocket routes exist
         assert ws_router is not None, "WebSocket router should exist"
-        
+
         # Expected message types based on backend implementation
         expected_message_types = [
             "chat_start",
@@ -350,7 +350,7 @@ class TestFrontendBackendAPICompatibility:
             "pong",
             "error",
         ]
-        
+
         # This test documents the expected message types
         # Frontend SDK should define TypeScript interfaces for all these types
         assert len(expected_message_types) > 0, (

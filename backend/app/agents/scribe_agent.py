@@ -2,6 +2,7 @@
 Scribe Agent - Manages character sheets and game data.
 """
 
+import json
 import logging
 from typing import Any
 

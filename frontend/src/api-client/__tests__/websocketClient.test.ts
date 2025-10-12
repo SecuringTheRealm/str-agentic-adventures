@@ -5,10 +5,10 @@
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  WebSocketClient,
   type ChatInputMessage,
   type ChatStreamMessage,
   type DiceRollMessage,
+  WebSocketClient,
   websocketClient,
 } from "../websocketClient";
 

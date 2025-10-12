@@ -411,16 +411,16 @@ class CombatMCAgent:
                 )
             if action_type == "skill_check":
                 return self._process_skill_check_action(
-                    action_data, result, rules_plugin
+                    action_data, result, self.rules_engine
                 )
             if action_type == "saving_throw":
                 return self._process_saving_throw_action(
-                    action_data, result, rules_plugin
+                    action_data, result, self.rules_engine
                 )
             if action_type in ["move", "dash", "dodge", "hide", "help", "ready"]:
                 return self._process_movement_or_simple_action(action_data, result)
             if action_type in ["grapple", "shove"]:
-                return self._process_contested_action(action_data, result, rules_plugin)
+                return self._process_contested_action(action_data, result, self.rules_engine)
             result.update(
                 {
                     "success": True,
