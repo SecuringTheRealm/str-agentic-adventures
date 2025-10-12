@@ -59,7 +59,9 @@ These environment variables enable:
 
 **Note**: These secrets are automatically masked in GitHub logs to prevent exposure. They are only available when the Copilot agent workflow runs and are not stored in the repository.
 
-**Important**: The workflow accesses secrets from the repository secrets using the `secrets.*` context. All Azure secrets should be configured as regular repository secrets (not Copilot-specific secrets) to ensure they can be properly propagated to the Copilot agent environment.
+**Important**: The workflow accesses secrets from the repository secrets using the `secrets.*` context. All Azure secrets should be configured as **regular repository secrets** (not Copilot-specific secrets) to ensure they can be properly propagated to the Copilot agent environment.
+
+**Troubleshooting**: If secrets are not available (check with `bash scripts/test-azure-secrets.sh`), see [`docs/copilot-secrets-troubleshooting.md`](../docs/copilot-secrets-troubleshooting.md) for detailed configuration and troubleshooting steps.
 
 For manual setup outside the workflow, follow the steps below.
 

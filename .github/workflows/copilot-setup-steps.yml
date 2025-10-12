@@ -41,7 +41,13 @@ jobs:
           : "${GITHUB_STEP_SUMMARY:=/tmp/copilot-step-summary.md}"
           touch "$GITHUB_STEP_SUMMARY"
 
+          echo "## Azure Secret Propagation Status" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "The following Azure secrets will be available to the Copilot coding agent:" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          SECRETS_FOUND=0
+          SECRETS_MISSING=0
 
           for var in \
             AZURE_CLIENT_ID \
@@ -58,13 +64,22 @@ jobs:
 
             if [ -n "$value" ]; then
               echo "${var}=$value" >> "$GITHUB_ENV"
-              printf -- "- %s\n" "$var" >> "$GITHUB_STEP_SUMMARY"
+              printf -- "✅ %s\n" "$var" >> "$GITHUB_STEP_SUMMARY"
+              SECRETS_FOUND=$((SECRETS_FOUND + 1))
+            else
+              printf -- "❌ %s (not configured)\n" "$var" >> "$GITHUB_STEP_SUMMARY"
+              SECRETS_MISSING=$((SECRETS_MISSING + 1))
             fi
           done
 
-          # Ensure the summary reflects when no optional secrets are configured
-          if ! grep -q '^-' "$GITHUB_STEP_SUMMARY"; then
-            echo "- (no Azure secrets configured in repository settings)" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Summary:** $SECRETS_FOUND configured, $SECRETS_MISSING not configured" >> "$GITHUB_STEP_SUMMARY"
+
+          # Note about Copilot injected secrets
+          if [ -n "${COPILOT_AGENT_INJECTED_SECRET_NAMES:-}" ]; then
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "**Note:** The following secrets are marked as Copilot-injected: \`${COPILOT_AGENT_INJECTED_SECRET_NAMES}\`" >> "$GITHUB_STEP_SUMMARY"
+            echo "These secrets must be configured as **regular repository secrets** (not Copilot-specific secrets) to be accessible in workflows." >> "$GITHUB_STEP_SUMMARY"
           fi
 
       # Checkout code to install project dependencies.
