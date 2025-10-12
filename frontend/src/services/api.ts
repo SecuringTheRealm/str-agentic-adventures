@@ -1,6 +1,7 @@
 // API client using generated OpenAPI client
 import axios from "axios";
 import { Configuration, GameApi } from "../api-client";
+import { getRuntimeMode } from "../utils/environment";
 import { getApiBaseUrl } from "../utils/urls";
 
 // Create configuration for the generated API client
@@ -46,7 +47,7 @@ try {
   }
 } catch (error) {
   // Ignore interceptor setup errors in test environment
-  if (process.env.NODE_ENV !== 'test') {
+  if (getRuntimeMode() !== 'test') {
     console.warn('Failed to setup API interceptors:', error);
   }
 }

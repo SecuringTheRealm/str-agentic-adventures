@@ -7,7 +7,7 @@ This document summarizes the Playwright E2E testing implementation, UX improveme
 
 ### Prerequisites Met
 - ✅ Backend server running at http://localhost:8000
-- ✅ Frontend development server running at http://localhost:3000
+- ✅ Frontend development server running at http://127.0.0.1:5173
 - ✅ Playwright browsers installed (chromium, firefox)
 - ⚠️ Azure OpenAI credentials **NOT configured** (required for full functionality)
 

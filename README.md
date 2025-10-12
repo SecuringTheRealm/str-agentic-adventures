@@ -148,10 +148,10 @@ To run the application locally, you need access to Azure OpenAI models through A
    # Frontend (in a new terminal)
    cd frontend
    npm install
-   npm start
+   npm run dev
    ```
 
-The frontend will be available at `http://localhost:3000` and connects to the backend at `http://localhost:8000`.
+The frontend will be available at `http://127.0.0.1:5173` and connects to the backend at `http://localhost:8000`.
 
 ## Running Tests
 

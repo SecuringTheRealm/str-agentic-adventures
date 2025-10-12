@@ -296,7 +296,7 @@ class TestFrontendBackendAPICompatibility:
         response = client.options(
             "/api/game/character",
             headers={
-                "Origin": "http://localhost:3000",
+                "Origin": "http://127.0.0.1:5173",
                 "Access-Control-Request-Method": "POST",
                 "Access-Control-Request-Headers": "content-type",
             },
