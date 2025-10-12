@@ -1,9 +1,9 @@
 /**
  * WebSocket Client SDK
- * 
+ *
  * Provides a unified client interface for WebSocket connections to the backend.
  * This extends the OpenAPI-generated REST client with WebSocket support.
- * 
+ *
  * Since OpenAPI doesn't support WebSocket definitions, this client is manually
  * implemented to provide the same developer experience as the REST client.
  */
@@ -141,13 +141,13 @@ export interface WebSocketClientConfig {
    * Base URL for the API (will be converted to ws:// or wss://)
    */
   baseUrl?: string;
-  
+
   /**
    * Reconnection settings
    */
   reconnectInterval?: number;
   maxReconnectAttempts?: number;
-  
+
   /**
    * Enable debug logging
    */
@@ -159,22 +159,22 @@ export interface WebSocketConnectionOptions {
    * Callback when connection is established
    */
   onConnect?: () => void;
-  
+
   /**
    * Callback when connection is closed
    */
   onDisconnect?: () => void;
-  
+
   /**
    * Callback when a message is received
    */
   onMessage?: (message: WebSocketMessage) => void;
-  
+
   /**
    * Callback when an error occurs
    */
   onError?: (error: Event) => void;
-  
+
   /**
    * Reconnection settings (overrides client config)
    */
@@ -204,8 +204,10 @@ class WebSocketConnection {
   ) {
     this.url = url;
     this.options = options;
-    this.reconnectInterval = options.reconnectInterval ?? config.reconnectInterval ?? 3000;
-    this.maxReconnectAttempts = options.maxReconnectAttempts ?? config.maxReconnectAttempts ?? 5;
+    this.reconnectInterval =
+      options.reconnectInterval ?? config.reconnectInterval ?? 3000;
+    this.maxReconnectAttempts =
+      options.maxReconnectAttempts ?? config.maxReconnectAttempts ?? 5;
     this.debug = config.debug ?? false;
   }
 
@@ -253,7 +255,9 @@ class WebSocketConnection {
           this.reconnectAttempts < this.maxReconnectAttempts
         ) {
           this.reconnectAttempts++;
-          this.log(`Reconnecting (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})...`);
+          this.log(
+            `Reconnecting (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})...`
+          );
           this.reconnectTimeout = setTimeout(() => {
             this.connect();
           }, this.reconnectInterval);
@@ -431,6 +435,5 @@ export const connectToChat = (
   options?: WebSocketConnectionOptions
 ) => websocketClient.connectToChat(campaignId, options);
 
-export const connectToGlobal = (
-  options?: WebSocketConnectionOptions
-) => websocketClient.connectToGlobal(options);
+export const connectToGlobal = (options?: WebSocketConnectionOptions) =>
+  websocketClient.connectToGlobal(options);

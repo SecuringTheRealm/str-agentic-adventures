@@ -85,15 +85,47 @@ This script checks:
 
 ### REST API
 1. **Backend provides OpenAPI schema** at `http://localhost:8000/openapi.json`
-2. **Generate client** with `npm run generate:api` 
-3. **Wrapper functions** in `api.ts` maintain compatibility with existing frontend code
-4. **Type aliases** provide backward compatibility for renamed types
+2. **FastAPI uses `root_path` and `servers` configuration** to define `/api` as the base path
+3. **OpenAPI paths are relative** to the server base (e.g., `/game/character` instead of `/api/game/character`)
+4. **Generate client** with `npm run generate:api` 
+5. **Client uses configured base URL** (`http://localhost:8000/api`) + relative paths from OpenAPI
+6. **Wrapper functions** in `api.ts` maintain compatibility with existing frontend code
+7. **Type aliases** provide backward compatibility for renamed types
 
 ### WebSocket API
 1. **WebSocket client** provides strongly-typed message interfaces
 2. **Connection methods** (`connectToCampaign`, `connectToChat`, `connectToGlobal`)
 3. **Shared configuration** with REST client for consistent base URL
 4. **React hook** (`useWebSocketSDK`) provides component-friendly interface
+
+## FastAPI Server Configuration
+
+The backend uses FastAPI's `root_path` and `servers` configuration to properly structure the API:
+
+```python
+app = FastAPI(
+    title="AI Dungeon Master API",
+    description="Backend API for the AI Dungeon Master application",
+    version="0.1.0",
+    root_path="/api",  # All routes are relative to /api
+    servers=[
+        {
+            "url": "/api",
+            "description": "API base path"
+        }
+    ],
+)
+
+# Routes are registered without the /api prefix
+app.include_router(game_routes.router, prefix="/game")  # Results in /api/game/*
+app.include_router(websocket_routes.router)  # Results in /api/ws/*
+```
+
+This configuration ensures:
+- **OpenAPI schema has relative paths**: `/game/character` instead of `/api/game/character`
+- **Servers field indicates base path**: Generated clients know to use `/api` as the base
+- **Actual runtime routes**: Still served at `/api/game/*` and `/api/ws/*`
+- **Client URL construction**: `baseURL + serverPath + relativePath = http://localhost:8000 + /api + /game/character`
 
 ## Usage Examples
 

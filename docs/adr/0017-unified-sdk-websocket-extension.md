@@ -87,17 +87,36 @@ Justification:
 * **Type Safety**: Provides full TypeScript typing for all WebSocket messages through manual interfaces
 * **Unified Interface**: Developers import both REST and WebSocket clients from same module (`services/api`)
 * **Shared Configuration**: WebSocket client uses same base URL logic as REST client
+* **FastAPI Best Practices**: Uses `root_path` and `servers` configuration for proper OpenAPI schema generation
 * **Testability**: Enables comprehensive unit testing of WebSocket functionality
 * **Gradual Migration**: Can be adopted incrementally without breaking existing code
 * **Proven Pattern**: Many FastAPI projects follow this pattern when WebSocket support is needed
 * **Team Familiarity**: Builds on existing OpenAPI knowledge rather than introducing new tools
 
 Implementation approach:
-1. Create `websocketClient.ts` with TypeScript interfaces for all message types
-2. Implement WebSocket connection management with reconnection logic
-3. Export alongside REST client from `services/api.ts`
-4. Create React hook (`useWebSocketSDK`) for component integration
-5. Refactor components to use new SDK
+1. Configure FastAPI with `root_path="/api"` and `servers` field for OpenAPI
+2. Create `websocketClient.ts` with TypeScript interfaces for all message types
+3. Implement WebSocket connection management with reconnection logic
+4. Export alongside REST client from `services/api.ts`
+5. Create React hook (`useWebSocketSDK`) for component integration
+6. Refactor components to use new SDK
+
+### FastAPI Server Configuration
+
+The backend now uses FastAPI's `root_path` to properly structure the OpenAPI schema:
+
+```python
+app = FastAPI(
+    root_path="/api",  # All routes are relative to /api
+    servers=[{"url": "/api", "description": "API base path"}]
+)
+```
+
+This ensures:
+- OpenAPI paths are relative (e.g., `/game/character` not `/api/game/character`)
+- The `servers` field tells clients where the API is hosted
+- Generated clients properly construct URLs: `baseURL + serverPath + relativePath`
+- Both REST and WebSocket endpoints follow consistent `/api/*` structure
 
 ## Consequences
 

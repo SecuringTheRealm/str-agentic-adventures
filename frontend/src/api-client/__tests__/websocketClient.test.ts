@@ -96,7 +96,7 @@ describe("WebSocket Client SDK", () => {
     it("should connect to campaign WebSocket", async () => {
       const client = new WebSocketClient();
       const onConnect = vi.fn();
-      
+
       const connection = client.connectToCampaign("test-campaign-id", {
         onConnect,
       });
@@ -113,7 +113,7 @@ describe("WebSocket Client SDK", () => {
       const client = new WebSocketClient({
         baseUrl: "http://localhost:8000",
       });
-      
+
       const connection = client.connectToCampaign("test-campaign-id");
       await new Promise((resolve) => setTimeout(resolve, 10));
 
@@ -124,15 +124,15 @@ describe("WebSocket Client SDK", () => {
     it("should handle disconnect", async () => {
       const client = new WebSocketClient();
       const onDisconnect = vi.fn();
-      
+
       const connection = client.connectToCampaign("test-campaign-id", {
         onDisconnect,
       });
 
       await new Promise((resolve) => setTimeout(resolve, 10));
-      
+
       connection.disconnect();
-      
+
       expect(connection.isConnected()).toBe(false);
       expect(onDisconnect).toHaveBeenCalled();
     });
@@ -142,7 +142,7 @@ describe("WebSocket Client SDK", () => {
     it("should connect to chat WebSocket", async () => {
       const client = new WebSocketClient();
       const onConnect = vi.fn();
-      
+
       const connection = client.connectToChat("test-campaign-id", {
         onConnect,
       });
@@ -158,7 +158,7 @@ describe("WebSocket Client SDK", () => {
       const client = new WebSocketClient({
         baseUrl: "http://localhost:8000",
       });
-      
+
       const connection = client.connectToChat("test-campaign-id");
       await new Promise((resolve) => setTimeout(resolve, 10));
 
@@ -173,7 +173,7 @@ describe("WebSocket Client SDK", () => {
     it("should connect to global WebSocket", async () => {
       const client = new WebSocketClient();
       const onConnect = vi.fn();
-      
+
       const connection = client.connectToGlobal({
         onConnect,
       });
@@ -189,7 +189,7 @@ describe("WebSocket Client SDK", () => {
       const client = new WebSocketClient({
         baseUrl: "http://localhost:8000",
       });
-      
+
       const connection = client.connectToGlobal();
       await new Promise((resolve) => setTimeout(resolve, 10));
 
@@ -202,7 +202,7 @@ describe("WebSocket Client SDK", () => {
     it("should receive and parse WebSocket messages", async () => {
       const client = new WebSocketClient();
       const onMessage = vi.fn();
-      
+
       const connection = client.connectToCampaign("test-campaign-id", {
         onMessage,
       });
@@ -263,7 +263,7 @@ describe("WebSocket Client SDK", () => {
       const connection = client.connectToCampaign("test-campaign-id");
 
       await new Promise((resolve) => setTimeout(resolve, 10));
-      
+
       connection.disconnect();
 
       const message: ChatInputMessage = {
@@ -281,7 +281,7 @@ describe("WebSocket Client SDK", () => {
     it("should handle connection errors", async () => {
       const client = new WebSocketClient();
       const onError = vi.fn();
-      
+
       const connection = client.connectToCampaign("test-campaign-id", {
         onError,
       });
