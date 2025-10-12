@@ -39,6 +39,9 @@ class Settings(BaseSettings):
     storage_connection_string: str = os.getenv("STORAGE_CONNECTION_STRING", "")
 
     # App Settings
+    # Note: Default binds to all interfaces (0.0.0.0) for development convenience.
+    # Production deployments MUST override via APP_HOST environment variable
+    # to bind to specific interface (e.g., 127.0.0.1 or specific IP).
     app_host: str = os.getenv("APP_HOST", "0.0.0.0")  # noqa: S104
     app_port: int = int(os.getenv("APP_PORT", "8000"))
     app_debug: bool = os.getenv("APP_DEBUG", "False").lower() == "true"

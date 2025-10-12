@@ -90,6 +90,8 @@ async def root():
 
 
 if __name__ == "__main__":
+    # Development server defaults to all interfaces for convenience
+    # Production should use specific interface via APP_HOST env var
     host = os.getenv("APP_HOST", "0.0.0.0")  # noqa: S104
     port = int(os.getenv("APP_PORT", "8000"))
     debug = os.getenv("APP_DEBUG", "False").lower() == "true"

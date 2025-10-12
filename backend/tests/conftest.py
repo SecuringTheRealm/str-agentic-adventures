@@ -112,7 +112,7 @@ def create_test_config():
         azure_openai_dalle_deployment="dall-e-3",
         semantic_kernel_debug=False,
         storage_connection_string="",
-        app_host="0.0.0.0",  # noqa: S104
+        app_host="0.0.0.0",  # noqa: S104 - Test fixture uses all interfaces
         app_port=8000,
         app_debug=False,
         app_log_level="INFO",
@@ -130,7 +130,7 @@ def create_test_config_missing_azure():
         azure_openai_dalle_deployment="dall-e-3",
         semantic_kernel_debug=False,
         storage_connection_string="",
-        app_host="0.0.0.0",  # noqa: S104
+        app_host="0.0.0.0",  # noqa: S104 - Test fixture uses all interfaces
         app_port=8000,
         app_debug=False,
         app_log_level="INFO",

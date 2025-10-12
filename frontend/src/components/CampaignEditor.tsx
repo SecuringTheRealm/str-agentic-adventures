@@ -1,5 +1,5 @@
 import type React from "react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   type AIAssistanceRequest,
   type AIContentGenerationRequest,
@@ -56,8 +56,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
       }, 3000);
       return () => clearTimeout(timeoutId);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoSave, hasUnsavedChanges, isEditing]);
+  }, [autoSave, hasUnsavedChanges, isEditing, handleSave]);
 
   // Track changes
   useEffect(() => {
@@ -287,62 +286,88 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
     return Object.keys(errors).length === 0;
   };
 
-  const handleSave = async (silent = false) => {
-    if (!validateForm() && !silent) return;
+  const handleSave = useCallback(
+    async (silent = false) => {
+      const errors: Record<string, string> = {};
 
-    setIsSubmitting(true);
-    setError(null);
-
-    try {
-      const homebrewRulesList = formData.homebrew_rules
-        .split("\n")
-        .map((rule) => rule.trim())
-        .filter((rule) => rule !== "");
-
-      if (isEditing && campaign) {
-        const updates: CampaignUpdateRequest = {
-          name: formData.name.trim(),
-          description: formData.description.trim() || undefined,
-          setting: formData.setting.trim(),
-          tone: formData.tone,
-          homebrew_rules: homebrewRulesList,
-          world_description: formData.world_description.trim() || undefined,
-        };
-
-        const updatedCampaign = await updateCampaign(campaign.id!, updates);
-        onCampaignSaved(updatedCampaign);
-        setHasUnsavedChanges(false);
-
-        if (!silent) {
-          // Show success message briefly
-          const originalName = formData.name;
-          setFormData((prev) => ({ ...prev, name: "✓ Saved!" }));
-          setTimeout(
-            () => setFormData((prev) => ({ ...prev, name: originalName })),
-            1000
-          );
-        }
-      } else {
-        const campaignData: CampaignCreateRequest = {
-          name: formData.name.trim(),
-          description: formData.description.trim() || undefined,
-          setting: formData.setting.trim(),
-          tone: formData.tone,
-          homebrew_rules: homebrewRulesList,
-        };
-
-        const newCampaign = await createCampaign(campaignData);
-        onCampaignSaved(newCampaign);
+      if (!formData.name.trim()) {
+        errors.name = "Campaign name is required";
       }
-    } catch (err) {
-      setError(
-        isEditing ? "Failed to update campaign" : "Failed to create campaign"
-      );
-      console.error("Error saving campaign:", err);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+
+      if (!formData.setting.trim()) {
+        errors.setting = "Campaign setting is required";
+      }
+
+      if (Object.keys(errors).length > 0 && !silent) {
+        setValidationErrors(errors);
+        return;
+      }
+
+      setIsSubmitting(true);
+      setError(null);
+
+      try {
+        const homebrewRulesList = formData.homebrew_rules
+          .split("\n")
+          .map((rule) => rule.trim())
+          .filter((rule) => rule !== "");
+
+        if (isEditing && campaign) {
+          const updates: CampaignUpdateRequest = {
+            name: formData.name.trim(),
+            description: formData.description.trim() || undefined,
+            setting: formData.setting.trim(),
+            tone: formData.tone,
+            homebrew_rules: homebrewRulesList,
+            world_description: formData.world_description.trim() || undefined,
+          };
+
+          const updatedCampaign = await updateCampaign(campaign.id!, updates);
+          onCampaignSaved(updatedCampaign);
+          setHasUnsavedChanges(false);
+
+          if (!silent) {
+            // Show success message briefly
+            const originalName = formData.name;
+            setFormData((prev) => ({ ...prev, name: "✓ Saved!" }));
+            setTimeout(
+              () => setFormData((prev) => ({ ...prev, name: originalName })),
+              1000
+            );
+          }
+        } else {
+          const campaignData: CampaignCreateRequest = {
+            name: formData.name.trim(),
+            description: formData.description.trim() || undefined,
+            setting: formData.setting.trim(),
+            tone: formData.tone,
+            homebrew_rules: homebrewRulesList,
+          };
+
+          const newCampaign = await createCampaign(campaignData);
+          onCampaignSaved(newCampaign);
+        }
+      } catch (err) {
+        setError(
+          isEditing ? "Failed to update campaign" : "Failed to create campaign"
+        );
+        console.error("Error saving campaign:", err);
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [
+      formData,
+      isEditing,
+      campaign,
+      onCampaignSaved,
+      setValidationErrors,
+      setIsSubmitting,
+      setError,
+      setHasUnsavedChanges,
+      setFormData,
+    ]
+  );
 
   return (
     <div className={styles.campaignEditor}>
