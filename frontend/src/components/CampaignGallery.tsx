@@ -154,8 +154,11 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
             </details>
           )}
           <div style={{ marginTop: "1rem" }}>
-            <button onClick={() => window.location.reload()}>Try Again</button>
+            <button type="button" onClick={() => window.location.reload()}>
+              Try Again
+            </button>
             <button
+              type="button"
               onClick={() => {
                 setError(null);
                 setDebugInfo(null);
@@ -188,6 +191,7 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
             <h3>Create Custom Campaign</h3>
             <p>Start from scratch with your own unique world and story</p>
             <button
+              type="button"
               className={`${styles.selectButton} ${styles.custom}`}
               onClick={onCreateCustom}
             >
@@ -222,8 +226,8 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
                   <div className={styles.detailItem}>
                     <strong>Plot Hooks:</strong>
                     <ul>
-                      {template.plot_hooks.slice(0, 2).map((hook, index) => (
-                        <li key={index}>{hook}</li>
+                      {template.plot_hooks.slice(0, 2).map((hook) => (
+                        <li key={hook}>{hook}</li>
                       ))}
                     </ul>
                   </div>
@@ -241,6 +245,7 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
               </div>
 
               <button
+                type="button"
                 className={styles.selectButton}
                 onClick={() => handleSelectTemplate(template)}
                 disabled={cloning === template.id}
@@ -265,7 +270,11 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
         <div className={styles.noTemplates}>
           <h3>No Templates Available</h3>
           <p>Create a custom campaign to get started!</p>
-          <button className={styles.selectButton} onClick={onCreateCustom}>
+          <button
+            type="button"
+            className={styles.selectButton}
+            onClick={onCreateCustom}
+          >
             Create Custom Campaign
           </button>
         </div>

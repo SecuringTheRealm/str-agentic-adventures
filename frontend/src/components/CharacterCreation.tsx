@@ -154,7 +154,7 @@ const CharacterCreation: React.FC<CharacterCreationProps> = ({
         <p>
           Campaign: <strong>{campaign.name}</strong>
         </p>
-        <button onClick={onBack} className={styles.backButton}>
+        <button type="button" onClick={onBack} className={styles.backButton}>
           ← Back to Character Options
         </button>
       </div>
