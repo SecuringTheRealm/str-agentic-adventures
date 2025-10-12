@@ -9,11 +9,11 @@ import styles from "./GameInterface.module.css";
 vi.mock("../services/api");
 const mockSendPlayerInput = vi.mocked(api.sendPlayerInput);
 
-// Mock the WebSocket hook
-vi.mock("../hooks/useWebSocket", () => ({
-  useWebSocket: (url: string, options: any) => {
-    // Simulate connection failure to trigger fallback
-    const isChatWebSocket = url.includes("/chat");
+// Mock the WebSocket SDK hook
+vi.mock("../hooks/useWebSocketSDK", () => ({
+  useWebSocketSDK: (options: any) => {
+    // Simulate connection failure for chat to trigger fallback
+    const isChatWebSocket = options.connectionType === "chat";
     if (isChatWebSocket && options?.onError) {
       // Trigger error callback to enable fallback
       setTimeout(() => options.onError(new Error("Mock connection failed")), 0);
