@@ -2,6 +2,32 @@
 
 This file provides coding instructions for AI agents working on the Secure the Realm - Agentic Adventures project.
 
+## CRITICAL SECURITY RULES
+
+**NEVER commit secrets, API keys, or credentials:**
+
+1. **NO real values in `.env.example` files** - Only use placeholder values like `your-api-key-goes-here`
+2. **NO real values in documentation** - All docs must use example/placeholder credentials
+3. **NO real connection strings** - Always use `your-connection-string-here` format
+4. **NO real endpoints with identifiable resource names** - Use `your-resource-name` as placeholder
+
+**Before ANY commit involving configuration files:**
+- Verify `.env.example` contains ONLY placeholder values
+- Check documentation for accidentally pasted real credentials
+- Confirm Azure resource names are genericized (not `stropenai`, but `your-resource-name`)
+
+**Files that MUST NEVER contain real credentials:**
+- `backend/.env.example`
+- `frontend/.env.example`
+- Any `*.md` documentation files
+- Any committed configuration files
+
+**Real credentials belong ONLY in:**
+- Local `.env` files (gitignored)
+- GitHub Secrets
+- Azure Key Vault
+- Environment variables on deployment platforms
+
 ## Primary Instructions
 
 For comprehensive coding guidelines and project setup instructions, see:
