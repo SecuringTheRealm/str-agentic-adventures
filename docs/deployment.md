@@ -1,6 +1,6 @@
 # Deployment Guide
 
-This document explains how to deploy the STR Agentic Adventures application to Azure using the Azure Developer CLI (azd) and GitHub Actions.
+This document explains how to deploy the STR Agentic Adventures application to Azure using the Azure Developer CLI (azd) and GitHub Actions. It also covers the recommended local workflow built around the `uv` package manager and project `Makefile`.
 
 ## Prerequisites
 
@@ -25,8 +25,7 @@ This document explains how to deploy the STR Agentic Adventures application to A
 
 1. **Install the Azure Developer CLI**:
    ```bash
-   # Download and install azd
-   # See: https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/install-azd?WT.mc_id=AI-MVP-5004204
+   curl -fsSL https://aka.ms/install-azd.sh | bash
    ```
 
 2. **Clone this repository**:
@@ -65,15 +64,14 @@ This document explains how to deploy the STR Agentic Adventures application to A
 ### Running Locally
 
 ```bash
-# Backend
-cd backend
-pip install -r requirements.txt
-./start.sh
+# Backend (from repository root)
+make deps
+make run
 
 # Frontend (in a new terminal)
 cd frontend
-npm install
-npm start
+npm ci
+npm run dev
 ```
 
 The application will be available at `http://127.0.0.1:5173`.

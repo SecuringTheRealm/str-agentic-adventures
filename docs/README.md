@@ -29,9 +29,13 @@ Architecture Decision Records:
 
 ## Root Directory Documents
 
-- [product_requirements_document.md](product_requirements_document.md) - Product specification
 - [deployment.md](deployment.md) - Production deployment instructions
-- [AZURE_OPENAI_REQUIREMENTS.md](AZURE_OPENAI_REQUIREMENTS.md) - Azure OpenAI configuration guide
+- [AZURE_OPENAI_REQUIREMENTS.md](AZURE_OPENAI_REQUIREMENTS.md) - Azure AI configuration guide
+- [migration-guide-azure-ai-sdk.md](migration-guide-azure-ai-sdk.md) - Semantic Kernel to Azure AI migration reference
+
+## Product Requirements
+
+Product vision and requirements are documented in the modular PRD at [prd/index.md](prd/index.md).
 
 ## Agent Documentation
 

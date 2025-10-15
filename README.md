@@ -218,5 +218,5 @@ See [docs/specs/OPENAPI_CLIENT.md](docs/specs/OPENAPI_CLIENT.md) for detailed do
 
 ### Architecture Decisions
 - [ADR Index](docs/adr/index.md) - Complete list of architectural decisions
-- [Project Requirements](docs/product_requirements_document.md) - Product specification
+- [Project Requirements](docs/prd/index.md) - Product specification
 - [Deployment Guide](docs/deployment.md) - Production deployment instructions

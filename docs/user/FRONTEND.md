@@ -1,7 +1,5 @@
 # Frontend Development Guide
 
-For detailed frontend documentation, see [docs/user/FRONTEND.md](../docs/user/FRONTEND.md).
-
 ## Quick Start
 
 ```bash
@@ -12,11 +10,11 @@ npm run dev
 
 ## Key Features
 
-- Real-time chat with AI Dungeon Master
-- D&D 5e character creation and management
-- Campaign creation and management
-- WebSocket support for multiplayer
-- Dice rolling (backend-calculated)
+- Real-time chat interface with the AI Dungeon Master using WebSockets
+- D&D 5e character creation and character sheet display
+- Campaign creation and management workflows
+- Backend-driven dice rolling and combat updates
+- Image gallery and battle map surfaces for AI-generated assets
 
 ## Tech Stack
 
@@ -27,15 +25,6 @@ npm run dev
 - Vitest for testing
 - Playwright for E2E tests
 
-
-## Features
-
-- **Real-time Chat Interface**: Interactive messaging with the AI Dungeon Master
-- **Character Sheet Management**: Complete D&D 5e character creation and display
-- **Campaign Creation**: Tools for setting up new gaming campaigns
-- **Dice Rolling Interface**: Visual dice rolling system (TODO: needs implementation)
-- **Battle Map Display**: Visual representation of combat encounters
-- **Image Gallery**: Display of AI-generated character portraits and scene artwork
 
 ## Architecture
 
@@ -107,10 +96,10 @@ Serves the built assets locally to validate production output.
 - Tests located in `e2e/` directory
 - Validates complete user workflows and D&D 5e compliance
 - Automatic screenshot capture for documentation
-- See [E2E Test Documentation](./e2e/README.md) for details
+- See [E2E Test Summary](../specs/E2E_TEST_SUMMARY.md) for details
 
 ### Test Coverage
-E2E tests validate key user stories from the Product Requirements Document:
+E2E tests validate key user stories from the [Product Requirements Document](../prd/index.md):
 1. Campaign creation with D&D settings
 2. Character creation following D&D 5e SRD rules
 3. AI Dungeon Master interaction
@@ -134,8 +123,9 @@ E2E tests validate key user stories from the Product Requirements Document:
 The frontend expects the backend to be running on `http://localhost:8000` for local development. API endpoints are defined in `src/services/api.ts`.
 
 ## Related Documentation
-- [Backend README](../backend/README.md)
-- [Deployment Guide](../docs/deployment.md)
+- [Repository README](../../README.md)
+- [Frontend README](../../frontend/README.md)
+- [Deployment Guide](../deployment.md)
 
 ## Legacy Notes
 

@@ -1,77 +1,58 @@
-# UV Migration Plan
+# UV Migration Status
 
-This document outlines the plan to complete the migration to UV (modern Python package manager) for fully reproducible dependency management.
+The repository now standardizes on [uv](https://docs.astral.sh/uv/) for Python dependency and workflow management. This document captures the current state, recommended developer practices, and maintenance tips.
 
-## Current State (Phase 1 - Complete)
+## Current Implementation
 
-✅ **Centralized Configuration**
-- Root `pyproject.toml` with all project metadata and dependencies
-- Tool configurations consolidated ([tool.ruff], [tool.pytest])
-- Eliminated duplication between `backend/requirements.txt` and `backend/pyproject.toml`
+- Root-level `pyproject.toml` is the single source of truth for dependency declarations.
+- Workspace `uv.lock` files (root and `backend/uv.lock`) are committed for reproducible installs.
+- The project `Makefile` wraps common tasks (`make deps`, `make run`, `make test`) using `uv`.
+- GitHub Actions workflows run `uv sync --frozen` to guarantee identical dependency sets in CI.
 
-✅ **Backward Compatibility**
-- Generated root `requirements.txt` from `pyproject.toml` for CI/CD
-- Tests work from both root and backend directories
-- Updated CI to use centralized dependency management
-
-## Phase 2 - UV Integration (Future)
-
-**When UV is available, complete the migration with:**
-
-### 1. Install UV in CI
-```yaml
-- name: Install UV
-  run: curl -LsSf https://astral.sh/uv/install.sh | sh
-```
-
-### 2. Generate UV Lock File
-```bash
-uv lock
-```
-This will create `uv.lock` for fully reproducible builds.
-
-### 3. Update CI to Use UV
-```yaml
-- name: Install dependencies with UV
-  run: uv sync
-```
-
-### 4. Remove Traditional Requirements.txt
-- Remove root `requirements.txt` (generated from pyproject.toml)
-- Keep `backend/requirements.txt` only for legacy compatibility during transition
-- Eventually remove `backend/requirements.txt` completely
-
-### 5. Update pyproject.toml [tool.uv] Section
-- Add UV-specific configurations
-- Configure lock file management
-- Set development group configurations
-
-## Benefits After Full UV Migration
-
-- **Reproducible Builds**: Exact dependency versions locked across environments
-- **Faster Installs**: UV's Rust-based resolver is significantly faster
-- **Better Conflict Resolution**: Superior dependency resolution algorithm  
-- **Modern Tooling**: Industry-standard approach for Python projects
-- **Simplified Workflow**: Single source of truth for all dependencies
-
-## Migration Commands
+## Local Developer Workflow
 
 ```bash
-# Current state (working)
-pip install -r requirements.txt
+# Install all dependencies
+make deps
 
-# Future state with UV
-uv sync                    # Install all dependencies
-uv add package            # Add new dependency
-uv remove package         # Remove dependency
-uv lock                   # Update lock file
+# Run tests
+make test
+
+# Start the backend with uv-run
+make run
 ```
 
-## Dependencies Validation
+Additional uv commands developers may need:
 
-The project's dependency validation tests have been updated to check:
-1. Root `pyproject.toml` first (preferred)
-2. Fallback to `backend/requirements.txt` if needed
-3. Support for both execution contexts (root and backend directories)
+```bash
+uv add <package>             # Add a dependency to pyproject.toml
+uv remove <package>          # Remove a dependency
+uv lock                      # Refresh lock files after dependency changes
+uv run <command>             # Execute commands within the uv environment
+```
 
-This ensures continuity during the UV migration process.
+Run `uv sync --frozen` when you want to assert that the lock file is respected (e.g., in CI or reproducibility checks).
+
+## CI/CD Integration
+
+All GitHub Actions workflows install dependencies with `uv sync --frozen`, ensuring:
+- Deterministic environments across unit, integration, and E2E pipelines
+- Faster installs compared to pip thanks to uv's Rust-based resolver
+- Automatic alignment with the checked-in lock files
+
+If CI fails because of out-of-date locks, regenerate them locally (`uv lock`) and commit the updated files.
+
+## Legacy Artifacts
+
+- `requirements.txt` files have been removed. Always use `uv` commands instead of `pip install`.
+- Legacy scripts that previously invoked `pip` now delegate to the Makefile targets backed by uv.
+
+## Troubleshooting
+
+| Symptom | Resolution |
+| ------- | ---------- |
+| `ModuleNotFoundError` for project dependencies | Run `make deps` (or `uv sync`) from the repository root to hydrate the uv environment. |
+| Lock file drift error (`uv sync --frozen` fails) | Execute `uv lock` locally, verify changes, and commit updated lock files. |
+| CI uses outdated dependencies | Confirm the workflow is running `uv sync --frozen` and that the lock files are committed. |
+
+For more background on the migration away from Semantic Kernel workflows and the adoption of uv-backed tooling, review [docs/migration-guide-azure-ai-sdk.md](../migration-guide-azure-ai-sdk.md).

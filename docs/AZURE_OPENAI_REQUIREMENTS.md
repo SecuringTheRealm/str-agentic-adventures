@@ -47,8 +47,9 @@ To enable AI-powered features, set these environment variables:
 AZURE_OPENAI_ENDPOINT=https://your-project.openai.azure.com/
 AZURE_OPENAI_API_KEY=your-api-key-here
 AZURE_OPENAI_CHAT_DEPLOYMENT=gpt-4o-mini
-AZURE_OPENAI_EMBEDDING_DEPLOYMENT=text-embedding-3-large
+AZURE_OPENAI_EMBEDDING_DEPLOYMENT=text-embedding-ada-002
 AZURE_OPENAI_DALLE_DEPLOYMENT=dall-e-3  # Optional, for image generation
+AZURE_OPENAI_API_VERSION=2023-12-01-preview
 ```
 
 ## Error Handling
@@ -88,7 +89,7 @@ Consider implementing a "demo mode" that:
 3. Clearly indicates to users when in demo mode
 4. Allows developers to test UI without Azure costs
 
-## Migration Path
+## Dependency Injection Pattern
 
 If you have existing tests that use environment variable manipulation:
 
@@ -111,7 +112,7 @@ test_config = Settings(
 app.dependency_overrides[get_config] = lambda: test_config
 ```
 
-See `backend/tests/MIGRATION_GUIDE_dependency_injection.md` for detailed examples.
+See `backend/tests/conftest.py` for working fixtures and helper utilities that follow this pattern.
 
 ## Troubleshooting
 
@@ -135,20 +136,19 @@ See `backend/tests/MIGRATION_GUIDE_dependency_injection.md` for detailed example
 3. Skip tests that require Azure OpenAI in CI environments
 4. Use `pytest.mark.skip` for optional AI integration tests
 
-### Import Errors from Semantic Kernel
+### Azure AI SDK Import Errors
 
-**Symptoms**: `cannot import name 'kernel_function' from 'semantic_kernel'`
+**Symptoms**: `ModuleNotFoundError: No module named 'azure.ai.agents'`
 
 **Solutions**:
-1. Check Semantic Kernel version compatibility
-2. Review recent Semantic Kernel API changes
-3. Update import statements to match current API
-4. See Semantic Kernel migration guides
+1. Run `make deps` (or `uv sync`) to install dependencies defined in `pyproject.toml`
+2. Confirm `uv` is using the workspace `uv.lock` file (use `uv sync --frozen` in CI)
+3. If you previously relied on Semantic Kernel, update imports to use `azure.ai.agents` and `azure.ai.inference`
+4. Review `docs/migration-guide-azure-ai-sdk.md` for end-to-end migration examples
 
 ## References
 
 - [Azure OpenAI Service Documentation](https://learn.microsoft.com/en-us/azure/ai-services/openai/)
-- [Semantic Kernel Documentation](https://learn.microsoft.com/en-us/semantic-kernel/)
 - ADR-0005: Azure OpenAI Integration
 - `backend/tests/conftest.py` - Test configuration fixtures
-- `backend/tests/MIGRATION_GUIDE_dependency_injection.md` - Migration examples
+- [Migration Guide: Semantic Kernel to Azure AI Agents SDK](migration-guide-azure-ai-sdk.md)

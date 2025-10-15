@@ -135,6 +135,6 @@ When adding new tests:
 6. Ensure tests are deterministic and not flaky
 
 ## Related Documentation
-- [Product Requirements Document](../../docs/product_requirements_document.md)
+- [Product Requirements Document](../../docs/prd/index.md)
 - [D&D 5e SRD Reference](../../docs/reference/srd-5.2.1.md)
 - [Application Architecture](../../README.md)

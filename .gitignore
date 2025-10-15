@@ -441,3 +441,6 @@ build/
 dist/
 .bmad-core/
 web-bundles/
+.claude/
+docs/prd/
+docs/architecture/
