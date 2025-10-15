@@ -4,7 +4,8 @@ AI-powered tabletop RPG application with a FastAPI backend and React frontend or
 
 ## Start Here
 - Read `AGENTS.md` for repository-wide security guardrails, project structure, coding standards, testing expectations, and PR workflow.
-- Only fall back to discovery or shell inspection when behavior differs from what `AGENTS.md` describes.
+- File-specific detailed standards are in `.github/instructions/` (automatically applied based on file type).
+- Only fall back to discovery or shell inspection when behavior differs from documentation.
 
 ## Copilot Runner Setup
 - The `.github/workflows/copilot-setup-steps.yml` workflow preps the runner before each Copilot session by:

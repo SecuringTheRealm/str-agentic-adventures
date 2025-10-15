@@ -26,17 +26,24 @@
 - `cd frontend && npm run build`: type-check with `tsc --noEmit` and build production bundle.
 
 ## Coding Style & Naming Conventions
-- Python: 4-space indentation, snake_case for functions/vars, PascalCase for classes, ALL_CAPS constants. Enforce Ruff (line length 88) and type hints on all functions.
-- TypeScript/React: prefer functional components with hooks, use PascalCase for components/types, camelCase for variables, ALL_CAPS constants. Biome handles lint + format.
-- Keep components small and leverage CSS modules; favor immutable data patterns (`const`, `readonly`) and optional chaining.
-- Follow existing directory layout; remove orphaned files instead of leaving placeholders.
+- **Python**: 4-space indentation, snake_case for functions/vars, PascalCase for classes, ALL_CAPS constants. Enforce Ruff (line length 88) and type hints on all functions. Use SQLAlchemy ORM for all database interactions.
+- **TypeScript/React**: Prefer functional components with hooks, PascalCase for components/types, camelCase for variables, ALL_CAPS constants. Biome handles lint + format.
+- **General**: Keep components small, follow existing directory layout, remove orphaned files instead of leaving placeholders.
+- **Detailed Standards**: See `.github/instructions/` for comprehensive language-specific coding standards, error handling patterns, and best practices.
 
 ## Testing Guidelines
-- Backend: Pytest with `pytest-asyncio`; tests live in `backend/tests/` and follow `test_*.py`. Mock Azure OpenAI and external services; keep tests deterministic.
-- Frontend: Vitest + Testing Library for unit/UI tests, Playwright for E2E. Unit tests reside in `__tests__/` or `*.test.ts[x]`; E2E specs end with `.spec.ts`.
-- Coverage targets (Vitest): 90% statements/branches/functions/lines on new code, 85% overall. Maintain Pytest markers (`unit`, `integration`, `slow`) and run affected suites locally.
-- Regenerate coverage in CI (`vitest --coverage`, `pytest --cov`) and avoid committing `.only`, `.skip`, or disabled tests.
-- For Playwright authoring, use the Codex MCP helper commands (`pw-explore-website`, `pw-generate-tests`, `pw-manual-testing`) described in the [Codex Playwright MCP blog](https://blog.gopenai.com/automating-e2e-chat-flow-testing-with-codex-playwright-mcp-1ce4020dcbca) to speed up exploration, test generation, and manual walkthroughs.
+- **Backend**: Pytest with `pytest-asyncio`; tests in `backend/tests/` follow `test_*.py`. Mock external services; keep tests deterministic.
+- **Frontend**: Vitest + Testing Library for unit/UI tests, Playwright for E2E. Unit tests in `__tests__/` or `*.test.ts[x]`; E2E in `e2e/*.spec.ts`.
+- **Coverage**: 90% for new code, 85% overall (statements/branches/functions/lines). Never commit `.only`, `.skip`, or disabled tests.
+- **Core Principle**: When tests fail, investigate and fix the code issue—never rewrite tests just to make them pass.
+- **Playwright**: Use Codex MCP commands (`pw-explore-website`, `pw-generate-tests`, `pw-manual-testing`) per the [Codex Playwright MCP blog](https://blog.gopenai.com/automating-e2e-chat-flow-testing-with-codex-playwright-mcp-1ce4020dcbca).
+- **Detailed Standards**: See `.github/instructions/testing.instructions.md` for comprehensive testing practices, test integrity rules, and failure resolution processes.
+
+## Database & Migration Guidelines
+- **ORM Requirement**: Use SQLAlchemy ORM for all database interactions—never use raw database connectors (sqlite3, psycopg2).
+- **Migrations**: Use Alembic for all schema changes. Migrations run automatically on startup. Create with `alembic revision --autogenerate -m "description"`.
+- **Version Control**: Never commit database files (`*.db`, `*.sqlite`). Use `.gitignore` to prevent accidental commits.
+- **Detailed Standards**: See `.github/instructions/database.instructions.md` for migration workflows, environment configuration, and data management patterns.
 
 ## API Client & Integration Workflow
 - Regenerate the TypeScript OpenAPI client after any backend schema change: `cd frontend && npm run generate:api` (backend must be running).
@@ -44,11 +51,14 @@
 - Validate integration with `./scripts/validate-openapi-client.sh` when modifying shared contracts.
 
 ## Documentation Expectations
-- Place new docs under the appropriate `docs/` subdirectory (ADR, design, specs, reference, user). Follow snake_case filenames and update ADR index when adding decisions.
-- Keep `AGENTS.md` and `.github/copilot-instructions.md` aligned—if guidance lives here, avoid duplicating it elsewhere.
-- Use US English, active voice, and provide code or command snippets where they clarify steps.
-- Refer to `docs/AZURE_OPENAI_REQUIREMENTS.md` for Azure setup patterns and `docs/specs/TESTING_STRATEGY.md` for required test coverage practices before altering related code.
-- Acknowledge critical dependencies in `docs/contributions.md`; update the list when introducing or removing major third-party tooling.
+- **Structure**: Place new docs under appropriate `docs/` subdirectory (adr/, design/, specs/, reference/, user/). Follow snake_case filenames.
+- **Documentation Hierarchy**: `AGENTS.md` provides high-level repository guidelines; `.github/instructions/` contains detailed, file-specific standards; `docs/` holds architecture, specs, and user guides.
+- **Style**: Use US English, active voice, and provide code or command snippets where they clarify steps.
+- **Key References**:
+  - `docs/AZURE_OPENAI_REQUIREMENTS.md` - Azure setup patterns
+  - `docs/specs/TESTING_STRATEGY.md` - Test coverage practices
+  - `docs/contributions.md` - Critical dependencies acknowledgement
+- **Detailed Standards**: See `.github/instructions/documentation.instructions.md` for file naming, content standards, and maintenance practices. See `.github/instructions/adr.instructions.md` for ADR-specific guidelines.
 
 ## Commit & Pull Request Guidelines
 - Use Conventional Commits (`feat: ...`, `fix: ...`, `docs: ...`) as seen in `git log`; group related changes per commit.
