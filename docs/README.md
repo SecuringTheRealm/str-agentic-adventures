@@ -33,6 +33,13 @@ Architecture Decision Records:
 - [deployment.md](deployment.md) - Production deployment instructions
 - [AZURE_OPENAI_REQUIREMENTS.md](AZURE_OPENAI_REQUIREMENTS.md) - Azure OpenAI configuration guide
 
+## Configuration and Troubleshooting
+
+- [copilot-secrets-troubleshooting.md](copilot-secrets-troubleshooting.md) - **GitHub Copilot secret configuration guide**
+- [azure-secret-testing-results.md](azure-secret-testing-results.md) - Azure secret testing results and analysis
+- [secret-configuration-visual-guide.md](secret-configuration-visual-guide.md) - Visual guide for secret configuration
+- [migration-guide-azure-ai-sdk.md](migration-guide-azure-ai-sdk.md) - Azure AI SDK migration guide
+
 ## Agent Documentation
 
 See [../AGENTS.md](../AGENTS.md) for detailed information about the AI agents and coding instructions.
