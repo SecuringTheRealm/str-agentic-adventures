@@ -257,3 +257,13 @@ expect(screen.getByRole('button', { name: 'Send' })).toBeInTheDocument();
 - **factory_boy**: Object factory library
 - **Testing Library**: Semantic frontend testing queries
 - **Playwright**: End-to-end testing framework
+
+### Playwright MCP Helper Commands
+
+Generate and refine E2E coverage faster by using the Codex Playwright MCP workflow described in the official guide: https://blog.gopenai.com/automating-e2e-chat-flow-testing-with-codex-playwright-mcp-1ce4020dcbca. The workflow provides three Claude code commands:
+
+- `pw-explore-website` — map page structure, surface selectors, and collect candidate flows.
+- `pw-generate-tests` — scaffold Playwright specs for the discovered journeys.
+- `pw-manual-testing` — capture manual QA notes while stepping through the UI.
+
+Adopt these commands whenever Playwright scenarios change to keep exploratory, generated, and manual testing aligned.

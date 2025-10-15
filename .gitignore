@@ -439,8 +439,7 @@ frontend/src/api-client/git_push.sh
 requirements.txt
 build/
 dist/
-.bmad-core/
 web-bundles/
-.claude/
 docs/prd/
 docs/architecture/
+flatten.xml

@@ -97,6 +97,7 @@ Serves the built assets locally to validate production output.
 - Validates complete user workflows and D&D 5e compliance
 - Automatic screenshot capture for documentation
 - See [E2E Test Summary](../specs/E2E_TEST_SUMMARY.md) for details
+- For faster authoring and review, use the Codex MCP helper commands (`pw-explore-website`, `pw-generate-tests`, `pw-manual-testing`) documented here: https://blog.gopenai.com/automating-e2e-chat-flow-testing-with-codex-playwright-mcp-1ce4020dcbca.
 
 ### Test Coverage
 E2E tests validate key user stories from the [Product Requirements Document](../prd/index.md):
