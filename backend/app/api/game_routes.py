@@ -489,6 +489,7 @@ async def process_player_input(player_input: PlayerInput):
         dm_response = await get_dungeon_master().process_input(
             player_input.message, context
         )
+        logger.info("DM response payload: %s", dm_response)
 
         # Transform the DM response to the GameResponse format
         images = []
