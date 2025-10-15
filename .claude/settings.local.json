@@ -62,7 +62,11 @@
       "Bash(git checkout:*)",
       "Bash(npm install:*)",
       "Read(//private/tmp/**)",
-      "Bash(GIT_SEQUENCE_EDITOR=\"sed -i '''' ''s/^pick 1364414/edit 1364414/''\" git rebase -i da38af7)"
+      "Bash(make run)",
+      "Bash(npm run dev)",
+      "Bash(npx playwright install)",
+      "Bash(npm run test:e2e)",
+      "Bash(npm run generate:api)"
     ],
     "deny": [],
     "ask": []
