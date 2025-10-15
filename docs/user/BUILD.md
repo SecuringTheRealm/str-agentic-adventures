@@ -19,6 +19,9 @@ make run
 # Run tests  
 make test
 
+# Generate frontend API client (runs validation workflow)
+make generate-client
+
 # Format and lint code
 make format
 make lint
@@ -39,6 +42,8 @@ make clean
 | `make format` | Format code with ruff |
 | `make clean` | Clean temporary files |
 | `make dev-setup` | Complete development environment setup |
+| `make generate-client` | Generate the frontend API client via validation script |
+| `make validate-openapi-client` | Alias for `generate-client`; runs the full validation workflow |
 
 ## Legacy Scripts
 

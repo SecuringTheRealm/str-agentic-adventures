@@ -50,6 +50,8 @@ The OpenAPI client is automatically generated:
    cd frontend && npm test
    ```
 
+> 💡 Alternatively, run `make generate-client` from the repository root to execute the end-to-end validation script (`scripts/validate-openapi-client.sh`) which spins up the backend, regenerates the client, and performs sanity checks automatically.
+
 ### First-Time Setup
 
 After cloning the repository:

@@ -92,6 +92,13 @@ Justification:
 * Risk: Azure AI Agents SDK may have limitations not present in Semantic Kernel
   * Mitigation: Prototype critical features early, maintain abstraction layer for potential future changes
 
+## Status Update (2025-10-15)
+
+- `DungeonMasterAgent` now uses the shared `AzureOpenAIClient` wrapper for both standard and streaming chat completions with automatic fallback to deterministic processing when Azure configuration is missing.
+- `ArtistAgent` and `CombatCartographerAgent` guard their DALL·E integrations by checking for the shared Azure client and gracefully surfacing fallback messaging when image generation is unavailable.
+- `NarratorAgent` continues to leverage `AzureOpenAIClient` for narrative completions, while `ScribeAgent` and `CombatMCAgent` rely on deterministic subsystems and required no OpenAI updates after this audit.
+- Remaining gap: the multi-agent flow still needs deeper integration testing (Azure AI Agents orchestration with real threads/tools using Framework). Plan follow-up instrumentation before declaring the migration fully complete. Unclear if framework is in use.
+
 ## Links
 
 * Supersedes: [ADR-0001 - Use Microsoft Semantic Kernel for Multi-Agent Architecture](0001-semantic-kernel-multi-agent-framework.md)

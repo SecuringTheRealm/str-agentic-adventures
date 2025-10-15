@@ -22,6 +22,7 @@ class CombatCartographerAgent:
     def __init__(self) -> None:
         """Initialize the Combat Cartographer agent with Azure AI SDK."""
         self.chat_client: ChatCompletionsClient | None = None
+        self.azure_client: AzureOpenAIClient | None = None
         self._fallback_mode = False
 
         # Try to get the shared chat client from agent client manager
@@ -119,6 +120,13 @@ class CombatCartographerAgent:
         Returns:
             Dict[str, Any]: Details of the generated battle map, including image reference
         """
+        if self._fallback_mode or not self.azure_client:
+            return {
+                "error": (
+                    "Combat Cartographer agent in fallback mode - map generation not available"
+                )
+            }
+
         try:
             # Create map ID
             map_id = f"map_{len(self.battle_maps) + 1}"

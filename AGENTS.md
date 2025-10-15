@@ -72,3 +72,26 @@
 - Before opening a PR, ensure formatting, linting, tests, and OpenAPI regeneration (if applicable) have run successfully.
 - PRs should include: concise summary, linked issues (e.g., `Closes #123`), screenshots for UI changes, notes on regenerated assets or migrations, and test evidence.
 - Keep PRs focused; update documentation and ADRs alongside the code they describe.
+
+# BMAD Agents
+agents:
+  - id: analyst
+    path: .bmad-core/agents/analyst.md
+  - id: architect
+    path: .bmad-core/agents/architect.md
+  - id: bmad-master
+    path: .bmad-core/agents/bmad-master.md
+  - id: bmad-orchestrator
+    path: .bmad-core/agents/bmad-orchestrator.md
+  - id: dev
+    path: .bmad-core/agents/dev.md
+  - id: pm
+    path: .bmad-core/agents/pm.md
+  - id: po
+    path: .bmad-core/agents/po.md
+  - id: qa
+    path: .bmad-core/agents/qa.md
+  - id: sm
+    path: .bmad-core/agents/sm.md
+  - id: ux-expert
+    path: .bmad-core/agents/ux-expert.md

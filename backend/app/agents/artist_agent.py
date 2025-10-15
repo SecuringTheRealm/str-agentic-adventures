@@ -22,6 +22,7 @@ class ArtistAgent:
     def __init__(self) -> None:
         """Initialize the Artist agent with Azure AI SDK."""
         self.chat_client: ChatCompletionsClient | None = None
+        self.azure_client: AzureOpenAIClient | None = None
         self._fallback_mode = False
 
         # Try to get the shared chat client from agent client manager
@@ -113,7 +114,7 @@ class ArtistAgent:
             Dict[str, Any]: Details of the generated portrait, including image reference
         """
         # Return error if in fallback mode
-        if self._fallback_mode:
+        if self._fallback_mode or not self.azure_client:
             return {
                 "error": (
                     "Artist agent in fallback mode - image generation not available"
@@ -206,6 +207,13 @@ class ArtistAgent:
             Dict[str, Any]: Details of the generated illustration,
                 including image reference
         """
+        if self._fallback_mode or not self.azure_client:
+            return {
+                "error": (
+                    "Artist agent in fallback mode - image generation not available"
+                )
+            }
+
         try:
             # Generate a unique ID for this artwork
             art_id = f"scene_{len(self.generated_art) + 1}"
@@ -301,6 +309,13 @@ class ArtistAgent:
             Dict[str, Any]: Details of the generated item visualization,
                 including image reference
         """
+        if self._fallback_mode or not self.azure_client:
+            return {
+                "error": (
+                    "Artist agent in fallback mode - image generation not available"
+                )
+            }
+
         try:
             # Generate a unique ID for this artwork
             art_id = f"item_{len(self.generated_art) + 1}"

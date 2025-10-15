@@ -485,6 +485,7 @@ graph TB
 5. Return image URL for frontend display
 
 **Implementation**: `backend/app/agents/combat_cartographer_agent.py`
+**Azure Integration**: Relies on `AzureOpenAIClient` for DALL·E map renders with graceful fallback messaging when Azure configuration is unavailable.
 
 #### 6. Artist Agent
 
@@ -511,6 +512,7 @@ graph TB
 - Action scenes (complementing battle maps)
 
 **Implementation**: `backend/app/agents/artist_agent.py`
+**Azure Integration**: Calls `AzureOpenAIClient` for DALL·E artwork generation and surfaces fallback errors if the Azure client is not available.
 
 ### Agent Communication Patterns
 
@@ -2244,4 +2246,3 @@ For implementation details, see:
 - [Architecture Decision Records](adr/index.md)
 - [Testing Strategy](specs/TESTING_STRATEGY.md)
 - [Azure OpenAI Requirements](AZURE_OPENAI_REQUIREMENTS.md)
-

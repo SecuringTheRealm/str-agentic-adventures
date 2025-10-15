@@ -1,7 +1,7 @@
 # AI Dungeon Master - Build System
 # This Makefile provides standardized targets for dependency management, testing, and running the application
 
-.PHONY: deps test run clean lint format help
+.PHONY: deps test run clean lint format help generate-client validate-openapi-client
 
 # Default target
 help:
@@ -12,6 +12,8 @@ help:
 	@echo "  lint        - Run linting checks"
 	@echo "  format      - Format code"
 	@echo "  clean       - Clean up temporary files"
+	@echo "  generate-client - Generate the frontend API client from the backend OpenAPI schema"
+	@echo "  validate-openapi-client - Full OpenAPI client generation validation workflow"
 
 # Install dependencies
 deps:
@@ -57,3 +59,12 @@ clean:
 dev-setup: deps
 	@echo "Development environment setup complete!"
 	@echo "Run 'make run' to start the server"
+
+generate-client:
+	@echo "Generating frontend API client..."
+	./scripts/validate-openapi-client.sh || { \
+		echo \"Failed to generate API client\"; \
+		exit 1; \
+	}
+
+validate-openapi-client: generate-client
