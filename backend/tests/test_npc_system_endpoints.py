@@ -31,7 +31,7 @@ class TestNPCSystemEndpoints:
         }
 
         response = client.post(
-            f"/api/game/campaign/{campaign_id}/npcs", json=request_data
+            f"/game/campaign/{campaign_id}/npcs", json=request_data
         )
         assert response.status_code == 200
 
@@ -62,7 +62,7 @@ class TestNPCSystemEndpoints:
         request_data = {"campaign_id": campaign_id, "name": "Simple Guard"}
 
         response = client.post(
-            f"/api/game/campaign/{campaign_id}/npcs", json=request_data
+            f"/game/campaign/{campaign_id}/npcs", json=request_data
         )
         assert response.status_code == 200
 
@@ -77,7 +77,7 @@ class TestNPCSystemEndpoints:
         """Test getting NPC personality."""
         npc_id = "test_npc_123"
 
-        response = client.get(f"/api/game/npc/{npc_id}/personality")
+        response = client.get(f"/game/npc/{npc_id}/personality")
         assert response.status_code == 200
 
         data = response.json()
@@ -107,7 +107,7 @@ class TestNPCSystemEndpoints:
             "relationship_change": 10,
         }
 
-        response = client.post(f"/api/game/npc/{npc_id}/interaction", json=request_data)
+        response = client.post(f"/game/npc/{npc_id}/interaction", json=request_data)
         assert response.status_code == 200
 
         data = response.json()
@@ -129,7 +129,7 @@ class TestNPCSystemEndpoints:
             "relationship_change": 5,
         }
 
-        response = client.post(f"/api/game/npc/{npc_id}/interaction", json=request_data)
+        response = client.post(f"/game/npc/{npc_id}/interaction", json=request_data)
         assert response.status_code == 200
 
         data = response.json()
@@ -142,7 +142,7 @@ class TestNPCSystemEndpoints:
         request_data = {"npc_id": npc_id, "level": 1, "role": "civilian"}
 
         response = client.post(
-            f"/api/game/npc/{npc_id}/generate-stats", json=request_data
+            f"/game/npc/{npc_id}/generate-stats", json=request_data
         )
         assert response.status_code == 200
 
@@ -183,7 +183,7 @@ class TestNPCSystemEndpoints:
         request_data = {"npc_id": npc_id, "level": 2, "role": "guard"}
 
         response = client.post(
-            f"/api/game/npc/{npc_id}/generate-stats", json=request_data
+            f"/game/npc/{npc_id}/generate-stats", json=request_data
         )
         assert response.status_code == 200
 
@@ -201,7 +201,7 @@ class TestNPCSystemEndpoints:
         request_data = {"npc_id": npc_id, "level": 3, "role": "spellcaster"}
 
         response = client.post(
-            f"/api/game/npc/{npc_id}/generate-stats", json=request_data
+            f"/game/npc/{npc_id}/generate-stats", json=request_data
         )
         assert response.status_code == 200
 
@@ -220,7 +220,7 @@ class TestNPCSystemEndpoints:
         request_data = {"npc_id": npc_id, "role": "soldier"}
 
         response = client.post(
-            f"/api/game/npc/{npc_id}/generate-stats", json=request_data
+            f"/game/npc/{npc_id}/generate-stats", json=request_data
         )
         assert response.status_code == 200
 
@@ -236,7 +236,7 @@ class TestNPCSystemEndpoints:
         request_data = {"npc_id": npc_id, "level": 10, "role": "soldier"}
 
         response = client.post(
-            f"/api/game/npc/{npc_id}/generate-stats", json=request_data
+            f"/game/npc/{npc_id}/generate-stats", json=request_data
         )
         assert response.status_code == 200
 
@@ -251,7 +251,7 @@ class TestNPCSystemEndpoints:
         """Test that NPC personality has proper structure."""
         npc_id = "test_npc_123"
 
-        response = client.get(f"/api/game/npc/{npc_id}/personality")
+        response = client.get(f"/game/npc/{npc_id}/personality")
         assert response.status_code == 200
 
         data = response.json()
@@ -287,7 +287,7 @@ class TestNPCSystemEndpoints:
             "relationship_change": 200,  # Extreme value
         }
 
-        response = client.post(f"/api/game/npc/{npc_id}/interaction", json=request_data)
+        response = client.post(f"/game/npc/{npc_id}/interaction", json=request_data)
         assert response.status_code == 200
 
         data = response.json()
@@ -304,7 +304,7 @@ class TestNPCSystemEndpoints:
             request_data = {"campaign_id": campaign_id, "name": f"Test NPC {i}"}
 
             response = client.post(
-                f"/api/game/campaign/{campaign_id}/npcs", json=request_data
+                f"/game/campaign/{campaign_id}/npcs", json=request_data
             )
             assert response.status_code == 200
             npcs.append(response.json())

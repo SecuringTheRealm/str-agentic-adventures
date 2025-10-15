@@ -158,9 +158,9 @@ class TestFrontendBackendAPICompatibility:
     def test_dice_rolling_endpoints_exist(self, client) -> None:
         """Test that dice rolling endpoints exist (used by frontend DiceRoller component)."""
         dice_endpoints = [
-            "/api/game/dice/roll",
-            "/api/game/dice/roll-with-character",
-            "/api/game/dice/manual-roll",
+            "/game/dice/roll",
+            "/game/dice/roll-with-character",
+            "/game/dice/manual-roll",
         ]
 
         for endpoint in dice_endpoints:
@@ -172,9 +172,9 @@ class TestFrontendBackendAPICompatibility:
     def test_character_progression_endpoints_exist(self, client) -> None:
         """Test character progression endpoints."""
         progression_endpoints = [
-            ("/api/game/character/test-id/level-up", "POST"),
-            ("/api/game/character/test-id/award-experience", "POST"),
-            ("/api/game/character/test-id/progression-info", "GET"),
+            ("/game/character/test-id/level-up", "POST"),
+            ("/game/character/test-id/award-experience", "POST"),
+            ("/game/character/test-id/progression-info", "GET"),
         ]
 
         for endpoint, method in progression_endpoints:
@@ -189,11 +189,11 @@ class TestFrontendBackendAPICompatibility:
     def test_campaign_management_endpoints_exist(self, client) -> None:
         """Test campaign management endpoints."""
         campaign_endpoints = [
-            "/api/game/campaign/generate-world",
-            "/api/game/campaign/test-id/start-session",
-            "/api/game/session/test-session/action",
-            "/api/game/combat/initialize",
-            "/api/game/combat/test-combat/turn",
+            "/game/campaign/generate-world",
+            "/game/campaign/test-id/start-session",
+            "/game/session/test-session/action",
+            "/game/combat/initialize",
+            "/game/combat/test-combat/turn",
         ]
 
         for endpoint in campaign_endpoints:
@@ -205,11 +205,11 @@ class TestFrontendBackendAPICompatibility:
     def test_api_error_handling_consistency(self, client) -> None:
         """Test that all API endpoints handle errors consistently."""
         endpoints_to_test = [
-            "/api/game/character",
-            "/api/game/campaign",
-            "/api/game/input",
-            "/api/game/generate-image",
-            "/api/game/battle-map",
+            "/game/character",
+            "/game/campaign",
+            "/game/input",
+            "/game/generate-image",
+            "/game/battle-map",
         ]
 
         for endpoint in endpoints_to_test:
@@ -294,7 +294,7 @@ class TestFrontendBackendAPICompatibility:
         """Test that CORS is properly configured for frontend access."""
         # Test preflight request
         response = client.options(
-            "/api/game/character",
+            "/game/character",
             headers={
                 "Origin": "http://127.0.0.1:5173",
                 "Access-Control-Request-Method": "POST",

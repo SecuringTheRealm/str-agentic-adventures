@@ -26,7 +26,7 @@ class TestInventorySystemEndpoints:
         }
 
         response = client.post(
-            f"/api/game/character/{character_id}/equipment", json=request_data
+            f"/game/character/{character_id}/equipment", json=request_data
         )
         assert response.status_code == 200
 
@@ -47,7 +47,7 @@ class TestInventorySystemEndpoints:
         }
 
         response = client.post(
-            f"/api/game/character/{character_id}/equipment", json=request_data
+            f"/game/character/{character_id}/equipment", json=request_data
         )
         assert response.status_code == 200
 
@@ -67,7 +67,7 @@ class TestInventorySystemEndpoints:
         }
 
         response = client.post(
-            f"/api/game/character/{character_id}/equipment", json=request_data
+            f"/game/character/{character_id}/equipment", json=request_data
         )
         assert response.status_code == 400
 
@@ -78,7 +78,7 @@ class TestInventorySystemEndpoints:
         """Test getting character encumbrance."""
         character_id = "test_char_123"
 
-        response = client.get(f"/api/game/character/{character_id}/encumbrance")
+        response = client.get(f"/game/character/{character_id}/encumbrance")
         assert response.status_code == 200
 
         data = response.json()
@@ -101,7 +101,7 @@ class TestInventorySystemEndpoints:
             "action": "apply",
         }
 
-        response = client.post("/api/game/items/magical-effects", json=request_data)
+        response = client.post("/game/items/magical-effects", json=request_data)
         assert response.status_code == 200
 
         data = response.json()
@@ -119,7 +119,7 @@ class TestInventorySystemEndpoints:
             "action": "remove",
         }
 
-        response = client.post("/api/game/items/magical-effects", json=request_data)
+        response = client.post("/game/items/magical-effects", json=request_data)
         assert response.status_code == 200
 
         data = response.json()
@@ -136,7 +136,7 @@ class TestInventorySystemEndpoints:
             "action": "invalid_action",
         }
 
-        response = client.post("/api/game/items/magical-effects", json=request_data)
+        response = client.post("/game/items/magical-effects", json=request_data)
         assert response.status_code == 400
 
         data = response.json()
@@ -144,7 +144,7 @@ class TestInventorySystemEndpoints:
 
     def test_get_item_catalog_no_filters(self, client) -> None:
         """Test getting item catalog without filters."""
-        response = client.get("/api/game/items/catalog")
+        response = client.get("/game/items/catalog")
         assert response.status_code == 200
 
         data = response.json()
@@ -161,7 +161,7 @@ class TestInventorySystemEndpoints:
 
     def test_get_item_catalog_filter_by_type(self, client) -> None:
         """Test getting item catalog filtered by item type."""
-        response = client.get("/api/game/items/catalog?item_type=weapon")
+        response = client.get("/game/items/catalog?item_type=weapon")
         assert response.status_code == 200
 
         data = response.json()
@@ -173,7 +173,7 @@ class TestInventorySystemEndpoints:
 
     def test_get_item_catalog_filter_by_rarity(self, client) -> None:
         """Test getting item catalog filtered by rarity."""
-        response = client.get("/api/game/items/catalog?rarity=rare")
+        response = client.get("/game/items/catalog?rarity=rare")
         assert response.status_code == 200
 
         data = response.json()
@@ -185,7 +185,7 @@ class TestInventorySystemEndpoints:
 
     def test_get_item_catalog_filter_by_value_range(self, client) -> None:
         """Test getting item catalog filtered by value range."""
-        response = client.get("/api/game/items/catalog?min_value=100&max_value=2000")
+        response = client.get("/game/items/catalog?min_value=100&max_value=2000")
         assert response.status_code == 200
 
         data = response.json()
@@ -198,7 +198,7 @@ class TestInventorySystemEndpoints:
 
     def test_get_item_catalog_multiple_filters(self, client) -> None:
         """Test getting item catalog with multiple filters."""
-        response = client.get("/api/game/items/catalog?item_type=armor&rarity=common")
+        response = client.get("/game/items/catalog?item_type=armor&rarity=common")
         assert response.status_code == 200
 
         data = response.json()
@@ -211,7 +211,7 @@ class TestInventorySystemEndpoints:
 
     def test_magical_item_properties(self, client) -> None:
         """Test that magical items have proper properties."""
-        response = client.get("/api/game/items/catalog?rarity=rare")
+        response = client.get("/game/items/catalog?rarity=rare")
         assert response.status_code == 200
 
         data = response.json()
@@ -229,7 +229,7 @@ class TestInventorySystemEndpoints:
 
     def test_equipment_with_stat_modifiers(self, client) -> None:
         """Test that equipment with stat modifiers is properly represented."""
-        response = client.get("/api/game/items/catalog")
+        response = client.get("/game/items/catalog")
         assert response.status_code == 200
 
         data = response.json()

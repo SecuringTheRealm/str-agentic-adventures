@@ -25,7 +25,7 @@ class TestCampaignEndpoint:
             "tone": "heroic",
         }
 
-        response = client.post("/api/game/campaign", json=campaign_data)
+        response = client.post("/game/campaign", json=campaign_data)
 
         # Campaign creation should succeed (doesn't require Azure OpenAI)
         assert response.status_code == 200, (
@@ -48,7 +48,7 @@ class TestCampaignEndpoint:
             "tone": "heroic",
         }
 
-        response = client.post("/api/game/campaign", json=campaign_data)
+        response = client.post("/game/campaign", json=campaign_data)
 
         # Campaign creation should succeed
         assert response.status_code == 200, f"Unexpected status: {response.status_code}"
@@ -66,7 +66,7 @@ class TestCampaignEndpoint:
 
         # Test missing required fields
         invalid_data = {"name": "Test"}  # Missing setting
-        response = client.post("/api/game/campaign", json=invalid_data)
+        response = client.post("/game/campaign", json=invalid_data)
 
         # Should return validation error
         assert response.status_code == 422, (
@@ -76,7 +76,7 @@ class TestCampaignEndpoint:
         # Test with valid minimum data - campaigns don't validate empty names at Pydantic level
         # but they should still create successfully
         minimal_data = {"name": "", "setting": "fantasy"}
-        response = client.post("/api/game/campaign", json=minimal_data)
+        response = client.post("/game/campaign", json=minimal_data)
 
         # Empty name is allowed by the model, so this should succeed
         assert response.status_code in [200, 422], (

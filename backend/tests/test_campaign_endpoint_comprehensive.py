@@ -22,7 +22,7 @@ def test_campaign_endpoint_with_missing_config() -> bool | None:
         "tone": "heroic",
     }
 
-    response = client.post("/api/game/campaign", json=campaign_data)
+    response = client.post("/game/campaign", json=campaign_data)
 
     # Campaign creation should succeed without Azure OpenAI
     assert response.status_code == 200, f"Expected 200, got {response.status_code}"
@@ -52,7 +52,7 @@ def test_campaign_endpoint_with_config() -> bool | None:
         "tone": "heroic",
     }
 
-    response = client.post("/api/game/campaign", json=campaign_data)
+    response = client.post("/game/campaign", json=campaign_data)
 
     # Campaign creation should succeed
     if response.status_code != 200:

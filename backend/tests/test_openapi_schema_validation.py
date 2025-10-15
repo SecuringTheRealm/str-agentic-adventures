@@ -64,9 +64,9 @@ class TestOpenAPISchemaValidation:
 
         # Verify key API endpoints are documented
         expected_endpoints = [
-            "/api/game/character",
-            "/api/game/campaign",
-            "/api/game/input",
+            "/game/character",
+            "/game/campaign",
+            "/game/input",
             "/health",
         ]
 

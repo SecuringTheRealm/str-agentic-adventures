@@ -25,7 +25,7 @@ class TestSpellSystemEndpoints:
         }
 
         response = client.post(
-            f"/api/game/character/{character_id}/spells", json=request_data
+            f"/game/character/{character_id}/spells", json=request_data
         )
         assert response.status_code == 200
 
@@ -46,7 +46,7 @@ class TestSpellSystemEndpoints:
         }
 
         response = client.post(
-            f"/api/game/character/{character_id}/spell-slots", json=request_data
+            f"/game/character/{character_id}/spell-slots", json=request_data
         )
         assert response.status_code == 200
 
@@ -68,7 +68,7 @@ class TestSpellSystemEndpoints:
         }
 
         response = client.post(
-            f"/api/game/combat/{combat_id}/cast-spell", json=request_data
+            f"/game/combat/{combat_id}/cast-spell", json=request_data
         )
         assert response.status_code == 200
 
@@ -79,7 +79,7 @@ class TestSpellSystemEndpoints:
 
     def test_get_spell_list(self, client) -> None:
         """Test getting spell list endpoint."""
-        response = client.get("/api/game/spells/list")
+        response = client.get("/game/spells/list")
         assert response.status_code == 200
 
         data = response.json()
@@ -89,7 +89,7 @@ class TestSpellSystemEndpoints:
 
     def test_get_spell_list_filtered_by_class(self, client) -> None:
         """Test getting spell list filtered by character class."""
-        response = client.get("/api/game/spells/list?character_class=wizard")
+        response = client.get("/game/spells/list?character_class=wizard")
         assert response.status_code == 200
 
         data = response.json()
@@ -102,7 +102,7 @@ class TestSpellSystemEndpoints:
 
     def test_get_spell_list_filtered_by_level(self, client) -> None:
         """Test getting spell list filtered by spell level."""
-        response = client.get("/api/game/spells/list?spell_level=1")
+        response = client.get("/game/spells/list?spell_level=1")
         assert response.status_code == 200
 
         data = response.json()
@@ -120,7 +120,7 @@ class TestSpellSystemEndpoints:
             "spellcasting_ability_score": 16,
         }
 
-        response = client.post("/api/game/spells/save-dc", params=params)
+        response = client.post("/game/spells/save-dc", params=params)
         assert response.status_code == 200
 
         data = response.json()
@@ -143,7 +143,7 @@ class TestSpellSystemEndpoints:
         }
 
         response = client.post(
-            f"/api/game/character/{character_id}/concentration", json=request_data
+            f"/game/character/{character_id}/concentration", json=request_data
         )
         assert response.status_code == 200
 
@@ -158,7 +158,7 @@ class TestSpellSystemEndpoints:
         request_data = {"character_id": character_id, "action": "end"}
 
         response = client.post(
-            f"/api/game/character/{character_id}/concentration", json=request_data
+            f"/game/character/{character_id}/concentration", json=request_data
         )
         assert response.status_code == 200
 
@@ -177,7 +177,7 @@ class TestSpellSystemEndpoints:
         }
 
         response = client.post(
-            f"/api/game/character/{character_id}/concentration", json=request_data
+            f"/game/character/{character_id}/concentration", json=request_data
         )
         assert response.status_code == 200
 
@@ -193,7 +193,7 @@ class TestSpellSystemEndpoints:
         request_data = {"character_id": character_id, "action": "invalid_action"}
 
         response = client.post(
-            f"/api/game/character/{character_id}/concentration", json=request_data
+            f"/game/character/{character_id}/concentration", json=request_data
         )
         assert response.status_code == 400
 
@@ -203,7 +203,7 @@ class TestSpellSystemEndpoints:
         request_data = {"character_id": character_id, "action": "start"}
 
         response = client.post(
-            f"/api/game/character/{character_id}/concentration", json=request_data
+            f"/game/character/{character_id}/concentration", json=request_data
         )
         assert response.status_code == 400
 
@@ -213,6 +213,6 @@ class TestSpellSystemEndpoints:
         request_data = {"character_id": character_id, "action": "check"}
 
         response = client.post(
-            f"/api/game/character/{character_id}/concentration", json=request_data
+            f"/game/character/{character_id}/concentration", json=request_data
         )
         assert response.status_code == 400

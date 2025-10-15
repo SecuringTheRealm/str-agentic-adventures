@@ -27,7 +27,7 @@ class TestSpellAttackBonusEndpoint:
             "spellcasting_ability_score": 16,  # +3 modifier
         }
 
-        response = client.post("/api/game/spells/attack-bonus", json=request_data)
+        response = client.post("/game/spells/attack-bonus", json=request_data)
         assert response.status_code == 200
 
         data = response.json()
@@ -52,7 +52,7 @@ class TestSpellAttackBonusEndpoint:
             "spellcasting_ability_score": 14,  # +2 modifier
         }
 
-        response = client.post("/api/game/spells/attack-bonus", json=request_data)
+        response = client.post("/game/spells/attack-bonus", json=request_data)
         assert response.status_code == 200
 
         data = response.json()
@@ -77,7 +77,7 @@ class TestSpellAttackBonusEndpoint:
             "spellcasting_ability_score": 20,  # +5 modifier
         }
 
-        response = client.post("/api/game/spells/attack-bonus", json=request_data)
+        response = client.post("/game/spells/attack-bonus", json=request_data)
         assert response.status_code == 200
 
         data = response.json()
@@ -102,7 +102,7 @@ class TestSpellAttackBonusEndpoint:
             "spellcasting_ability_score": 16,
         }
 
-        response = client.post("/api/game/spells/attack-bonus", json=request_data)
+        response = client.post("/game/spells/attack-bonus", json=request_data)
         assert response.status_code == 400
         assert "not a spellcasting class" in response.json()["detail"]
 
@@ -124,7 +124,7 @@ class TestSpellAttackBonusEndpoint:
 
         for invalid_request in invalid_requests:
             response = client.post(
-                "/api/game/spells/attack-bonus", json=invalid_request
+                "/game/spells/attack-bonus", json=invalid_request
             )
             assert response.status_code == 422, (
                 f"Should reject invalid request: {invalid_request}"
@@ -153,7 +153,7 @@ class TestSpellAttackBonusEndpoint:
                 "spellcasting_ability_score": ability_score,
             }
 
-            response = client.post("/api/game/spells/attack-bonus", json=request_data)
+            response = client.post("/game/spells/attack-bonus", json=request_data)
             assert response.status_code == 200
 
             data = response.json()
@@ -189,7 +189,7 @@ class TestSpellAttackBonusEndpoint:
                 "spellcasting_ability_score": 10,  # 0 modifier for easier testing
             }
 
-            response = client.post("/api/game/spells/attack-bonus", json=request_data)
+            response = client.post("/game/spells/attack-bonus", json=request_data)
             assert response.status_code == 200
 
             data = response.json()

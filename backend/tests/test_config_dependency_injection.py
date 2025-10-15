@@ -60,7 +60,7 @@ class TestConfigurationDependencyInjection:
             }
 
             response = client_with_config.post(
-                "/api/game/character", json=character_data
+                "/game/character", json=character_data
             )
 
             assert response.status_code == 200
@@ -86,7 +86,7 @@ class TestConfigurationDependencyInjection:
         }
 
         response = client_with_missing_config.post(
-            "/api/game/character", json=character_data
+            "/game/character", json=character_data
         )
 
         # With fallback mode, character creation can still work or return 400 for validation errors
@@ -113,7 +113,7 @@ class TestConfigurationDependencyInjection:
                 "tone": "heroic",
             }
 
-            response = client_with_config.post("/api/game/campaign", json=campaign_data)
+            response = client_with_config.post("/game/campaign", json=campaign_data)
 
             assert response.status_code == 200
             assert mock_create.called
@@ -126,7 +126,7 @@ class TestConfigurationDependencyInjection:
         campaign_data = campaign_factory()
 
         response = client_with_missing_config.post(
-            "/api/game/campaign", json=campaign_data
+            "/game/campaign", json=campaign_data
         )
 
         # Campaign creation doesn't require Azure OpenAI - it's just database operations
@@ -180,7 +180,7 @@ class TestConfigurationDependencyInjection:
                 mock_get_scribe.return_value = mock_scribe
 
                 response = client.post(
-                    "/api/game/character",
+                    "/game/character",
                     json={
                         "name": "Test",
                         "race": "human",
@@ -220,7 +220,7 @@ class TestConfigurationDependencyInjection:
             mock_scribe.get_character = get_character_async
             mock_get_scribe.return_value = mock_scribe
 
-            response = client_with_config.get("/api/game/character/char_123")
+            response = client_with_config.get("/game/character/char_123")
 
             assert response.status_code == 200
             assert mock_get_scribe.called
@@ -229,7 +229,7 @@ class TestConfigurationDependencyInjection:
         self, client_with_missing_config
     ) -> None:
         """Test get character with missing Azure OpenAI configuration - fallback mode."""
-        response = client_with_missing_config.get("/api/game/character/char_123")
+        response = client_with_missing_config.get("/game/character/char_123")
 
         # Get character should work in fallback mode, or return 404 if character doesn't exist
         # No longer returns 503 since the route supports fallback

@@ -37,7 +37,7 @@ class TestAPIRouteValidation:
         ]
 
         for invalid_request in invalid_requests:
-            response = client.post("/api/game/character", json=invalid_request)
+            response = client.post("/game/character", json=invalid_request)
             assert response.status_code == 422, (
                 f"Should reject invalid request: {invalid_request}"
             )
@@ -89,7 +89,7 @@ class TestAPIRouteValidation:
                 },
             }
 
-            response = client.post("/api/game/character", json=valid_request)
+            response = client.post("/game/character", json=valid_request)
 
             if response.status_code == 200:
                 data = response.json()
@@ -114,7 +114,7 @@ class TestAPIRouteValidation:
         ]
 
         for invalid_request in invalid_requests:
-            response = client.post("/api/game/campaign", json=invalid_request)
+            response = client.post("/game/campaign", json=invalid_request)
             assert response.status_code == 422, (
                 f"Should reject invalid request: {invalid_request}"
             )
@@ -127,7 +127,7 @@ class TestAPIRouteValidation:
         ]
 
         for edge_case in edge_cases:
-            response = client.post("/api/game/campaign", json=edge_case)
+            response = client.post("/game/campaign", json=edge_case)
             # Accept either success or validation error
             assert response.status_code in [200, 422], (
                 f"Edge case should succeed or fail validation: {edge_case}, got {response.status_code}"
@@ -161,7 +161,7 @@ class TestAPIRouteValidation:
         ]
 
         for invalid_request in invalid_requests:
-            response = client.post("/api/game/input", json=invalid_request)
+            response = client.post("/game/input", json=invalid_request)
             assert response.status_code == 422, (
                 f"Should reject invalid request: {invalid_request}"
             )
@@ -200,7 +200,7 @@ class TestAPIRouteErrorHandling:
                 },
             }
 
-            response = client.post("/api/game/character", json=request_data)
+            response = client.post("/game/character", json=request_data)
 
             if response.status_code == 400:
                 # Should return proper error message
@@ -238,7 +238,7 @@ class TestAPIRouteErrorHandling:
                 },
             }
 
-            response = client.post("/api/game/character", json=request_data)
+            response = client.post("/game/character", json=request_data)
 
             # Should return 400 (validation error) or 500 error with meaningful message
             assert response.status_code in [400, 500]
@@ -260,7 +260,7 @@ class TestAPIRouteErrorHandling:
             "tone": "heroic",
         }
 
-        response = client.post("/api/game/campaign", json=request_data)
+        response = client.post("/game/campaign", json=request_data)
 
         # Campaign creation should succeed without Azure config
         assert response.status_code == 200, (
@@ -316,7 +316,7 @@ class TestAPIRouteDataTransformation:
                 },
             }
 
-            response = client.post("/api/game/character", json=request_data)
+            response = client.post("/game/character", json=request_data)
 
             if response.status_code == 200:
                 # Verify agent was called with transformed data
@@ -340,7 +340,7 @@ class TestAPIRouteDataTransformation:
             "homebrew_rules": ["Custom rule 1", "Custom rule 2"],
         }
 
-        response = client.post("/api/game/campaign", json=request_data)
+        response = client.post("/game/campaign", json=request_data)
 
         # Campaign creation should succeed
         assert response.status_code == 200, (
@@ -392,7 +392,7 @@ class TestAPIRoutePerformance:
             # This test might timeout depending on client settings
             # In a real scenario, we'd configure appropriate timeouts
             try:
-                response = client.post("/api/game/character", json=request_data)
+                response = client.post("/game/character", json=request_data)
                 # If it completes, verify it handles the delay (including 400 for validation errors)
                 assert response.status_code in [200, 400, 500, 503, 504]
             except (httpx.TimeoutException, httpx.ConnectTimeout, httpx.ReadTimeout):
@@ -430,7 +430,7 @@ class TestAPIRouteSecurity:
             "backstory": large_backstory,
         }
 
-        response = client.post("/api/game/character", json=request_data)
+        response = client.post("/game/character", json=request_data)
 
         # Should handle large payload gracefully (including 400 for validation)
         assert response.status_code in [200, 400, 413, 422, 500]
@@ -443,7 +443,7 @@ class TestAPIRouteSecurity:
 
         # Send malformed JSON
         response = client.post(
-            "/api/game/character",
+            "/game/character",
             content="{'invalid': json}",  # Malformed JSON
             headers={"Content-Type": "application/json"},
         )
@@ -478,7 +478,7 @@ class TestAPIRouteSecurity:
                 },
             }
 
-            response = client.post("/api/game/character", json=request_data)
+            response = client.post("/game/character", json=request_data)
 
             # Should handle malicious input safely
             # Either process it as regular text or reject appropriately

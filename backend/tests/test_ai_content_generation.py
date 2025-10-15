@@ -32,7 +32,7 @@ class TestAIContentGeneration:
             )
             mock_client_class.return_value = mock_client
 
-            response = client.post("/api/game/campaign/ai-generate", json=request_data)
+            response = client.post("/game/campaign/ai-generate", json=request_data)
 
             # Should return proper response structure
             assert response.status_code == 200
@@ -69,7 +69,7 @@ class TestAIContentGeneration:
             )
             mock_client_class.return_value = mock_client
 
-            response = client.post("/api/game/campaign/ai-generate", json=request_data)
+            response = client.post("/game/campaign/ai-generate", json=request_data)
             assert response.status_code == 200
 
             data = response.json()
@@ -97,7 +97,7 @@ class TestAIContentGeneration:
             )
             mock_client_class.return_value = mock_client
 
-            response = client.post("/api/game/campaign/ai-generate", json=request_data)
+            response = client.post("/game/campaign/ai-generate", json=request_data)
             assert (
                 response.status_code == 200
             )  # Should still return 200 with error in response
@@ -119,5 +119,5 @@ class TestAIContentGeneration:
             # Missing other required fields
         }
 
-        response = client.post("/api/game/campaign/ai-generate", json=invalid_request)
+        response = client.post("/game/campaign/ai-generate", json=invalid_request)
         assert response.status_code == 422  # Validation error

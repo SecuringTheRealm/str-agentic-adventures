@@ -40,18 +40,18 @@ class TestFrontendBackendIntegration:
         """Test that all expected API routes exist and return proper status codes."""
         # Test routes that should exist based on frontend api.ts file
         routes_to_test = [
-            ("/api/game/character", "POST"),
-            ("/api/game/character/test-id", "GET"),
-            ("/api/game/input", "POST"),
-            ("/api/game/campaign", "POST"),
-            ("/api/game/generate-image", "POST"),
-            ("/api/game/battle-map", "POST"),
-            ("/api/game/character/test-id/level-up", "POST"),
-            ("/api/game/character/test-id/award-experience", "POST"),
-            ("/api/game/character/test-id/progression-info", "GET"),
-            ("/api/game/dice/roll", "POST"),
-            ("/api/game/dice/roll-with-character", "POST"),
-            ("/api/game/dice/manual-roll", "POST"),
+            ("/game/character", "POST"),
+            ("/game/character/test-id", "GET"),
+            ("/game/input", "POST"),
+            ("/game/campaign", "POST"),
+            ("/game/generate-image", "POST"),
+            ("/game/battle-map", "POST"),
+            ("/game/character/test-id/level-up", "POST"),
+            ("/game/character/test-id/award-experience", "POST"),
+            ("/game/character/test-id/progression-info", "GET"),
+            ("/game/dice/roll", "POST"),
+            ("/game/dice/roll-with-character", "POST"),
+            ("/game/dice/manual-roll", "POST"),
         ]
 
         for route, method in routes_to_test:
@@ -112,7 +112,7 @@ class TestFrontendBackendIntegration:
             "backstory": "A brave warrior",
         }
 
-        response = client.post("/api/game/character", json=frontend_request)
+        response = client.post("/game/character", json=frontend_request)
 
         # Should not return 500 error due to missing configuration
         assert (
@@ -166,7 +166,7 @@ class TestFrontendBackendIntegration:
             "homebrew_rules": ["Custom rule 1"],
         }
 
-        response = client.post("/api/game/campaign", json=frontend_request)
+        response = client.post("/game/campaign", json=frontend_request)
 
         # Should not return 500 error due to missing configuration
         assert (
@@ -198,7 +198,7 @@ class TestFrontendBackendIntegration:
             "campaign_id": "test-campaign-id",
         }
 
-        response = client.post("/api/game/input", json=frontend_request)
+        response = client.post("/game/input", json=frontend_request)
 
         # Should succeed with mocked response or handle fallback gracefully
         # Accept 200 (success), 404 (character not found), or 500 (unexpected error in fallback)
@@ -212,7 +212,7 @@ class TestFrontendBackendIntegration:
             "details": {"name": "Test Hero", "race": "human", "class": "fighter"},
         }
 
-        response = client.post("/api/game/generate-image", json=frontend_request)
+        response = client.post("/game/generate-image", json=frontend_request)
 
         # Should handle the request (even if it fails due to missing config)
         assert response.status_code in [200, 400, 500, 503], (
@@ -227,7 +227,7 @@ class TestFrontendBackendIntegration:
             "combat_context": {"participants": 4},
         }
 
-        response = client.post("/api/game/battle-map", json=frontend_request)
+        response = client.post("/game/battle-map", json=frontend_request)
 
         # Should handle the request (even if it fails due to missing config)
         assert response.status_code in [200, 400, 500, 503], (
@@ -237,14 +237,14 @@ class TestFrontendBackendIntegration:
     def test_dice_rolling_endpoints_exist(self, client) -> None:
         """Test dice rolling endpoints exist and handle requests."""
         # Test basic dice roll
-        response = client.post("/api/game/dice/roll", json={"notation": "1d20"})
+        response = client.post("/game/dice/roll", json={"notation": "1d20"})
         assert response.status_code in [200, 400, 500], (
             f"Dice roll endpoint returned unexpected status: {response.status_code}"
         )
 
         # Test manual dice roll
         response = client.post(
-            "/api/game/dice/manual-roll", json={"notation": "1d20", "result": 15}
+            "/game/dice/manual-roll", json={"notation": "1d20", "result": 15}
         )
         assert response.status_code in [200, 400, 500], (
             f"Manual dice roll endpoint returned unexpected status: {response.status_code}"
@@ -253,9 +253,9 @@ class TestFrontendBackendIntegration:
     def test_missing_endpoints_fail_properly(self, client) -> None:
         """Test that missing endpoints return 404."""
         missing_endpoints = [
-            "/api/game/nonexistent",
+            "/game/nonexistent",
             "/api/missing/route",
-            "/api/game/character/missing/endpoint",
+            "/game/character/missing/endpoint",
         ]
 
         for endpoint in missing_endpoints:
@@ -266,7 +266,7 @@ class TestFrontendBackendIntegration:
 
     def test_cors_headers_present(self, client) -> None:
         """Test that CORS headers are present for frontend access."""
-        response = client.options("/api/game/character")
+        response = client.options("/game/character")
         # CORS should be configured to allow frontend access
         # The exact headers depend on the CORS configuration
         assert response.status_code in [200, 405], "CORS preflight should be handled"
@@ -350,11 +350,11 @@ class TestFrontendBackendIntegration:
     def test_error_response_format(self, client) -> None:
         """Test that error responses are in the expected format."""
         # Test invalid JSON
-        response = client.post("/api/game/character", data="invalid json")
+        response = client.post("/game/character", data="invalid json")
         assert response.status_code == 422  # Unprocessable Entity
         assert "detail" in response.json()
 
         # Test missing required fields
-        response = client.post("/api/game/character", json={})
+        response = client.post("/game/character", json={})
         assert response.status_code == 422
         assert "detail" in response.json()

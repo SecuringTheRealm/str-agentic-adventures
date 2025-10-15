@@ -15,7 +15,7 @@ class TestCampaignTemplatesRouteOrdering:
 
     def test_campaign_templates_route_works(self, client) -> None:
         """Test that /campaign/templates returns templates successfully."""
-        response = client.get("/api/game/campaign/templates")
+        response = client.get("/game/campaign/templates")
 
         # Should return 200 OK, not 404
         assert response.status_code == 200
@@ -43,13 +43,13 @@ class TestCampaignTemplatesRouteOrdering:
             "setting": "Test Setting",
             "tone": "heroic",
         }
-        create_response = client.post("/api/game/campaign", json=campaign_data)
+        create_response = client.post("/game/campaign", json=campaign_data)
         assert create_response.status_code == 200
 
         campaign_id = create_response.json()["id"]
 
         # Now try to get this specific campaign
-        campaign_response = client.get(f"/api/game/campaign/{campaign_id}")
+        campaign_response = client.get(f"/game/campaign/{campaign_id}")
 
         # Should return 200 OK (campaign exists)
         assert campaign_response.status_code == 200
@@ -61,7 +61,7 @@ class TestCampaignTemplatesRouteOrdering:
     def test_nonexistent_campaign_returns_404(self, client) -> None:
         """Test that non-existent campaign ID returns 404."""
         fake_id = "00000000-0000-0000-0000-000000000000"
-        response = client.get(f"/api/game/campaign/{fake_id}")
+        response = client.get(f"/game/campaign/{fake_id}")
 
         # Should return 404 for non-existent campaign
         assert response.status_code == 404
@@ -74,7 +74,7 @@ class TestCampaignTemplatesRouteOrdering:
         """Test that 'templates' is not treated as a campaign ID."""
         # This is the core test - before our fix, this would return 404 with
         # "Campaign templates not found" because 'templates' was treated as campaign_id
-        response = client.get("/api/game/campaign/templates")
+        response = client.get("/game/campaign/templates")
 
         # Should NOT return 404 with campaign not found error
         assert response.status_code != 404
