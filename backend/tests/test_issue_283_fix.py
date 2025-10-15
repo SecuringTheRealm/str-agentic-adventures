@@ -9,7 +9,21 @@ even when Azure OpenAI is not configured.
 
 import asyncio
 import logging
+import os
 import sys
+
+API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000").rstrip("/")
+RAW_API_PREFIX = os.getenv("API_PREFIX", "")
+API_PREFIX = f"/{RAW_API_PREFIX.strip('/')}" if RAW_API_PREFIX else ""
+
+
+def build_api_url(path: str) -> str:
+    """Construct absolute API URL with optional prefix."""
+    if not path.startswith("/"):
+        path = f"/{path}"
+    if API_PREFIX:
+        return f"{API_BASE_URL}{API_PREFIX}{path}"
+    return f"{API_BASE_URL}{path}"
 
 # Set up logging to see any warnings
 logging.basicConfig(level=logging.INFO)
@@ -97,7 +111,7 @@ async def test_api_endpoint() -> bool | None:
         # Test the API endpoint
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                "http://localhost:8000/api/game/input",
+                build_api_url("/game/input"),
                 json={
                     "message": "Hello, I want to explore the mysterious cave",
                     "character_id": "test-character",

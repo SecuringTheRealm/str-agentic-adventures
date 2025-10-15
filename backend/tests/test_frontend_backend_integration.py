@@ -15,6 +15,16 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.main import app
 
+RAW_API_PREFIX = os.getenv("API_PREFIX", "")
+API_PREFIX = f"/{RAW_API_PREFIX.strip('/')}" if RAW_API_PREFIX else ""
+
+
+def build_path(endpoint: str) -> str:
+    """Construct full API path with optional prefix."""
+    if not endpoint.startswith("/"):
+        endpoint = f"/{endpoint}"
+    return f"{API_PREFIX}{endpoint}" if API_PREFIX else endpoint
+
 
 class TestFrontendBackendIntegration:
     """Test frontend-backend API integration."""
@@ -55,15 +65,16 @@ class TestFrontendBackendIntegration:
         ]
 
         for route, method in routes_to_test:
+            full_route = build_path(route)
             if method == "GET":
-                response = client.get(route)
+                response = client.get(full_route)
                 # GET endpoints should either work (200) or return proper error (404, 422, 500, 503)
                 # 503 can happen when Azure OpenAI configuration is missing
                 assert response.status_code in [200, 404, 422, 500, 503], (
                     f"Route {route} returned unexpected status {response.status_code}"
                 )
             elif method == "POST":
-                response = client.post(route, json={})
+                response = client.post(full_route, json={})
                 # POST endpoints should return proper error codes for invalid data or success
                 # Some endpoints might succeed with empty data (like campaign creation)
                 assert response.status_code in [200, 400, 422, 500, 503], (
@@ -112,7 +123,7 @@ class TestFrontendBackendIntegration:
             "backstory": "A brave warrior",
         }
 
-        response = client.post("/game/character", json=frontend_request)
+        response = client.post(build_path("/game/character"), json=frontend_request)
 
         # Should not return 500 error due to missing configuration
         assert (
@@ -166,7 +177,7 @@ class TestFrontendBackendIntegration:
             "homebrew_rules": ["Custom rule 1"],
         }
 
-        response = client.post("/game/campaign", json=frontend_request)
+        response = client.post(build_path("/game/campaign"), json=frontend_request)
 
         # Should not return 500 error due to missing configuration
         assert (
@@ -198,7 +209,7 @@ class TestFrontendBackendIntegration:
             "campaign_id": "test-campaign-id",
         }
 
-        response = client.post("/game/input", json=frontend_request)
+        response = client.post(build_path("/game/input"), json=frontend_request)
 
         # Should succeed with mocked response or handle fallback gracefully
         # Accept 200 (success), 404 (character not found), or 500 (unexpected error in fallback)
@@ -212,7 +223,7 @@ class TestFrontendBackendIntegration:
             "details": {"name": "Test Hero", "race": "human", "class": "fighter"},
         }
 
-        response = client.post("/game/generate-image", json=frontend_request)
+        response = client.post(build_path("/game/generate-image"), json=frontend_request)
 
         # Should handle the request (even if it fails due to missing config)
         assert response.status_code in [200, 400, 500, 503], (
@@ -227,7 +238,7 @@ class TestFrontendBackendIntegration:
             "combat_context": {"participants": 4},
         }
 
-        response = client.post("/game/battle-map", json=frontend_request)
+        response = client.post(build_path("/game/battle-map"), json=frontend_request)
 
         # Should handle the request (even if it fails due to missing config)
         assert response.status_code in [200, 400, 500, 503], (
@@ -237,14 +248,14 @@ class TestFrontendBackendIntegration:
     def test_dice_rolling_endpoints_exist(self, client) -> None:
         """Test dice rolling endpoints exist and handle requests."""
         # Test basic dice roll
-        response = client.post("/game/dice/roll", json={"notation": "1d20"})
+        response = client.post(build_path("/game/dice/roll"), json={"notation": "1d20"})
         assert response.status_code in [200, 400, 500], (
             f"Dice roll endpoint returned unexpected status: {response.status_code}"
         )
 
         # Test manual dice roll
         response = client.post(
-            "/game/dice/manual-roll", json={"notation": "1d20", "result": 15}
+            build_path("/game/dice/manual-roll"), json={"notation": "1d20", "result": 15}
         )
         assert response.status_code in [200, 400, 500], (
             f"Manual dice roll endpoint returned unexpected status: {response.status_code}"
@@ -254,19 +265,19 @@ class TestFrontendBackendIntegration:
         """Test that missing endpoints return 404."""
         missing_endpoints = [
             "/game/nonexistent",
-            "/api/missing/route",
+            "/game/missing/route",
             "/game/character/missing/endpoint",
         ]
 
         for endpoint in missing_endpoints:
-            response = client.get(endpoint)
+            response = client.get(build_path(endpoint))
             assert response.status_code == 404, (
                 f"Missing endpoint {endpoint} should return 404"
             )
 
     def test_cors_headers_present(self, client) -> None:
         """Test that CORS headers are present for frontend access."""
-        response = client.options("/game/character")
+        response = client.options(build_path("/game/character"))
         # CORS should be configured to allow frontend access
         # The exact headers depend on the CORS configuration
         assert response.status_code in [200, 405], "CORS preflight should be handled"
@@ -350,11 +361,11 @@ class TestFrontendBackendIntegration:
     def test_error_response_format(self, client) -> None:
         """Test that error responses are in the expected format."""
         # Test invalid JSON
-        response = client.post("/game/character", data="invalid json")
+        response = client.post(build_path("/game/character"), data="invalid json")
         assert response.status_code == 422  # Unprocessable Entity
         assert "detail" in response.json()
 
         # Test missing required fields
-        response = client.post("/game/character", json={})
+        response = client.post(build_path("/game/character"), json={})
         assert response.status_code == 422
         assert "detail" in response.json()

@@ -305,9 +305,9 @@ class TestFrontendBackendAPIMapping:
         with open(frontend_api_file) as f:
             content = f.read()
 
-        # Check that API base URL includes /api prefix to match backend routing
+        # Check that API base URL avoids hardcoding legacy /api prefix
         if "localhost:8000/api" in content:
-            print("✅ API base URL correctly configured with /api prefix")
+            print("❌ API base URL still includes legacy /api prefix; ensure routing happens at the ingress layer")
         else:
-            print("❌ API base URL may not match backend routing structure")
-            # This is a warning, not a failure since it might be configured differently
+            print("✅ API base URL uses root host without hardcoded /api prefix")
+            # This remains a warning-only check to allow alternative configurations
