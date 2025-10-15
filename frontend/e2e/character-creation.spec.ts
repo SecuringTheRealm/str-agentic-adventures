@@ -33,7 +33,7 @@ test.describe("Character Creation Flow", () => {
 
       // Should now be in character selection
       await expect(
-        page.locator('text="Choose Your Character", h2:has-text("Character")')
+        page.locator('text="Choose Your Character"')
       ).toBeVisible({ timeout: 10000 });
 
       // Should show character creation options
@@ -147,7 +147,7 @@ test.describe("Character Creation Flow", () => {
 
       // Should proceed to game interface
       await expect(
-        page.locator('text="Game Interface", [data-testid="game-interface"]')
+        page.locator('[data-testid="game-interface"]')
       ).toBeVisible({ timeout: 10000 });
 
       await page.screenshot({
@@ -200,7 +200,7 @@ test.describe("Character Creation Flow", () => {
           // Should proceed to game interface
           await expect(
             page.locator(
-              'text="Game Interface", [data-testid="game-interface"]'
+              '[data-testid="game-interface"]'
             )
           ).toBeVisible({ timeout: 10000 });
 

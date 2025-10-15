@@ -15,7 +15,10 @@
 ## Development Environment Setup
 - Python 3.12+ with [UV](https://github.com/astral-sh/uv). Run `make deps` to sync backend dependencies from `pyproject.toml` / `uv.lock`.
 - Node.js ≥22 (CI uses 20). Install frontend packages with `npm install` inside `frontend/`.
+- Java (OpenJDK) for OpenAPI client generation: `brew install openjdk` on macOS. Required for `npm run generate:api`. In GitHub Actions runner, Java is pre-installed.
+- SQLite for local development (no external DB needed). Use `sqlite3` CLI.
 - Copy `.env.example` to `.env` in backend and frontend as needed; fill with local secrets only.
+- **First-time setup**: After starting the backend, generate the frontend API client with `cd frontend && npm run generate:api`.
 
 ## Build, Test, and Development Commands
 - `make run`: start the backend at `http://localhost:8000`.
@@ -46,9 +49,13 @@
 - **Detailed Standards**: See `.github/instructions/database.instructions.md` for migration workflows, environment configuration, and data management patterns.
 
 ## API Client & Integration Workflow
-- Regenerate the TypeScript OpenAPI client after any backend schema change: `cd frontend && npm run generate:api` (backend must be running).
-- Never edit `src/api-client/` manually; wrap generated calls in service modules and re-run builds/tests after regeneration.
-- Validate integration with `./scripts/validate-openapi-client.sh` when modifying shared contracts.
+- **CRITICAL**: The frontend TypeScript client (`src/api-client/`) is generated from the backend OpenAPI schema and is **NOT** committed to the repository.
+- **Initial Setup**: Run `cd frontend && npm run generate:api` after cloning the repository to generate the client (backend must be running at `http://localhost:8000`).
+- **Requirements**: OpenAPI Generator CLI requires Java. Install with `brew install openjdk` on macOS.
+- **When to Regenerate**: After any backend API schema change (models, endpoints, request/response types), regenerate with `cd frontend && npm run generate:api`.
+- **Never Edit Manually**: The `src/api-client/` directory is auto-generated. Wrap generated calls in service modules (`src/services/`) instead.
+- **After Regeneration**: Restart the frontend dev server to pick up changes, then re-run builds and tests.
+- **Validation**: Use `./scripts/validate-openapi-client.sh` when modifying shared contracts.
 
 ## Documentation Expectations
 - **Structure**: Place new docs under appropriate `docs/` subdirectory (adr/, design/, specs/, reference/, user/). Follow snake_case filenames.

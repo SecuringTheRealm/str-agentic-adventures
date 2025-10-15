@@ -11,7 +11,7 @@ test.describe("Campaign Creation Flow", () => {
   test("should show campaign hub initially", async ({ page }) => {
     // Check for campaign hub or campaign selection interface
     const campaignHub = page.locator(
-      '[data-testid="campaign-hub"], .campaign-setup, .campaign-selection, text="Campaign Hub"'
+      '[data-testid="campaign-hub"], .campaign-setup, .campaign-selection'
     );
     await expect(campaignHub).toBeVisible();
 
@@ -73,7 +73,7 @@ test.describe("Campaign Creation Flow", () => {
 
       // Should proceed to character selection
       await expect(
-        page.locator('text="Choose Your Character", text="Character Selection"')
+        page.locator('text="Choose Your Character"')
       ).toBeVisible({ timeout: 10000 });
 
       await page.screenshot({
