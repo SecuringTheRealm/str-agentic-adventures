@@ -246,8 +246,7 @@ jobs:
               "APP_HOST=0.0.0.0" \
               "APP_PORT=8000" \
               "APP_DEBUG=false" \
-              "APP_LOG_LEVEL=info" \
-              "SEMANTIC_KERNEL_DEBUG=false"
+              "APP_LOG_LEVEL=info"
 
           # Get the FQDN of the deployed container app
           BACKEND_FQDN=$(az containerapp show --name "$CONTAINER_APP_NAME" --resource-group "$RESOURCE_GROUP" --query "properties.configuration.ingress.fqdn" --output tsv)
@@ -269,7 +268,7 @@ jobs:
           # Query for the actual Static Web App name (Azure adds unique suffix)
           # The Bicep output name doesn't include the Azure-generated suffix
           EXPECTED_SWA_PREFIX="${{ steps.infrastructure-deploy.outputs.AZURE_STATIC_WEB_APP_NAME }}"
-          
+
           echo "Looking for Static Web App with prefix: $EXPECTED_SWA_PREFIX"
           echo "Resource Group: $RESOURCE_GROUP"
 

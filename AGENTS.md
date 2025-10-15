@@ -12,7 +12,7 @@ For comprehensive coding guidelines and project setup instructions, see:
 For detailed, domain-specific coding standards, refer to the instruction files in `.github/instructions/`:
 
 - **[General Coding Standards](.github/instructions/general-coding.instructions.md)** - Foundation rules for all code
-- **[Python Standards](.github/instructions/python.instructions.md)** - Backend development with FastAPI and Semantic Kernel  
+- **[Python Standards](.github/instructions/python.instructions.md)** - Backend development with FastAPI and Semantic Kernel
 - **[TypeScript/React Standards](.github/instructions/typescript-react.instructions.md)** - Frontend development
 - **[Testing Guidelines](.github/instructions/testing.instructions.md)** - Comprehensive testing standards
 - **[Documentation Standards](.github/instructions/documentation.instructions.md)** - Documentation best practices
@@ -33,3 +33,26 @@ For comprehensive project documentation, refer to the docs in `docs/`:
 AI-powered tabletop RPG application with Python FastAPI backend using Semantic Kernel and TypeScript React frontend. The system uses 6 specialized AI agents to replace a human Dungeon Master while maintaining creativity and D&D 5e SRD compliance.
 
 Follow the comprehensive instructions in `.github/copilot-instructions.md` for detailed setup, build, and development workflows.
+
+# BMAD Agents
+agents:
+  - id: analyst
+    path: .bmad-core/agents/analyst.md
+  - id: architect
+    path: .bmad-core/agents/architect.md
+  - id: bmad-master
+    path: .bmad-core/agents/bmad-master.md
+  - id: bmad-orchestrator
+    path: .bmad-core/agents/bmad-orchestrator.md
+  - id: dev
+    path: .bmad-core/agents/dev.md
+  - id: pm
+    path: .bmad-core/agents/pm.md
+  - id: po
+    path: .bmad-core/agents/po.md
+  - id: qa
+    path: .bmad-core/agents/qa.md
+  - id: sm
+    path: .bmad-core/agents/sm.md
+  - id: ux-expert
+    path: .bmad-core/agents/ux-expert.md

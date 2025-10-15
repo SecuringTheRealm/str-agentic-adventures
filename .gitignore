@@ -421,7 +421,7 @@ infra/main.json
 *.db-journal
 *.sqlite-journal
 *.db-wal
-*.sqlite-wal  
+*.sqlite-wal
 *.db-shm
 *.sqlite-shm
 backend/app.db
@@ -439,3 +439,5 @@ frontend/src/api-client/git_push.sh
 requirements.txt
 build/
 dist/
+.bmad-core/
+web-bundles/

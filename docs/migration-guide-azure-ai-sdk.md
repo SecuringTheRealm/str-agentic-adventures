@@ -162,11 +162,6 @@ self.dice_plugin = DicePlugin()
 result = self.dice_plugin.roll_dice("2d6+3")
 ```
 
-## Configuration Changes
-
-### Removed Settings
-
-- `semantic_kernel_debug` - No longer needed
 
 ### Environment Variables
 
@@ -226,7 +221,7 @@ The new architecture makes clearer distinctions:
 
 **Implementation:** Direct Python functions, no LLM involvement
 
-### Non-Deterministic Operations  
+### Non-Deterministic Operations
 - Narrative generation
 - NPC dialogue
 - Scene descriptions
