@@ -1,12 +1,12 @@
 """
-Image Generation Plugin for the Semantic Kernel.
+Image Generation Plugin for the Agent Framework.
 This plugin provides core image generation capabilities using Azure OpenAI DALL-E.
 """
 
 import logging
 from typing import Any
 
-# Note: Converted from Semantic Kernel plugin to direct function calls
+# Note: Converted from Agent plugin to direct function calls
 
 from app.azure_openai_client import AzureOpenAIClient
 

@@ -14,7 +14,7 @@ class TestADRCompliance:
     """Test ADR implementation compliance."""
 
     def test_adr_0001_semantic_kernel_superseded_by_0018(self) -> None:
-        """Test that ADR 0001 (Semantic Kernel) has been superseded by ADR 0018."""
+        """Test that ADR 0001 (Agent Framework) has been superseded by ADR 0018."""
         # ADR 0001 should now be superseded
         adr_0001 = Path("docs/adr/0001-semantic-kernel-multi-agent-framework.md")
         assert adr_0001.exists(), "ADR 0001 should still exist for historical reference"

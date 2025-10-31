@@ -1,5 +1,5 @@
 """
-Art Style Analysis Plugin for the Semantic Kernel.
+Art Style Analysis Plugin for the Agent Framework.
 This plugin provides art style analysis and consistency tracking capabilities.
 """
 
@@ -7,7 +7,7 @@ import json
 import logging
 from typing import Any
 
-# Note: Converted from Semantic Kernel plugin to direct function calls
+# Note: Converted from Agent plugin to direct function calls
 
 logger = logging.getLogger(__name__)
 

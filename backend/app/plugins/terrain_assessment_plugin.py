@@ -1,12 +1,12 @@
 """
-Terrain Assessment Plugin for the Semantic Kernel.
+Terrain Assessment Plugin for the Agent Framework.
 This plugin provides terrain analysis capabilities for combat encounters.
 """
 
 import logging
 from typing import Any
 
-# Note: Converted from Semantic Kernel plugin to direct function calls
+# Note: Converted from Agent plugin to direct function calls
 
 logger = logging.getLogger(__name__)
 

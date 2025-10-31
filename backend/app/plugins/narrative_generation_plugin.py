@@ -1,5 +1,5 @@
 """
-Narrative Generation Plugin for the Semantic Kernel.
+Narrative Generation Plugin for the Agent Framework.
 This plugin provides dynamic storyline generation and branching narrative capabilities.
 """
 
@@ -9,7 +9,7 @@ import logging
 import random
 from typing import Any
 
-# Note: Converted from Semantic Kernel plugin to direct function calls
+# Note: Converted from Agent plugin to direct function calls
 
 from app.models.game_models import (
     NarrativeChoice,

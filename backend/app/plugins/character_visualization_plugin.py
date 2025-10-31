@@ -1,12 +1,12 @@
 """
-Character Visualization Plugin for the Semantic Kernel.
+Character Visualization Plugin for the Agent Framework.
 This plugin provides specialized character portrait generation and visualization capabilities.
 """
 
 import logging
 from typing import Any
 
-# Note: Converted from Semantic Kernel plugin to direct function calls
+# Note: Converted from Agent plugin to direct function calls
 
 from app.azure_openai_client import AzureOpenAIClient
 

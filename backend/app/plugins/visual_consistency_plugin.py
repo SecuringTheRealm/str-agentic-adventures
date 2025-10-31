@@ -1,5 +1,5 @@
 """
-Visual Consistency Plugin for the Semantic Kernel.
+Visual Consistency Plugin for the Agent Framework.
 This plugin ensures visual consistency across generated artwork in campaigns.
 """
 
@@ -7,7 +7,7 @@ import json
 import logging
 from typing import Any
 
-# Note: Converted from Semantic Kernel plugin to direct function calls
+# Note: Converted from Agent plugin to direct function calls
 
 logger = logging.getLogger(__name__)
 

@@ -1,12 +1,12 @@
 """
-Scene Composition Plugin for the Semantic Kernel.
+Scene Composition Plugin for the Agent Framework.
 This plugin provides scene illustration and composition capabilities for RPG environments.
 """
 
 import logging
 from typing import Any
 
-# Note: Converted from Semantic Kernel plugin to direct function calls
+# Note: Converted from Agent plugin to direct function calls
 
 from app.azure_openai_client import AzureOpenAIClient
 

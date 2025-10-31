@@ -21,7 +21,7 @@ Secure the Realm will democratize access to high-quality tabletop roleplaying ex
 
 ## Architecture
 
-The Secure the Realm platform is built on the Python Microsoft Semantic Kernel framework, Typescript frontend. Semantic Kernel provides a multi-agent architecture, where each agent serves a specialized role in the tabletop RPG experience. Semantic Kernel will interface with Azure OpenAI LLMs using Python to enable the use of "plugins". This allows the LLMs to perform takes like storing and retrieving data. The Kernel enables the selection of the correct AI agent, function and plugin for the task at hand, rather than relying on a strict workflow.
+The Secure the Realm platform is built on the Microsoft Agent Framework (Azure AI Agents SDK) with a TypeScript frontend. The Agent Framework provides a production-grade multi-agent architecture, where each agent serves a specialized role in the tabletop RPG experience. The framework interfaces with Azure OpenAI LLMs using Python to enable agent orchestration with tools and functions. This allows the agents to perform tasks like storing and retrieving data. The framework enables intelligent selection of the correct AI agent and tool for the task at hand through built-in orchestration patterns, rather than relying on strict workflows.
 
 ## Agent Definitions
 
@@ -69,11 +69,11 @@ The Secure the Realm platform is built on the Python Microsoft Semantic Kernel f
 
 ## Communication Flow
 
-While the Dungeon Master serves as the orchestrator, agents can communicate directly with each other when appropriate:
-- Agents share context and request information from each other as needed
+While the Dungeon Master serves as the orchestrator, agents communicate through the Agent Framework's orchestration patterns:
+- Agents share context through threads and messages in the Azure AI Agents SDK
 - The Dungeon Master synthesizes responses from multiple agents into coherent player-facing output
 - Each agent maintains its specialized knowledge domain while contributing to the whole experience
-- Agent communication shall be determined by the Kernel on Microsoft Semantic Kernel
+- Agent communication is managed by the Microsoft Agent Framework orchestration layer
 
 ## Technical Requirements
 

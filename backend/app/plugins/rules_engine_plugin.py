@@ -1,5 +1,5 @@
 """
-Rules Engine Plugin - Converted from Semantic Kernel plugin to direct function calls.
+Rules Engine Plugin - Converted from Agent plugin to direct function calls.
 This plugin provides D&D 5e SRD ruleset functionality to the agents.
 """
 
@@ -8,7 +8,7 @@ import random
 from datetime import datetime
 from typing import Any
 
-# Note: Converted from Semantic Kernel plugin to direct function calls
+# Note: Converted from Agent plugin to direct function calls
 
 logger = logging.getLogger(__name__)
 

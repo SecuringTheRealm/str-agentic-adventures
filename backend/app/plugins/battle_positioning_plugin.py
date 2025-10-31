@@ -1,5 +1,5 @@
 """
-Battle Positioning Plugin for the Semantic Kernel.
+Battle Positioning Plugin for the Agent Framework.
 This plugin provides battle positioning capabilities for combat encounters.
 """
 
@@ -7,7 +7,7 @@ import logging
 import re
 from typing import Any
 
-# Note: Converted from Semantic Kernel plugin to direct function calls
+# Note: Converted from Agent plugin to direct function calls
 
 logger = logging.getLogger(__name__)
 
