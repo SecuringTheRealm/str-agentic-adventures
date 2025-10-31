@@ -178,6 +178,7 @@ const CharacterCreation: React.FC<CharacterCreationProps> = ({
               onChange={handleInputChange}
               placeholder="Enter character name"
               required
+              data-testid="character-name-input"
             />
           </div>
 
@@ -189,9 +190,10 @@ const CharacterCreation: React.FC<CharacterCreationProps> = ({
                 name="race"
                 value={formData.race}
                 onChange={handleInputChange}
+                data-testid="character-race-select"
               >
                 {races.map((race) => (
-                  <option key={race} value={race}>
+                  <option key={race} value={race.toLowerCase()}>
                     {race}
                   </option>
                 ))}
@@ -205,9 +207,10 @@ const CharacterCreation: React.FC<CharacterCreationProps> = ({
                 name="character_class"
                 value={formData.character_class}
                 onChange={handleInputChange}
+                data-testid="character-class-select"
               >
                 {classes.map((cls) => (
-                  <option key={cls} value={cls}>
+                  <option key={cls} value={cls.toLowerCase()}>
                     {cls}
                   </option>
                 ))}
@@ -236,6 +239,7 @@ const CharacterCreation: React.FC<CharacterCreationProps> = ({
                   onChange={handleInputChange}
                   min="8"
                   max="18"
+                  data-testid={`ability-${ability}`}
                 />
                 <span className={styles.modifier}>
                   {getAbilityModifier(value)}
@@ -256,6 +260,7 @@ const CharacterCreation: React.FC<CharacterCreationProps> = ({
               onChange={handleInputChange}
               placeholder="Tell us about your character's background, motivations, and history..."
               rows={4}
+              data-testid="character-backstory-input"
             />
           </div>
         </div>
@@ -267,6 +272,7 @@ const CharacterCreation: React.FC<CharacterCreationProps> = ({
             type="submit"
             disabled={isSubmitting}
             className={styles.createButton}
+            data-testid="submit-character-btn"
           >
             {isSubmitting ? "Creating Character..." : "Create Character"}
           </button>

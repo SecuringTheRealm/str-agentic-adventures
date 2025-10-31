@@ -91,17 +91,19 @@ test.describe("Character Creation Flow", () => {
       await page.fill('input[name="name"]', "Thorin Ironbeard");
 
       // Select race (must be from SRD list)
+      // NOTE: API expects lowercase values (e.g., "dwarf" not "Dwarf")
       const raceSelect = page.locator('select[name="race"]');
       if ((await raceSelect.count()) > 0) {
-        await raceSelect.selectOption("Dwarf");
+        await raceSelect.selectOption("dwarf");
       }
 
       // Select class (must be from SRD list)
+      // NOTE: API expects lowercase values (e.g., "fighter" not "Fighter")
       const classSelect = page.locator(
         'select[name="character_class"], select[name="class"]'
       );
       if ((await classSelect.count()) > 0) {
-        await classSelect.selectOption("Fighter");
+        await classSelect.selectOption("fighter");
       }
 
       // Fill backstory
