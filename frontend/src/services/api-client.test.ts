@@ -125,31 +125,31 @@ describe("OpenAPI Generated Client Integration", () => {
 
   describe("API Methods Availability", () => {
     it("should have character creation method", () => {
-      expect(gameApiClient.createCharacterApiGameCharacterPost).toBeDefined();
-      expect(typeof gameApiClient.createCharacterApiGameCharacterPost).toBe(
+      expect(gameApiClient.createCharacterGameCharacterPost).toBeDefined();
+      expect(typeof gameApiClient.createCharacterGameCharacterPost).toBe(
         "function"
       );
     });
 
     it("should have character retrieval method", () => {
       expect(
-        gameApiClient.getCharacterApiGameCharacterCharacterIdGet
+        gameApiClient.getCharacterGameCharacterCharacterIdGet
       ).toBeDefined();
       expect(
-        typeof gameApiClient.getCharacterApiGameCharacterCharacterIdGet
+        typeof gameApiClient.getCharacterGameCharacterCharacterIdGet
       ).toBe("function");
     });
 
     it("should have campaign creation method", () => {
-      expect(gameApiClient.createCampaignApiGameCampaignPost).toBeDefined();
-      expect(typeof gameApiClient.createCampaignApiGameCampaignPost).toBe(
+      expect(gameApiClient.createCampaignGameCampaignPost).toBeDefined();
+      expect(typeof gameApiClient.createCampaignGameCampaignPost).toBe(
         "function"
       );
     });
 
     it("should have player input method", () => {
-      expect(gameApiClient.processPlayerInputApiGameInputPost).toBeDefined();
-      expect(typeof gameApiClient.processPlayerInputApiGameInputPost).toBe(
+      expect(gameApiClient.processPlayerInputGameInputPost).toBeDefined();
+      expect(typeof gameApiClient.processPlayerInputGameInputPost).toBe(
         "function"
       );
     });
@@ -232,11 +232,11 @@ describe("OpenAPI Generated Client Integration", () => {
       const mockError = new Error("Network error");
       vi.spyOn(
         gameApiClient,
-        "createCharacterApiGameCharacterPost"
+        "createCharacterGameCharacterPost"
       ).mockRejectedValue(mockError);
 
       try {
-        await gameApiClient.createCharacterApiGameCharacterPost({
+        await gameApiClient.createCharacterGameCharacterPost({
           name: "Test",
           race: Race.Human,
           characterClass: CharacterClass.Fighter,

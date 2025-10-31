@@ -118,7 +118,7 @@ describe("WebSocket Client SDK", () => {
       await new Promise((resolve) => setTimeout(resolve, 10));
 
       const socket = connection.getSocket();
-      expect(socket?.url).toBe("ws://localhost:8000/api/ws/test-campaign-id");
+      expect(socket?.url).toBe("ws://localhost:8000/ws/test-campaign-id");
     });
 
     it("should handle disconnect", async () => {
@@ -164,7 +164,7 @@ describe("WebSocket Client SDK", () => {
 
       const socket = connection.getSocket();
       expect(socket?.url).toBe(
-        "ws://localhost:8000/api/ws/chat/test-campaign-id"
+        "ws://localhost:8000/ws/chat/test-campaign-id"
       );
     });
   });
@@ -194,7 +194,7 @@ describe("WebSocket Client SDK", () => {
       await new Promise((resolve) => setTimeout(resolve, 10));
 
       const socket = connection.getSocket();
-      expect(socket?.url).toBe("ws://localhost:8000/api/ws/global");
+      expect(socket?.url).toBe("ws://localhost:8000/ws/global");
     });
   });
 
