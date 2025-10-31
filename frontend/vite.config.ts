@@ -3,6 +3,9 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
   plugins: [react()],
+  build: {
+    outDir: "build",
+  },
   test: {
     globals: true,
     environment: "jsdom",
@@ -28,7 +31,7 @@ export default defineConfig({
     isolate: true,
     exclude: [
       "**/node_modules/**",
-      "**/dist/**",
+      "**/build/**",
       "**/e2e/**",
       "**/.{git,cache,output,temp}/**",
       "**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*",
