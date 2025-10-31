@@ -95,8 +95,9 @@ jobs:
 
     - name: Run backend linting
       run: |
+        export PATH="$HOME/.local/bin:$PATH"
         cd backend
-        python -c "
+        uv run python -c "
         import ast
         import os
         import sys
