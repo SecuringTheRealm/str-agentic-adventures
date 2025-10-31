@@ -2,9 +2,10 @@
   max-width: 800px;
   margin: 0 auto;
   padding: 2rem;
-  background: white;
+  background: rgba(15, 64, 79, 0.8); /* Fantasy theme background */
   border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  border: 2px solid #e4bb1e; /* Gold border */
 }
 
 .editorHeader {
@@ -13,12 +14,15 @@
   align-items: center;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid #f1f5f9;
+  border-bottom: 2px solid #908c6b; /* Stone color border */
 }
 
 .editorHeader h2 {
-  color: #2c3e50;
+  color: #e4bb1e; /* Gold accent color */
   margin: 0;
+  font-family: "Cinzel", serif;
+  font-weight: 600;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .editorControls {
@@ -32,8 +36,9 @@
   align-items: center;
   gap: 0.5rem;
   font-size: 0.9rem;
-  color: #64748b;
+  color: #f4f1e8; /* Light text */
   cursor: pointer;
+  font-family: "Cinzel", serif;
 }
 
 .autoSaveToggle input[type="checkbox"] {
@@ -41,9 +46,10 @@
 }
 
 .unsavedIndicator {
-  color: #f59e0b;
+  color: #e4bb1e; /* Gold for indicators */
   font-size: 0.9rem;
   font-weight: 500;
+  font-family: "Cinzel", serif;
 }
 
 .formGroup {
@@ -53,8 +59,9 @@
 .formGroup label {
   display: block;
   font-weight: 600;
-  color: #374151;
+  color: #e4bb1e; /* Gold for labels */
   margin-bottom: 0.5rem;
+  font-family: "Cinzel", serif;
 }
 
 .formGroup input,
@@ -62,9 +69,12 @@
 .formGroup textarea {
   width: 100%;
   padding: 0.75rem;
-  border: 2px solid #e5e7eb;
+  border: 2px solid #908c6b; /* Stone color border */
   border-radius: 8px;
   font-size: 1rem;
+  background: rgba(26, 47, 58, 0.6); /* Darker fantasy background */
+  color: #f4f1e8; /* Light text */
+  font-family: "Cinzel", serif;
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
@@ -74,19 +84,19 @@
 .formGroup select:focus,
 .formGroup textarea:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: #e4bb1e; /* Gold focus border */
+  box-shadow: 0 0 0 3px rgba(228, 187, 30, 0.2);
 }
 
 .formGroup input.error,
 .formGroup textarea.error {
-  border-color: #ef4444;
+  border-color: #dc3545;
 }
 
 .formGroup textarea {
   resize: vertical;
   min-height: 100px;
-  font-family: inherit;
+  font-family: "Cinzel", serif;
 }
 
 .editorToolbar {
@@ -94,18 +104,20 @@
   gap: 0.5rem;
   margin-bottom: 0.5rem;
   padding: 0.5rem;
-  background: #f8fafc;
+  background: rgba(144, 140, 107, 0.2); /* Stone color background */
   border-radius: 6px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #908c6b; /* Stone border */
 }
 
 .editorToolbar button {
   padding: 0.25rem 0.5rem;
-  border: 1px solid #d1d5db;
-  background: white;
+  border: 1px solid #788070; /* Steel border */
+  background: rgba(26, 47, 58, 0.6); /* Darker fantasy background */
+  color: #f4f1e8; /* Light text */
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.875rem;
+  font-family: "Cinzel", serif;
   transition: all 0.2s ease;
   min-width: 30px;
   height: 30px;
@@ -115,8 +127,8 @@
 }
 
 .editorToolbar button:hover {
-  background: #f3f4f6;
-  border-color: #9ca3af;
+  background: rgba(144, 140, 107, 0.4); /* Stone color on hover */
+  border-color: #e4bb1e; /* Gold border on hover */
 }
 
 .editorToolbar button:active {
@@ -124,35 +136,38 @@
 }
 
 .aiAssistBtn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #b15005, #d67c2d); /* Wood gradient */
   color: white;
-  border-color: transparent;
+  border-color: #e4bb1e; /* Gold border */
   font-weight: 600;
 }
 
 .aiAssistBtn:hover {
-  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+  background: linear-gradient(135deg, #d67c2d, #e4953f); /* Lighter wood on hover */
 }
 
 .validationError {
-  color: #ef4444;
+  color: #ffcccb; /* Light red text */
   font-size: 0.875rem;
   margin-top: 0.25rem;
+  font-family: "Cinzel", serif;
 }
 
 .errorMessage {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #dc2626;
+  background: rgba(220, 53, 69, 0.2); /* Dark red background */
+  border: 1px solid #dc3545;
+  color: #ffcccb; /* Light red text */
   padding: 1rem;
   border-radius: 8px;
   margin-bottom: 1.5rem;
+  font-family: "Cinzel", serif;
 }
 
 .helpText {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: #d0c8b8; /* Light fantasy text */
   margin-top: 0.25rem;
+  font-family: "Cinzel", serif;
 }
 
 .formActions {
@@ -161,7 +176,7 @@
   justify-content: flex-end;
   margin-top: 2rem;
   padding-top: 1rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid #908c6b; /* Stone color border */
 }
 
 .cancelButton,
@@ -177,28 +192,29 @@
   gap: 0.5rem;
   min-width: 120px;
   justify-content: center;
+  font-family: "Cinzel", serif;
 }
 
 .cancelButton {
-  background: white;
-  color: #6b7280;
-  border: 2px solid #d1d5db;
+  background: rgba(120, 128, 112, 0.8); /* Steel color */
+  color: #f4f1e8; /* Light text */
+  border: 2px solid #788070; /* Steel border */
 }
 
 .cancelButton:hover:not(:disabled) {
-  background: #f9fafb;
-  border-color: #9ca3af;
+  background: rgba(144, 140, 107, 0.9); /* Stone color on hover */
+  border-color: #e4bb1e;
 }
 
 .saveButton {
-  background: #3b82f6;
+  background: linear-gradient(135deg, #b15005, #d67c2d); /* Wood gradient */
   color: white;
-  border: 2px solid #3b82f6;
+  border: 2px solid #e4bb1e; /* Gold border */
 }
 
 .saveButton:hover:not(:disabled) {
-  background: #2563eb;
-  border-color: #2563eb;
+  background: linear-gradient(135deg, #d67c2d, #e4953f); /* Lighter wood on hover */
+  box-shadow: 0 2px 4px rgba(228, 187, 30, 0.3);
 }
 
 .saveButton:disabled,
@@ -210,8 +226,8 @@
 .loadingSpinner {
   width: 20px;
   height: 20px;
-  border: 2px solid #f3f3f3;
-  border-top: 2px solid #3b82f6;
+  border: 2px solid rgba(144, 140, 107, 0.3); /* Stone color */
+  border-top: 2px solid #e4bb1e; /* Gold color */
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -256,15 +272,16 @@
 
 .modalContent {
   position: relative;
-  background: white;
+  background: rgba(15, 64, 79, 0.95); /* Fantasy theme background */
   border-radius: 12px;
   max-width: 500px;
   width: 90%;
   max-height: 80vh;
   overflow: hidden;
+  border: 2px solid #e4bb1e; /* Gold border */
   box-shadow:
-    0 20px 25px -5px rgba(0, 0, 0, 0.1),
-    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    0 20px 25px -5px rgba(0, 0, 0, 0.3),
+    0 10px 10px -5px rgba(0, 0, 0, 0.2);
 }
 
 .modalHeader {
@@ -272,14 +289,16 @@
   justify-content: space-between;
   align-items: center;
   padding: 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-bottom: 1px solid #908c6b; /* Stone color border */
+  background: linear-gradient(135deg, #b15005, #d67c2d); /* Wood gradient */
   color: white;
 }
 
 .modalHeader h3 {
   margin: 0;
   font-size: 1.25rem;
+  font-family: "Cinzel", serif;
+  font-weight: 600;
 }
 
 .closeButton {
@@ -318,7 +337,9 @@
 
 .suggestions h4 {
   margin: 0 0 1rem 0;
-  color: #374151;
+  color: #e4bb1e; /* Gold for headings */
+  font-family: "Cinzel", serif;
+  font-weight: 600;
 }
 
 .suggestions ul {
@@ -334,31 +355,35 @@
   gap: 1rem;
   padding: 1rem;
   margin-bottom: 0.5rem;
-  background: #f8fafc;
+  background: rgba(26, 47, 58, 0.6); /* Darker fantasy background */
   border-radius: 8px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #788070; /* Steel border */
 }
 
 .suggestions li span {
   flex: 1;
   line-height: 1.5;
-  color: #374151;
+  color: #f4f1e8; /* Light text */
+  font-family: "Cinzel", serif;
 }
 
 .applySuggestion {
-  background: #3b82f6;
+  background: linear-gradient(135deg, #b15005, #d67c2d); /* Wood gradient */
   color: white;
-  border: none;
+  border: 1px solid #e4bb1e; /* Gold border */
   padding: 0.5rem 1rem;
   border-radius: 6px;
   font-size: 0.875rem;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: all 0.2s ease;
   white-space: nowrap;
+  font-family: "Cinzel", serif;
+  font-weight: 500;
 }
 
 .applySuggestion:hover {
-  background: #2563eb;
+  background: linear-gradient(135deg, #d67c2d, #e4953f); /* Lighter wood on hover */
+  box-shadow: 0 2px 4px rgba(228, 187, 30, 0.3);
 }
 
 /* Responsive design */
