@@ -6,7 +6,7 @@
 - Before committing config changes, re-check `.env.example`, docs, and Azure resource names for accidental secrets.
 
 ## Project Structure & Module Organization
-- `backend/`: FastAPI & Semantic Kernel services, SQLAlchemy models, and backend tests under `backend/tests/`.
+- `backend/`: FastAPI & Agent Framework services, SQLAlchemy models, and backend tests under `backend/tests/`.
 - `frontend/`: TypeScript + React UI, generated OpenAPI client in `src/api-client/` (never edit manually), tests in `src/__tests__/` and `e2e/`.
 - `docs/`: Architecture (`docs/adr/`), design, specs, reference, and user guides. Update or link here instead of adding root-level docs.
 - `infra/`: Azure deployment artifacts and automation.
@@ -14,11 +14,12 @@
 
 ## Development Environment Setup
 - Python 3.12+ with [UV](https://github.com/astral-sh/uv). Run `make deps` to sync backend dependencies from `pyproject.toml` / `uv.lock`.
-- Node.js ≥22 (CI uses 20). Install frontend packages with `npm install` inside `frontend/`.
+- Node.js ≥22 (CI and local development both require >=22). Install frontend packages with `npm install` inside `frontend/`.
 - Java (OpenJDK) for OpenAPI client generation: `brew install openjdk` on macOS. Required for `npm run generate:api`. In GitHub Actions runner, Java is pre-installed.
 - SQLite for local development (no external DB needed). Use `sqlite3` CLI.
 - Copy `.env.example` to `.env` in backend and frontend as needed; fill with local secrets only.
 - **First-time setup**: After starting the backend, generate the frontend API client with `cd frontend && npm run generate:api`.
+- **CI/CD Note**: The deploy workflow automatically generates the frontend API client from the deployed backend's OpenAPI schema before building.
 
 ## Build, Test, and Development Commands
 - `make run`: start the backend at `http://localhost:8000`.
@@ -72,6 +73,18 @@
 - Before opening a PR, ensure formatting, linting, tests, and OpenAPI regeneration (if applicable) have run successfully.
 - PRs should include: concise summary, linked issues (e.g., `Closes #123`), screenshots for UI changes, notes on regenerated assets or migrations, and test evidence.
 - Keep PRs focused; update documentation and ADRs alongside the code they describe.
+
+## Agent Framework Implementation Guidelines
+- **Core Infrastructure**: All agents use the shared `AgentFrameworkManager` from `backend/app/agent_framework_base.py`.
+- **Azure OpenAI Integration**: Agents MUST use the singleton `azure_openai_client` from `backend/app/azure_openai_client.py` for chat completions and streaming. Never instantiate Azure OpenAI clients directly.
+- **Configuration Pattern**: Use dependency injection with `ConfigDep` from `backend/app/config.py` to access settings. Pydantic-settings automatically loads environment variables.
+- **Fallback Mode**: All agents MUST handle Azure OpenAI unavailability gracefully. When `azure_openai_client.is_configured()` returns False, use deterministic game logic.
+- **Agent Creation**: Use `agent_framework_manager.create_agent()` with name, instructions, model, tools, and temperature. Store agent references for reuse.
+- **Thread Management**: Create conversation threads with `agent_framework_manager.create_thread()`. Use threads to maintain context across multiple agent interactions.
+- **Tool Registration**: Register callable functions as tools with `agent_framework_manager.create_function_tool()`. Include clear descriptions and typed parameters.
+- **Error Handling**: Wrap Azure SDK calls in try-except blocks. Log errors with context and provide user-friendly fallback responses.
+- **Testing**: Mock `azure_openai_client` in tests to avoid external dependencies. Test both Azure-configured and fallback modes.
+- **Documentation**: See ADR-0018 (`docs/adr/0018-azure-ai-agents-sdk-adoption.md`) for architectural decisions and migration rationale.
 
 # BMAD Agents
 agents:

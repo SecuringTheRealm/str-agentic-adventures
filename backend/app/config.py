@@ -2,7 +2,6 @@
 Configuration for the backend application.
 """
 
-import os
 from typing import Annotated
 
 from dotenv import load_dotenv
@@ -12,35 +11,30 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    model_config = ConfigDict(env_file=".env")
+    model_config = ConfigDict(env_file=".env", env_file_encoding="utf-8")
 
     # Azure OpenAI Settings
-    azure_openai_endpoint: str = os.getenv("AZURE_OPENAI_ENDPOINT", "")
-    azure_openai_api_key: str = os.getenv("AZURE_OPENAI_API_KEY", "")
-    azure_openai_api_version: str = os.getenv(
-        "AZURE_OPENAI_API_VERSION", "2023-12-01-preview"
-    )
+    # Pydantic-settings automatically reads from environment variables
+    azure_openai_endpoint: str = ""
+    azure_openai_api_key: str = ""
+    azure_openai_api_version: str = "2023-12-01-preview"
 
     # Model Deployments
-    azure_openai_chat_deployment: str = os.getenv("AZURE_OPENAI_CHAT_DEPLOYMENT", "")
-    azure_openai_embedding_deployment: str = os.getenv(
-        "AZURE_OPENAI_EMBEDDING_DEPLOYMENT", ""
-    )
-    azure_openai_dalle_deployment: str = os.getenv(
-        "AZURE_OPENAI_DALLE_DEPLOYMENT", "dall-e-3"
-    )
+    azure_openai_chat_deployment: str = ""
+    azure_openai_embedding_deployment: str = ""
+    azure_openai_dalle_deployment: str = "dall-e-3"
 
     # Storage Settings
-    storage_connection_string: str = os.getenv("STORAGE_CONNECTION_STRING", "")
+    storage_connection_string: str = ""
 
     # App Settings
     # Note: Default binds to all interfaces (0.0.0.0) for development convenience.
     # Production deployments MUST override via APP_HOST environment variable
     # to bind to specific interface (e.g., 127.0.0.1 or specific IP).
-    app_host: str = os.getenv("APP_HOST", "0.0.0.0")  # noqa: S104
-    app_port: int = int(os.getenv("APP_PORT", "8000"))
-    app_debug: bool = os.getenv("APP_DEBUG", "False").lower() == "true"
-    app_log_level: str = os.getenv("APP_LOG_LEVEL", "info").upper()
+    app_host: str = "0.0.0.0"  # noqa: S104
+    app_port: int = 8000
+    app_debug: bool = False
+    app_log_level: str = "INFO"
 
     def is_azure_openai_configured(self) -> bool:
         """Check if Azure OpenAI is properly configured."""

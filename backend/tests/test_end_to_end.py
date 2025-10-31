@@ -110,7 +110,7 @@ class TestEndToEndWorkflows:
                 homebrew_rules=campaign_request.homebrew_rules,
             )
 
-            response_dict = campaign.dict()
+            response_dict = campaign.model_dump()
 
             # Verify response has all required fields for frontend
             required_fields = [
@@ -161,7 +161,7 @@ class TestEndToEndWorkflows:
                 combat_updates=None,
             )
 
-            response_dict = game_response.dict()
+            response_dict = game_response.model_dump()
 
             # Verify response structure for frontend
             assert "message" in response_dict

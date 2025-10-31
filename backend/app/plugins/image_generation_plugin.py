@@ -1,12 +1,12 @@
 """
-Image Generation Plugin for the Semantic Kernel.
+Image Generation Plugin for the Agent Framework.
 This plugin provides core image generation capabilities using Azure OpenAI DALL-E.
 """
 
 import logging
 from typing import Any
 
-# Note: Converted from Semantic Kernel plugin to direct function calls
+# Note: Converted from Agent plugin to direct function calls
 
 from app.azure_openai_client import AzureOpenAIClient
 
@@ -25,10 +25,6 @@ class ImageGenerationPlugin:
         # Store generation history for consistency tracking
         self.generation_history = []
 
-#     # @kernel_function(
-#         description="Generate an image using DALL-E based on a text prompt.",
-#         name="generate_image",
-#     )
     def generate_image(
         self,
         prompt: str,
@@ -84,10 +80,6 @@ class ImageGenerationPlugin:
             logger.error(f"Error generating image: {str(e)}")
             return {"status": "error", "error": f"Image generation failed: {str(e)}"}
 
-#     # @kernel_function(
-#         description="Optimize a text prompt for better image generation results.",
-#         name="optimize_prompt",
-#     )
     def optimize_prompt(
         self, prompt: str, art_style: str = "fantasy", context: str = "RPG"
     ) -> dict[str, Any]:
@@ -120,10 +112,6 @@ class ImageGenerationPlugin:
             logger.error(f"Error optimizing prompt: {str(e)}")
             return {"status": "error", "error": f"Prompt optimization failed: {str(e)}"}
 
-#     # @kernel_function(
-#         description="Get generation history for analysis and consistency tracking.",
-#         name="get_generation_history",
-#     )
     def get_generation_history(self, limit: int = 10) -> dict[str, Any]:
         """
         Get recent image generation history.

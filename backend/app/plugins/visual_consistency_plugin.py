@@ -1,5 +1,5 @@
 """
-Visual Consistency Plugin for the Semantic Kernel.
+Visual Consistency Plugin for the Agent Framework.
 This plugin ensures visual consistency across generated artwork in campaigns.
 """
 
@@ -7,7 +7,7 @@ import json
 import logging
 from typing import Any
 
-# Note: Converted from Semantic Kernel plugin to direct function calls
+# Note: Converted from Agent plugin to direct function calls
 
 logger = logging.getLogger(__name__)
 
@@ -26,10 +26,6 @@ class VisualConsistencyPlugin:
         self.campaign_visual_contexts = {}
         self.consistency_violations = []
 
-#     # @kernel_function(
-#         description="Create a visual consistency profile for a character.",
-#         name="create_character_visual_profile",
-#     )
     def create_character_visual_profile(
         self,
         character_id: str,
@@ -91,10 +87,6 @@ class VisualConsistencyPlugin:
                 "error": f"Character visual profile creation failed: {str(e)}",
             }
 
-#     # @kernel_function(
-#         description="Validate visual consistency for a character portrait.",
-#         name="validate_character_consistency",
-#     )
     def validate_character_consistency(
         self, character_id: str, new_description: str, generation_prompt: str = ""
     ) -> dict[str, Any]:
@@ -164,10 +156,6 @@ class VisualConsistencyPlugin:
                 "error": f"Character consistency validation failed: {str(e)}",
             }
 
-#     # @kernel_function(
-#         description="Create a visual theme for a campaign or world.",
-#         name="create_world_visual_theme",
-#     )
     def create_world_visual_theme(
         self,
         theme_id: str,
@@ -231,10 +219,6 @@ class VisualConsistencyPlugin:
                 "error": f"World visual theme creation failed: {str(e)}",
             }
 
-#     # @kernel_function(
-#         description="Validate visual consistency with world theme.",
-#         name="validate_world_consistency",
-#     )
     def validate_world_consistency(
         self, theme_id: str, content_description: str, content_type: str = "scene"
     ) -> dict[str, Any]:
@@ -305,10 +289,6 @@ class VisualConsistencyPlugin:
                 "error": f"World consistency validation failed: {str(e)}",
             }
 
-#     # @kernel_function(
-#         description="Get consistency report for a campaign.",
-#         name="get_campaign_consistency_report",
-#     )
     def get_campaign_consistency_report(self, campaign_id: str) -> dict[str, Any]:
         """
         Get a comprehensive consistency report for a campaign.
