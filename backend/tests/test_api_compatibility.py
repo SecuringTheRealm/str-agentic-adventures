@@ -66,7 +66,7 @@ class TestAPICompatibility:
         )
 
         # Convert to dict to simulate API response
-        response_dict = character_sheet.dict()
+        response_dict = character_sheet.model_dump()
 
         # Frontend expects these fields
         expected_fields = {
@@ -121,7 +121,7 @@ class TestAPICompatibility:
             homebrew_rules=campaign_request.homebrew_rules,
         )
 
-        response_dict = campaign.dict()
+        response_dict = campaign.model_dump()
 
         # Frontend expects these fields
         expected_fields = {
@@ -165,7 +165,7 @@ class TestAPICompatibility:
             },
         )
 
-        response_dict = game_response.dict()
+        response_dict = game_response.model_dump()
 
         # Frontend expects these fields
         expected_fields = {"message", "images", "state_updates", "combat_updates"}
@@ -188,7 +188,7 @@ class TestAPICompatibility:
             hit_points={"current": 20, "maximum": 20},
         )
 
-        char_dict = character.dict()
+        char_dict = character.model_dump()
 
         # These are the critical field mappings frontend expects
         critical_fields = {
