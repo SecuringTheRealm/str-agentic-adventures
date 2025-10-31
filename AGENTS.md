@@ -74,6 +74,18 @@
 - PRs should include: concise summary, linked issues (e.g., `Closes #123`), screenshots for UI changes, notes on regenerated assets or migrations, and test evidence.
 - Keep PRs focused; update documentation and ADRs alongside the code they describe.
 
+## Agent Framework Implementation Guidelines
+- **Core Infrastructure**: All agents use the shared `AgentFrameworkManager` from `backend/app/agent_framework_base.py`.
+- **Azure OpenAI Integration**: Agents MUST use the singleton `azure_openai_client` from `backend/app/azure_openai_client.py` for chat completions and streaming. Never instantiate Azure OpenAI clients directly.
+- **Configuration Pattern**: Use dependency injection with `ConfigDep` from `backend/app/config.py` to access settings. Pydantic-settings automatically loads environment variables.
+- **Fallback Mode**: All agents MUST handle Azure OpenAI unavailability gracefully. When `azure_openai_client.is_configured()` returns False, use deterministic game logic.
+- **Agent Creation**: Use `agent_framework_manager.create_agent()` with name, instructions, model, tools, and temperature. Store agent references for reuse.
+- **Thread Management**: Create conversation threads with `agent_framework_manager.create_thread()`. Use threads to maintain context across multiple agent interactions.
+- **Tool Registration**: Register callable functions as tools with `agent_framework_manager.create_function_tool()`. Include clear descriptions and typed parameters.
+- **Error Handling**: Wrap Azure SDK calls in try-except blocks. Log errors with context and provide user-friendly fallback responses.
+- **Testing**: Mock `azure_openai_client` in tests to avoid external dependencies. Test both Azure-configured and fallback modes.
+- **Documentation**: See ADR-0018 (`docs/adr/0018-azure-ai-agents-sdk-adoption.md`) for architectural decisions and migration rationale.
+
 # BMAD Agents
 agents:
   - id: analyst

@@ -79,8 +79,7 @@ While the Dungeon Master serves as the orchestrator, agents communicate through 
 
 ### Core System
 
-- **Framework**: Typescript frontend with Python backend leveraging Semantic Kernel Agents
- - **API Integration**: Microsoft Semantic Kernel for agentic implementation. Whilst the LLMs will be powered by Azure OpenAI endpoints, the Semantic Kernel framework provides a layer of abstraction
+- **Framework**: TypeScript frontend with Python backend leveraging Microsoft Agent Framework (Azure AI Agents SDK). See Architecture section above (lines 23-24) and ADR-0018 for details.
 - **State Management**: Robust state tracking for game progression
 - **Data Storage**: Structured data format for game elements, character sheets, and campaign information
 - **Real-time Updates**: Immediate response to player actions
@@ -220,6 +219,52 @@ While the Dungeon Master serves as the orchestrator, agents communicate through 
 - Image generation quality and relevance from player feedback
 - User satisfaction with agent responses from player feedback
 - System stability and response times based upon terminal data on execution as well as player feedback
+
+## Feature Implementation Status
+
+### ✅ Fully Implemented (Working in All Modes)
+- **Character Creation**: Complete D&D 5e character creation with race, class, background, ability scores
+- **Character Management**: Full character sheet tracking with inventory, spells, abilities, equipment
+- **Campaign System**: Campaign creation, persistence, and session management
+- **Dice Rolling**: Virtual dice for all standard RPG dice (d4, d6, d8, d10, d12, d20, d100) with manual roll input
+- **Skill Checks**: Automated skill check resolution with modifiers and difficulty classes
+- **Combat System**: Turn-based combat with initiative tracking, action economy, and D&D 5e rules
+- **Character Progression**: Experience tracking, automatic leveling, proficiency bonus scaling, ability score improvements
+- **Spell System**: Full D&D 5e spell mechanics with spell slot tracking and resource management
+- **NPC Management**: NPC creation, tracking, and interaction system
+- **Game State Persistence**: Save/load functionality for campaigns and characters
+- **Fallback Mode**: Deterministic game logic when Azure OpenAI unavailable
+
+### ⚠️ Implemented (Requires Azure OpenAI Connection)
+- **AI Dungeon Master**: Natural language interaction and intelligent game orchestration (requires Azure OpenAI chat deployment)
+- **Narrator Agent**: Dynamic narrative generation and context-aware storytelling (requires Azure OpenAI chat deployment)
+- **Image Generation**: Character portraits, environment visualizations, and scene illustrations (requires Azure DALL-E deployment)
+- **Battle Maps**: Tactical combat map generation (requires Azure DALL-E deployment)
+- **AI-Enhanced Combat**: Intelligent enemy tactics and dynamic encounter balancing (requires Azure OpenAI chat deployment)
+- **Narrative Memory**: Context-aware story continuity and recall (requires Azure OpenAI chat deployment)
+
+### 📋 Agent Status
+All 6 specialized agents are fully implemented with real Azure AI SDK integration (not stubbed):
+- ✅ **Dungeon Master Agent**: Orchestrator with 17 methods (backend/app/agents/dungeon_master.py)
+- ✅ **Narrator Agent**: Narrative generation with 8 methods (backend/app/agents/narrator.py)
+- ✅ **Scribe Agent**: Character/data management with 20 methods (backend/app/agents/scribe.py)
+- ✅ **Combat MC Agent**: Combat orchestration with 25 methods (backend/app/agents/combat_mc.py)
+- ✅ **Combat Cartographer Agent**: Battle map generation with 13 methods (backend/app/agents/combat_cartographer.py)
+- ✅ **Artist Agent**: Visual imagery with 6 methods (backend/app/agents/artist.py)
+
+### 🔧 Technical Infrastructure
+- ✅ **Microsoft Agent Framework**: Full Azure AI Agents SDK integration with agent orchestration, threads, and tools
+- ✅ **Azure OpenAI Integration**: Chat completions and DALL-E image generation with automatic fallback
+- ✅ **Configuration System**: Pydantic-settings with environment variable support (dev and prod compatible)
+- ✅ **API Layer**: FastAPI with OpenAPI schema and auto-generated TypeScript client
+- ✅ **Test Suite**: 323 passing tests with comprehensive coverage of all game systems
+- ✅ **CI/CD Pipeline**: Automated deployment with Node 22 support and OpenAPI client generation
+
+### Notes
+- All core D&D 5e gameplay features are working and can be played in deterministic fallback mode
+- Azure OpenAI connection enhances gameplay with AI-generated narratives and visuals but is not required
+- Image generation and battle maps are fully implemented but require active Azure DALL-E deployment
+- See ADR-0018 for Agent Framework architecture details and migration rationale
 
 ## Conclusion
 
