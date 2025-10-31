@@ -50,12 +50,19 @@ async def lifespan(app: FastAPI):
     logger.info("Application shutdown complete.")
 
 
+# Determine root_path based on environment
+# In production (Azure Container Apps), routes are served under /api prefix
+# In development/testing, no prefix is used
+is_production = bool(os.getenv("WEBSITE_SITE_NAME") or os.getenv("CONTAINER_APP_NAME"))
+root_path = "/api" if is_production else ""
+
 # Create FastAPI app
 app = FastAPI(
     title="AI Dungeon Master API",
     description="Backend API for the AI Dungeon Master application",
     version="0.1.0",
     lifespan=lifespan,
+    root_path=root_path,
 )
 
 # Add CORS middleware

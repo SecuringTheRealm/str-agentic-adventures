@@ -35,6 +35,7 @@ This directory contains Architecture Decision Records (ADRs) for the Agentic Adv
 | 0016 | [Frontend Build Modernization with Vite](0016-frontend-build-modernization.md) | Accepted | 2025-10-11 | Replace Create React App with Vite to reduce dependencies and resolve audit alerts |
 | 0017 | [Unified SDK with WebSocket Client Extension](0017-unified-sdk-websocket-extension.md) | Accepted | 2025-10-12 | Extend OpenAPI-generated REST client with manual WebSocket module for unified developer experience |
 | 0018 | [Adopt Azure AI Agents SDK for Multi-Agent Architecture](0018-azure-ai-agents-sdk-adoption.md) | Accepted | 2025-10-12 | Migration from Semantic Kernel to Azure AI Agents SDK for production-grade agent orchestration |
+| 0019 | [API Prefix Configuration for Production Deployment](0019-api-prefix-configuration.md) | Accepted | 2025-10-31 | Configure FastAPI to serve routes under /api prefix in production while maintaining backward compatibility |
 
 ## ADR Statuses
 
