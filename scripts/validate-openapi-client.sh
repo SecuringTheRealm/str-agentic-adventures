@@ -85,7 +85,7 @@ print_status "Step 4: Validating OpenAPI schema structure..."
 SCHEMA_RESPONSE=$(curl -s http://localhost:8000/openapi.json)
 
 # Check if it's valid JSON
-if echo "$SCHEMA_RESPONSE" | python -m json.tool > /dev/null 2>&1; then
+if echo "$SCHEMA_RESPONSE" | uv run python -m json.tool > /dev/null 2>&1; then
     print_success "OpenAPI schema is valid JSON"
 else
     print_error "OpenAPI schema is not valid JSON"
@@ -93,7 +93,7 @@ else
 fi
 
 # Check for required OpenAPI fields
-if echo "$SCHEMA_RESPONSE" | python -c "
+if echo "$SCHEMA_RESPONSE" | uv run python -c "
 import json, sys
 schema = json.load(sys.stdin)
 required_fields = ['openapi', 'info', 'paths', 'components']
