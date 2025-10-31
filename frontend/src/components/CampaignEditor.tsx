@@ -291,8 +291,8 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
       try {
         const homebrewRulesList = formData.homebrew_rules
           .split("\n")
-          .map((rule) => rule.trim())
-          .filter((rule) => rule !== "");
+          .map((rule: string) => rule.trim())
+          .filter((rule: string) => rule !== "");
 
         if (isEditing && campaign) {
           const updates: CampaignUpdateRequest = {
