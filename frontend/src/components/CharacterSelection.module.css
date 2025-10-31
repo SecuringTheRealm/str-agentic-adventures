@@ -11,14 +11,18 @@
 
 .characterSelectionHeader h2 {
   margin: 0 0 10px 0;
-  color: #2c3e50;
+  color: #e4bb1e; /* Gold accent color */
   font-size: 2rem;
+  font-family: "Cinzel", serif;
+  font-weight: 600;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .characterSelectionHeader p {
   margin: 10px 0 20px 0;
-  color: #7f8c8d;
+  color: #f4f1e8; /* Warm off-white text */
   font-size: 1.1rem;
+  font-family: "Cinzel", serif;
 }
 
 .characterOptions {
@@ -29,91 +33,99 @@
 }
 
 .characterOptionCard {
-  background: white;
+  background: rgba(15, 64, 79, 0.8); /* Fantasy theme background */
   border-radius: 12px;
   padding: 30px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
   text-align: center;
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
-  border: 2px solid transparent;
+  border: 2px solid #788070; /* Steel border */
 }
 
 .characterOptionCard:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
-  border-color: #3498db;
+  box-shadow: 0 8px 15px rgba(228, 187, 30, 0.3); /* Gold shadow */
+  border-color: #e4bb1e; /* Gold border on hover */
 }
 
 .characterOptionCard h3 {
   margin: 0 0 15px 0;
-  color: #2c3e50;
+  color: #e4bb1e; /* Gold color for titles */
   font-size: 1.4rem;
+  font-family: "Cinzel", serif;
+  font-weight: 600;
 }
 
 .characterOptionCard p {
   margin: 0 0 20px 0;
-  color: #7f8c8d;
+  color: #f4f1e8; /* Warm off-white text */
   line-height: 1.5;
+  font-family: "Cinzel", serif;
 }
 
 .characterOptionCard ul {
   text-align: left;
   margin: 20px 0;
   padding-left: 20px;
-  color: #555;
+  color: #d0c8b8; /* Light fantasy text */
 }
 
 .characterOptionCard li {
   margin: 8px 0;
   line-height: 1.4;
+  font-family: "Cinzel", serif;
 }
 
 .characterOptionButton {
   width: 100%;
   padding: 12px 24px;
-  border: none;
+  border: 2px solid #e4bb1e; /* Gold border */
   border-radius: 6px;
   font-size: 1.1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.3s ease;
   margin-top: 10px;
+  font-family: "Cinzel", serif;
 }
 
 .characterOptionButton.primary {
-  background-color: #3498db;
+  background: linear-gradient(135deg, #b15005, #d67c2d); /* Wood gradient */
   color: white;
 }
 
 .characterOptionButton.primary:hover {
-  background-color: #2980b9;
+  background: linear-gradient(135deg, #d67c2d, #e4953f); /* Lighter wood on hover */
+  box-shadow: 0 2px 4px rgba(228, 187, 30, 0.3);
 }
 
 .backButton {
   padding: 8px 16px;
-  border: 1px solid #bdc3c7;
+  border: 1px solid #e4bb1e; /* Gold border */
   border-radius: 4px;
-  background-color: #ecf0f1;
-  color: #2c3e50;
+  background-color: rgba(120, 128, 112, 0.8); /* Steel color */
+  color: #f4f1e8; /* Light text */
   cursor: pointer;
   font-size: 0.9rem;
   transition: all 0.2s ease;
+  font-family: "Cinzel", serif;
 }
 
 .backButton:hover {
-  background-color: #d5dbdb;
-  border-color: #95a5a6;
+  background-color: rgba(144, 140, 107, 0.9); /* Stone color on hover */
+  border-color: #e4bb1e;
 }
 
 .backButton.secondary {
   background-color: transparent;
-  border-color: #bdc3c7;
+  border-color: #788070; /* Steel border */
 }
 
 .backButton.secondary:hover {
-  background-color: #ecf0f1;
+  background-color: rgba(120, 128, 112, 0.4);
+  border-color: #e4bb1e;
 }
 
 @media (max-width: 768px) {
