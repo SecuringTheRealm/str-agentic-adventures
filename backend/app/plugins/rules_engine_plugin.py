@@ -263,10 +263,6 @@ class RulesEnginePlugin:
         # Kept for backward compatibility
         return SPELL_SLOTS_BY_CLASS_LEVEL
 
-#     # @kernel_function(
-#     #     description="Get spell slots for a character by class and level.",
-#     #     name="get_spell_slots_for_level",
-#     # )
     def get_spell_slots_for_level(
         self, character_class: str, level: int
     ) -> dict[str, Any]:
@@ -305,10 +301,6 @@ class RulesEnginePlugin:
             logger.error(f"Error getting spell slots: {str(e)}")
             return {"error": f"Error getting spell slots: {str(e)}"}
 
-#     # @kernel_function(
-#         description="Calculate spell attack bonus for a character.",
-#         name="calculate_spell_attack_bonus",
-#     )
     def calculate_spell_attack_bonus(
         self,
         spellcasting_ability_modifier: int,
@@ -342,10 +334,6 @@ class RulesEnginePlugin:
             logger.error(f"Error calculating spell attack bonus: {str(e)}")
             return {"error": f"Error calculating spell attack bonus: {str(e)}"}
 
-#     # @kernel_function(
-#         description="Process spell effect resolution.",
-#         name="resolve_spell_effect",
-#     )
     def resolve_spell_effect(
         self,
         spell_name: str,
@@ -395,10 +383,6 @@ class RulesEnginePlugin:
             logger.error(f"Error resolving spell effect: {str(e)}")
             return {"error": f"Error resolving spell effect: {str(e)}"}
 
-#     # @kernel_function(
-#         description="Calculate spell save DC for a character.",
-#         name="calculate_spell_save_dc",
-#     )
     def calculate_spell_save_dc(
         self,
         spellcasting_ability_modifier: int,
@@ -432,10 +416,6 @@ class RulesEnginePlugin:
             logger.error(f"Error calculating spell save DC: {str(e)}")
             return {"error": f"Error calculating spell save DC: {str(e)}"}
 
-#     # @kernel_function(
-#         description="Resolve spell damage effects.",
-#         name="resolve_spell_damage",
-#     )
     def resolve_spell_damage(
         self, dice_notation: str, damage_type: str, target_count: int = 1
     ) -> dict[str, Any]:
@@ -470,10 +450,6 @@ class RulesEnginePlugin:
             logger.error(f"Error resolving spell damage: {str(e)}")
             return {"error": f"Error resolving spell damage: {str(e)}"}
 
-#     # @kernel_function(
-#         description="Resolve spell healing effects.",
-#         name="resolve_spell_healing",
-#     )
     def resolve_spell_healing(
         self, dice_notation: str, spellcasting_modifier: int = None
     ) -> dict[str, Any]:
@@ -515,10 +491,6 @@ class RulesEnginePlugin:
             logger.error(f"Error resolving spell healing: {str(e)}")
             return {"error": f"Error resolving spell healing: {str(e)}"}
 
-#     # @kernel_function(
-#         description="Resolve saving throw against spell effects.",
-#         name="resolve_saving_throw",
-#     )
     def resolve_saving_throw(
         self,
         save_dc: int,
@@ -569,8 +541,6 @@ class RulesEnginePlugin:
             logger.error(f"Error resolving saving throw: {str(e)}")
             return {"error": f"Error resolving saving throw: {str(e)}"}
 
-#     # @kernel_function(
-#         description="Roll dice using standard D&D notation with advanced features (e.g., '1d20', '2d6+3', '4d6dl1', '2d20kh1').",
 #         name="roll_dice",
 #     )
     def roll_dice(self, dice_notation: str) -> dict[str, Any]:
@@ -833,8 +803,6 @@ class RulesEnginePlugin:
 
         return modifiers
 
-#     # @kernel_function(
-#         description="Perform a skill check against a target difficulty class (DC).",
 #         name="skill_check",
 #     )
     def skill_check(
@@ -903,10 +871,6 @@ class RulesEnginePlugin:
             logger.error(f"Error performing skill check: {str(e)}")
             return {"error": f"Error performing skill check: {str(e)}"}
 
-#     # @kernel_function(
-#         description="Calculate whether an attack hits based on the attack roll and target's armor class.",
-#         name="resolve_attack",
-#     )
     def resolve_attack(
         self,
         attack_bonus: int,
@@ -972,10 +936,6 @@ class RulesEnginePlugin:
             logger.error(f"Error resolving attack: {str(e)}")
             return {"error": f"Error resolving attack: {str(e)}"}
 
-#     # @kernel_function(
-#         description="Calculate damage for an attack based on the damage dice and modifiers.",
-#         name="calculate_damage",
-#     )
     def calculate_damage(
         self, damage_dice: str, is_critical: bool = False
     ) -> dict[str, Any]:
@@ -1023,10 +983,6 @@ class RulesEnginePlugin:
             logger.error(f"Error calculating damage: {str(e)}")
             return {"error": f"Error calculating damage: {str(e)}"}
 
-#     # @kernel_function(
-#         description="Calculate the level for a character based on their experience points.",
-#         name="calculate_level",
-#     )
     def calculate_level(self, experience: int) -> dict[str, Any]:
         """
         Calculate the level for a character based on their experience points.
@@ -1061,10 +1017,6 @@ class RulesEnginePlugin:
             logger.error(f"Error calculating level: {str(e)}")
             return {"error": f"Error calculating level: {str(e)}"}
 
-#     # @kernel_function(
-#         description="Calculate proficiency bonus for a given level.",
-#         name="calculate_proficiency_bonus",
-#     )
     def calculate_proficiency_bonus(self, level: int) -> dict[str, Any]:
         """
         Calculate proficiency bonus for a given level.
@@ -1089,10 +1041,6 @@ class RulesEnginePlugin:
             logger.error(f"Error calculating proficiency bonus: {str(e)}")
             return {"error": f"Error calculating proficiency bonus: {str(e)}"}
 
-#     # @kernel_function(
-#         description="Check if a character can gain ability score improvement at their level.",
-#         name="check_asi_eligibility",
-#     )
     def check_asi_eligibility(self, level: int, asi_used: int) -> dict[str, Any]:
         """
         Check if a character can gain ability score improvement at their level.
@@ -1123,10 +1071,6 @@ class RulesEnginePlugin:
             logger.error(f"Error checking ASI eligibility: {str(e)}")
             return {"error": f"Error checking ASI eligibility: {str(e)}"}
 
-#     # @kernel_function(
-#         description="Calculate hit points gained on level up.",
-#         name="calculate_level_up_hp",
-#     )
     def calculate_level_up_hp(
         self, character_class: str, constitution_modifier: int, use_average: bool = True
     ) -> dict[str, Any]:
@@ -1287,10 +1231,6 @@ class RulesEnginePlugin:
         if len(self.roll_history) > self.max_history:
             self.roll_history = self.roll_history[-self.max_history :]
 
-#     # @kernel_function(
-#         description="Start concentration on a spell for a character.",
-#         name="start_concentration",
-#     )
     def start_concentration(
         self, character_id: str, spell_data: dict[str, Any], duration_rounds: int = 10
     ) -> dict[str, Any]:
@@ -1343,10 +1283,6 @@ class RulesEnginePlugin:
                 "error": f"Error starting concentration: {str(e)}",
             }
 
-#     # @kernel_function(
-#         description="End concentration on a spell for a character.",
-#         name="end_concentration",
-#     )
     def end_concentration(self, character_id: str) -> dict[str, Any]:
         """
         End concentration on a spell for a character.
@@ -1382,10 +1318,6 @@ class RulesEnginePlugin:
             logger.error(f"Error ending concentration: {str(e)}")
             return {"success": False, "error": f"Error ending concentration: {str(e)}"}
 
-#     # @kernel_function(
-#         description="Check current concentration status for a character.",
-#         name="check_concentration",
-#     )
     def check_concentration(self, character_id: str) -> dict[str, Any]:
         """
         Check current concentration status for a character.
@@ -1419,10 +1351,6 @@ class RulesEnginePlugin:
             logger.error(f"Error checking concentration: {str(e)}")
             return {"error": f"Error checking concentration: {str(e)}"}
 
-#     # @kernel_function(
-#         description="Perform a concentration saving throw when character takes damage.",
-#         name="concentration_saving_throw",
-#     )
     def concentration_saving_throw(
         self, character_id: str, damage_taken: int, constitution_modifier: int = 0
     ) -> dict[str, Any]:
@@ -1491,8 +1419,6 @@ class RulesEnginePlugin:
                 "error": f"Error with concentration saving throw: {str(e)}",
             }
 
-#     # @kernel_function(
-#         description="Reduce spell duration for all concentrating characters (call each round).",
 #         name="advance_concentration_round",
 #     )
     def advance_concentration_round(self) -> dict[str, Any]:

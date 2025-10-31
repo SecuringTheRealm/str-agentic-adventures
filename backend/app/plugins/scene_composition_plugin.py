@@ -26,10 +26,6 @@ class SceneCompositionPlugin:
         self.location_templates = {}
         self.composition_history = []
 
-#     # @kernel_function(
-#         description="Generate a detailed scene illustration based on location and context.",
-#         name="illustrate_scene",
-#     )
     def illustrate_scene(
         self,
         location_name: str,
@@ -127,10 +123,6 @@ class SceneCompositionPlugin:
             logger.error(f"Error illustrating scene: {str(e)}")
             return {"status": "error", "error": f"Scene illustration failed: {str(e)}"}
 
-#     # @kernel_function(
-#         description="Create a location template for consistent scene generation.",
-#         name="create_location_template",
-#     )
     def create_location_template(
         self,
         template_name: str,
@@ -188,10 +180,6 @@ class SceneCompositionPlugin:
                 "error": f"Location template creation failed: {str(e)}",
             }
 
-#     # @kernel_function(
-#         description="Generate a scene variation with different lighting or weather.",
-#         name="generate_scene_variation",
-#     )
     def generate_scene_variation(
         self,
         base_scene_id: str,
@@ -264,10 +252,6 @@ class SceneCompositionPlugin:
                 "error": f"Scene variation generation failed: {str(e)}",
             }
 
-#     # @kernel_function(
-#         description="Create a cinematic establishing shot for a location.",
-#         name="create_establishing_shot",
-#     )
     def create_establishing_shot(
         self,
         location_name: str,
@@ -347,10 +331,6 @@ class SceneCompositionPlugin:
                 "error": f"Establishing shot creation failed: {str(e)}",
             }
 
-#     # @kernel_function(
-#         description="Generate a battle map overview for tactical combat.",
-#         name="generate_battle_map",
-#     )
     def generate_battle_map(
         self,
         battlefield_name: str,
@@ -427,10 +407,6 @@ class SceneCompositionPlugin:
                 "error": f"Battle map generation failed: {str(e)}",
             }
 
-#     # @kernel_function(
-#         description="Get composition analysis and recommendations for scenes.",
-#         name="analyze_scene_composition",
-#     )
     def analyze_scene_composition(self, scene_id: str) -> dict[str, Any]:
         """
         Analyze scene composition and provide recommendations.

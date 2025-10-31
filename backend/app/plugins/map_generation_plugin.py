@@ -21,10 +21,6 @@ class MapGenerationPlugin:
         """Initialize the map generation plugin."""
         self.map_cache = {}
 
-#     # @kernel_function(
-#         description="Generate a tactical battle map based on environment context.",
-#         name="generate_tactical_map",
-#     )
     def generate_tactical_map(
         self,
         environment_context: str,
@@ -90,10 +86,6 @@ class MapGenerationPlugin:
             logger.error(f"Error generating tactical map: {str(e)}")
             return {"status": "error", "error": f"Map generation failed: {str(e)}"}
 
-#     # @kernel_function(
-#         description="Create a map grid system with positioning coordinates.",
-#         name="create_grid_system",
-#     )
     def create_grid_system(
         self, width: int = 20, height: int = 20, grid_type: str = "square"
     ) -> dict[str, Any]:
