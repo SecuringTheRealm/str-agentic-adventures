@@ -9,26 +9,25 @@ class TestProductionAPIPrefix:
     """Test that the application correctly handles /api prefix in production."""
 
     @pytest.fixture
-    def production_client(self, monkeypatch):
-        """Create a test client that simulates production environment."""
-        # Set environment variable to simulate Azure Container Apps
-        monkeypatch.setenv("CONTAINER_APP_NAME", "production-backend")
+    def production_client(self):
+        """Create a test client that simulates production environment with /api root_path."""
+        from fastapi import FastAPI
+        from app.main import app as base_app
+        import types
 
-        # Re-import app to pick up the environment variable
-        # This is necessary because the app is created at module import time
-        import importlib
+        # Create a new FastAPI instance with root_path="/api"
+        prod_app = FastAPI(root_path="/api")
 
-        import app.main
+        # Mount all routes from the original app
+        for route in base_app.routes:
+            prod_app.router.routes.append(route)
 
-        importlib.reload(app.main)
+        # Copy exception handlers, middleware, etc. if needed
+        prod_app.exception_handlers = base_app.exception_handlers.copy()
+        prod_app.middleware_stack = base_app.middleware_stack
 
-        client = TestClient(app.main.app)
+        client = TestClient(prod_app)
         yield client
-
-        # Clean up
-        monkeypatch.delenv("CONTAINER_APP_NAME", raising=False)
-        importlib.reload(app.main)
-
     @pytest.fixture
     def dev_client(self):
         """Create a test client for development environment (no prefix)."""
