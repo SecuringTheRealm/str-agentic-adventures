@@ -101,7 +101,7 @@ jobs:
       - name: Setup Node.js for frontend build
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
@@ -288,8 +288,32 @@ jobs:
           cd frontend
           npm ci
 
+          # Generate OpenAPI client from backend API
+          # CRITICAL: Frontend TypeScript client must be generated before build
+          # The api-client directory is NOT committed to the repository
+          echo "Generating OpenAPI client from backend API..."
+          BACKEND_URL="${{ steps.backend-deploy.outputs.backend-uri }}"
+
+          # Wait for backend to be ready
+          echo "Waiting for backend API to be available..."
+          for i in {1..30}; do
+            if curl -f -s "$BACKEND_URL/health" > /dev/null 2>&1; then
+              echo "Backend API is ready"
+              break
+            fi
+            echo "Attempt $i/30: Waiting for backend..."
+            sleep 10
+          done
+
+          # Generate the client using the backend's OpenAPI schema
+          npx @openapitools/openapi-generator-cli generate \
+            -i "$BACKEND_URL/openapi.json" \
+            -g typescript-axios \
+            -o src/api-client \
+            --skip-validate-spec
+
           # Set backend URL for build
-          export REACT_APP_API_URL="${{ steps.backend-deploy.outputs.backend-uri }}"
+          export REACT_APP_API_URL="$BACKEND_URL"
           npm run build
 
           # Get deployment token from the Static Web App (if it exists)

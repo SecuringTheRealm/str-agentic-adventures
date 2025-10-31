@@ -6,19 +6,28 @@
 - Before committing config changes, re-check `.env.example`, docs, and Azure resource names for accidental secrets.
 
 ## Project Structure & Module Organization
-- `backend/`: FastAPI & Semantic Kernel services, SQLAlchemy models, and backend tests under `backend/tests/`.
+- `backend/`: FastAPI services with Azure AI SDK for agent implementations, SQLAlchemy models, and backend tests under `backend/tests/`.
 - `frontend/`: TypeScript + React UI, generated OpenAPI client in `src/api-client/` (never edit manually), tests in `src/__tests__/` and `e2e/`.
 - `docs/`: Architecture (`docs/adr/`), design, specs, reference, and user guides. Update or link here instead of adding root-level docs.
 - `infra/`: Azure deployment artifacts and automation.
 - `.bmad-core/agents/`: BMAD agent playbooks used by orchestration tooling.
 
+## Agent Architecture & Framework
+- **Current Implementation**: Uses Azure AI SDK (`azure-ai-inference`, `azure-ai-agents`) with custom agent wrappers, NOT Microsoft Agent Framework orchestration.
+- **Agent Pattern**: Each agent (`DungeonMasterAgent`, `NarratorAgent`, etc.) is a Python class that makes direct Azure OpenAI API calls via `AzureOpenAIClient`.
+- **Plugin System**: Plugins in `backend/app/plugins/` provide reusable capabilities (narrative generation, combat mechanics, etc.) that agents can use.
+- **State Management**: Custom in-memory state management per agent, not using framework-level orchestration.
+- **See**: `docs/architecture-review-2025.md` for detailed analysis of current vs. intended architecture.
+- **ADR Reference**: See ADR-0018 for Azure AI integration decisions (note: describes SDK usage, not full Agent Framework).
+
 ## Development Environment Setup
 - Python 3.12+ with [UV](https://github.com/astral-sh/uv). Run `make deps` to sync backend dependencies from `pyproject.toml` / `uv.lock`.
-- Node.js ≥22 (CI uses 20). Install frontend packages with `npm install` inside `frontend/`.
+- Node.js ≥22 (CI and local development both require >=22). Install frontend packages with `npm install` inside `frontend/`.
 - Java (OpenJDK) for OpenAPI client generation: `brew install openjdk` on macOS. Required for `npm run generate:api`. In GitHub Actions runner, Java is pre-installed.
 - SQLite for local development (no external DB needed). Use `sqlite3` CLI.
 - Copy `.env.example` to `.env` in backend and frontend as needed; fill with local secrets only.
 - **First-time setup**: After starting the backend, generate the frontend API client with `cd frontend && npm run generate:api`.
+- **CI/CD Note**: The deploy workflow automatically generates the frontend API client from the deployed backend's OpenAPI schema before building.
 
 ## Build, Test, and Development Commands
 - `make run`: start the backend at `http://localhost:8000`.
