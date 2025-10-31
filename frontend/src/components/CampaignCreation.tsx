@@ -118,6 +118,7 @@ const CampaignCreation: React.FC<CampaignCreationProps> = ({
             required
             className={validationErrors.campaignName ? "error" : ""}
             autoComplete="off"
+            data-testid="campaign-name-input"
           />
           {validationErrors.campaignName && (
             <div className={styles.validationError}>
@@ -156,6 +157,7 @@ const CampaignCreation: React.FC<CampaignCreationProps> = ({
               maxLength={500}
               className={validationErrors.setting ? "error" : ""}
               autoComplete="off"
+              data-testid="campaign-setting-input"
             />
             <div className={styles.characterCount}>
               {setting.length}/500 characters
@@ -177,6 +179,7 @@ const CampaignCreation: React.FC<CampaignCreationProps> = ({
               value={tone}
               onChange={(e) => setTone(e.target.value)}
               disabled={isSubmitting}
+              data-testid="campaign-tone-select"
             >
               <option value="heroic">🛡️ Heroic</option>
               <option value="dark">💀 Dark</option>
@@ -198,6 +201,7 @@ const CampaignCreation: React.FC<CampaignCreationProps> = ({
             disabled={isSubmitting}
             className={styles.optionalField}
             autoComplete="off"
+            data-testid="campaign-homebrew-input"
           />
         </div>
 
@@ -205,6 +209,7 @@ const CampaignCreation: React.FC<CampaignCreationProps> = ({
           type="submit"
           className={`create-button ${isSubmitting ? "submitting" : ""}`}
           disabled={isSubmitting}
+          data-testid="submit-campaign-btn"
         >
           {isSubmitting ? (
             <span className={styles.buttonContent}>

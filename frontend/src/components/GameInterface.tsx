@@ -510,7 +510,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
   };
 
   return (
-    <div className={styles.gameInterface}>
+    <div className={styles.gameInterface} data-testid="game-interface">
       <div className={styles.gameContainer}>
         <div className={styles.leftPanel}>
           <CharacterSheet character={character} />

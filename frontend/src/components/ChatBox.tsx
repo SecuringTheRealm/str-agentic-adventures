@@ -88,8 +88,9 @@ const ChatBox: React.FC<ChatBoxProps> = ({
           onChange={(e) => setInput(e.target.value)}
           placeholder="What do you want to do?"
           disabled={isLoading}
+          data-testid="chat-input"
         />
-        <button type="submit" disabled={isLoading || !input.trim()}>
+        <button type="submit" disabled={isLoading || !input.trim()} data-testid="chat-send-btn">
           Send
         </button>
       </form>

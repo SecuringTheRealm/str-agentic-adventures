@@ -77,6 +77,7 @@ const CharacterSelection: React.FC<CharacterSelectionProps> = ({
               type="button"
               onClick={() => setSelectionMode("create")}
               className={`${styles.characterOptionButton} ${styles.primary}`}
+              data-testid="create-character-btn"
             >
               Create Character
             </button>
@@ -100,6 +101,7 @@ const CharacterSelection: React.FC<CharacterSelectionProps> = ({
               type="button"
               onClick={() => setSelectionMode("predefined")}
               className={`${styles.characterOptionButton} ${styles.primary}`}
+              data-testid="browse-characters-btn"
             >
               Browse Characters
             </button>
