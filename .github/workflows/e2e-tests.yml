@@ -59,11 +59,6 @@ jobs:
         cd frontend
         npx playwright install chromium
 
-    - name: Build frontend for E2E tests
-      run: |
-        cd frontend
-        npm run build
-
     - name: Setup Python (for backend mock server)
       uses: actions/setup-python@v4
       with:
@@ -83,6 +78,16 @@ jobs:
         cd backend
         uv run python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 &
         sleep 10  # Give server time to start
+
+    - name: Generate API client
+      run: |
+        cd frontend
+        npm run generate:api
+
+    - name: Build frontend for E2E tests
+      run: |
+        cd frontend
+        npm run build
       
     - name: Start frontend dev server
       run: |
