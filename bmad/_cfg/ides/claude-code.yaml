@@ -1,0 +1,24 @@
+ide: claude-code
+configured_date: '2025-11-01T18:39:36.673Z'
+last_updated: '2025-11-01T18:39:36.673Z'
+configuration:
+  subagentChoices:
+    install: selective
+    selected:
+      - market-researcher.md
+      - requirements-analyst.md
+      - technical-evaluator.md
+      - epic-optimizer.md
+      - document-reviewer.md
+      - codebase-analyzer.md
+      - dependency-mapper.md
+      - pattern-detector.md
+      - tech-debt-auditor.md
+      - api-documenter.md
+      - test-coverage-analyzer.md
+      - user-researcher.md
+      - user-journey-mapper.md
+      - technical-decisions-curator.md
+      - data-analyst.md
+      - trend-spotter.md
+  installLocation: project
