@@ -229,8 +229,8 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
                   <div className={styles.detailItem}>
                     <strong>Plot Hooks:</strong>
                     <ul>
-                      {template.plot_hooks.slice(0, 2).map((hook) => (
-                        <li key={hook}>{hook}</li>
+                      {template.plot_hooks.slice(0, 2).map((hook: string | null) => (
+                        <li key={hook || ''}>{hook}</li>
                       ))}
                     </ul>
                   </div>

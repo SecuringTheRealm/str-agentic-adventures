@@ -78,7 +78,7 @@ const CharacterCreation: React.FC<CharacterCreationProps> = ({
 
     if (name.startsWith("abilities.")) {
       const abilityName = name.split(".")[1] as keyof typeof formData.abilities;
-      setFormData((prev) => ({
+      setFormData((prev: CharacterCreateRequest) => ({
         ...prev,
         abilities: {
           ...prev.abilities,
@@ -86,7 +86,7 @@ const CharacterCreation: React.FC<CharacterCreationProps> = ({
         },
       }));
     } else {
-      setFormData((prev) => ({
+      setFormData((prev: CharacterCreateRequest) => ({
         ...prev,
         [name]: value,
       }));
@@ -95,7 +95,7 @@ const CharacterCreation: React.FC<CharacterCreationProps> = ({
 
   const getTotalPoints = () => {
     return Object.values(formData.abilities).reduce(
-      (sum, value) => sum + value,
+      (sum: number, value: number) => sum + value,
       0
     );
   };
@@ -226,7 +226,7 @@ const CharacterCreation: React.FC<CharacterCreationProps> = ({
           </p>
 
           <div className={styles.abilitiesGrid}>
-            {Object.entries(formData.abilities).map(([ability, value]) => (
+            {Object.entries(formData.abilities).map(([ability, value]: [string, number]) => (
               <div key={ability} className={styles.abilityInput}>
                 <label htmlFor={`abilities.${ability}`}>
                   {ability.charAt(0).toUpperCase() + ability.slice(1)}

@@ -348,7 +348,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
           </div>
           <ul className={styles.inventoryList}>
             {character.inventory && character.inventory.length > 0 ? (
-              character.inventory.map((item, index) => (
+              character.inventory.map((item: any, index: number) => (
                 <li
                   key={`${(item as any).name || item.item_id}-${index}`}
                   className={styles.inventoryItem}

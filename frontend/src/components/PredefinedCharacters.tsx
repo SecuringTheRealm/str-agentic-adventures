@@ -118,7 +118,7 @@ const PredefinedCharacters: React.FC<PredefinedCharactersProps> = ({
               <div className={styles.equipmentPreview}>
                 <h4>Equipment</h4>
                 <ul>
-                  {(character.inventory || []).slice(0, 4).map((item) => (
+                  {(character.inventory || []).slice(0, 4).map((item: any) => (
                     <li key={item.item_id || (item as any).name}>
                       {(item as any).name || item.item_id}
                       {item.quantity > 1 && ` (${item.quantity})`}
