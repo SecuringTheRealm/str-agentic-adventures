@@ -28,7 +28,7 @@
       "summary": "Tech stack: Frontend (React 19 + Vite 7 + TypeScript 5.9), Backend (Python 3.12 + FastAPI + Azure AI Agents SDK)"
     }
   ],
-  "current_step": "step_4",
+  "current_step": "completed",
   "findings": {
     "project_classification": "Multi-part repository with frontend (web) and backend (backend API)"
   },
@@ -44,6 +44,13 @@
       "display_name": "Backend (Python + FastAPI + SQLAlchemy)"
     }
   ],
-  "outputs_generated": ["project-scan-report.json"],
+  "outputs_generated": [
+    "project-scan-report.json",
+    "api-contracts-backend.md",
+    "data-models-backend.md",
+    "frontend-architecture.md",
+    "project-overview.md",
+    "bmm-index.md"
+  ],
   "resume_instructions": "Continuing from step 2"
 }

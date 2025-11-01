@@ -30,7 +30,7 @@ workflow_path: "brownfield-level-3.yaml"
 
 workflow_status:
   # Prerequisite: Documentation
-  document-project: required
+  document-project: docs/bmm-index.md
 
   # Phase 1: Analysis
   brainstorm-project: optional
