@@ -39,9 +39,5 @@ export const getRuntimeMode = (): string => {
  * Resolve the API base URL provided via environment configuration.
  */
 export const getConfiguredApiUrl = (): string => {
-  return (
-    getEnvVar("VITE_API_URL") ??
-    getEnvVar("REACT_APP_API_URL") ??
-    "http://localhost:8000"
-  );
+  return getEnvVar("VITE_API_URL") ?? "http://localhost:8000";
 };

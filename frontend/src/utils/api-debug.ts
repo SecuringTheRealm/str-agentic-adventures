@@ -6,7 +6,6 @@ import { getConfiguredApiUrl, getEnvVar, getRuntimeMode } from "./environment";
 export const logApiConfiguration = () => {
   console.group("🔧 API Configuration Debug");
   console.log("VITE_API_URL:", getEnvVar("VITE_API_URL"));
-  console.log("REACT_APP_API_URL (legacy):", getEnvVar("REACT_APP_API_URL"));
   console.log("Default fallback URL:", "http://localhost:8000");
   console.log("Current MODE:", getRuntimeMode());
 
