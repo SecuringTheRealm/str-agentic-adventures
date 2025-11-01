@@ -38,7 +38,7 @@ resource staticWebAppConfig 'Microsoft.Web/staticSites/config@2022-09-01' = {
   parent: staticWebApp
   name: 'appsettings'
   properties: {
-    REACT_APP_API_URL: backendUrl
+    VITE_API_URL: backendUrl
   }
 }
 

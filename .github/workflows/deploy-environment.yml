@@ -312,10 +312,8 @@ jobs:
             -o src/api-client \
             --skip-validate-spec
 
-          # Set backend URL for build
-          # Both VITE_API_URL (for Vite) and REACT_APP_API_URL (legacy) are set for compatibility
+          # Set backend URL for build (Vite embeds VITE_* prefixed env vars at build time)
           export VITE_API_URL="$BACKEND_URL"
-          export REACT_APP_API_URL="$BACKEND_URL"
           npm run build
 
           # Get deployment token from the Static Web App (if it exists)
