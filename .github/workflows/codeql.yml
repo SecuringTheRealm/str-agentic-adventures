@@ -1,13 +1,10 @@
-name: "CodeQL Security Analysis"
+name: "CodeQL Analysis"
 
 on:
   push:
-    branches: ["main", "develop"]
+    branches: ["main"]
   pull_request:
-    branches: ["main", "develop"]
-  schedule:
-    # Run every Monday at 6:00 AM UTC
-    - cron: '0 6 * * 1'
+    branches: ["main"]
 
 jobs:
   analyze:
@@ -31,10 +28,6 @@ jobs:
       uses: github/codeql-action/init@v3
       with:
         languages: ${{ matrix.language }}
-        # Use AI-aware security configuration with enhanced query suites
-        # See .github/codeql/codeql-config.yml for AI-specific security considerations
-        config-file: ./.github/codeql/codeql-config.yml
-        # Add Python-specific query packs for enhanced AI security scanning
         packs: ${{ matrix.language == 'python' && 'codeql/python-queries' || '' }}
 
     - name: Setup Python
