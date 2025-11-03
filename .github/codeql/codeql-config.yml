@@ -1,0 +1,51 @@
+name: "AI-Aware Security Analysis"
+
+# Query filters for AI/Agent-based application security
+queries:
+  - uses: security-extended
+  - uses: security-and-quality
+
+# Path filters to focus on critical AI components
+paths-ignore:
+  - '**/node_modules/**'
+  - '**/dist/**'
+  - '**/build/**'
+  - '**/__pycache__/**'
+  - '**/migrations/**'
+  - '**/alembic/**'
+
+# Focus on high-risk AI security areas
+paths:
+  - backend/app/agents/**          # AI agent implementations
+  - backend/app/plugins/**         # AI plugins and tools
+  - backend/app/azure_openai_client.py  # Azure OpenAI integration
+  - backend/app/agent_framework_base.py # Agent framework core
+  - backend/app/api/**             # API endpoints handling user input
+
+# AI-specific security considerations
+# While CodeQL doesn't have dedicated prompt injection queries yet,
+# the following CWEs are critical for AI applications:
+#
+# - CWE-078 (Command Injection): AI agents executing system commands
+# - CWE-079 (XSS): AI-generated content in web UIs
+# - CWE-089 (SQL Injection): AI-driven database queries
+# - CWE-094 (Code Injection): AI evaluating or executing code
+# - CWE-117 (Log Injection): User prompts written to logs
+# - CWE-312/313 (Cleartext Storage): API keys, sensitive data exposure
+# - CWE-400 (Regex Injection): ReDoS in AI input validation
+# - CWE-502 (Deserialization): Unsafe loading of AI model states
+# - CWE-601 (URL Redirect): AI-generated redirects
+# - CWE-798 (Hardcoded Credentials): Azure API keys in code
+# - CWE-918 (SSRF): AI agents making external HTTP requests
+# - CWE-1236 (CSV Injection): AI-generated spreadsheet content
+#
+# Future considerations when available:
+# - Prompt injection detection (OWASP LLM01)
+# - Training data poisoning (OWASP LLM03)
+# - Model denial of service (OWASP LLM04)
+# - Supply chain vulnerabilities (OWASP LLM05)
+# - Sensitive information disclosure (OWASP LLM06)
+# - Insecure plugin design (OWASP LLM07)
+# - Excessive agency (OWASP LLM08)
+# - Model inversion attacks
+# - Adversarial input detection

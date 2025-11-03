@@ -31,9 +31,11 @@ jobs:
       uses: github/codeql-action/init@v3
       with:
         languages: ${{ matrix.language }}
-        # Add additional Python security query packs
-        queries: +security-extended,security-and-quality
-        packs: ${{ matrix.language == 'python' && 'codeql/python-queries:AlertSuppression.ql,codeql/python-queries:Security/CWE-089/SqlInjection.ql,codeql/python-queries:Security/CWE-079/XSS.ql,codeql/python-queries:Security/CWE-022/PathInjection.ql,codeql/python-queries:Security/CWE-078/CommandInjection.ql,codeql/python-queries:Security/CWE-730/UncontrolledResourceConsumption.ql' || '' }}
+        # Use AI-aware security configuration with enhanced query suites
+        # See .github/codeql/codeql-config.yml for AI-specific security considerations
+        config-file: ./.github/codeql/codeql-config.yml
+        # Add Python-specific query packs for enhanced AI security scanning
+        packs: ${{ matrix.language == 'python' && 'codeql/python-queries' || '' }}
 
     - name: Setup Python
       if: matrix.language == 'python'
