@@ -675,3 +675,38 @@ class NPCStatsResponse(BaseModel):
     success: bool
     message: str
     generated_stats: dict[str, Any]
+
+
+# ---------------------------------------------------------------------------
+# Save Slot models
+# ---------------------------------------------------------------------------
+
+MAX_SAVE_SLOTS = 5
+
+
+class SaveSlot(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    campaign_id: str
+    slot_number: int  # 1-5
+    name: str = ""  # user-provided label
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    play_time_seconds: int = 0
+    interaction_count: int = 0
+    character_level: int = 1
+    current_location: str = ""
+    save_data: dict[str, Any] = Field(default_factory=dict)  # full state blob
+
+
+class CreateSaveSlotRequest(BaseModel):
+    name: str = Field(default="", max_length=200)
+    play_time_seconds: int = Field(default=0, ge=0)
+    interaction_count: int = Field(default=0, ge=0)
+    character_level: int = Field(default=1, ge=1, le=20)
+    current_location: str = Field(default="", max_length=500)
+    save_data: dict[str, Any] = Field(default_factory=dict)
+
+
+class SaveSlotListResponse(BaseModel):
+    saves: list[SaveSlot]
+    total_count: int
