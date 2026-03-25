@@ -66,9 +66,15 @@
       "Bash(npm run dev)",
       "Bash(npx playwright install)",
       "Bash(npm run test:e2e)",
-      "Bash(npm run generate:api)"
+      "Bash(npm run generate:api)",
+      "Bash(uv run *)",
+      "Bash(npm run *)",
+      "Bash(gh *)",
+      "Bash(git *)"
     ],
-    "deny": [],
+    "deny": [
+      "Bash(pip install *)"
+    ],
     "ask": []
   },
   "enableAllProjectMcpServers": true,

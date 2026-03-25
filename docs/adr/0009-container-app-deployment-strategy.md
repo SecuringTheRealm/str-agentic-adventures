@@ -58,8 +58,6 @@ We will use a **single deployment strategy** where:
 
 2. **Refactored Existing Workflows**:
    - `deploy-production.yml`: Now calls reusable workflow with production-specific parameters
-   - `deploy-pr.yml`: Now calls reusable workflow with PR-specific parameters
-   - `cleanup-pr.yml`: Now calls reusable cleanup workflow
 
 3. **Removed Code Duplication**:
    - Eliminated ~200 lines of duplicate code between production and PR workflows

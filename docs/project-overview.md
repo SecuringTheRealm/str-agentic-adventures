@@ -21,8 +21,6 @@ str-agentic-adventures/
 ├── docs/              # Architecture, ADRs, specs, and generated documentation
 ├── infra/             # Azure deployment configuration (Container Apps)
 ├── .github/           # CI/CD workflows + coding instructions
-├── bmad/              # BMAD workflow automation framework
-└── scripts/           # Utility scripts
 ```
 
 **Repository Type:** Monorepo (multi-part)
@@ -184,7 +182,7 @@ cd str-agentic-adventures
 cd backend
 cp .env.example .env  # Configure Azure OpenAI credentials
 cd ..
-make deps              # Install Python dependencies via UV
+uv sync                # Install Python dependencies via UV
 
 # 3. Frontend setup
 cd frontend
@@ -196,7 +194,7 @@ cp .env.example .env.local  # Configure VITE_API_URL if needed
 
 ```bash
 # Start backend first
-make run  # Backend runs on http://localhost:8000
+cd backend && uv run python -m app.main  # Backend runs on http://localhost:8000
 
 # In separate terminal, generate frontend API client
 cd frontend
@@ -207,7 +205,7 @@ npm run generate:api
 
 ```bash
 # Terminal 1: Backend
-make run              # http://localhost:8000
+cd backend && uv run python -m app.main  # http://localhost:8000
 
 # Terminal 2: Frontend
 cd frontend
@@ -218,7 +216,7 @@ npm run dev           # http://127.0.1.5173
 
 ```bash
 # Backend tests
-make test
+uv run pytest backend/tests/ -v
 
 # Frontend tests
 cd frontend
@@ -230,8 +228,8 @@ npm run test:e2e      # E2E tests (Playwright)
 
 ```bash
 # Backend
-make lint
-make format
+uv run ruff check .
+uv run ruff format .
 
 # Frontend
 cd frontend
