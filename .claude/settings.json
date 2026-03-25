@@ -1,43 +1,57 @@
 {
   "hooks": {
-    "PreCommit": [
-      {
-        "command": "bash -c 'if git diff --cached --name-only | grep -qE \"\\.py$\"; then cd backend && uv run ruff check $(git diff --cached --name-only --relative | grep \"\\.py$\" | tr \"\\n\" \" \"); fi'",
-        "description": "Lint staged Python files with Ruff"
-      },
-      {
-        "command": "bash -c 'if git diff --cached --name-only | grep -qE \"\\.(ts|tsx)$\"; then cd frontend && bunx biome check $(git diff --cached --name-only --relative | grep -E \"\\.(ts|tsx)$\" | tr \"\\n\" \" \"); fi'",
-        "description": "Lint staged TypeScript files with Biome"
-      },
-      {
-        "command": "bash -c 'git diff --cached -U0 | grep -iE \"(api[_-]?key|secret|password|token|credential)\\s*[=:]\\s*[\\x27\\\"][^\\x27\\\"]{8,}\" && echo \"BLOCKED: Possible secret detected in staged changes\" && exit 1 || exit 0'",
-        "description": "Block commits containing possible secrets"
-      }
-    ],
     "PostToolUse": [
       {
-        "event": "Edit",
-        "filePattern": "**/*.py",
-        "command": "cd backend && uv run ruff check --fix $CLAUDE_FILE_PATH 2>/dev/null || true",
-        "description": "Auto-fix Python lint issues after edits"
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'if [[ \"$CLAUDE_FILE_PATH\" == *.py ]]; then cd backend && uv run ruff check --fix \"$CLAUDE_FILE_PATH\" 2>/dev/null || true; fi'",
+            "description": "Auto-fix Python lint issues after edits"
+          },
+          {
+            "type": "command",
+            "command": "bash -c 'if [[ \"$CLAUDE_FILE_PATH\" == *.ts || \"$CLAUDE_FILE_PATH\" == *.tsx ]]; then cd frontend && bunx biome check --fix \"$CLAUDE_FILE_PATH\" 2>/dev/null || true; fi'",
+            "description": "Auto-fix TypeScript lint issues after edits"
+          }
+        ]
       },
       {
-        "event": "Write",
-        "filePattern": "**/*.py",
-        "command": "cd backend && uv run ruff check --fix $CLAUDE_FILE_PATH 2>/dev/null || true",
-        "description": "Auto-fix Python lint issues after writes"
-      },
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'if [[ \"$CLAUDE_FILE_PATH\" == *.py ]]; then cd backend && uv run ruff check --fix \"$CLAUDE_FILE_PATH\" 2>/dev/null || true; fi'",
+            "description": "Auto-fix Python lint issues after writes"
+          },
+          {
+            "type": "command",
+            "command": "bash -c 'if [[ \"$CLAUDE_FILE_PATH\" == *.ts || \"$CLAUDE_FILE_PATH\" == *.tsx ]]; then cd frontend && bunx biome check --fix \"$CLAUDE_FILE_PATH\" 2>/dev/null || true; fi'",
+            "description": "Auto-fix TypeScript lint issues after writes"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
       {
-        "event": "Edit",
-        "filePattern": "**/*.{ts,tsx}",
-        "command": "cd frontend && bunx biome check --fix $CLAUDE_FILE_PATH 2>/dev/null || true",
-        "description": "Auto-fix TypeScript lint issues after edits"
-      },
-      {
-        "event": "Write",
-        "filePattern": "**/*.{ts,tsx}",
-        "command": "cd frontend && bunx biome check --fix $CLAUDE_FILE_PATH 2>/dev/null || true",
-        "description": "Auto-fix TypeScript lint issues after writes"
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'CMD=$(jq -r .tool_input.command 2>/dev/null); echo \"$CMD\" | grep -qE \"^git commit\" || exit 0; if git diff --cached --name-only | grep -qE \"\\.py$\"; then cd backend && uv run ruff check $(git diff --cached --name-only --relative | grep \"\\.py$\" | tr \"\\n\" \" \"); fi'",
+            "description": "Lint staged Python files with Ruff before git commit"
+          },
+          {
+            "type": "command",
+            "command": "bash -c 'CMD=$(jq -r .tool_input.command 2>/dev/null); echo \"$CMD\" | grep -qE \"^git commit\" || exit 0; if git diff --cached --name-only | grep -qE \"\\.(ts|tsx)$\"; then cd frontend && bunx biome check $(git diff --cached --name-only --relative | grep -E \"\\.(ts|tsx)$\" | tr \"\\n\" \" \"); fi'",
+            "description": "Lint staged TypeScript files with Biome before git commit"
+          },
+          {
+            "type": "command",
+            "command": "bash -c 'CMD=$(jq -r .tool_input.command 2>/dev/null); echo \"$CMD\" | grep -qE \"^git commit\" || exit 0; git diff --cached -U0 | grep -iE \"(api[_-]?key|secret|password|token|credential)\\s*[=:]\\s*[\\x27\\\"][^\\x27\\\"]{8,}\" && echo \"BLOCKED: Possible secret detected in staged changes\" && exit 1 || exit 0'",
+            "description": "Block commits containing possible secrets"
+          }
+        ]
       }
     ]
   },
