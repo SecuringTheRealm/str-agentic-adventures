@@ -8,7 +8,7 @@ This document explains how to deploy the STR Agentic Adventures application to A
 2. **Azure AI Foundry Project**: You need access to Azure AI Foundry with the following models deployed:
    - GPT-4 or GPT-4o-mini for chat completion
    - text-embedding-ada-002 for embeddings
-   - DALL-E 3 for image generation (optional)
+   - gpt-image-1-mini for image generation (optional)
 
 > **Getting Started with Azure AI Foundry**: Visit [ai.azure.com](https://ai.azure.com) to create your project and deploy the required OpenAI models. Azure AI Foundry provides a unified platform for managing Azure OpenAI services and is the recommended way to access OpenAI models in Azure.
 
@@ -37,7 +37,7 @@ This document explains how to deploy the STR Agentic Adventures application to A
 3. **Set up Azure AI Foundry credentials**:
    - Visit [Azure AI Foundry](https://ai.azure.com)
    - Create or select an existing project
-   - Deploy required models (GPT-4o-mini, text-embedding-ada-002, DALL-E 3)
+   - Deploy required models (GPT-4o-mini, text-embedding-ada-002, gpt-image-1-mini)
    - Note your project endpoint and API key from Project Settings
 
 4. **Configure your local environment**:
@@ -193,7 +193,7 @@ If you prefer using client secrets or federated credentials aren't available:
 1. **In Azure AI Foundry**, go to [ai.azure.com](https://ai.azure.com) and select your project
 2. **Endpoint**: Found in **Project settings** (e.g., `https://your-project.openai.azure.com/`)
 3. **API Key**: In **Project settings** > **Keys and Endpoint**, copy one of the available keys
-4. **Model Deployments**: Go to **Deployments** to verify your deployed models (gpt-4o-mini, text-embedding-ada-002, dall-e-3)
+4. **Model Deployments**: Go to **Deployments** to verify your deployed models (gpt-4o-mini, text-embedding-ada-002, gpt-image-1-mini)
 
 > **Note**: Azure AI Foundry provides a unified interface for managing your Azure OpenAI resources. If you prefer using the Azure Portal directly, you can access your Azure OpenAI Service resource, but Azure AI Foundry is the recommended approach.
 
@@ -220,7 +220,7 @@ Configure these in Settings > Secrets and variables > Actions > Repository varia
 - `AZURE_LOCATION`: Azure region (default: eastus)
 - `AZURE_OPENAI_CHAT_DEPLOYMENT`: Chat model deployment name (default: gpt-4o-mini)
 - `AZURE_OPENAI_EMBEDDING_DEPLOYMENT`: Embedding model deployment name (default: text-embedding-ada-002)
-- `AZURE_OPENAI_DALLE_DEPLOYMENT`: DALL-E deployment name (default: dall-e-3)
+- `AZURE_OPENAI_DALLE_DEPLOYMENT`: Image generation deployment name (default: gpt-image-1-mini)
 
 #### Finding Your Azure Values
 

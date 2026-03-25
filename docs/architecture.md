@@ -61,7 +61,7 @@ graph TB
     Player[Player<br/>D&D Enthusiast]
     WebApp[Secure the Realm<br/>Web Application]
     AzureOpenAI[Azure OpenAI<br/>GPT-4o & Embeddings]
-    DallE[Azure OpenAI<br/>DALL-E 3]
+    DallE[Azure OpenAI<br/>gpt-image-1-mini]
     AzureAI[Azure AI Foundry<br/>Project & Endpoints]
 
     Player -->|Interacts via browser| WebApp
@@ -83,7 +83,7 @@ graph TB
 | **Azure AI Foundry** | Unified AI platform for model deployment | Azure AI Agents SDK (azure-ai-agents, azure-ai-projects) |
 | **Azure OpenAI - GPT-4o-mini** | Chat completion for AI agent reasoning | Azure AI Inference API |
 | **Azure OpenAI - text-embedding-ada-002** | Embeddings for semantic search | Azure AI Inference API |
-| **Azure OpenAI - DALL-E 3** | Image generation for battle maps and art | Azure AI Inference API |
+| **Azure OpenAI - gpt-image-1-mini** | Image generation for battle maps and art | Azure AI Inference API |
 
 ### User Interactions
 
@@ -130,7 +130,7 @@ graph TB
 
     subgraph "External Services"
         AzureOpenAI[Azure OpenAI<br/>GPT-4o-mini]
-        DALLE[DALL-E 3<br/>Image Generation]
+        DALLE[gpt-image-1-mini<br/>Image Generation]
     end
 
     Frontend -->|HTTP/REST API<br/>WebSocket| API
@@ -285,7 +285,7 @@ graph TB
 
 - Chat completion API for agent reasoning
 - Embeddings API for semantic search (future)
-- Image generation API for DALL-E 3 (Artist and Cartographer agents)
+- Image generation API for gpt-image-1-mini (Artist and Cartographer agents)
 - Managed via Azure AI Inference client
 
 ---
@@ -315,14 +315,14 @@ graph TB
         NarrativeMemory[Narrative Memory Plugin<br/>Story continuity]
         Rules[Rules Engine Plugin<br/>D&D 5e validation]
         Dice[Dice Rolling Plugin<br/>Virtual dice system]
-        ImageGen[Image Generation Plugin<br/>DALL-E integration]
+        ImageGen[Image Generation Plugin<br/>gpt-image-1 integration]
         MapGen[Map Generation Plugin<br/>Tactical maps]
         CharViz[Character Visualization<br/>Portrait generation]
     end
 
     subgraph "External Services"
         AzureAI[Azure OpenAI<br/>GPT-4o-mini]
-        DALLE[DALL-E 3]
+        DALLE[gpt-image-1-mini]
     end
 
     Orchestrator --> DM
@@ -473,14 +473,14 @@ graph TB
 - Update maps as combat progresses
 
 **Plugins Used**:
-- **Map Generation Plugin**: Interfaces with DALL-E 3
+- **Map Generation Plugin**: Interfaces with gpt-image-1-mini
 - **Terrain Assessment Plugin**: Evaluates tactical features
 - **Battle Positioning Plugin**: Places combatants effectively
 
 **Map Generation Process**:
 1. Receive narrative context from Narrator
 2. Determine map size and terrain type
-3. Generate detailed prompt for DALL-E 3
+3. Generate detailed prompt for gpt-image-1-mini
 4. Create grid-based tactical map
 5. Return image URL for frontend display
 
@@ -499,7 +499,7 @@ graph TB
 - Enhance immersion through artwork
 
 **Plugins Used**:
-- **Image Generation Plugin**: DALL-E 3 interface
+- **Image Generation Plugin**: gpt-image-1-mini interface
 - **Character Visualization Plugin**: Portrait generation
 - **Art Style Analysis Plugin**: Maintain consistent style
 - **Visual Consistency Plugin**: Track art style preferences
@@ -589,7 +589,7 @@ Plugins provide deterministic, rule-based capabilities to agents:
 | **Narrative Memory** | Store/retrieve campaign facts | Data Management | Narrator |
 | **Rules Engine** | D&D 5e rule validation | Game Logic | Narrator, Scribe, Combat MC |
 | **Dice Rolling** | Virtual dice with probabilities | Game Mechanics | Combat MC, Narrator |
-| **Image Generation** | DALL-E 3 integration | External API | Artist, Cartographer |
+| **Image Generation** | gpt-image-1-mini integration | External API | Artist, Cartographer |
 | **Map Generation** | Tactical map creation | External API | Combat Cartographer |
 | **Character Visualization** | Portrait generation | External API | Artist |
 | **Tactical Analysis** | Combat positioning logic | Game Logic | Combat MC |
@@ -800,7 +800,7 @@ graph TB
 - Update map as combat progresses
 
 **Image Sources**:
-- Generated DALL-E 3 images via Combat Cartographer
+- Generated gpt-image-1-mini images via Combat Cartographer
 - Base64 or URL-based image display
 - Loading states during generation
 
@@ -1396,7 +1396,7 @@ narrator_agent = {
 | `narrative_memory_plugin.py` | Store/retrieve campaign facts | `store_fact()`, `retrieve_facts()` |
 | `rules_engine_plugin.py` | D&D 5e rule validation | `validate_action()`, `calculate_dc()` |
 | `dice.py` (utility) | Virtual dice rolling | `roll_dice(die_type, modifier)` |
-| `image_generation_plugin.py` | DALL-E 3 integration | `generate_image(prompt)` |
+| `image_generation_plugin.py` | gpt-image-1-mini integration | `generate_image(prompt)` |
 | `map_generation_plugin.py` | Battle map creation | `generate_battle_map(context)` |
 | `character_visualization_plugin.py` | Portrait generation | `generate_portrait(character)` |
 
@@ -1444,7 +1444,7 @@ class Settings(BaseSettings):
     AZURE_OPENAI_API_KEY: str
     AZURE_OPENAI_CHAT_DEPLOYMENT: str = "gpt-4o-mini"
     AZURE_OPENAI_EMBEDDING_DEPLOYMENT: str = "text-embedding-ada-002"
-    AZURE_OPENAI_DALLE_DEPLOYMENT: str = "dall-e-3"
+    AZURE_OPENAI_DALLE_DEPLOYMENT: str = "gpt-image-1-mini"
 
     # Database
     DATABASE_URL: str = "sqlite:///./game.db"
@@ -1958,7 +1958,7 @@ graph TB
         AIProject[AI Foundry Project]
         GPT4[GPT-4o-mini Deployment]
         Embeddings[text-embedding-ada-002]
-        DALLE[DALL-E 3 Deployment]
+        DALLE[gpt-image-1-mini Deployment]
     end
 
     subgraph "Azure Database"
@@ -2180,7 +2180,7 @@ This single command:
 | **Container Registry** | Azure Container Registry | Docker image storage |
 | **Database (Dev)** | SQLite | Local development database |
 | **Database (Prod)** | Azure Database for PostgreSQL | Production database |
-| **Image Storage** | Azure Blob Storage | DALL-E generated images |
+| **Image Storage** | Azure Blob Storage | AI-generated images |
 | **AI Platform** | Azure AI Foundry | Unified AI model deployment |
 | **Monitoring** | Azure Application Insights | Telemetry and logging |
 | **CI/CD** | GitHub Actions | Automated testing and deployment |
@@ -2192,7 +2192,7 @@ This single command:
 |-------|---------|------------|
 | **GPT-4o-mini** | Chat completion for all 6 agents | Azure OpenAI via AI Foundry |
 | **text-embedding-ada-002** | Embeddings for semantic search (future) | Azure OpenAI via AI Foundry |
-| **DALL-E 3** | Image generation (maps, artwork, portraits) | Azure OpenAI via AI Foundry |
+| **gpt-image-1-mini** | Image generation (maps, artwork, portraits) | Azure OpenAI via AI Foundry |
 
 ---
 

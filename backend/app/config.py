@@ -17,12 +17,13 @@ class Settings(BaseSettings):
     # Pydantic-settings automatically reads from environment variables
     azure_openai_endpoint: str = ""
     azure_openai_api_key: str = ""
+
     azure_openai_api_version: str = "2025-05-01"
 
     # Model Deployments
     azure_openai_chat_deployment: str = ""
     azure_openai_embedding_deployment: str = ""
-    azure_openai_dalle_deployment: str = "dall-e-3"
+    azure_openai_dalle_deployment: str = "gpt-image-1-mini"
 
     # Azure AI Foundry project endpoint
     # Format: https://<account>.services.ai.azure.com/api/projects/<project>
