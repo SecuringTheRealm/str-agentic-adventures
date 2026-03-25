@@ -26,14 +26,23 @@
 - Use Bun over npm/npx for frontend. Use Biome (not eslint) for linting/formatting.
 - Use `gh` CLI for all GitHub operations.
 
-## Issue Tracking
-- Track work via GitHub issues. Use `gh issue list` to find open work.
-- When starting work on an issue: mention the issue number in commits.
-- When work is complete: close with `gh issue close <number> -c "Fixed in <commit>"`.
-- Create issues for new findings: `gh issue create --title "type: description" --label "label"`.
-- Assign small, self-contained issues to Copilot: `gh issue edit <number> --add-assignee @copilot`.
-- Assign to yourself: `gh issue edit <number> --add-assignee @me`.
-- Available labels: `priority:critical`, `priority:high`, `priority:medium`, `bug`, `security`, `cleanup`, `architecture`, `game-engine`, `frontend`, `infra`, `cost`.
+## GitHub Workflow
+- **All work is tracked in GitHub issues.** Use `gh issue list` to find open work.
+- **Start work:** mention the issue number in commits. Use worktrees for isolation: `git worktree add`.
+- **Complete work:** close with `gh issue close <number> -c "Fixed in <commit>"`.
+- **Create issues:** `gh issue create --title "type: description" --label "label"`.
+- **Assign to Copilot** (small, mechanical tasks): `gh issue edit <number> --add-assignee @copilot`.
+- **Assign to yourself:** `gh issue edit <number> --add-assignee @me`.
+- **Review Copilot PRs:** `gh pr list --author "app/copilot-swe-agent"`. Merge ready ones with `gh pr merge <n> --squash`.
+- **Sync before work:** `git pull --rebase origin main` then `git push origin main`.
+- **Labels:** `priority:critical`, `priority:high`, `priority:medium`, `bug`, `security`, `cleanup`, `architecture`, `game-engine`, `frontend`, `infra`, `cost`.
+
+## Sprint Plan
+Work is organised in sprints tracked via GitHub issues:
+- **Sprint 1 (foundation):** #408, #409, #411 — Azure SDK, DALL-E migration, security
+- **Sprint 2 (game engine):** #436-#441 — conversation history, agent orchestration, rules engine, dice, spells, opening experience
+- **Sprint 3 (modernisation):** #414 architecture, #415 infra/Bicep, #418 frontend/shadcn, #419 battle maps
+- **Backlog:** #407 FLUX investigation, #421 OpenAPI generator, #404 diarisation
 
 ## Commits
 - Use Conventional Commits (`feat:`, `fix:`, `docs:`, `chore:`).
