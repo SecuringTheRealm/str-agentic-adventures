@@ -83,7 +83,7 @@ class MapGenerationPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error generating tactical map: {str(e)}")
+            logger.error("Error generating tactical map: %s", str(e))
             return {"status": "error", "error": f"Map generation failed: {str(e)}"}
 
     def create_grid_system(
@@ -129,7 +129,7 @@ class MapGenerationPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error creating grid system: {str(e)}")
+            logger.error("Error creating grid system: %s", str(e))
             return {
                 "status": "error",
                 "error": f"Grid system creation failed: {str(e)}",

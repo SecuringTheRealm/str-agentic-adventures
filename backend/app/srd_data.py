@@ -27,7 +27,7 @@ def load_class_features() -> dict[str, Any]:
             with open(DATA_DIR / "class_features.json") as f:
                 _class_features_data = json.load(f)
         except Exception as e:
-            logger.error(f"Failed to load class features data: {e}")
+            logger.error("Failed to load class features data: %s", e)
             _class_features_data = {}
     return _class_features_data
 
@@ -40,7 +40,7 @@ def load_racial_traits() -> dict[str, Any]:
             with open(DATA_DIR / "racial_traits.json") as f:
                 _racial_traits_data = json.load(f)
         except Exception as e:
-            logger.error(f"Failed to load racial traits data: {e}")
+            logger.error("Failed to load racial traits data: %s", e)
             _racial_traits_data = {}
     return _racial_traits_data
 
@@ -53,7 +53,7 @@ def load_backgrounds() -> dict[str, Any]:
             with open(DATA_DIR / "backgrounds.json") as f:
                 _backgrounds_data = json.load(f)
         except Exception as e:
-            logger.error(f"Failed to load backgrounds data: {e}")
+            logger.error("Failed to load backgrounds data: %s", e)
             _backgrounds_data = {}
     return _backgrounds_data
 
@@ -66,7 +66,7 @@ def load_spells() -> list[dict[str, Any]]:
             with open(DATA_DIR / "spells.json") as f:
                 _spells_data = json.load(f)
         except Exception as e:
-            logger.error(f"Failed to load spells data: {e}")
+            logger.error("Failed to load spells data: %s", e)
             _spells_data = []
     return _spells_data
 

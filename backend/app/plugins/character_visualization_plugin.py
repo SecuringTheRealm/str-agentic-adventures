@@ -109,7 +109,7 @@ class CharacterVisualizationPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error generating character portrait: {str(e)}")
+            logger.error("Error generating character portrait: %s", str(e))
             return {
                 "status": "error",
                 "error": f"Character portrait generation failed: {str(e)}",
@@ -183,7 +183,7 @@ class CharacterVisualizationPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error generating character variation: {str(e)}")
+            logger.error("Error generating character variation: %s", str(e))
             return {
                 "status": "error",
                 "error": f"Character variation generation failed: {str(e)}",
@@ -221,7 +221,7 @@ class CharacterVisualizationPlugin:
                 if char_id in self.character_portraits:
                     characters.append(self.character_portraits[char_id])
                 else:
-                    logger.warning(f"Character {char_id} not found")
+                    logger.warning("Character %s not found", char_id)
 
             if not characters:
                 return {"status": "error", "error": "No valid characters found"}
@@ -271,7 +271,7 @@ class CharacterVisualizationPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error generating group portrait: {str(e)}")
+            logger.error("Error generating group portrait: %s", str(e))
             return {
                 "status": "error",
                 "error": f"Group portrait generation failed: {str(e)}",
@@ -323,7 +323,7 @@ class CharacterVisualizationPlugin:
             return {"status": "success", "gallery": gallery}
 
         except Exception as e:
-            logger.error(f"Error getting character gallery: {str(e)}")
+            logger.error("Error getting character gallery: %s", str(e))
             return {
                 "status": "error",
                 "error": f"Character gallery retrieval failed: {str(e)}",
@@ -404,7 +404,7 @@ class CharacterVisualizationPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error generating expression study: {str(e)}")
+            logger.error("Error generating expression study: %s", str(e))
             return {
                 "status": "error",
                 "error": f"Expression study generation failed: {str(e)}",

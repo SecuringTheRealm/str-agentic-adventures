@@ -71,7 +71,7 @@ class TacticalAnalysisPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error analyzing tactical positions: {str(e)}")
+            logger.error("Error analyzing tactical positions: %s", str(e))
             return {"status": "error", "error": f"Tactical analysis failed: {str(e)}"}
 
     def assess_combat_threats(
@@ -108,7 +108,7 @@ class TacticalAnalysisPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error assessing combat threats: {str(e)}")
+            logger.error("Error assessing combat threats: %s", str(e))
             return {"status": "error", "error": f"Threat assessment failed: {str(e)}"}
 
     def calculate_optimal_positioning(
@@ -148,7 +148,7 @@ class TacticalAnalysisPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error calculating optimal positioning: {str(e)}")
+            logger.error("Error calculating optimal positioning: %s", str(e))
             return {
                 "status": "error",
                 "error": f"Positioning calculation failed: {str(e)}",

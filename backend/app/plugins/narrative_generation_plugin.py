@@ -172,7 +172,7 @@ class NarrativeGenerationPlugin:
                 "plot_points_generated": len(initial_points),
             }
         except Exception as e:
-            logger.error(f"Error creating story arc: {str(e)}")
+            logger.error("Error creating story arc: %s", str(e))
             return {
                 "status": "error",
                 "message": f"Failed to create story arc: {str(e)}",
@@ -237,7 +237,7 @@ class NarrativeGenerationPlugin:
                 "context": context,
             }
         except Exception as e:
-            logger.error(f"Error generating choices: {str(e)}")
+            logger.error("Error generating choices: %s", str(e))
             return {
                 "status": "error",
                 "message": f"Failed to generate choices: {str(e)}",
@@ -308,7 +308,7 @@ class NarrativeGenerationPlugin:
                 "event_id": event.id,
             }
         except Exception as e:
-            logger.error(f"Error processing choice: {str(e)}")
+            logger.error("Error processing choice: %s", str(e))
             return {"status": "error", "message": f"Failed to process choice: {str(e)}"}
 
     def advance_narrative(
@@ -380,7 +380,7 @@ class NarrativeGenerationPlugin:
                 "narrative_state_updated": True,
             }
         except Exception as e:
-            logger.error(f"Error advancing narrative: {str(e)}")
+            logger.error("Error advancing narrative: %s", str(e))
             return {
                 "status": "error",
                 "message": f"Failed to advance narrative: {str(e)}",
@@ -443,7 +443,7 @@ class NarrativeGenerationPlugin:
                 "last_updated": state.last_updated.isoformat(),
             }
         except Exception as e:
-            logger.error(f"Error getting narrative state: {str(e)}")
+            logger.error("Error getting narrative state: %s", str(e))
             return {
                 "status": "error",
                 "message": f"Failed to get narrative state: {str(e)}",

@@ -52,12 +52,12 @@ class AgentClientManager:
                 logger.info("Azure OpenAI chat client initialized successfully")
             except ValueError as e:
                 logger.warning(
-                    f"Azure OpenAI not configured, entering fallback mode: {e}"
+                    "Azure OpenAI not configured, entering fallback mode: %s", e
                 )
                 self._fallback_mode = True
                 return None
             except Exception as e:
-                logger.error(f"Failed to initialize chat client: {e}")
+                logger.error("Failed to initialize chat client: %s", e)
                 self._fallback_mode = True
                 return None
 
@@ -82,12 +82,12 @@ class AgentClientManager:
                 logger.info("Azure AI Agents client initialized successfully")
             except ValueError as e:
                 logger.warning(
-                    f"Azure AI not configured, entering fallback mode: {e}"
+                    "Azure AI not configured, entering fallback mode: %s", e
                 )
                 self._fallback_mode = True
                 return None
             except Exception as e:
-                logger.error(f"Failed to initialize agents client: {e}")
+                logger.error("Failed to initialize agents client: %s", e)
                 self._fallback_mode = True
                 return None
 
@@ -125,7 +125,7 @@ class AgentClientManager:
             return chat_client
 
         except Exception as e:
-            logger.error(f"Failed to configure chat client: {str(e)}")
+            logger.error("Failed to configure chat client: %s", str(e))
             raise
 
     def _create_agents_client(self) -> AgentsClient:
@@ -160,7 +160,7 @@ class AgentClientManager:
             return agents_client
 
         except Exception as e:
-            logger.error(f"Failed to configure agents client: {str(e)}")
+            logger.error("Failed to configure agents client: %s", str(e))
             raise
 
     def setup_observability(self) -> None:
@@ -181,7 +181,7 @@ class AgentClientManager:
             
             logger.info("OpenTelemetry observability configured")
         except Exception as e:
-            logger.warning(f"Failed to setup observability: {e}")
+            logger.warning("Failed to setup observability: %s", e)
 
     def get_tracer(self) -> trace.Tracer | None:
         """Get the OpenTelemetry tracer for agent operations."""

@@ -119,7 +119,7 @@ class SceneCompositionPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error illustrating scene: {str(e)}")
+            logger.error("Error illustrating scene: %s", str(e))
             return {"status": "error", "error": f"Scene illustration failed: {str(e)}"}
 
     def create_location_template(
@@ -173,7 +173,7 @@ class SceneCompositionPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error creating location template: {str(e)}")
+            logger.error("Error creating location template: %s", str(e))
             return {
                 "status": "error",
                 "error": f"Location template creation failed: {str(e)}",
@@ -244,7 +244,7 @@ class SceneCompositionPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error generating scene variation: {str(e)}")
+            logger.error("Error generating scene variation: %s", str(e))
             return {
                 "status": "error",
                 "error": f"Scene variation generation failed: {str(e)}",
@@ -322,7 +322,7 @@ class SceneCompositionPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error creating establishing shot: {str(e)}")
+            logger.error("Error creating establishing shot: %s", str(e))
             return {
                 "status": "error",
                 "error": f"Establishing shot creation failed: {str(e)}",
@@ -397,7 +397,7 @@ class SceneCompositionPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error generating battle map: {str(e)}")
+            logger.error("Error generating battle map: %s", str(e))
             return {
                 "status": "error",
                 "error": f"Battle map generation failed: {str(e)}",
@@ -433,7 +433,7 @@ class SceneCompositionPlugin:
             return {"status": "success", "analysis": analysis}
 
         except Exception as e:
-            logger.error(f"Error analyzing scene composition: {str(e)}")
+            logger.error("Error analyzing scene composition: %s", str(e))
             return {
                 "status": "error",
                 "error": f"Scene composition analysis failed: {str(e)}",
