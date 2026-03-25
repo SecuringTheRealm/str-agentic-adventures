@@ -13,6 +13,11 @@ class TestConcentrationSpellIntegration:
     """Test concentration spell integration in combat spell casting."""
 
     @pytest.fixture
+    def mock_db(self):
+        """A mock database session (not used when _get_spell_data is patched)."""
+        return Mock()
+
+    @pytest.fixture
     def concentration_spell_data(self):
         """Sample concentration spell data."""
         return {
@@ -53,7 +58,7 @@ class TestConcentrationSpellIntegration:
 
     @pytest.mark.asyncio
     async def test_concentration_spell_starts_concentration(
-        self, concentration_spell_data, cast_spell_request
+        self, concentration_spell_data, cast_spell_request, mock_db
     ) -> None:
         """Test that casting a concentration spell starts concentration."""
         with (
@@ -81,7 +86,7 @@ class TestConcentrationSpellIntegration:
             }
 
             # Call the function
-            response = await cast_spell_in_combat("test_combat_123", cast_spell_request)
+            response = await cast_spell_in_combat("test_combat_123", cast_spell_request, mock_db)
 
             # Verify concentration was started
             mock_engine_instance.start_concentration.assert_called_once()
@@ -95,7 +100,7 @@ class TestConcentrationSpellIntegration:
 
     @pytest.mark.asyncio
     async def test_non_concentration_spell_no_concentration_started(
-        self, non_concentration_spell_data, cast_spell_request
+        self, non_concentration_spell_data, cast_spell_request, mock_db
     ) -> None:
         """Test that casting a non-concentration spell doesn't start concentration."""
         cast_spell_request.spell_id = "magic_missile"
@@ -119,7 +124,7 @@ class TestConcentrationSpellIntegration:
             mock_rules_engine.return_value = mock_engine_instance
 
             # Call the function
-            response = await cast_spell_in_combat("test_combat_123", cast_spell_request)
+            response = await cast_spell_in_combat("test_combat_123", cast_spell_request, mock_db)
 
             # Verify concentration was NOT started
             mock_engine_instance.start_concentration.assert_not_called()
@@ -130,7 +135,7 @@ class TestConcentrationSpellIntegration:
 
     @pytest.mark.asyncio
     async def test_concentration_spell_breaks_existing_concentration(
-        self, concentration_spell_data, cast_spell_request
+        self, concentration_spell_data, cast_spell_request, mock_db
     ) -> None:
         """Test that casting a concentration spell when already concentrating breaks the old concentration."""
         with (
@@ -158,7 +163,7 @@ class TestConcentrationSpellIntegration:
             }
 
             # Call the function
-            response = await cast_spell_in_combat("test_combat_123", cast_spell_request)
+            response = await cast_spell_in_combat("test_combat_123", cast_spell_request, mock_db)
 
             # Verify concentration was started (which will automatically break existing concentration)
             mock_engine_instance.start_concentration.assert_called_once()
@@ -171,7 +176,7 @@ class TestConcentrationSpellIntegration:
 
     @pytest.mark.asyncio
     async def test_concentration_spell_failure_doesnt_break_cast(
-        self, concentration_spell_data, cast_spell_request
+        self, concentration_spell_data, cast_spell_request, mock_db
     ) -> None:
         """Test that concentration failure doesn't prevent spell from being cast."""
         with (
@@ -199,7 +204,7 @@ class TestConcentrationSpellIntegration:
             }
 
             # Call the function
-            response = await cast_spell_in_combat("test_combat_123", cast_spell_request)
+            response = await cast_spell_in_combat("test_combat_123", cast_spell_request, mock_db)
 
             # Verify concentration was attempted
             mock_engine_instance.start_concentration.assert_called_once()

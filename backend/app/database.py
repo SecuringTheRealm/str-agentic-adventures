@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import os
 from collections.abc import Generator
+from typing import Annotated
 
+from fastapi import Depends
 from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 # Database URL configuration
 # Priority: DATABASE_URL env var > PostgreSQL params > SQLite fallback
@@ -45,6 +47,17 @@ def get_session() -> Generator:
         yield db
     finally:
         db.close()
+
+
+DbDep = Annotated[Session, Depends(get_session)]
+"""FastAPI dependency for injecting a SQLAlchemy database session.
+
+Follows the same pattern as ``ConfigDep``. Use as a type annotation in route
+parameters::
+
+    async def my_route(db: DbDep) -> ...:
+        ...
+"""
 
 
 def init_db() -> None:

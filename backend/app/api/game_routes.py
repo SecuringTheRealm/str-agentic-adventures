@@ -3,12 +3,11 @@ API routes for the AI Dungeon Master application.
 """
 
 import logging
-import random
 import uuid
 from datetime import UTC, datetime
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, HTTPException, Request, status
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from sqlalchemy.orm import Session
@@ -23,7 +22,7 @@ from app.agents.orchestration import (
 )
 from app.agents.scribe_agent import get_scribe
 from app.config import ConfigDep
-from app.database import get_session
+from app.database import DbDep
 from app.image_budget import ImageBudgetTracker
 from app.models.db_models import NPCProfileDB, NPCRelationshipDB
 from app.models.game_models import (
@@ -79,6 +78,10 @@ from app.services.campaign_service import campaign_service
 
 # Create a logger for this module
 logger = logging.getLogger(__name__)
+
+# Disposition score bounds for NPC relationship tracking
+_MIN_DISPOSITION_SCORE = -100
+_MAX_DISPOSITION_SCORE = 100
 
 # Rate limiter for AI-calling endpoints
 limiter = Limiter(key_func=get_remote_address)
@@ -1386,11 +1389,15 @@ async def manage_spell_slots(character_id: str, request: ManageSpellSlotsRequest
 
 
 @router.post("/combat/{combat_id}/cast-spell", response_model=SpellCastingResponse)
-async def cast_spell_in_combat(combat_id: str, request: CastSpellRequest):
+async def cast_spell_in_combat(
+    combat_id: str,
+    request: CastSpellRequest,
+    db: DbDep,
+):
     """Cast spells during combat with sophisticated effect resolution."""
     try:
         # Load spell from database if available, otherwise use default effects
-        spell_data = await _get_spell_data(request.spell_id)
+        spell_data = await _get_spell_data(request.spell_id, db)
 
         # Calculate spell effects based on spell data and casting level
         spell_effects = await _calculate_spell_effects(
@@ -1433,29 +1440,27 @@ async def cast_spell_in_combat(combat_id: str, request: CastSpellRequest):
         )
 
 
-async def _get_spell_data(spell_id: str) -> dict[str, Any]:
+async def _get_spell_data(spell_id: str, db: Session) -> dict[str, Any]:
     """Get spell data from database or return default spell structure."""
-    from app.database import get_session
     from app.models.db_models import Spell
 
     try:
-        with next(get_session()) as db:
-            spell = db.query(Spell).filter(Spell.id == spell_id).first()
-            if spell:
-                return {
-                    "id": spell.id,
-                    "name": spell.name,
-                    "level": spell.level,
-                    "school": spell.school,
-                    "damage_dice": spell.damage_dice,
-                    "save_type": spell.save_type,
-                    "concentration": spell.concentration,
-                    "ritual": spell.ritual,
-                    "components": spell.components,
-                    "description": spell.description,
-                    "higher_levels": spell.higher_levels,
-                    **spell.data,
-                }
+        spell = db.query(Spell).filter(Spell.id == spell_id).first()
+        if spell:
+            return {
+                "id": spell.id,
+                "name": spell.name,
+                "level": spell.level,
+                "school": spell.school,
+                "damage_dice": spell.damage_dice,
+                "save_type": spell.save_type,
+                "concentration": spell.concentration,
+                "ritual": spell.ritual,
+                "components": spell.components,
+                "description": spell.description,
+                "higher_levels": spell.higher_levels,
+                **spell.data,
+            }
     except Exception:
         pass  # Fall back to basic spell data
 
@@ -2331,3 +2336,182 @@ async def generate_npc_stats(npc_id: str, request: GenerateNPCStatsRequest):
             message=f"Failed to generate NPC stats: {str(e)}",
             generated_stats={},
         )
+
+
+# NPC Profile API endpoints (game-engine disposition tracking)
+
+
+@router.get("/npcs/{campaign_id}", response_model=NPCProfileListResponse)
+async def list_npc_profiles(
+    campaign_id: str,
+    db: DbDep,
+) -> NPCProfileListResponse:
+    """List all NPC profiles for a campaign."""
+    rows = (
+        db.query(NPCProfileDB)
+        .filter(NPCProfileDB.campaign_id == campaign_id)
+        .all()
+    )
+    profiles = [
+        NPCProfile(
+            id=row.id,
+            name=row.name,
+            description=row.description or "",
+            personality_traits=row.personality_traits or [],
+            disposition=row.disposition,
+            location=row.location or "",
+            is_alive=row.is_alive,
+            conversation_notes=row.conversation_notes or [],
+        )
+        for row in rows
+    ]
+    return NPCProfileListResponse(npcs=profiles, total_count=len(profiles))
+
+
+@router.post("/npcs/{campaign_id}", response_model=NPCProfile, status_code=status.HTTP_201_CREATED)
+async def create_npc_profile(
+    campaign_id: str,
+    request: CreateNPCProfileRequest,
+    db: DbDep,
+) -> NPCProfile:
+    """Create a new NPC profile in a campaign."""
+    npc_id = str(uuid.uuid4())
+    row = NPCProfileDB(
+        id=npc_id,
+        campaign_id=campaign_id,
+        name=request.name,
+        description=request.description,
+        personality_traits=request.personality_traits,
+        disposition=request.disposition,
+        location=request.location,
+        is_alive=True,
+        conversation_notes=[],
+    )
+    db.add(row)
+    db.commit()
+    db.refresh(row)
+    return NPCProfile(
+        id=row.id,
+        name=row.name,
+        description=row.description or "",
+        personality_traits=row.personality_traits or [],
+        disposition=row.disposition,
+        location=row.location or "",
+        is_alive=row.is_alive,
+        conversation_notes=row.conversation_notes or [],
+    )
+
+
+@router.get("/npcs/{campaign_id}/{npc_id}", response_model=NPCProfileWithRelationship)
+async def get_npc_profile(
+    campaign_id: str,
+    npc_id: str,
+    db: DbDep,
+) -> NPCProfileWithRelationship:
+    """Get an NPC profile with its relationship data."""
+    row = (
+        db.query(NPCProfileDB)
+        .filter(NPCProfileDB.id == npc_id, NPCProfileDB.campaign_id == campaign_id)
+        .first()
+    )
+    if row is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"NPC {npc_id} not found in campaign {campaign_id}",
+        )
+    profile = NPCProfile(
+        id=row.id,
+        name=row.name,
+        description=row.description or "",
+        personality_traits=row.personality_traits or [],
+        disposition=row.disposition,
+        location=row.location or "",
+        is_alive=row.is_alive,
+        conversation_notes=row.conversation_notes or [],
+    )
+    rel_row = (
+        db.query(NPCRelationshipDB)
+        .filter(
+            NPCRelationshipDB.npc_id == npc_id,
+            NPCRelationshipDB.campaign_id == campaign_id,
+        )
+        .first()
+    )
+    relationship = None
+    if rel_row is not None:
+        relationship = NPCRelationship(
+            npc_id=rel_row.npc_id,
+            campaign_id=rel_row.campaign_id,
+            disposition_score=rel_row.disposition_score,
+            interactions_count=rel_row.interactions_count,
+            key_events=rel_row.key_events or [],
+            last_interaction=rel_row.last_interaction or "",
+        )
+    return NPCProfileWithRelationship(profile=profile, relationship=relationship)
+
+
+@router.patch("/npcs/{campaign_id}/{npc_id}/disposition", response_model=NPCRelationship)
+async def update_npc_disposition(
+    campaign_id: str,
+    npc_id: str,
+    request: UpdateDispositionRequest,
+    db: DbDep,
+) -> NPCRelationship:
+    """Update the disposition score for an NPC in a campaign."""
+    # Verify NPC exists in this campaign
+    npc_row = (
+        db.query(NPCProfileDB)
+        .filter(NPCProfileDB.id == npc_id, NPCProfileDB.campaign_id == campaign_id)
+        .first()
+    )
+    if npc_row is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"NPC {npc_id} not found in campaign {campaign_id}",
+        )
+
+    # Clamp disposition score to [-100, 100]
+    clamped_score = max(_MIN_DISPOSITION_SCORE, min(_MAX_DISPOSITION_SCORE, request.disposition_score))
+
+    rel_row = (
+        db.query(NPCRelationshipDB)
+        .filter(
+            NPCRelationshipDB.npc_id == npc_id,
+            NPCRelationshipDB.campaign_id == campaign_id,
+        )
+        .first()
+    )
+    now_str = datetime.now(UTC).isoformat()
+    if rel_row is None:
+        key_events: list[str] = []
+        if request.event_note:
+            key_events.append(request.event_note)
+        rel_row = NPCRelationshipDB(
+            id=str(uuid.uuid4()),
+            npc_id=npc_id,
+            campaign_id=campaign_id,
+            disposition_score=clamped_score,
+            interactions_count=1,
+            key_events=key_events,
+            last_interaction=now_str,
+        )
+        db.add(rel_row)
+    else:
+        rel_row.disposition_score = clamped_score
+        rel_row.interactions_count = (rel_row.interactions_count or 0) + 1
+        rel_row.last_interaction = now_str
+        existing_events: list[str] = list(rel_row.key_events or [])
+        if request.event_note:
+            existing_events.append(request.event_note)
+        rel_row.key_events = existing_events
+
+    db.commit()
+    db.refresh(rel_row)
+    return NPCRelationship(
+        npc_id=rel_row.npc_id,
+        campaign_id=rel_row.campaign_id,
+        disposition_score=rel_row.disposition_score,
+        interactions_count=rel_row.interactions_count,
+        key_events=rel_row.key_events or [],
+        last_interaction=rel_row.last_interaction or "",
+    )
