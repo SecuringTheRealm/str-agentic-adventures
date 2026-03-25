@@ -4,8 +4,8 @@
   height: 100vh;
   background: linear-gradient(
     135deg,
-    #1a2f3a 0%,
-    #0f404f 100%
+    var(--color-fantasy-bg) 0%,
+    var(--color-fantasy-primary) 100%
   ); /* Fantasy gradient */
 }
 
@@ -17,38 +17,38 @@
 
 .leftPanel {
   width: 250px;
-  background: rgba(15, 64, 79, 0.8); /* Primary color with transparency */
-  color: #f4f1e8; /* Warm off-white */
+  background: var(--color-fantasy-primary-80); /* Primary color with transparency */
+  color: var(--color-text-warm); /* Warm off-white */
   overflow-y: auto;
   transition: width 0.3s ease;
-  border-right: 2px solid #e4bb1e; /* Gold border */
+  border-right: 2px solid var(--color-accent-gold); /* Gold border */
 }
 
 .centerPanel {
   flex: 2;
-  background: rgba(26, 47, 58, 0.6); /* Darker fantasy background */
+  background: var(--color-fantasy-bg-60); /* Darker fantasy background */
   display: flex;
   flex-direction: column;
 }
 
 .rightPanel {
   width: 300px;
-  background: rgba(15, 64, 79, 0.9); /* Primary color background */
-  color: #f4f1e8; /* Warm off-white */
+  background: var(--color-fantasy-primary-90); /* Primary color background */
+  color: var(--color-text-warm); /* Warm off-white */
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  border-left: 2px solid #e4bb1e; /* Gold border */
+  border-left: 2px solid var(--color-accent-gold); /* Gold border */
 }
 
 .visualControls {
   padding: 15px;
-  border-bottom: 1px solid #908c6b; /* Stone color border */
+  border-bottom: 1px solid var(--color-stone); /* Stone color border */
 }
 
 .visualControls h4 {
   margin: 0 0 10px 0;
-  color: #e4bb1e; /* Gold color for headings */
+  color: var(--color-accent-gold); /* Gold color for headings */
   font-size: 14px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -59,7 +59,7 @@
 .imageBudget {
   margin: 0 0 8px 0;
   font-size: 11px;
-  color: #c8b870;
+  color: var(--color-gold-stone);
   font-style: italic;
 }
 
@@ -71,9 +71,9 @@
 
 .visualButton {
   padding: 8px 12px;
-  background: linear-gradient(135deg, #b15005, #d67c2d); /* Wood gradient */
+  background: linear-gradient(135deg, var(--color-wood-dark), var(--color-wood-light)); /* Wood gradient */
   color: white;
-  border: 1px solid #e4bb1e; /* Gold border */
+  border: 1px solid var(--color-accent-gold); /* Gold border */
   border-radius: 4px;
   cursor: pointer;
   font-size: 12px;
@@ -85,20 +85,20 @@
 .visualButton:hover:not(:disabled) {
   background: linear-gradient(
     135deg,
-    #d67c2d,
-    #e4953f
+    var(--color-wood-light),
+    var(--color-gold-warm)
   ); /* Lighter wood on hover */
-  box-shadow: 0 2px 4px rgba(228, 187, 30, 0.3);
+  box-shadow: 0 2px 4px var(--color-gold-glow-30);
 }
 
 .visualButton:disabled {
   background: linear-gradient(
     135deg,
-    #788070,
-    #98a090
+    var(--color-steel),
+    var(--color-steel-light)
   ); /* Steel colors when disabled */
   cursor: not-allowed;
-  border-color: #788070;
+  border-color: var(--color-steel);
 }
 
 .imageSection {
@@ -106,7 +106,7 @@
   min-height: 200px;
   padding: 10px;
   box-sizing: border-box;
-  background: rgba(26, 47, 58, 0.3); /* Subtle background */
+  background: var(--color-fantasy-bg-30); /* Subtle background */
 }
 
 .battleMapSection {
@@ -114,8 +114,8 @@
   min-height: 200px;
   padding: 10px;
   box-sizing: border-box;
-  border-top: 1px solid #908c6b; /* Stone color border */
-  background: rgba(26, 47, 58, 0.3); /* Subtle background */
+  border-top: 1px solid var(--color-stone); /* Stone color border */
+  background: var(--color-fantasy-bg-30); /* Subtle background */
 }
 
 /* Responsive adjustments */
