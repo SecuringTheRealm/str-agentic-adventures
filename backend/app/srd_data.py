@@ -45,6 +45,22 @@ XP_THRESHOLDS: dict[int, int] = {
     20: 355000,
 }
 
+# Hit die size per class (D&D 5e SRD)
+CLASS_HIT_DICE: dict[str, int] = {
+    "barbarian": 12,
+    "fighter": 10,
+    "paladin": 10,
+    "ranger": 10,
+    "bard": 8,
+    "cleric": 8,
+    "druid": 8,
+    "monk": 8,
+    "rogue": 8,
+    "warlock": 8,
+    "sorcerer": 6,
+    "wizard": 6,
+}
+
 
 def load_class_features() -> dict[str, Any]:
     """Load class features data from JSON file."""

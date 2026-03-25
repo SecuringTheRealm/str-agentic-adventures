@@ -1,9 +1,15 @@
-"""D&D 5e rules engine: attack resolution, damage, HP, death saves, initiative, and conditions."""
+"""D&D 5e rules engine: attack, damage, HP, death saves, initiative, conditions.
+
+Also implements mechanical level-up helpers: check_level_up, calculate_level_up_hp,
+get_proficiency_bonus, and is_asi_level.
+"""
 
 import random
 import re
 from enum import Enum
 from typing import TypedDict
+
+from app.srd_data import CLASS_HIT_DICE, XP_THRESHOLDS
 
 
 class AttackResult(TypedDict):
@@ -392,3 +398,36 @@ def get_attack_modifiers(
         return {"advantage": False, "disadvantage": False}
 
     return {"advantage": has_advantage, "disadvantage": has_disadvantage}
+
+
+# ---------------------------------------------------------------------------
+# Level-up mechanics
+# ---------------------------------------------------------------------------
+
+
+def check_level_up(current_xp: int, current_level: int) -> bool:
+    """Check if XP meets threshold for next level."""
+    next_level = current_level + 1
+    if next_level > 20:
+        return False
+    return current_xp >= XP_THRESHOLDS.get(next_level, float("inf"))
+
+
+def calculate_level_up_hp(
+    char_class: str, constitution_modifier: int, use_average: bool = True
+) -> int:
+    """Calculate HP gained on level up. Average or roll hit die + CON mod."""
+    hit_die = CLASS_HIT_DICE.get(char_class, 8)
+    if use_average:
+        return (hit_die // 2 + 1) + constitution_modifier
+    return max(1, random.randint(1, hit_die) + constitution_modifier)  # noqa: S311
+
+
+def get_proficiency_bonus(level: int) -> int:
+    """Proficiency bonus by level (2 at L1–4, 3 at L5–8, …, 6 at L17–20)."""
+    return (level - 1) // 4 + 2
+
+
+def is_asi_level(level: int) -> bool:
+    """Check if this level grants an Ability Score Improvement."""
+    return level in (4, 8, 12, 16, 19)
