@@ -1,7 +1,8 @@
-"""D&D 5e rules engine: attack resolution, damage calculation, HP tracking, death saves, and initiative."""
+"""D&D 5e rules engine: attack resolution, damage, HP, death saves, initiative, and conditions."""
 
 import random
 import re
+from enum import Enum
 from typing import TypedDict
 
 
@@ -197,3 +198,197 @@ def roll_initiative(combatants: list[dict]) -> list[dict]:
         key=lambda c: (c["initiative"], c.get("dex_modifier", 0)), reverse=True
     )
     return results
+
+
+# ---------------------------------------------------------------------------
+# Conditions system
+# ---------------------------------------------------------------------------
+
+
+class Condition(str, Enum):
+    """D&D 5e conditions per SRD."""
+
+    PRONE = "prone"
+    STUNNED = "stunned"
+    FRIGHTENED = "frightened"
+    UNCONSCIOUS = "unconscious"
+    GRAPPLED = "grappled"
+    BLINDED = "blinded"
+    CHARMED = "charmed"
+    DEAFENED = "deafened"
+    INCAPACITATED = "incapacitated"
+    INVISIBLE = "invisible"
+    PARALYZED = "paralyzed"
+    PETRIFIED = "petrified"
+    POISONED = "poisoned"
+    RESTRAINED = "restrained"
+
+
+# Effects each condition imposes, per SRD rules.
+# Keys map to boolean flags consumed by get_attack_modifiers and other helpers.
+CONDITION_EFFECTS: dict[str, dict[str, bool]] = {
+    Condition.PRONE: {
+        "attack_disadvantage": True,
+        "melee_attacker_advantage": True,
+        "ranged_attacker_disadvantage": True,
+    },
+    Condition.STUNNED: {
+        "incapacitated": True,
+        "auto_fail_str_dex_saves": True,
+        "attacker_advantage": True,
+    },
+    Condition.FRIGHTENED: {
+        "ability_check_disadvantage": True,
+        "attack_disadvantage": True,
+        "cannot_move_closer": True,
+    },
+    Condition.UNCONSCIOUS: {
+        "incapacitated": True,
+        "auto_fail_str_dex_saves": True,
+        "attacker_advantage": True,
+        "prone": True,
+        "auto_crit_melee": True,
+    },
+    Condition.GRAPPLED: {
+        "speed_zero": True,
+    },
+    Condition.BLINDED: {
+        "attack_disadvantage": True,
+        "attacker_advantage": True,
+    },
+    Condition.CHARMED: {
+        "cannot_attack_charmer": True,
+        "charmer_social_advantage": True,
+    },
+    Condition.DEAFENED: {
+        "cannot_hear": True,
+    },
+    Condition.INCAPACITATED: {
+        "incapacitated": True,
+    },
+    Condition.INVISIBLE: {
+        "attack_advantage": True,
+        "attacker_disadvantage": True,
+    },
+    Condition.PARALYZED: {
+        "incapacitated": True,
+        "auto_fail_str_dex_saves": True,
+        "attacker_advantage": True,
+        "auto_crit_melee": True,
+    },
+    Condition.PETRIFIED: {
+        "incapacitated": True,
+        "auto_fail_str_dex_saves": True,
+        "attacker_advantage": True,
+        "resistance_nonmagical": True,
+        "immune_poison_disease": True,
+    },
+    Condition.POISONED: {
+        "attack_disadvantage": True,
+        "ability_check_disadvantage": True,
+    },
+    Condition.RESTRAINED: {
+        "speed_zero": True,
+        "attack_disadvantage": True,
+        "attacker_advantage": True,
+        "dex_save_disadvantage": True,
+    },
+}
+
+
+def apply_condition(combatant_conditions: list[str], condition: Condition) -> list[str]:
+    """Add a condition to a combatant's condition list (no duplicates).
+
+    Args:
+        combatant_conditions: Current list of condition strings for the combatant.
+        condition: The :class:`Condition` to apply.
+
+    Returns:
+        A new list with the condition added (or the same list if already present).
+    """
+    value = condition.value
+    if value in combatant_conditions:
+        return list(combatant_conditions)
+    return list(combatant_conditions) + [value]
+
+
+def remove_condition(
+    combatant_conditions: list[str], condition: Condition
+) -> list[str]:
+    """Remove a condition from a combatant's condition list.
+
+    Args:
+        combatant_conditions: Current list of condition strings for the combatant.
+        condition: The :class:`Condition` to remove.
+
+    Returns:
+        A new list with the condition removed (unchanged if not present).
+    """
+    value = condition.value
+    return [c for c in combatant_conditions if c != value]
+
+
+def get_attack_modifiers(
+    attacker_conditions: list[str],
+    target_conditions: list[str],
+    *,
+    ranged: bool = False,
+) -> dict[str, bool]:
+    """Return advantage/disadvantage flags for an attack roll.
+
+    Aggregates all condition effects for the attacker and target and resolves
+    the final advantage/disadvantage state per 5e rules (advantage and
+    disadvantage cancel each other out regardless of how many sources exist).
+
+    Args:
+        attacker_conditions: Condition strings active on the attacker.
+        target_conditions: Condition strings active on the target.
+        ranged: Whether the attack is a ranged attack (affects prone, etc.).
+
+    Returns:
+        A dict with keys ``advantage`` and ``disadvantage`` (both ``bool``).
+    """
+    has_advantage = False
+    has_disadvantage = False
+
+    # --- Effects from attacker's own conditions ---
+    for cond_str in attacker_conditions:
+        try:
+            cond = Condition(cond_str)
+        except ValueError:
+            continue
+        effects = CONDITION_EFFECTS.get(cond, {})
+
+        if effects.get("attack_disadvantage"):
+            has_disadvantage = True
+        if effects.get("attack_advantage"):
+            has_advantage = True
+
+    # --- Effects from target's conditions on the attacker ---
+    for cond_str in target_conditions:
+        try:
+            cond = Condition(cond_str)
+        except ValueError:
+            continue
+        effects = CONDITION_EFFECTS.get(cond, {})
+
+        # Generic "all attacks have advantage against this target"
+        if effects.get("attacker_advantage"):
+            has_advantage = True
+
+        # Generic "all attacks have disadvantage against this target"
+        if effects.get("attacker_disadvantage"):
+            has_disadvantage = True
+
+        # Prone: melee → advantage, ranged → disadvantage
+        if cond == Condition.PRONE:
+            if ranged:
+                has_disadvantage = True
+            else:
+                has_advantage = True
+
+    # Per 5e rules: advantage and disadvantage cancel regardless of count
+    if has_advantage and has_disadvantage:
+        return {"advantage": False, "disadvantage": False}
+
+    return {"advantage": has_advantage, "disadvantage": has_disadvantage}
