@@ -81,6 +81,7 @@
 .characterOptionButton {
   width: 100%;
   padding: 12px 24px;
+  min-height: 44px;
   border: 2px solid #e4bb1e; /* Gold border */
   border-radius: 6px;
   font-size: 1.1rem;
@@ -103,6 +104,8 @@
 
 .backButton {
   padding: 8px 16px;
+  min-height: 44px;
+  min-width: 44px;
   border: 1px solid #e4bb1e; /* Gold border */
   border-radius: 4px;
   background-color: rgba(120, 128, 112, 0.8); /* Steel color */
@@ -140,5 +143,33 @@
 
   .characterSelection {
     padding: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .characterSelection {
+    padding: 10px;
+  }
+
+  .characterSelectionHeader h2 {
+    font-size: 1.5rem;
+  }
+
+  .characterSelectionHeader p {
+    font-size: 1rem; /* Prevent iOS zoom */
+  }
+
+  .characterOptionCard p {
+    font-size: 1rem; /* Prevent iOS zoom */
+  }
+
+  .characterOptionButton {
+    min-height: 44px;
+    font-size: 1rem; /* Prevent iOS zoom */
+  }
+
+  .backButton {
+    min-height: 44px;
+    font-size: 1rem; /* Prevent iOS zoom */
   }
 }

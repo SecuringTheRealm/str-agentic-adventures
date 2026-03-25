@@ -321,6 +321,7 @@
 .submitActionButton {
   width: 100%;
   padding: 0.75rem;
+  min-height: 44px;
   background: linear-gradient(135deg, #8b4513, #a0522d);
   color: white;
   border: none;
@@ -362,6 +363,7 @@
 
 .quickActionButton {
   padding: 0.5rem;
+  min-height: 44px;
   border: none;
   border-radius: 4px;
   font-size: 0.9rem;
@@ -449,5 +451,26 @@
   .initiativeItem {
     padding: 0.4rem;
     font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .actionSelect,
+  .targetSelect {
+    font-size: 16px; /* Prevent iOS zoom */
+  }
+
+  .actionDescription {
+    font-size: 16px; /* Prevent iOS zoom */
+  }
+
+  .quickActionButton {
+    min-height: 44px;
+    font-size: 1rem; /* Prevent iOS zoom */
+  }
+
+  .submitActionButton {
+    min-height: 44px;
+    font-size: 1rem; /* Prevent iOS zoom */
   }
 }

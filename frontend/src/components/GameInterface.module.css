@@ -71,6 +71,7 @@
 
 .visualButton {
   padding: 8px 12px;
+  min-height: 44px;
   background: linear-gradient(135deg, #b15005, #d67c2d); /* Wood gradient */
   color: white;
   border: 1px solid #e4bb1e; /* Gold border */
@@ -132,5 +133,24 @@
   .rightPanel {
     width: 100%;
     max-height: 200px;
+  }
+}
+
+@media (max-width: 480px) {
+  .leftPanel {
+    max-height: 120px;
+  }
+
+  .rightPanel {
+    max-height: 180px;
+  }
+
+  .visualControls h4 {
+    font-size: 1rem; /* Prevent iOS zoom */
+  }
+
+  .visualButton {
+    min-height: 44px;
+    font-size: 1rem; /* Prevent iOS zoom */
   }
 }

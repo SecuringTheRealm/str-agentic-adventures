@@ -178,6 +178,7 @@
 .selectCharacterButton {
   width: 100%;
   padding: 12px 20px;
+  min-height: 44px;
   background: linear-gradient(135deg, #b15005, #d67c2d); /* Wood gradient */
   color: white;
   border: 2px solid #e4bb1e; /* Gold border */
@@ -196,6 +197,8 @@
 
 .backButton {
   padding: 8px 16px;
+  min-height: 44px;
+  min-width: 44px;
   border: 1px solid #e4bb1e; /* Gold border */
   border-radius: 4px;
   background-color: rgba(120, 128, 112, 0.8); /* Steel color */
@@ -227,5 +230,33 @@
 
   .abilitiesGrid {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .predefinedCharacters {
+    padding: 10px;
+  }
+
+  .predefinedCharactersHeader h2 {
+    font-size: 1.5rem;
+  }
+
+  .predefinedCharactersHeader p {
+    font-size: 1rem; /* Prevent iOS zoom */
+  }
+
+  .characterBasics {
+    font-size: 1rem; /* Prevent iOS zoom */
+  }
+
+  .selectCharacterButton {
+    min-height: 44px;
+    font-size: 1rem; /* Prevent iOS zoom */
+  }
+
+  .backButton {
+    min-height: 44px;
+    font-size: 1rem; /* Prevent iOS zoom */
   }
 }

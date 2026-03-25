@@ -172,6 +172,7 @@
 .createButton {
   width: 100%;
   padding: 12px;
+  min-height: 44px;
   border-radius: 4px;
   background: linear-gradient(135deg, #b15005, #d67c2d); /* Wood gradient */
   color: white;
@@ -279,4 +280,34 @@
   border-radius: 4px;
   color: #ffcccb; /* Light red text for better contrast */
   font-family: "Cinzel", serif;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .campaignCreation {
+    padding: 15px;
+    margin: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .campaignCreation {
+    padding: 10px;
+    margin: 5px;
+  }
+
+  .campaignCreation h2 {
+    font-size: 1.5rem;
+  }
+
+  .formGroup input,
+  .formGroup select,
+  .formGroup textarea {
+    font-size: 16px; /* Prevent iOS zoom */
+  }
+
+  .createButton {
+    min-height: 44px;
+    font-size: 16px; /* Prevent iOS zoom */
+  }
 }

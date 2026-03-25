@@ -119,8 +119,8 @@
   font-size: 0.875rem;
   font-family: "Cinzel", serif;
   transition: all 0.2s ease;
-  min-width: 30px;
-  height: 30px;
+  min-width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -182,6 +182,7 @@
 .cancelButton,
 .saveButton {
   padding: 0.75rem 1.5rem;
+  min-height: 44px;
   border-radius: 8px;
   font-size: 1rem;
   font-weight: 600;
@@ -308,8 +309,8 @@
   font-size: 1.5rem;
   cursor: pointer;
   padding: 0;
-  width: 30px;
-  height: 30px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -426,5 +427,35 @@
 
   .applySuggestion {
     align-self: flex-end;
+  }
+}
+
+@media (max-width: 480px) {
+  .campaignEditor {
+    padding: 0.75rem;
+    margin: 0.5rem;
+  }
+
+  .formGroup input,
+  .formGroup select,
+  .formGroup textarea {
+    font-size: 16px; /* Prevent iOS zoom */
+  }
+
+  .cancelButton,
+  .saveButton {
+    min-height: 44px;
+    font-size: 1rem; /* Prevent iOS zoom */
+  }
+
+  .editorToolbar button {
+    min-width: 44px;
+    height: 44px;
+    font-size: 1rem; /* Prevent iOS zoom */
+  }
+
+  .applySuggestion {
+    min-height: 44px;
+    font-size: 1rem; /* Prevent iOS zoom */
   }
 }
