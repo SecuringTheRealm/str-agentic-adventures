@@ -201,6 +201,130 @@ def roll_initiative(combatants: list[dict]) -> list[dict]:
 
 
 # ---------------------------------------------------------------------------
+# Combat turn tracking
+# ---------------------------------------------------------------------------
+
+
+def get_active_combatant(turn_order: list[dict], current_turn: int) -> dict | None:
+    """Return the combatant whose turn it currently is.
+
+    Args:
+        turn_order: Ordered list of combatants (highest initiative first).
+        current_turn: Zero-based index into *turn_order* for the active slot.
+
+    Returns:
+        The combatant dict at *current_turn*, or ``None`` if the list is empty
+        or *current_turn* is out of range.
+    """
+    if not turn_order or current_turn < 0 or current_turn >= len(turn_order):
+        return None
+    return turn_order[current_turn]
+
+
+def is_combatant_turn(
+    turn_order: list[dict], current_turn: int, combatant_id: str
+) -> bool:
+    """Return ``True`` only if it is *combatant_id*'s turn to act.
+
+    Args:
+        turn_order: Ordered list of combatants.
+        current_turn: Zero-based index of the active slot.
+        combatant_id: The ``id`` field of the combatant to check.
+
+    Returns:
+        ``True`` if the active combatant's id matches *combatant_id*.
+    """
+    active = get_active_combatant(turn_order, current_turn)
+    if active is None:
+        return False
+    return active.get("id") == combatant_id
+
+
+def advance_turn(
+    turn_order: list[dict], current_turn: int, current_round: int
+) -> dict:
+    """Advance to the next combatant in initiative order.
+
+    When the last combatant in the turn order acts, the round counter
+    increments and the order wraps back to index 0 (top of initiative).
+
+    Args:
+        turn_order: Ordered list of combatants (must not be empty).
+        current_turn: Zero-based index of the just-finished turn.
+        current_round: Current round number (1-based).
+
+    Returns:
+        A dict with:
+            current_turn (int): Index of the next active combatant.
+            current_round (int): Updated round number.
+            round_advanced (bool): ``True`` if the round counter incremented.
+
+    Raises:
+        ValueError: If *turn_order* is empty.
+    """
+    if not turn_order:
+        raise ValueError("turn_order must not be empty")
+
+    next_turn = current_turn + 1
+    round_advanced = False
+
+    if next_turn >= len(turn_order):
+        next_turn = 0
+        current_round += 1
+        round_advanced = True
+
+    return {
+        "current_turn": next_turn,
+        "current_round": current_round,
+        "round_advanced": round_advanced,
+    }
+
+
+def remove_combatant(
+    turn_order: list[dict], current_turn: int, combatant_id: str
+) -> dict:
+    """Remove a combatant from the turn order (e.g. they were killed).
+
+    The *current_turn* index is adjusted so that the correct next combatant
+    remains active after the removal:
+
+    * If the removed combatant was *before* the current slot, the index
+      decrements by one (the active slot slides left by one position).
+    * If the removed combatant *is* the active slot and they were the last
+      entry, the index wraps to 0.
+    * If the combatant is not found, the original turn order and index are
+      returned unchanged.
+
+    Args:
+        turn_order: Current ordered list of combatants.
+        current_turn: Zero-based index of the active slot.
+        combatant_id: The ``id`` of the combatant to remove.
+
+    Returns:
+        A dict with:
+            turn_order (list[dict]): Updated turn order without the removed combatant.
+            current_turn (int): Adjusted index of the active slot.
+    """
+    idx = next(
+        (i for i, c in enumerate(turn_order) if c.get("id") == combatant_id), None
+    )
+
+    if idx is None:
+        return {"turn_order": list(turn_order), "current_turn": current_turn}
+
+    new_order = [c for c in turn_order if c.get("id") != combatant_id]
+
+    if idx < current_turn:
+        # Removed someone before the active slot; slide the index back.
+        current_turn -= 1
+    elif idx == current_turn and current_turn >= len(new_order):
+        # Active combatant was last in the list; wrap around.
+        current_turn = 0
+
+    return {"turn_order": new_order, "current_turn": current_turn}
+
+
+# ---------------------------------------------------------------------------
 # Conditions system
 # ---------------------------------------------------------------------------
 
