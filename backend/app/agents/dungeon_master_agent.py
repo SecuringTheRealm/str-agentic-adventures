@@ -346,7 +346,7 @@ class DungeonMasterAgent:
             return full_response.strip()
 
         except Exception as e:
-            logger.error("Error streaming AI response: %s", e, exc_info=True)
+            logger.exception("Error streaming AI response: %s", e)
             await self._send_chat_message(
                 websocket,
                 {

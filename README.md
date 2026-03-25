@@ -101,8 +101,8 @@ For setup instructions, see [Deployment Guide](docs/deployment.md).
 
 ### Prerequisites
 
-1. **Python 3.11 or higher** for the backend
-2. **Node.js 18 or higher** for the frontend
+1. **Python 3.12 or higher** for the backend
+2. **Node.js 22 or higher** (or [Bun](https://bun.sh)) for the frontend
 3. **Azure AI Foundry access** for OpenAI models (see setup below)
 
 ### Azure AI Foundry Setup
@@ -148,19 +148,18 @@ To run the application locally, you need access to Azure OpenAI models through A
 
    # Frontend (in a new terminal)
    cd frontend
-   npm install
-   npm run dev
+   bun install
+   bun dev
    ```
 
 The frontend will be available at `http://127.0.0.1:5173` and connects to the backend at `http://localhost:8000`.
 
 ## Running Tests
 
-Execute the backend test suite with `pytest`:
+Execute the backend test suite with `pytest` via `uv`:
 
 ```bash
-cd backend
-python -m pytest tests/ -v
+uv run pytest backend/tests/ -v
 ```
 
 ## Development Workflow
@@ -181,21 +180,16 @@ Regenerate the client after:
 
 ```bash
 # 1. Start backend server
-cd backend && python -m app.main
+cd backend && uv run uvicorn app.main:app
 
 # 2. Regenerate frontend client  
-cd frontend && npm run generate:api
+cd frontend && bun run generate:api
 
 # 3. Verify the update
-npm run build && npm test
+bun run build && bun run test:run
 ```
 
 #### Automated Validation
-
-Validate the entire workflow:
-```bash
-./scripts/validate-openapi-client.sh
-```
 
 See [docs/specs/OPENAPI_CLIENT.md](docs/specs/OPENAPI_CLIENT.md) for detailed documentation.
 
@@ -203,7 +197,6 @@ See [docs/specs/OPENAPI_CLIENT.md](docs/specs/OPENAPI_CLIENT.md) for detailed do
 
 ### User Guides
 - [Build System Guide](docs/user/BUILD.md) - How to build and run the application
-- [Agent Documentation](AGENTS.md) - Detailed information about the AI agents
 
 ### Technical Specifications
 - [Testing Strategy](docs/specs/TESTING_STRATEGY.md) - Test organization and strategy

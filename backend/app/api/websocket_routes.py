@@ -240,7 +240,7 @@ async def handle_chat_input(
         await dm_agent.process_input_stream(user_input, context)
 
     except Exception as e:
-        logger.error("Error handling chat input: %s", e, exc_info=True)
+        logger.exception("Error handling chat input: %s", e)
         await manager.send_personal_message(
             json.dumps(
                 {
@@ -332,7 +332,7 @@ async def handle_dice_roll(
             await manager.send_personal_message(json.dumps(response), websocket)
 
     except Exception as e:
-        logger.error("Error handling dice roll: %s", e, exc_info=True)
+        logger.exception("Error handling dice roll: %s", e)
         await manager.send_personal_message(
             json.dumps({
                 "type": "error",
