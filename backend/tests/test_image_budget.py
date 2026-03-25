@@ -116,11 +116,11 @@ class TestImageBudgetEndpoints:
 
     def _make_client_and_reset_budget(self, max_images: int = 3) -> TestClient:
         """Return a TestClient and reset the module-level budget tracker."""
-        from app.api import game_routes
+        from app.api.routes import _shared
         from app.image_budget import ImageBudgetTracker
         from app.main import app
 
-        game_routes._image_budget = ImageBudgetTracker(
+        _shared._image_budget = ImageBudgetTracker(
             max_images=max_images, window_minutes=30
         )
         return TestClient(app)
@@ -130,7 +130,7 @@ class TestImageBudgetEndpoints:
         client = self._make_client_and_reset_budget(max_images=3)
         artist_mock = AsyncMock(return_value=_MOCK_IMAGE_RESULT)
         with patch(
-            "app.api.game_routes.get_artist"
+            "app.api.routes.ai_routes.get_artist"
         ) as mock_get_artist:
             mock_get_artist.return_value.generate_character_portrait = artist_mock
             response = client.post(
@@ -151,7 +151,7 @@ class TestImageBudgetEndpoints:
         client = self._make_client_and_reset_budget(max_images=1)
         artist_mock = AsyncMock(return_value=_MOCK_IMAGE_RESULT)
         with patch(
-            "app.api.game_routes.get_artist"
+            "app.api.routes.ai_routes.get_artist"
         ) as mock_get_artist:
             mock_get_artist.return_value.generate_character_portrait = artist_mock
             # Use up the single allowed image
@@ -180,7 +180,7 @@ class TestImageBudgetEndpoints:
         client = self._make_client_and_reset_budget(max_images=1)
         map_mock = AsyncMock(return_value=_MOCK_MAP_RESULT)
         with patch(
-            "app.api.game_routes.get_combat_cartographer"
+            "app.api.routes.ai_routes.get_combat_cartographer"
         ) as mock_cart:
             mock_cart.return_value.generate_battle_map = map_mock
             # Use up the budget
@@ -206,7 +206,7 @@ class TestImageBudgetEndpoints:
         client = self._make_client_and_reset_budget(max_images=1)
         artist_mock = AsyncMock(return_value=_MOCK_IMAGE_RESULT)
         with patch(
-            "app.api.game_routes.get_artist"
+            "app.api.routes.ai_routes.get_artist"
         ) as mock_get_artist:
             mock_get_artist.return_value.generate_character_portrait = artist_mock
             # Exhaust session A
@@ -234,7 +234,7 @@ class TestImageBudgetEndpoints:
         client = self._make_client_and_reset_budget(max_images=1)
         artist_mock = AsyncMock(return_value=_MOCK_IMAGE_RESULT)
         with patch(
-            "app.api.game_routes.get_artist"
+            "app.api.routes.ai_routes.get_artist"
         ) as mock_get_artist:
             mock_get_artist.return_value.generate_character_portrait = artist_mock
             client.post(

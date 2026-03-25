@@ -239,7 +239,7 @@ class TestOpeningNarrativeEndpoint:
                 return_value=mock_campaign,
             ),
             patch(
-                "app.api.game_routes.get_narrator"
+                "app.api.routes.session_routes.get_narrator"
             ) as mock_get_narrator,
         ):
             mock_narrator = AsyncMock()
@@ -301,7 +301,7 @@ class TestOpeningNarrativeEndpoint:
                 return_value=mock_campaign,
             ),
             patch(
-                "app.api.game_routes.get_narrator"
+                "app.api.routes.session_routes.get_narrator"
             ) as mock_get_narrator,
         ):
             mock_narrator = AsyncMock()
@@ -343,7 +343,7 @@ class TestOpeningNarrativeEndpoint:
                 return_value=mock_campaign,
             ),
             patch(
-                "app.api.game_routes.get_narrator"
+                "app.api.routes.session_routes.get_narrator"
             ) as mock_get_narrator,
         ):
             mock_narrator = AsyncMock()

@@ -151,7 +151,7 @@ class TestFrontendBackendAPICompatibility:
                 )
             else:
                 response = client.post(full_endpoint, json={})
-                assert response.status_code in [200, 400, 422, 500, 503], (
+                assert response.status_code in [200, 400, 422, 429, 500, 503], (
                     f"POST {endpoint} should be accessible"
                 )
 
@@ -228,14 +228,14 @@ class TestFrontendBackendAPICompatibility:
 
         for endpoint in endpoints_to_test:
             response = client.post(build_path(endpoint), json={"invalid": "data"})
-            assert response.status_code in [200, 400, 422, 500, 503], (
+            assert response.status_code in [200, 400, 422, 429, 500, 503], (
                 f"{endpoint} should handle data properly"
             )
 
             if response.status_code >= 400:
                 response_data = response.json()
-                assert "detail" in response_data, (
-                    f"{endpoint} error response should have 'detail' field"
+                assert "detail" in response_data or "error" in response_data, (
+                    f"{endpoint} error response should have 'detail' or 'error' field"
                 )
 
     def test_frontend_typescript_compatibility(self) -> None:

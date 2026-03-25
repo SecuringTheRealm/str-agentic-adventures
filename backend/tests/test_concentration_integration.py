@@ -57,8 +57,8 @@ class TestConcentrationSpellIntegration:
     ) -> None:
         """Test that casting a concentration spell starts concentration."""
         with (
-            patch("app.api.game_routes._get_spell_data") as mock_get_spell,
-            patch("app.api.game_routes._calculate_spell_effects") as mock_calc_effects,
+            patch("app.api.routes.spell_routes._get_spell_data") as mock_get_spell,
+            patch("app.api.routes.spell_routes._calculate_spell_effects") as mock_calc_effects,
             patch(
                 "app.plugins.rules_engine_plugin.RulesEnginePlugin"
             ) as mock_rules_engine,
@@ -101,8 +101,8 @@ class TestConcentrationSpellIntegration:
         cast_spell_request.spell_id = "magic_missile"
 
         with (
-            patch("app.api.game_routes._get_spell_data") as mock_get_spell,
-            patch("app.api.game_routes._calculate_spell_effects") as mock_calc_effects,
+            patch("app.api.routes.spell_routes._get_spell_data") as mock_get_spell,
+            patch("app.api.routes.spell_routes._calculate_spell_effects") as mock_calc_effects,
             patch(
                 "app.plugins.rules_engine_plugin.RulesEnginePlugin"
             ) as mock_rules_engine,
@@ -134,8 +134,8 @@ class TestConcentrationSpellIntegration:
     ) -> None:
         """Test that casting a concentration spell when already concentrating breaks the old concentration."""
         with (
-            patch("app.api.game_routes._get_spell_data") as mock_get_spell,
-            patch("app.api.game_routes._calculate_spell_effects") as mock_calc_effects,
+            patch("app.api.routes.spell_routes._get_spell_data") as mock_get_spell,
+            patch("app.api.routes.spell_routes._calculate_spell_effects") as mock_calc_effects,
             patch(
                 "app.plugins.rules_engine_plugin.RulesEnginePlugin"
             ) as mock_rules_engine,
@@ -175,8 +175,8 @@ class TestConcentrationSpellIntegration:
     ) -> None:
         """Test that concentration failure doesn't prevent spell from being cast."""
         with (
-            patch("app.api.game_routes._get_spell_data") as mock_get_spell,
-            patch("app.api.game_routes._calculate_spell_effects") as mock_calc_effects,
+            patch("app.api.routes.spell_routes._get_spell_data") as mock_get_spell,
+            patch("app.api.routes.spell_routes._calculate_spell_effects") as mock_calc_effects,
             patch(
                 "app.plugins.rules_engine_plugin.RulesEnginePlugin"
             ) as mock_rules_engine,

@@ -17,7 +17,8 @@ from slowapi.util import get_remote_address
 from starlette.middleware.base import BaseHTTPMiddleware
 
 # Local imports
-from app.api import game_routes, websocket_routes
+from app.api.routes import all_routers
+from app.api import websocket_routes
 from app.config import init_settings
 from app.services.campaign_service import campaign_service
 
@@ -116,7 +117,8 @@ async def global_exception_handler(request: Request, exc: Exception) -> JSONResp
 
 
 # Include routers
-app.include_router(game_routes.router, prefix="/game")
+for _router in all_routers:
+    app.include_router(_router, prefix="/game")
 app.include_router(websocket_routes.router)
 
 
