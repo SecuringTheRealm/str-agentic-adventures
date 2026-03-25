@@ -17,12 +17,16 @@ class Settings(BaseSettings):
     # Pydantic-settings automatically reads from environment variables
     azure_openai_endpoint: str = ""
     azure_openai_api_key: str = ""
-    azure_openai_api_version: str = "2023-12-01-preview"
+    azure_openai_api_version: str = "2025-05-01"
 
     # Model Deployments
     azure_openai_chat_deployment: str = ""
     azure_openai_embedding_deployment: str = ""
     azure_openai_dalle_deployment: str = "dall-e-3"
+
+    # Azure AI Foundry project endpoint
+    # Format: https://<account>.services.ai.azure.com/api/projects/<project>
+    azure_ai_project_endpoint: str = ""
 
     # Storage Settings
     storage_connection_string: str = ""
@@ -37,10 +41,14 @@ class Settings(BaseSettings):
     app_log_level: str = "INFO"
 
     def is_azure_openai_configured(self) -> bool:
-        """Check if Azure OpenAI is properly configured."""
+        """Check if Azure OpenAI is properly configured.
+
+        Authentication is handled by DefaultAzureCredential, so an API key
+        is not required.  The key field is kept for backward compatibility
+        with the legacy AzureOpenAIClient wrapper.
+        """
         return (
             bool(self.azure_openai_endpoint)
-            and bool(self.azure_openai_api_key)
             and bool(self.azure_openai_chat_deployment)
             and bool(self.azure_openai_embedding_deployment)
         )

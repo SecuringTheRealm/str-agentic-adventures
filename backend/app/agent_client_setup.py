@@ -11,7 +11,6 @@ import logging
 
 from azure.ai.agents import AgentsClient
 from azure.ai.inference import ChatCompletionsClient
-from azure.core.credentials import AzureKeyCredential
 from azure.identity import DefaultAzureCredential
 from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
@@ -111,9 +110,9 @@ class AgentClientManager:
             )
 
         try:
-            # Use API key authentication
-            credential = AzureKeyCredential(settings.azure_openai_api_key)
-            
+            # Use DefaultAzureCredential for managed identity / local dev auth
+            credential = DefaultAzureCredential()
+
             chat_client = ChatCompletionsClient(
                 endpoint=settings.azure_openai_endpoint,
                 credential=credential,
@@ -135,22 +134,23 @@ class AgentClientManager:
 
         Returns:
             AgentsClient: Configured agents client
+
+        Raises:
+            ValueError: If Azure AI project endpoint is not configured
         """
-        if not settings.is_azure_openai_configured():
+        if not settings.azure_ai_project_endpoint:
             raise ValueError(
-                "Azure OpenAI configuration is missing or invalid."
+                "Azure AI project endpoint is not configured. "
+                "Set AZURE_AI_PROJECT_ENDPOINT to your Foundry project endpoint "
+                "(format: https://<account>.services.ai.azure.com/api/projects/<project>)."
             )
 
         try:
-            # Try to use DefaultAzureCredential for managed identity
-            # Fall back to API key if that fails
-            try:
-                credential = DefaultAzureCredential()
-            except Exception:
-                credential = AzureKeyCredential(settings.azure_openai_api_key)
+            # Use DefaultAzureCredential for managed identity / local dev auth
+            credential = DefaultAzureCredential()
 
             agents_client = AgentsClient(
-                endpoint=settings.azure_openai_endpoint,
+                endpoint=settings.azure_ai_project_endpoint,
                 credential=credential,
             )
 

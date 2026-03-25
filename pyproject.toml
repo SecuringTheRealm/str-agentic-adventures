@@ -28,7 +28,7 @@ dependencies = [
     "python-dotenv>=1.0.0",
     # Azure AI integration
     "azure-ai-agents>=1.0.0",
-    "azure-ai-projects>=1.0.0",
+    "azure-ai-projects>=1.0.0,<2.0.0",
     "azure-ai-inference>=1.0.0b1",
     "azure-identity>=1.13.0",
     "openai>=1.0,<2.0",
