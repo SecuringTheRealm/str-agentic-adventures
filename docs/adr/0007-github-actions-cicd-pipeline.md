@@ -64,10 +64,6 @@ We will implement a comprehensive GitHub Actions-based CI/CD pipeline using spec
   - Backend container deployment to Azure Container Apps
   - Frontend deployment to Azure Static Web Apps
   - Environment configuration and secrets management
-
-# Environment Cleanup (cleanup-pr.yml)
-- Automatic cleanup when PRs are closed/merged
-- Removes Azure resources to prevent cost accumulation
 ```
 
 ### Test Strategy
@@ -168,4 +164,3 @@ This ADR addresses the integration review requirement for ensuring "GitHub actio
 - `.github/workflows/integration-tests.yml`: Comprehensive integration testing for main branch
 - `.github/workflows/e2e-tests.yml`: End-to-end testing for main branch and nightly validation
 - `.github/workflows/deploy-production.yml`: Production deployment automation  
-- `.github/workflows/cleanup-pr.yml`: Automatic PR environment cleanup
