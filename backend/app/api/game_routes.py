@@ -1093,15 +1093,38 @@ async def generate_encounter(encounter_request: dict[str, Any]):
     from app.encounter_balancer import generate_balanced_encounter
 
     try:
-        party_levels: list[int] = encounter_request.get("party_levels", [1])
-        difficulty: str = encounter_request.get("difficulty", "medium")
-        location: str = encounter_request.get("location", "dungeon")
+        raw_party_levels = encounter_request.get("party_levels", [1])
+        raw_difficulty = encounter_request.get("difficulty", "medium")
+        raw_location = encounter_request.get("location", "dungeon")
 
-        if not isinstance(party_levels, list) or not party_levels:
+        # Validate types immediately after extraction
+        if not isinstance(raw_party_levels, list) or not raw_party_levels:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail="party_levels must be a non-empty list of integers",
             )
+        if not isinstance(raw_difficulty, str):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="difficulty must be a string",
+            )
+        if not isinstance(raw_location, str):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="location must be a string",
+            )
+
+        # Coerce party level entries to int, reject non-numeric values
+        try:
+            party_levels: list[int] = [int(lvl) for lvl in raw_party_levels]
+        except (TypeError, ValueError) as exc:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="party_levels must contain only integers",
+            ) from exc
+
+        difficulty: str = raw_difficulty
+        location: str = raw_location
 
         valid_difficulties = {"easy", "medium", "hard", "deadly"}
         if difficulty.lower() not in valid_difficulties:

@@ -344,7 +344,7 @@ def generate_balanced_encounter(
 
     # Shuffle to add variety
     pool = list(location_pool)
-    random.shuffle(pool)  # noqa: S311
+    random.shuffle(pool)  # noqa: S311  # game randomness — no crypto requirement
 
     avg_level = sum(party_levels) / len(party_levels)
 

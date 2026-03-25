@@ -187,9 +187,11 @@ class TestGetEncounterDifficulty:
         assert result == "medium"
 
     def test_hard_encounter(self) -> None:
-        # 2 goblins, adjusted = 100*1.5 = 150 vs 1 level-1 char (hard=75)
+        # 2 goblins (raw=100) vs 1 level-1 char (party_size=1 → small party step-up)
+        # get_encounter_multiplier(2, 1): base=1.5, step up → 2.0
+        # adjusted = 100 * 2.0 = 200; deadly_budget = 100 → 200 >= 100 → deadly
         result = get_encounter_difficulty([1], [_GOBLIN, _GOBLIN])
-        assert result in ("hard", "deadly")
+        assert result == "deadly"
 
     def test_deadly_encounter(self) -> None:
         # Lots of orcs vs low-level party
@@ -297,19 +299,23 @@ class TestGenerateBalancedEncounter:
         assert isinstance(result["monsters"], list)
 
     def test_location_filter_dungeon(self) -> None:
+        # _SAMPLE_MONSTERS has humanoid + undead options for dungeon; the wolf
+        # (beast) should be excluded by the dungeon location filter since there
+        # are enough preferred-type monsters available.
+        dungeon_preferred = {"humanoid", "undead", "construct", "aberration"}
         result = generate_balanced_encounter(
             [1, 1, 1, 1],
             "medium",
             location="dungeon",
             available_monsters=_SAMPLE_MONSTERS,
         )
-        # Dungeon prefers undead/humanoid — wolf (beast) should not be chosen
-        # when there are enough undead/humanoid options
-        monster_types = {m.get("type") for m in result["monsters"]}
-        # At minimum, no purely-beast monsters should be chosen for a dungeon
-        # unless the pool is exhausted (generous check)
         if result["monsters"]:
-            assert isinstance(monster_types, set)
+            monster_types = {m.get("type") for m in result["monsters"]}
+            # All selected monsters must be of dungeon-preferred types
+            assert monster_types <= dungeon_preferred, (
+                f"Unexpected monster types in dungeon encounter: "
+                f"{monster_types - dungeon_preferred}"
+            )
 
     def test_empty_party_levels_defaults_to_level_1(self) -> None:
         result = generate_balanced_encounter(

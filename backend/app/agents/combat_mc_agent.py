@@ -150,10 +150,13 @@ class CombatMCAgent:
             )
 
             # Convert SRD monster dicts to the Enemy format used internally
+            # HP fallback: ~7 HP per average party level approximates SRD monster HP
+            # for mid-CR creatures when explicit monster HP is unavailable.
+            _FALLBACK_HP_PER_AVG_LEVEL = 7
             enemies = []
             for i, monster in enumerate(balanced["monsters"]):
                 enemy_type = monster.get("id") or monster.get("name", "unknown").lower()
-                hp = monster.get("hp", max(1, int(avg_level * 7)))
+                hp = monster.get("hp", max(1, int(avg_level * _FALLBACK_HP_PER_AVG_LEVEL)))
                 enemies.append(
                     {
                         "id": f"enemy_{i + 1}",
