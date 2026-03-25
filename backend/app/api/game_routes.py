@@ -13,6 +13,7 @@ from slowapi.util import get_remote_address
 from app.agents.artist_agent import get_artist
 from app.agents.combat_cartographer_agent import get_combat_cartographer
 from app.agents.dungeon_master_agent import get_dungeon_master
+from app.agents.narrator_agent import get_narrator
 from app.agents.orchestration import (
     detect_agent_triggers,
     orchestrate_specialist_agents,
@@ -802,6 +803,45 @@ async def start_game_session(campaign_id: str, session_data: dict[str, Any]):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to start game session: {str(e)}",
+        ) from e
+
+
+@router.post("/campaign/{campaign_id}/opening-narrative", response_model=dict[str, Any])
+async def get_opening_narrative(campaign_id: str, request_data: dict[str, Any]):
+    """Generate an atmospheric opening narrative for a new game session.
+
+    Returns a scene description, quest hook, and 2-3 suggested actions based on
+    the campaign setting and character context.
+    """
+    try:
+        campaign = campaign_service.get_campaign(campaign_id)
+        if not campaign:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Campaign {campaign_id} not found",
+            ) from None
+
+        campaign_context = {
+            "id": campaign_id,
+            "name": campaign.name,
+            "setting": campaign.setting,
+            "tone": campaign.tone,
+            "world_description": campaign.world_description or "",
+        }
+        character_context = request_data.get("character", {})
+
+        opening = await get_narrator().generate_opening_narrative(
+            campaign_context=campaign_context,
+            character_context=character_context,
+        )
+        return opening
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate opening narrative: {str(e)}",
         ) from e
 
 

@@ -7,6 +7,7 @@ import {
   type Character,
   generateBattleMap,
   generateImage,
+  getOpeningNarrative,
   sendPlayerInput,
 } from "../services/api";
 import BattleMap from "./BattleMap";
@@ -72,6 +73,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
   const [streamingMessage, setStreamingMessage] = useState<string>("");
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
   const [webSocketDiceResult, setWebSocketDiceResult] = useState<any>(null);
+  const [suggestedActions, setSuggestedActions] = useState<string[]>([]);
 
   // Add fallback mode when WebSocket isn't available
   const [useWebSocketFallback, setUseWebSocketFallback] =
@@ -203,14 +205,45 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
   const effectiveChatConnected = chatConnected || useWebSocketFallback;
 
   useEffect(() => {
-    // Initial welcome message
-    const welcomeMessage = `Welcome, ${character.name}! Your adventure in ${campaign.name} begins now. ${campaign.world_description || ""}`;
-    setMessages([{ text: welcomeMessage, sender: "dm" }]);
-
     // Set initial world image if available
     if (campaign.world_art?.image_url) {
       setCurrentImage(campaign.world_art.image_url);
     }
+
+    // Fetch the opening narrative from the backend
+    const fetchOpeningNarrative = async () => {
+      if (!campaign.id) {
+        // Fallback welcome message if no campaign id
+        const welcomeMessage = `Welcome, ${character.name}! Your adventure in ${campaign.name} begins now. ${campaign.world_description || ""}`;
+        setMessages([{ text: welcomeMessage.trim(), sender: "dm" }]);
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const narrative = await getOpeningNarrative(campaign.id, {
+          name: character.name,
+          character_class: character.character_class,
+          race: character.race,
+          backstory: character.backstory ?? undefined,
+        });
+
+        const openingText = narrative.quest_hook
+          ? `${narrative.scene_description}\n\n${narrative.quest_hook}`
+          : narrative.scene_description;
+
+        setMessages([{ text: openingText, sender: "dm" }]);
+        setSuggestedActions(narrative.suggested_actions ?? []);
+      } catch {
+        // Fall back to a simple welcome message if the narrative call fails
+        const welcomeMessage = `Welcome, ${character.name}! Your adventure in ${campaign.name} begins now. ${campaign.world_description || ""}`;
+        setMessages([{ text: welcomeMessage.trim(), sender: "dm" }]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOpeningNarrative();
   }, [character, campaign]);
 
   const handleGenerateCharacterPortrait = async () => {
@@ -425,8 +458,9 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
       return;
     }
 
-    // Add player message to chat
+    // Add player message to chat and clear suggested actions
     setMessages((prev) => [...prev, { text: message, sender: "player" }]);
+    setSuggestedActions([]);
 
     // Try WebSocket first, fallback to REST API
     if (chatConnected && chatSocket) {
@@ -538,6 +572,8 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
             onSendMessage={handlePlayerInput}
             isLoading={loading}
             streamingMessage={isStreaming ? streamingMessage : undefined}
+            suggestedActions={suggestedActions}
+            onSuggestedAction={handlePlayerInput}
           />
         </div>
 

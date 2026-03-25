@@ -13,6 +13,8 @@ interface ChatBoxProps {
   onSendMessage: (message: string) => void;
   isLoading: boolean;
   streamingMessage?: string;
+  suggestedActions?: string[];
+  onSuggestedAction?: (action: string) => void;
 }
 
 const ChatBox: React.FC<ChatBoxProps> = ({
@@ -20,6 +22,8 @@ const ChatBox: React.FC<ChatBoxProps> = ({
   onSendMessage,
   isLoading,
   streamingMessage,
+  suggestedActions,
+  onSuggestedAction,
 }) => {
   const [input, setInput] = useState<string>("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -42,6 +46,25 @@ const ChatBox: React.FC<ChatBoxProps> = ({
       setInput("");
     }
   };
+
+  const handleActionClick = (action: string) => {
+    if (!isLoading) {
+      if (onSuggestedAction) {
+        onSuggestedAction(action);
+      } else {
+        onSendMessage(action);
+      }
+    }
+  };
+
+  const handleHelpClick = () => {
+    if (!isLoading) {
+      onSendMessage("What can I do?");
+    }
+  };
+
+  const hasSuggestedActions =
+    suggestedActions && suggestedActions.length > 0;
 
   return (
     <div className={styles.chatBox}>
@@ -81,6 +104,26 @@ const ChatBox: React.FC<ChatBoxProps> = ({
         <div ref={messagesEndRef} />
       </div>
 
+      {hasSuggestedActions && (
+        <div className={styles.suggestedActions} data-testid="suggested-actions">
+          <span className={styles.suggestedActionsLabel}>Suggested actions:</span>
+          <div className={styles.actionButtons}>
+            {suggestedActions.map((action) => (
+              <button
+                key={action}
+                type="button"
+                className={styles.actionButton}
+                onClick={() => handleActionClick(action)}
+                disabled={isLoading}
+                data-testid="suggested-action-btn"
+              >
+                {action}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <form className={styles.inputForm} onSubmit={handleSubmit}>
         <input
           type="text"
@@ -92,6 +135,16 @@ const ChatBox: React.FC<ChatBoxProps> = ({
         />
         <button type="submit" disabled={isLoading || !input.trim()} data-testid="chat-send-btn">
           Send
+        </button>
+        <button
+          type="button"
+          className={styles.helpButton}
+          onClick={handleHelpClick}
+          disabled={isLoading}
+          data-testid="help-btn"
+          title="What can I do?"
+        >
+          ?
         </button>
       </form>
     </div>
