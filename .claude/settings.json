@@ -1,0 +1,59 @@
+{
+  "hooks": {
+    "PreCommit": [
+      {
+        "command": "bash -c 'if git diff --cached --name-only | grep -qE \"\\.py$\"; then cd backend && uv run ruff check $(git diff --cached --name-only --relative | grep \"\\.py$\" | tr \"\\n\" \" \"); fi'",
+        "description": "Lint staged Python files with Ruff"
+      },
+      {
+        "command": "bash -c 'if git diff --cached --name-only | grep -qE \"\\.(ts|tsx)$\"; then cd frontend && npx biome check $(git diff --cached --name-only --relative | grep -E \"\\.(ts|tsx)$\" | tr \"\\n\" \" \"); fi'",
+        "description": "Lint staged TypeScript files with Biome"
+      },
+      {
+        "command": "bash -c 'git diff --cached -U0 | grep -iE \"(api[_-]?key|secret|password|token|credential)\\s*[=:]\\s*[\\x27\\\"][^\\x27\\\"]{8,}\" && echo \"BLOCKED: Possible secret detected in staged changes\" && exit 1 || exit 0'",
+        "description": "Block commits containing possible secrets"
+      }
+    ],
+    "PostToolUse": [
+      {
+        "event": "Edit",
+        "filePattern": "**/*.py",
+        "command": "cd backend && uv run ruff check --fix $CLAUDE_FILE_PATH 2>/dev/null || true",
+        "description": "Auto-fix Python lint issues after edits"
+      },
+      {
+        "event": "Write",
+        "filePattern": "**/*.py",
+        "command": "cd backend && uv run ruff check --fix $CLAUDE_FILE_PATH 2>/dev/null || true",
+        "description": "Auto-fix Python lint issues after writes"
+      },
+      {
+        "event": "Edit",
+        "filePattern": "**/*.{ts,tsx}",
+        "command": "cd frontend && npx biome check --fix $CLAUDE_FILE_PATH 2>/dev/null || true",
+        "description": "Auto-fix TypeScript lint issues after edits"
+      },
+      {
+        "event": "Write",
+        "filePattern": "**/*.{ts,tsx}",
+        "command": "cd frontend && npx biome check --fix $CLAUDE_FILE_PATH 2>/dev/null || true",
+        "description": "Auto-fix TypeScript lint issues after writes"
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(uv run *)",
+      "Bash(uv sync *)",
+      "Bash(cd frontend && npm *)",
+      "Bash(cd frontend && npx *)",
+      "Bash(gh *)",
+      "Bash(git *)",
+      "Bash(rg *)",
+      "Bash(fd *)"
+    ],
+    "deny": [
+      "Bash(pip install *)"
+    ]
+  }
+}
