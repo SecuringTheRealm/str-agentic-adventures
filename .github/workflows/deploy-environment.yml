@@ -64,6 +64,7 @@ on:
 permissions:
   id-token: write
   contents: read
+  actions: write  # Required for Docker layer caching via GitHub Actions cache
 
 jobs:
   deploy:
@@ -201,9 +202,39 @@ jobs:
           deny-settings-mode: none
         timeout-minutes: 20
 
+      - name: Set up Docker Buildx
+        if: steps.infrastructure-deploy.outcome == 'success'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Azure Container Registry
+        if: steps.infrastructure-deploy.outcome == 'success'
+        run: |
+          az acr login --name "${{ steps.infrastructure-deploy.outputs.AZURE_CONTAINER_REGISTRY_NAME }}"
+
+      - name: Docker metadata
+        id: meta
+        if: steps.infrastructure-deploy.outcome == 'success'
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ steps.infrastructure-deploy.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT }}/backend
+          tags: |
+            type=sha,prefix=sha-,format=short
+            type=ref,event=branch
+
+      - name: Build and push
+        id: build-push
+        if: steps.infrastructure-deploy.outcome == 'success'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
       - name: Build and deploy backend container
         id: backend-deploy
-        if: steps.infrastructure-deploy.outcome == 'success'
+        if: steps.infrastructure-deploy.outcome == 'success' && steps.build-push.outcome == 'success'
         run: |
           # Get deployment outputs from the infrastructure deployment
           RESOURCE_GROUP="${{ steps.infrastructure-deploy.outputs.AZURE_RESOURCE_GROUP }}"
@@ -225,14 +256,26 @@ jobs:
           # Get storage connection string
           STORAGE_CONNECTION_STRING=$(az storage account show-connection-string --name "$STORAGE_ACCOUNT_NAME" --resource-group "$RESOURCE_GROUP" --query "connectionString" --output tsv)
 
-          # Use root directory to access Dockerfile and UV dependencies
+          # Use the SHA-tagged image built and pushed in the build-push step
+          IMAGE_SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          DOCKER_IMAGE="${{ steps.infrastructure-deploy.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT }}/backend:sha-$IMAGE_SHORT_SHA"
 
-          # Create or update the container app with Docker build
+          # Retrieve ACR admin credentials for container app registry configuration
+          ACR_NAME="${{ steps.infrastructure-deploy.outputs.AZURE_CONTAINER_REGISTRY_NAME }}"
+          ACR_USERNAME=$(az acr credential show --name "$ACR_NAME" --query username --output tsv)
+          ACR_PASSWORD=$(az acr credential show --name "$ACR_NAME" --query passwords[0].value --output tsv)
+
+          echo "Deploying image: $DOCKER_IMAGE"
+
+          # Create or update the container app using the pre-built image
           az containerapp up \
             --name "$CONTAINER_APP_NAME" \
             --resource-group "$RESOURCE_GROUP" \
             --environment "$CONTAINER_APP_ENVIRONMENT" \
-            --source . \
+            --image "$DOCKER_IMAGE" \
+            --registry-server "${{ steps.infrastructure-deploy.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT }}" \
+            --registry-username "$ACR_USERNAME" \
+            --registry-password "$ACR_PASSWORD" \
             --target-port 8000 \
             --ingress external \
             --env-vars \
@@ -257,6 +300,18 @@ jobs:
           echo "backend-uri=$BACKEND_URI" >> $GITHUB_OUTPUT
           echo "container-app-name=$CONTAINER_APP_NAME" >> $GITHUB_OUTPUT
         timeout-minutes: 15
+
+      - name: Smoke test backend
+        if: steps.backend-deploy.outputs.backend-status == 'success'
+        run: |
+          BACKEND_URL="${{ steps.backend-deploy.outputs.backend-uri }}"
+          for i in $(seq 1 30); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BACKEND_URL/health")
+            echo "Attempt $i/30: HTTP $STATUS"
+            [ "$STATUS" = "200" ] && exit 0
+            sleep 10
+          done
+          exit 1
 
       - name: Build frontend for Static Web App
         id: frontend-build
