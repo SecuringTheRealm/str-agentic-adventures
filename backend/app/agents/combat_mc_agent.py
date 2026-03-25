@@ -6,45 +6,27 @@ import logging
 import random
 from typing import Any
 
-from azure.ai.inference import ChatCompletionsClient
-
-from app.agent_client_setup import agent_client_manager
+from app.agents.base_agent import BaseAgent
 from app.utils.dice import DiceRoller
 
 logger = logging.getLogger(__name__)
 
 
-class CombatMCAgent:
+class CombatMCAgent(BaseAgent):
     """
     Combat MC Agent that creates and manages combat encounters.
     This agent is responsible for enemy tactics, initiative tracking, and combat state.
     """
 
-    def __init__(self) -> None:
-        """Initialize the Combat MC agent with Azure AI SDK."""
-        self.chat_client: ChatCompletionsClient | None = None
-        self._fallback_mode = False  # Track if we're using fallback mechanics
+    agent_name = "Combat MC"
+
+    def _post_init(self) -> None:
+        """Initialize Combat MC-specific components after base client setup."""
         self.rules_engine: Any | None = None  # Store rules engine plugin instance
 
-        # Try to get the shared chat client from agent client manager
-        try:
-            self.chat_client = agent_client_manager.get_chat_client()
-            if self.chat_client is None:
-                self._fallback_mode = True
-                logger.warning(
-                    "Combat MC agent operating in fallback mode - Azure OpenAI not configured"
-                )
-                self._initialize_fallback_mechanics()
-            else:
-                self._register_skills()
-                logger.info("Combat MC agent initialized with Azure AI SDK")
-        except Exception as e:
-            logger.warning(
-                "Failed to initialize Combat MC agent with Azure AI SDK: %s. "
-                "Operating in fallback mode.",
-                e,
-            )
-            self._fallback_mode = True
+        if not self._fallback_mode:
+            self._register_skills()
+        else:
             self._initialize_fallback_mechanics()
 
         # Active combat tracking

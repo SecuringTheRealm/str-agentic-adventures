@@ -208,7 +208,7 @@ def load_monsters() -> list[dict[str, Any]]:
             with open(DATA_DIR / "monsters.json") as f:
                 _monsters_data = json.load(f)
         except Exception as e:
-            logger.error(f"Failed to load monsters data: {e}")
+            logger.error("Failed to load monsters data: %s", e)
             _monsters_data = []
     return _monsters_data
 
@@ -260,7 +260,7 @@ def load_weapons() -> dict[str, Any]:
             with open(DATA_DIR / "weapons.json") as f:
                 _weapons_data = json.load(f)
         except Exception as e:
-            logger.error(f"Failed to load weapons data: {e}")
+            logger.error("Failed to load weapons data: %s", e)
             _weapons_data = {}
     return _weapons_data
 
@@ -308,7 +308,7 @@ def load_armor() -> dict[str, Any]:
             with open(DATA_DIR / "armor.json") as f:
                 _armor_data = json.load(f)
         except Exception as e:
-            logger.error(f"Failed to load armor data: {e}")
+            logger.error("Failed to load armor data: %s", e)
             _armor_data = {}
     return _armor_data
 
