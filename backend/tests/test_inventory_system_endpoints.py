@@ -58,7 +58,7 @@ class TestInventorySystemEndpoints:
         assert data["armor_class_change"] == -8  # Negative because unequipping
 
     def test_manage_equipment_invalid_action(self, client) -> None:
-        """Test equipment management with invalid action."""
+        """Test equipment management with invalid action rejects at schema level."""
         character_id = "test_char_123"
         request_data = {
             "character_id": character_id,
@@ -69,10 +69,10 @@ class TestInventorySystemEndpoints:
         response = client.post(
             f"/game/character/{character_id}/equipment", json=request_data
         )
-        assert response.status_code == 400
+        assert response.status_code == 422
 
         data = response.json()
-        assert "Invalid action" in data["detail"]
+        assert any(e["loc"][-1] == "action" for e in data["detail"])
 
     def test_get_encumbrance(self, client) -> None:
         """Test getting character encumbrance."""
@@ -129,7 +129,7 @@ class TestInventorySystemEndpoints:
         assert len(data["stat_modifiers"]) == 0
 
     def test_manage_magical_effects_invalid_action(self, client) -> None:
-        """Test magical effects management with invalid action."""
+        """Test magical effects management with invalid action rejects at schema level."""
         request_data = {
             "character_id": "test_char_123",
             "item_id": "cloak_of_elvenkind",
@@ -137,10 +137,10 @@ class TestInventorySystemEndpoints:
         }
 
         response = client.post("/game/items/magical-effects", json=request_data)
-        assert response.status_code == 400
+        assert response.status_code == 422
 
         data = response.json()
-        assert "Invalid action" in data["detail"]
+        assert any(e["loc"][-1] == "action" for e in data["detail"])
 
     def test_get_item_catalog_no_filters(self, client) -> None:
         """Test getting item catalog without filters."""

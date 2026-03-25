@@ -188,14 +188,14 @@ class TestSpellSystemEndpoints:
         assert "roll_result" in data
 
     def test_manage_concentration_invalid_action(self, client) -> None:
-        """Test concentration management with invalid action."""
+        """Test concentration management with invalid action rejects at schema level."""
         character_id = "test_char_123"
         request_data = {"character_id": character_id, "action": "invalid_action"}
 
         response = client.post(
             f"/game/character/{character_id}/concentration", json=request_data
         )
-        assert response.status_code == 400
+        assert response.status_code == 422
 
     def test_manage_concentration_start_without_spell_id(self, client) -> None:
         """Test starting concentration without spell_id."""
