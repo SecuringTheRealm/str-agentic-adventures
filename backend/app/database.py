@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import os
 from collections.abc import Generator
+from typing import Annotated
 
+from fastapi import Depends
 from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 # Database URL configuration
 # Priority: DATABASE_URL env var > PostgreSQL params > SQLite fallback
@@ -45,6 +47,10 @@ def get_session() -> Generator:
         yield db
     finally:
         db.close()
+
+
+# Annotated dependency type for use in FastAPI route signatures
+SessionDep = Annotated[Session, Depends(get_session)]
 
 
 def init_db() -> None:

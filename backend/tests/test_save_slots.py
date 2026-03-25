@@ -3,29 +3,83 @@ Tests for the save slot API endpoints.
 
 Covers: create, retrieve, list, delete, load and business rules
 (max 5 slots per campaign, slot-number reuse after delete).
+
+Uses an in-memory SQLite database via FastAPI dependency injection override so
+the tests are hermetic and require no external DB setup.
 """
 
+import uuid
+
 import pytest
+from app.database import Base, get_session
+from app.main import app
+from app.models.db_models import Campaign as CampaignDB
 from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 
+# ---------------------------------------------------------------------------
+# In-memory DB fixtures
+# ---------------------------------------------------------------------------
 
-@pytest.fixture()
-def client():
-    """Return a TestClient backed by the real FastAPI app."""
-    from app.main import app
+@pytest.fixture(scope="function")
+def db_session():
+    """Create a fresh in-memory SQLite database for each test function.
 
-    return TestClient(app)
-
-
-@pytest.fixture()
-def campaign_id(client: TestClient) -> str:
-    """Create a fresh campaign and return its id."""
-    response = client.post(
-        "/game/campaign",
-        json={"name": "Save Test Campaign", "setting": "fantasy", "tone": "heroic"},
+    Uses StaticPool so that all connections (including those made during
+    Base.metadata.create_all and the session itself) share the same
+    in-memory database.
+    """
+    engine = create_engine(
+        "sqlite:///:memory:",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
     )
-    assert response.status_code == 200
-    return response.json()["id"]
+    Base.metadata.create_all(bind=engine)
+    session_factory = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+    db = session_factory()
+    try:
+        yield db
+    finally:
+        db.close()
+        Base.metadata.drop_all(bind=engine)
+
+
+@pytest.fixture(scope="function")
+def client(db_session):
+    """Return a TestClient that uses the in-memory DB session."""
+
+    def override_get_session():
+        try:
+            yield db_session
+        finally:
+            pass  # session lifecycle managed by db_session fixture
+
+    app.dependency_overrides[get_session] = override_get_session
+    with TestClient(app) as c:
+        yield c
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture()
+def campaign_id(db_session) -> str:
+    """Insert a campaign row directly into the in-memory DB and return its id."""
+    cid = str(uuid.uuid4())
+    campaign = CampaignDB(
+        id=cid,
+        name="Save Test Campaign",
+        setting="fantasy",
+        tone="heroic",
+        homebrew_rules=[],
+        is_template=False,
+        is_custom=True,
+        data={},
+    )
+    db_session.add(campaign)
+    db_session.commit()
+    return cid
 
 
 # ---------------------------------------------------------------------------

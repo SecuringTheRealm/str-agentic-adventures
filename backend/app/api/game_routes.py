@@ -20,6 +20,7 @@ from app.agents.orchestration import (
 )
 from app.agents.scribe_agent import get_scribe
 from app.config import ConfigDep
+from app.database import SessionDep
 from app.image_budget import ImageBudgetTracker
 from app.models.game_models import (
     NPC,
@@ -68,6 +69,8 @@ from app.models.game_models import (
     SpellCastingResponse,
     SpellListResponse,
 )
+from app.models.db_models import Campaign as CampaignDB
+from app.models.db_models import SaveSlot as SaveSlotDB
 from app.services.campaign_service import campaign_service
 
 # Create a logger for this module
@@ -2349,26 +2352,21 @@ def _save_slot_from_db(db_slot: Any) -> SaveSlot:
 
 
 @router.get("/campaign/{campaign_id}/saves", response_model=SaveSlotListResponse)
-async def list_save_slots(campaign_id: str):
+async def list_save_slots(campaign_id: str, db: SessionDep):
     """List all save slots for a campaign."""
-    from app.database import get_session
-    from app.models.db_models import Campaign as CampaignDB
-    from app.models.db_models import SaveSlot as SaveSlotDB
-
-    with next(get_session()) as db:
-        campaign = db.query(CampaignDB).filter(CampaignDB.id == campaign_id).first()
-        if not campaign:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Campaign {campaign_id} not found",
-            )
-        db_slots = (
-            db.query(SaveSlotDB)
-            .filter(SaveSlotDB.campaign_id == campaign_id)
-            .order_by(SaveSlotDB.slot_number)
-            .all()
+    campaign = db.query(CampaignDB).filter(CampaignDB.id == campaign_id).first()
+    if not campaign:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Campaign {campaign_id} not found",
         )
-        slots = [_save_slot_from_db(s) for s in db_slots]
+    db_slots = (
+        db.query(SaveSlotDB)
+        .filter(SaveSlotDB.campaign_id == campaign_id)
+        .order_by(SaveSlotDB.slot_number)
+        .all()
+    )
+    slots = [_save_slot_from_db(s) for s in db_slots]
     return SaveSlotListResponse(saves=slots, total_count=len(slots))
 
 
@@ -2377,156 +2375,136 @@ async def list_save_slots(campaign_id: str):
     response_model=SaveSlot,
     status_code=status.HTTP_201_CREATED,
 )
-async def create_save_slot(campaign_id: str, request: CreateSaveSlotRequest):
+async def create_save_slot(campaign_id: str, request: CreateSaveSlotRequest, db: SessionDep):
     """Create a new save slot for a campaign, picking the next available slot number (1-5)."""
     import uuid as _uuid
     from datetime import UTC
 
-    from app.database import get_session
-    from app.models.db_models import Campaign as CampaignDB
-    from app.models.db_models import SaveSlot as SaveSlotDB
-
-    with next(get_session()) as db:
-        campaign = db.query(CampaignDB).filter(CampaignDB.id == campaign_id).first()
-        if not campaign:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Campaign {campaign_id} not found",
-            )
-
-        # Find occupied slot numbers
-        existing = (
-            db.query(SaveSlotDB.slot_number)
-            .filter(SaveSlotDB.campaign_id == campaign_id)
-            .all()
+    campaign = db.query(CampaignDB).filter(CampaignDB.id == campaign_id).first()
+    if not campaign:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Campaign {campaign_id} not found",
         )
-        occupied = {row.slot_number for row in existing}
 
-        # Pick next available slot (1-5)
-        next_slot = next(
-            (n for n in range(1, MAX_SAVE_SLOTS + 1) if n not in occupied), None
-        )
-        if next_slot is None:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail=f"All {MAX_SAVE_SLOTS} save slots are occupied for campaign {campaign_id}",
-            )
+    # Find occupied slot numbers
+    existing = (
+        db.query(SaveSlotDB.slot_number)
+        .filter(SaveSlotDB.campaign_id == campaign_id)
+        .all()
+    )
+    occupied = {row.slot_number for row in existing}
 
-        now = datetime.now(UTC)
-        slot_id = str(_uuid.uuid4())
-        db_slot = SaveSlotDB(
-            id=slot_id,
-            campaign_id=campaign_id,
-            slot_number=next_slot,
-            name=request.name,
-            created_at=now,
-            updated_at=now,
-            play_time_seconds=request.play_time_seconds,
-            interaction_count=request.interaction_count,
-            character_level=request.character_level,
-            current_location=request.current_location,
-            save_data=request.save_data,
+    # Pick next available slot (1-5)
+    next_slot = next(
+        (n for n in range(1, MAX_SAVE_SLOTS + 1) if n not in occupied), None
+    )
+    if next_slot is None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"All {MAX_SAVE_SLOTS} save slots are occupied for campaign {campaign_id}",
         )
-        db.add(db_slot)
-        db.commit()
-        db.refresh(db_slot)
-        return _save_slot_from_db(db_slot)
+
+    now = datetime.now(UTC)
+    slot_id = str(_uuid.uuid4())
+    db_slot = SaveSlotDB(
+        id=slot_id,
+        campaign_id=campaign_id,
+        slot_number=next_slot,
+        name=request.name,
+        created_at=now,
+        updated_at=now,
+        play_time_seconds=request.play_time_seconds,
+        interaction_count=request.interaction_count,
+        character_level=request.character_level,
+        current_location=request.current_location,
+        save_data=request.save_data,
+    )
+    db.add(db_slot)
+    db.commit()
+    db.refresh(db_slot)
+    return _save_slot_from_db(db_slot)
 
 
 @router.get("/campaign/{campaign_id}/saves/{slot_number}", response_model=SaveSlot)
-async def get_save_slot(campaign_id: str, slot_number: int):
+async def get_save_slot(campaign_id: str, slot_number: int, db: SessionDep):
     """Get a specific save slot by slot number."""
-    from app.database import get_session
-    from app.models.db_models import Campaign as CampaignDB
-    from app.models.db_models import SaveSlot as SaveSlotDB
-
-    with next(get_session()) as db:
-        campaign = db.query(CampaignDB).filter(CampaignDB.id == campaign_id).first()
-        if not campaign:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Campaign {campaign_id} not found",
-            )
-        db_slot = (
-            db.query(SaveSlotDB)
-            .filter(
-                SaveSlotDB.campaign_id == campaign_id,
-                SaveSlotDB.slot_number == slot_number,
-            )
-            .first()
+    campaign = db.query(CampaignDB).filter(CampaignDB.id == campaign_id).first()
+    if not campaign:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Campaign {campaign_id} not found",
         )
-        if not db_slot:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Save slot {slot_number} not found for campaign {campaign_id}",
-            )
-        return _save_slot_from_db(db_slot)
+    db_slot = (
+        db.query(SaveSlotDB)
+        .filter(
+            SaveSlotDB.campaign_id == campaign_id,
+            SaveSlotDB.slot_number == slot_number,
+        )
+        .first()
+    )
+    if not db_slot:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Save slot {slot_number} not found for campaign {campaign_id}",
+        )
+    return _save_slot_from_db(db_slot)
 
 
 @router.delete("/campaign/{campaign_id}/saves/{slot_number}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_save_slot(campaign_id: str, slot_number: int):
+async def delete_save_slot(campaign_id: str, slot_number: int, db: SessionDep):
     """Delete a save slot, freeing that slot number for future use."""
-    from app.database import get_session
-    from app.models.db_models import Campaign as CampaignDB
-    from app.models.db_models import SaveSlot as SaveSlotDB
-
-    with next(get_session()) as db:
-        campaign = db.query(CampaignDB).filter(CampaignDB.id == campaign_id).first()
-        if not campaign:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Campaign {campaign_id} not found",
-            )
-        db_slot = (
-            db.query(SaveSlotDB)
-            .filter(
-                SaveSlotDB.campaign_id == campaign_id,
-                SaveSlotDB.slot_number == slot_number,
-            )
-            .first()
+    campaign = db.query(CampaignDB).filter(CampaignDB.id == campaign_id).first()
+    if not campaign:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Campaign {campaign_id} not found",
         )
-        if not db_slot:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Save slot {slot_number} not found for campaign {campaign_id}",
-            )
-        db.delete(db_slot)
-        db.commit()
+    db_slot = (
+        db.query(SaveSlotDB)
+        .filter(
+            SaveSlotDB.campaign_id == campaign_id,
+            SaveSlotDB.slot_number == slot_number,
+        )
+        .first()
+    )
+    if not db_slot:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Save slot {slot_number} not found for campaign {campaign_id}",
+        )
+    db.delete(db_slot)
+    db.commit()
 
 
 @router.post("/campaign/{campaign_id}/saves/{slot_number}/load")
-async def load_save_slot(campaign_id: str, slot_number: int):
+async def load_save_slot(campaign_id: str, slot_number: int, db: SessionDep):
     """Load a save slot, returning the full save_data state blob."""
-    from app.database import get_session
-    from app.models.db_models import Campaign as CampaignDB
-    from app.models.db_models import SaveSlot as SaveSlotDB
-
-    with next(get_session()) as db:
-        campaign = db.query(CampaignDB).filter(CampaignDB.id == campaign_id).first()
-        if not campaign:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Campaign {campaign_id} not found",
-            )
-        db_slot = (
-            db.query(SaveSlotDB)
-            .filter(
-                SaveSlotDB.campaign_id == campaign_id,
-                SaveSlotDB.slot_number == slot_number,
-            )
-            .first()
+    campaign = db.query(CampaignDB).filter(CampaignDB.id == campaign_id).first()
+    if not campaign:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Campaign {campaign_id} not found",
         )
-        if not db_slot:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Save slot {slot_number} not found for campaign {campaign_id}",
-            )
-        return {
-            "slot_number": db_slot.slot_number,
-            "name": db_slot.name,
-            "character_level": db_slot.character_level,
-            "current_location": db_slot.current_location,
-            "play_time_seconds": db_slot.play_time_seconds,
-            "interaction_count": db_slot.interaction_count,
-            "save_data": db_slot.save_data or {},
-        }
+    db_slot = (
+        db.query(SaveSlotDB)
+        .filter(
+            SaveSlotDB.campaign_id == campaign_id,
+            SaveSlotDB.slot_number == slot_number,
+        )
+        .first()
+    )
+    if not db_slot:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Save slot {slot_number} not found for campaign {campaign_id}",
+        )
+    return {
+        "slot_number": db_slot.slot_number,
+        "name": db_slot.name,
+        "character_level": db_slot.character_level,
+        "current_location": db_slot.current_location,
+        "play_time_seconds": db_slot.play_time_seconds,
+        "interaction_count": db_slot.interaction_count,
+        "save_data": db_slot.save_data or {},
+    }
