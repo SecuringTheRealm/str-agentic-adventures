@@ -82,8 +82,8 @@ extend-exclude = [
 ]
 
 [tool.ruff.lint]
-select = ["E", "F", "B", "I", "N", "UP", "ANN", "S", "A", "C4", "T10", "RET", "SIM", "ERA", "G"]
-ignore = []  # Removed deprecated ANN101/ANN102 rules, removed COM to avoid formatter conflicts
+select = ["E", "F", "B", "I", "N", "UP", "ANN", "S", "A", "C4", "G", "T10", "RET", "SIM", "ERA"]
+ignore = ["G004"]  # G004 (f-string in logging) requires a dedicated cleanup pass
 
 [tool.ruff.format]
 quote-style = "double"
