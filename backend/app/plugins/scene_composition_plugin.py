@@ -71,8 +71,7 @@ class SceneCompositionPlugin:
             result = self.azure_client.generate_image(
                 prompt=scene_prompt,
                 size="1792x1024",  # Landscape format for scenes
-                quality="standard",
-                style="vivid",
+                quality="medium",
             )
 
             # Create scene ID
@@ -212,8 +211,7 @@ class SceneCompositionPlugin:
             result = self.azure_client.generate_image(
                 prompt=variation_prompt,
                 size="1792x1024",
-                quality="standard",
-                style="vivid",
+                quality="medium",
             )
 
             # Create variation data
@@ -289,8 +287,7 @@ class SceneCompositionPlugin:
             result = self.azure_client.generate_image(
                 prompt=prompt,
                 size=size,
-                quality="hd",  # Higher quality for cinematic shots
-                style="vivid",
+                quality="high",  # Higher quality for cinematic shots
             )
 
             # Create shot data
@@ -363,8 +360,7 @@ class SceneCompositionPlugin:
             result = self.azure_client.generate_image(
                 prompt=map_prompt,
                 size="1024x1024",  # Square format for battle maps
-                quality="standard",
-                style="natural",  # More realistic for tactical use
+                quality="medium",
             )
 
             # Create map data

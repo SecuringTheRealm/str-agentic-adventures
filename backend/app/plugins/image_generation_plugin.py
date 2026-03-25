@@ -1,6 +1,6 @@
 """
 Image Generation Plugin for the Agent Framework.
-This plugin provides core image generation capabilities using Azure OpenAI DALL-E.
+This plugin provides core image generation capabilities using Azure OpenAI gpt-image-1.
 """
 
 import logging
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 class ImageGenerationPlugin:
     """
-    Plugin that provides image generation capabilities using Azure OpenAI DALL-E.
+    Plugin that provides image generation capabilities using Azure OpenAI gpt-image-1.
     Handles prompt optimization, image generation parameters, and result processing.
     """
 
@@ -29,20 +29,18 @@ class ImageGenerationPlugin:
         self,
         prompt: str,
         size: str = "1024x1024",
-        quality: str = "standard",
-        style: str = "vivid",
+        quality: str = "medium",
     ) -> dict[str, Any]:
         """
-        Generate an image using Azure OpenAI DALL-E.
+        Generate an image using Azure OpenAI gpt-image-1.
 
         Args:
             prompt: Text description of the image to generate
             size: Image size (1024x1024, 1792x1024, 1024x1792)
-            quality: Image quality (standard, hd)
-            style: Image style (vivid, natural)
+            quality: Image quality (low, medium, high)
 
         Returns:
-            Dict[str, Any]: Generation result with image URL and metadata
+            Dict[str, Any]: Generation result with image data URI and metadata
         """
         try:
             # Optimize prompt for better results
@@ -50,14 +48,14 @@ class ImageGenerationPlugin:
 
             # Generate the image
             result = self.azure_client.generate_image(
-                prompt=optimized_prompt, size=size, quality=quality, style=style
+                prompt=optimized_prompt, size=size, quality=quality
             )
 
             # Store in generation history
             generation_record = {
                 "original_prompt": prompt,
                 "optimized_prompt": optimized_prompt,
-                "parameters": {"size": size, "quality": quality, "style": style},
+                "parameters": {"size": size, "quality": quality},
                 "result": result,
                 "timestamp": self._get_timestamp(),
             }
@@ -71,7 +69,6 @@ class ImageGenerationPlugin:
                 "generation_parameters": {
                     "size": size,
                     "quality": quality,
-                    "style": style,
                 },
                 "error": result.get("error") if not result.get("success") else None,
             }

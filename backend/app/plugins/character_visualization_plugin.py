@@ -64,7 +64,7 @@ class CharacterVisualizationPlugin:
 
             # Generate the portrait
             result = self.azure_client.generate_image(
-                prompt=prompt, size="1024x1024", quality="standard", style="vivid"
+                prompt=prompt, size="1024x1024", quality="medium"
             )
 
             # Create character ID for tracking
@@ -149,8 +149,7 @@ class CharacterVisualizationPlugin:
             result = self.azure_client.generate_image(
                 prompt=variation_prompt,
                 size="1024x1024",
-                quality="standard",
-                style="vivid",
+                quality="medium",
             )
 
             # Create variation data
@@ -236,8 +235,7 @@ class CharacterVisualizationPlugin:
             result = self.azure_client.generate_image(
                 prompt=group_prompt,
                 size="1792x1024",  # Wider format for group
-                quality="standard",
-                style="vivid",
+                quality="medium",
             )
 
             # Create group portrait data
@@ -365,8 +363,7 @@ class CharacterVisualizationPlugin:
                 result = self.azure_client.generate_image(
                     prompt=expr_prompt,
                     size="1024x1024",
-                    quality="standard",
-                    style="vivid",
+                    quality="medium",
                 )
 
                 expression_data = {

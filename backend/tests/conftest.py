@@ -108,8 +108,8 @@ def create_test_config():
         azure_openai_api_key="test-api-key",
         azure_openai_chat_deployment="test-chat-deployment",
         azure_openai_embedding_deployment="test-embedding-deployment",
-        azure_openai_api_version="2023-12-01-preview",
-        azure_openai_dalle_deployment="dall-e-3",
+        azure_openai_api_version="2025-04-01-preview",
+        azure_openai_dalle_deployment="gpt-image-1-mini",
         storage_connection_string="",
         app_host="0.0.0.0",  # noqa: S104 - Test fixture uses all interfaces
         app_port=8000,
@@ -125,8 +125,8 @@ def create_test_config_missing_azure():
         azure_openai_api_key="",
         azure_openai_chat_deployment="",
         azure_openai_embedding_deployment="",
-        azure_openai_api_version="2023-12-01-preview",
-        azure_openai_dalle_deployment="dall-e-3",
+        azure_openai_api_version="2025-04-01-preview",
+        azure_openai_dalle_deployment="gpt-image-1-mini",
         storage_connection_string="",
         app_host="0.0.0.0",  # noqa: S104 - Test fixture uses all interfaces
         app_port=8000,

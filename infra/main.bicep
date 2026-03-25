@@ -25,8 +25,8 @@ param azureOpenAiChatDeployment string = 'gpt-4o-mini'
 @description('Azure OpenAI Embedding Deployment Name')
 param azureOpenAiEmbeddingDeployment string = 'text-embedding-ada-002'
 
-@description('Azure OpenAI DALL-E Deployment Name')
-param azureOpenAiDalleDeployment string = 'dall-e-3'
+@description('Azure OpenAI Image Generation Deployment Name')
+param azureOpenAiDalleDeployment string = 'gpt-image-1-mini'
 
 // This template should be deployed at the subscription level to create the resource group
 targetScope = 'subscription'

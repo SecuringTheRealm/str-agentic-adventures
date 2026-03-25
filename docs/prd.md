@@ -238,8 +238,8 @@ While the Dungeon Master serves as the orchestrator, agents communicate through 
 ### ⚠️ Implemented (Requires Azure OpenAI Connection)
 - **AI Dungeon Master**: Natural language interaction and intelligent game orchestration (requires Azure OpenAI chat deployment)
 - **Narrator Agent**: Dynamic narrative generation and context-aware storytelling (requires Azure OpenAI chat deployment)
-- **Image Generation**: Character portraits, environment visualizations, and scene illustrations (requires Azure DALL-E deployment)
-- **Battle Maps**: Tactical combat map generation (requires Azure DALL-E deployment)
+- **Image Generation**: Character portraits, environment visualizations, and scene illustrations (requires Azure gpt-image-1 deployment)
+- **Battle Maps**: Tactical combat map generation (requires Azure gpt-image-1 deployment)
 - **AI-Enhanced Combat**: Intelligent enemy tactics and dynamic encounter balancing (requires Azure OpenAI chat deployment)
 - **Narrative Memory**: Context-aware story continuity and recall (requires Azure OpenAI chat deployment)
 
@@ -254,7 +254,7 @@ All 6 specialized agents are fully implemented with real Azure AI SDK integratio
 
 ### 🔧 Technical Infrastructure
 - ✅ **Microsoft Agent Framework**: Full Azure AI Agents SDK integration with agent orchestration, threads, and tools
-- ✅ **Azure OpenAI Integration**: Chat completions and DALL-E image generation with automatic fallback
+- ✅ **Azure OpenAI Integration**: Chat completions and gpt-image-1 image generation with automatic fallback
 - ✅ **Configuration System**: Pydantic-settings with environment variable support (dev and prod compatible)
 - ✅ **API Layer**: FastAPI with OpenAPI schema and auto-generated TypeScript client
 - ✅ **Test Suite**: 323 passing tests with comprehensive coverage of all game systems
@@ -263,7 +263,7 @@ All 6 specialized agents are fully implemented with real Azure AI SDK integratio
 ### Notes
 - All core D&D 5e gameplay features are working and can be played in deterministic fallback mode
 - Azure OpenAI connection enhances gameplay with AI-generated narratives and visuals but is not required
-- Image generation and battle maps are fully implemented but require active Azure DALL-E deployment
+- Image generation and battle maps are fully implemented but require active Azure gpt-image-1 deployment
 - See ADR-0018 for Agent Framework architecture details and migration rationale
 
 ## Conclusion

@@ -90,7 +90,7 @@ For setup instructions, see [Deployment Guide](docs/deployment.md).
 
 ### Required Azure Services
 
-- **Azure AI Foundry project** with deployed OpenAI models (GPT-4o-mini, text-embedding-ada-002, DALL-E 3)
+- **Azure AI Foundry project** with deployed OpenAI models (GPT-4o-mini, text-embedding-ada-002, gpt-image-1-mini)
 - **Azure Container Apps** for backend hosting
 - **Azure Static Web Apps** for frontend hosting
 - **Azure Storage Account** for file and image storage
@@ -119,7 +119,7 @@ To run the application locally, you need access to Azure OpenAI models through A
    - Deploy the following models:
      - **GPT-4o-mini** (for chat completion)
      - **text-embedding-ada-002** (for embeddings)
-     - **DALL-E 3** (for image generation, optional)
+     - **gpt-image-1-mini** (for image generation, optional)
 
 3. **Get your endpoints and keys**:
    - In Azure AI Foundry, go to **Project settings**

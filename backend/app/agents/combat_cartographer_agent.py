@@ -44,7 +44,7 @@ class CombatCartographerAgent:
             )
             self._fallback_mode = True
 
-        # Image generation uses the shared AzureOpenAIClient singleton (for DALL-E support)
+        # Image generation uses AzureOpenAIClient (for gpt-image-1 support)
         if not self._fallback_mode:
             try:
                 self.azure_client = azure_openai_client
@@ -148,9 +148,9 @@ class CombatCartographerAgent:
             # Add tactical map specifics
             prompt += ". Grid-based tactical map, D&D battle map style, clear terrain features, strategic positioning elements, top-down orthographic view, detailed but clear, suitable for tabletop RPG combat"
 
-            # Generate the map using Azure OpenAI DALL-E
+            # Generate the map using Azure OpenAI gpt-image-1
             image_result = await self.azure_client.generate_image(
-                prompt=prompt, size="1024x1024", quality="standard", style="vivid"
+                prompt=prompt, size="1024x1024", quality="medium"
             )
 
             if image_result["success"]:
@@ -169,7 +169,6 @@ class CombatCartographerAgent:
                     "generation_details": {
                         "size": image_result["size"],
                         "quality": image_result["quality"],
-                        "style": image_result["style"],
                     },
                 }
             else:
@@ -188,8 +187,7 @@ class CombatCartographerAgent:
                     "combat_context": combat_context,
                     "generation_details": {
                         "size": size if size else "1024x1024",
-                        "quality": "standard",
-                        "style": "placeholder",
+                        "quality": "medium",
                     },
                     "error": image_result.get("error", "Battle map generation failed"),
                 }
