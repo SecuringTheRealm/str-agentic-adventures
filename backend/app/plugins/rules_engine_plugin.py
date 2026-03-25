@@ -192,6 +192,20 @@ SPELL_SLOTS_BY_CLASS_LEVEL = {
 }
 
 
+# Warlock pact slot spell level by character level (pact magic uses one unified slot level)
+WARLOCK_PACT_SLOT_LEVELS = {
+    1: 1, 2: 1,
+    3: 2, 4: 2,
+    5: 3, 6: 3,
+    7: 4, 8: 4,
+    9: 5, 10: 5, 11: 5, 12: 5, 13: 5, 14: 5,
+    15: 5, 16: 5, 17: 5, 18: 5, 19: 5, 20: 5,
+}
+
+# Classes with spellcasting (non-spellcasting classes are absent from SPELL_SLOTS_BY_CLASS_LEVEL)
+SPELLCASTING_CLASSES = set(SPELL_SLOTS_BY_CLASS_LEVEL.keys())
+
+
 class RulesEnginePlugin:
     """
     Plugin that provides D&D 5e SRD rules functionality.
@@ -1421,8 +1435,7 @@ class RulesEnginePlugin:
 
 #         name="advance_concentration_round",
 #     )
-    def advance_concentration_round(self) -> dict[str, Any]:
-        """
+    def advance_concentration_round(self) -> dict[str, Any]:        """
         Reduce spell duration for all concentrating characters by one round.
         Should be called at the end of each combat round.
 
