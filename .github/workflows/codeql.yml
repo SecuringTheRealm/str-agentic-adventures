@@ -36,10 +36,13 @@ jobs:
       with:
         python-version: '3.12'
 
+    - name: Install uv
+      if: matrix.language == 'python'
+      uses: astral-sh/setup-uv@v5
+
     - name: Install Python dependencies
       if: matrix.language == 'python'
       run: |
-        pip install uv
         cd backend
         uv sync
 
