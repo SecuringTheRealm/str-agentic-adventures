@@ -8,6 +8,7 @@ import styles from "./GameInterface.module.css";
 // Mock the API module
 vi.mock("../services/api");
 const mockSendPlayerInput = vi.mocked(api.sendPlayerInput);
+const mockGetOpeningNarrative = vi.mocked(api.getOpeningNarrative);
 
 // Mock the WebSocket SDK hook
 vi.mock("../hooks/useWebSocketSDK", () => ({
@@ -37,10 +38,14 @@ vi.mock("./ChatBox", () => ({
     messages,
     onSendMessage,
     isLoading,
+    suggestedActions,
+    onSuggestedAction,
   }: {
     messages: Array<{ text: string }>;
     onSendMessage: (msg: string) => void;
     isLoading: boolean;
+    suggestedActions?: string[];
+    onSuggestedAction?: (action: string) => void;
   }) => (
     <div data-testid="chat-box">
       <div data-testid="messages">
@@ -48,6 +53,19 @@ vi.mock("./ChatBox", () => ({
           <div key={`${msg.text}-${idx}`}>{msg.text}</div>
         ))}
       </div>
+      {suggestedActions && suggestedActions.length > 0 && (
+        <div data-testid="suggested-actions">
+          {suggestedActions.map((action) => (
+            <button
+              key={action}
+              type="button"
+              onClick={() => (onSuggestedAction ?? onSendMessage)(action)}
+            >
+              {action}
+            </button>
+          ))}
+        </div>
+      )}
       <button
         type="button"
         onClick={() => onSendMessage("test message")}
@@ -109,46 +127,108 @@ describe("GameInterface", () => {
     world_description: "A mystical realm awaits.",
   };
 
+  const defaultOpeningNarrative = {
+    scene_description: "The adventure begins in a mystical realm.",
+    quest_hook: "A mysterious message arrives at dawn.",
+    suggested_actions: ["Explore the area", "Talk to locals"],
+    help_text: "What can I do?",
+  };
+
   beforeEach(() => {
     mockSendPlayerInput.mockClear();
+    mockGetOpeningNarrative.mockResolvedValue(defaultOpeningNarrative);
   });
 
-  it("renders all child components", () => {
+  it("renders all child components", async () => {
     render(<GameInterface character={mockCharacter} campaign={mockCampaign} />);
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
 
     expect(screen.getByTestId("character-sheet")).toBeInTheDocument();
     expect(screen.getByTestId("chat-box")).toBeInTheDocument();
     expect(screen.getByTestId("image-display")).toBeInTheDocument();
   });
 
-  it("displays welcome message on mount", () => {
+  it("displays opening narrative on mount", async () => {
     render(<GameInterface character={mockCharacter} campaign={mockCampaign} />);
 
-    const expectedMessage =
-      "Welcome, Aragorn! Your adventure in The Lost Kingdom begins now. A mystical realm awaits.";
-    expect(screen.getByText(expectedMessage)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(mockGetOpeningNarrative).toHaveBeenCalledWith("1", {
+        name: "Aragorn",
+        character_class: "Ranger",
+        race: "human",
+        backstory: undefined,
+      });
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          "The adventure begins in a mystical realm.\n\nA mysterious message arrives at dawn."
+        )
+      ).toBeInTheDocument();
+    });
   });
 
-  it("displays welcome message without world description", () => {
-    const campaignWithoutDescription = {
-      ...mockCampaign,
-      world_description: undefined,
-    };
+  it("shows loading placeholder before narrative arrives", async () => {
+    // Use a never-resolving promise to freeze the component in loading state
+    mockGetOpeningNarrative.mockReturnValue(new Promise(() => {}));
+
+    render(<GameInterface character={mockCharacter} campaign={mockCampaign} />);
+
+    // The "Setting the scene" placeholder should appear immediately
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Setting the scene for Aragorn's adventure/)
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("shows suggested actions after opening narrative", async () => {
+    render(<GameInterface character={mockCharacter} campaign={mockCampaign} />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("suggested-actions")).toBeInTheDocument();
+      expect(screen.getByText("Explore the area")).toBeInTheDocument();
+      expect(screen.getByText("Talk to locals")).toBeInTheDocument();
+    });
+  });
+
+  it("falls back to welcome message when opening narrative fails", async () => {
+    mockGetOpeningNarrative.mockRejectedValue(new Error("Network error"));
+
+    render(<GameInterface character={mockCharacter} campaign={mockCampaign} />);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          /Welcome, Aragorn! Your adventure in The Lost Kingdom begins now\./
+        )
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("falls back to welcome message when no campaign id", async () => {
+    const campaignWithoutId = { ...mockCampaign, id: undefined };
     render(
-      <GameInterface
-        character={mockCharacter}
-        campaign={campaignWithoutDescription}
-      />
+      <GameInterface character={mockCharacter} campaign={campaignWithoutId} />
     );
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
 
     expect(
       screen.getByText(
         /Welcome, Aragorn! Your adventure in The Lost Kingdom begins now\./
       )
     ).toBeInTheDocument();
+    expect(mockGetOpeningNarrative).not.toHaveBeenCalled();
   });
 
-  it("shows initial world art if available", () => {
+  it("shows initial world art if available", async () => {
     const campaignWithArt = {
       ...mockCampaign,
       world_art: { image_url: "https://example.com/world.jpg" },
@@ -156,6 +236,10 @@ describe("GameInterface", () => {
     render(
       <GameInterface character={mockCharacter} campaign={campaignWithArt} />
     );
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
 
     expect(
       screen.getByText("https://example.com/world.jpg")

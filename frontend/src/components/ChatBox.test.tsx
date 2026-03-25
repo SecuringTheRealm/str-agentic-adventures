@@ -156,4 +156,94 @@ describe("ChatBox", () => {
     expect(dmMessage).toHaveClass(styles.dmMessage);
     expect(playerMessage).toHaveClass(styles.playerMessage);
   });
+
+  it("renders suggested action buttons when provided", () => {
+    const actions = ["Explore the dungeon", "Talk to the innkeeper", "Check your map"];
+    render(
+      <ChatBox
+        {...defaultProps}
+        suggestedActions={actions}
+        onSuggestedAction={mockOnSendMessage}
+      />
+    );
+
+    expect(screen.getByTestId("suggested-actions")).toBeInTheDocument();
+    expect(screen.getByText("Explore the dungeon")).toBeInTheDocument();
+    expect(screen.getByText("Talk to the innkeeper")).toBeInTheDocument();
+    expect(screen.getByText("Check your map")).toBeInTheDocument();
+  });
+
+  it("does not render suggested actions section when list is empty", () => {
+    render(<ChatBox {...defaultProps} suggestedActions={[]} />);
+    expect(screen.queryByTestId("suggested-actions")).not.toBeInTheDocument();
+  });
+
+  it("does not render suggested actions section when prop is not provided", () => {
+    render(<ChatBox {...defaultProps} />);
+    expect(screen.queryByTestId("suggested-actions")).not.toBeInTheDocument();
+  });
+
+  it("sends suggested action when action button is clicked", async () => {
+    const actions = ["Investigate the area"];
+    render(
+      <ChatBox
+        {...defaultProps}
+        suggestedActions={actions}
+        onSuggestedAction={mockOnSendMessage}
+      />
+    );
+
+    const actionBtn = screen.getByText("Investigate the area");
+    await userEvent.click(actionBtn);
+
+    expect(mockOnSendMessage).toHaveBeenCalledWith("Investigate the area");
+  });
+
+  it("falls back to onSendMessage when onSuggestedAction is not provided", async () => {
+    const actions = ["Look around"];
+    render(
+      <ChatBox {...defaultProps} suggestedActions={actions} />
+    );
+
+    const actionBtn = screen.getByText("Look around");
+    await userEvent.click(actionBtn);
+
+    expect(mockOnSendMessage).toHaveBeenCalledWith("Look around");
+  });
+
+  it("disables suggested action buttons when loading", () => {
+    const actions = ["Explore the dungeon"];
+    render(
+      <ChatBox
+        {...defaultProps}
+        isLoading={true}
+        suggestedActions={actions}
+        onSuggestedAction={mockOnSendMessage}
+      />
+    );
+
+    const actionButtons = screen.getAllByTestId("suggested-action-btn");
+    for (const btn of actionButtons) {
+      expect(btn).toBeDisabled();
+    }
+  });
+
+  it("renders the help button", () => {
+    render(<ChatBox {...defaultProps} />);
+    expect(screen.getByTestId("help-btn")).toBeInTheDocument();
+  });
+
+  it("sends 'What can I do?' when help button is clicked", async () => {
+    render(<ChatBox {...defaultProps} />);
+
+    const helpBtn = screen.getByTestId("help-btn");
+    await userEvent.click(helpBtn);
+
+    expect(mockOnSendMessage).toHaveBeenCalledWith("What can I do?");
+  });
+
+  it("disables help button when loading", () => {
+    render(<ChatBox {...defaultProps} isLoading={true} />);
+    expect(screen.getByTestId("help-btn")).toBeDisabled();
+  });
 });
