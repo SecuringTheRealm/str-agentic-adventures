@@ -14,7 +14,7 @@ class TestConfigurationDependencyInjection:
 
     def test_character_creation_with_valid_config(self, client_with_config) -> None:
         """Test character creation with valid configuration."""
-        with patch("app.api.game_routes.get_scribe") as mock_get_scribe:
+        with patch("app.api.routes.character_routes.get_scribe") as mock_get_scribe:
             # Mock the scribe agent to avoid kernel initialization
             mock_scribe = MagicMock()
 
@@ -150,7 +150,7 @@ class TestConfigurationDependencyInjection:
             client = TestClient(app)
 
             # Test any endpoint that uses config dependency
-            with patch("app.api.game_routes.get_scribe") as mock_get_scribe:
+            with patch("app.api.routes.character_routes.get_scribe") as mock_get_scribe:
                 mock_scribe = MagicMock()
 
                 # Make create_character return an awaitable with proper format
@@ -205,7 +205,7 @@ class TestConfigurationDependencyInjection:
 
     def test_get_character_with_valid_config(self, client_with_config) -> None:
         """Test get character with valid configuration."""
-        with patch("app.api.game_routes.get_scribe") as mock_get_scribe:
+        with patch("app.api.routes.character_routes.get_scribe") as mock_get_scribe:
             mock_scribe = MagicMock()
 
             # Make get_character return an awaitable

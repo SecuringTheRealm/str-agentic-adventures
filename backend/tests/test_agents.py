@@ -45,7 +45,7 @@ class TestAgentMocking:
                     from app.agents.scribe_agent import ScribeAgent
 
                     # Test that we can create an instance
-                    with patch("app.agents.scribe_agent.agent_client_manager", mock_manager):
+                    with patch("app.agents.base_agent.agent_client_manager", mock_manager):
                         agent = ScribeAgent()
                         assert hasattr(agent, "characters")
                         assert hasattr(agent, "npcs")

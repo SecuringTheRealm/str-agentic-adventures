@@ -15,7 +15,7 @@ class TestSRDIntegration:
         with (
             patch("app.agents.scribe_agent.init_db"),
             patch(
-                "app.agents.scribe_agent.agent_client_manager.get_chat_client"
+                "app.agents.base_agent.agent_client_manager.get_chat_client"
             ) as mock_kernel,
             patch("app.agents.scribe_agent.ScribeAgent._register_skills"),
         ):
@@ -41,7 +41,7 @@ class TestSRDIntegration:
             "charisma": 8,
         }
 
-        with patch("app.agents.scribe_agent.get_session") as mock_session:
+        with patch("app.agents.scribe_agent.get_session_context") as mock_session:
             mock_db = MagicMock()
             mock_session.return_value.__enter__.return_value = mock_db
 
@@ -131,7 +131,7 @@ class TestSRDIntegration:
             "charisma": 10,
         }
 
-        with patch("app.agents.scribe_agent.get_session") as mock_session:
+        with patch("app.agents.scribe_agent.get_session_context") as mock_session:
             mock_db = MagicMock()
             mock_session.return_value.__enter__.return_value = mock_db
 

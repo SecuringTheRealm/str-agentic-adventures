@@ -81,6 +81,7 @@ class TestADRCompliance:
                     or "AgentClientManager" in content
                     or "ChatCompletionsClient" in content
                     or "openai_client" in content
+                    or "BaseAgent" in content
                 ), f"Agent {agent_file} should integrate with Azure AI SDK or OpenAI"
 
     def test_adr_0003_data_storage_implementation(self) -> None:
