@@ -6,7 +6,7 @@
         "description": "Lint staged Python files with Ruff"
       },
       {
-        "command": "bash -c 'if git diff --cached --name-only | grep -qE \"\\.(ts|tsx)$\"; then cd frontend && npx biome check $(git diff --cached --name-only --relative | grep -E \"\\.(ts|tsx)$\" | tr \"\\n\" \" \"); fi'",
+        "command": "bash -c 'if git diff --cached --name-only | grep -qE \"\\.(ts|tsx)$\"; then cd frontend && bunx biome check $(git diff --cached --name-only --relative | grep -E \"\\.(ts|tsx)$\" | tr \"\\n\" \" \"); fi'",
         "description": "Lint staged TypeScript files with Biome"
       },
       {
@@ -30,13 +30,13 @@
       {
         "event": "Edit",
         "filePattern": "**/*.{ts,tsx}",
-        "command": "cd frontend && npx biome check --fix $CLAUDE_FILE_PATH 2>/dev/null || true",
+        "command": "cd frontend && bunx biome check --fix $CLAUDE_FILE_PATH 2>/dev/null || true",
         "description": "Auto-fix TypeScript lint issues after edits"
       },
       {
         "event": "Write",
         "filePattern": "**/*.{ts,tsx}",
-        "command": "cd frontend && npx biome check --fix $CLAUDE_FILE_PATH 2>/dev/null || true",
+        "command": "cd frontend && bunx biome check --fix $CLAUDE_FILE_PATH 2>/dev/null || true",
         "description": "Auto-fix TypeScript lint issues after writes"
       }
     ]
@@ -45,8 +45,8 @@
     "allow": [
       "Bash(uv run *)",
       "Bash(uv sync *)",
-      "Bash(cd frontend && npm *)",
-      "Bash(cd frontend && npx *)",
+      "Bash(cd frontend && bun *)",
+      "Bash(cd frontend && bunx *)",
       "Bash(gh *)",
       "Bash(git *)",
       "Bash(rg *)",

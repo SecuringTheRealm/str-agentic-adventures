@@ -6,7 +6,7 @@
 - Real credentials: local `.env` (gitignored), GitHub secrets, or Azure Key Vault only.
 
 ## Critical Gotchas
-- `src/api-client/` is auto-generated and NOT in git. Run `cd frontend && npm run generate:api` after cloning (requires Java + running backend).
+- `src/api-client/` is auto-generated and NOT in git. Run `cd frontend && bun run generate:api` after cloning (requires Java + running backend).
 - After backend API schema changes, regenerate the client and restart the frontend dev server.
 - Use SQLAlchemy ORM for all DB interactions — never raw sqlite3/psycopg2.
 - Alembic migrations run automatically on startup.
@@ -22,7 +22,8 @@
 
 ## Tooling
 - Python: `uv sync`, `uv run pytest backend/tests/ -v`, `uv run ruff check .`
-- Frontend: `cd frontend && npm run dev`, `npm run test:run`, `npm run lint`
+- Frontend: `cd frontend && bun dev`, `bun test:run`, `bun lint`
+- Use Bun over npm/npx for frontend. Use Biome (not eslint) for linting/formatting.
 - Use `gh` CLI for all GitHub operations.
 
 ## Issue Tracking
