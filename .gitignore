@@ -445,3 +445,4 @@ docs/architecture/
 flatten.xml
 frontend/screenshots/
 frontend/scripts/manual-dm-test.mjs
+frontend/bun.lock
