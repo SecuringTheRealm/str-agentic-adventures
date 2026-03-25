@@ -21,6 +21,9 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+MAX_HISTORY_MESSAGES = 20
+
+
 class DungeonMasterAgent:
     """
     Dungeon Master Agent using Azure AI Agents SDK to fulfill the role
@@ -32,6 +35,7 @@ class DungeonMasterAgent:
         self._fallback_mode = False
         self.chat_client = None
         self.azure_client: AzureOpenAIClient | None = None
+        self._threads: dict[str, list[dict[str, str]]] = {}
 
         # Try to get the shared chat client from agent client manager
         try:
@@ -89,21 +93,52 @@ class DungeonMasterAgent:
             "the single point of coordination for the entire game experience."
         )
 
-    def _build_user_message(self, user_input: str, context: dict[str, Any]) -> str:
-        """Build user message with context, keeping user input out of system prompts."""
-        parts = []
-        if context.get("character_name"):
-            character_name = context.get("character_name", "an adventurer")
-            character_level = context.get("character_level", "1")
-            character_class = context.get("character_class", "fighter")
-            parts.append(
-                f"[Character context: {character_name}, "
-                f"level {character_level} {character_class}]"
+    def _get_or_create_thread(self, session_id: str) -> list[dict[str, str]]:
+        """Return the message thread for a session, creating one if needed."""
+        if session_id not in self._threads:
+            self._threads[session_id] = []
+        return self._threads[session_id]
+
+    def _summarise_history(self, messages: list[dict[str, str]]) -> str:
+        """Create a brief summary of older conversation messages."""
+        summaries: list[str] = []
+        for msg in messages:
+            role = msg.get("role", "unknown")
+            content = msg.get("content", "")[:100]  # First 100 chars
+            if role == "user":
+                summaries.append(f"Player: {content}")
+            elif role == "assistant":
+                summaries.append(f"DM: {content}")
+        return " | ".join(summaries[-10:])  # Last 10 exchanges summary
+
+    def _build_messages(
+        self,
+        system_prompt: str,
+        user_message: str,
+        thread: list[dict[str, str]],
+    ) -> list[dict[str, str]]:
+        """Build the messages list with sliding window and optional summary."""
+        messages: list[dict[str, str]] = [
+            {"role": "system", "content": system_prompt},
+        ]
+
+        # Add summary of older messages if history exceeds the window
+        if len(thread) > MAX_HISTORY_MESSAGES:
+            dropped = thread[:-MAX_HISTORY_MESSAGES]
+            summary = self._summarise_history(dropped)
+            messages.append(
+                {
+                    "role": "system",
+                    "content": f"Previous conversation summary: {summary}",
+                }
             )
-            parts.append(f"Player ({character_name}): {user_input}")
+            recent = thread[-MAX_HISTORY_MESSAGES:]
         else:
-            parts.append(user_input)
-        return "\n".join(parts)
+            recent = list(thread)
+
+        messages.extend(recent)
+        messages.append({"role": "user", "content": user_message})
+        return messages
 
     async def process_input(
         self, user_input: str, context: dict[str, Any] = None
@@ -124,23 +159,33 @@ class DungeonMasterAgent:
         logger.info("DM processing player input (len=%d)", len(user_input))
         logger.info("DM fallback mode status: %s", self._fallback_mode)
 
+        session_id = context.get("session_id") or context.get(
+            "campaign_id", "default"
+        )
+        thread = self._get_or_create_thread(session_id)
+
+        # Build the user message (may include character name prefix)
+        user_message = user_input
+        if context.get("character_name"):
+            user_message = f"Player ({context['character_name']}): {user_input}"
+
         # Use fallback mode if needed
         if self._fallback_mode:
             logger.info("DM using fallback mode for input.")
-            return await self._process_input_fallback(user_input, context)
+            result = await self._process_input_fallback(user_input, context)
+            # Record the exchange in the thread even in fallback mode
+            thread.append({"role": "user", "content": user_message})
+            thread.append(
+                {"role": "assistant", "content": result.get("message", "")}
+            )
+            return result
 
         try:
             # Create system prompt (static, no user input)
             system_prompt = self._get_dm_system_prompt()
 
-            # Create user message with context
-            user_message = self._build_user_message(user_input, context)
-
-            # Create messages for Azure AI SDK
-            messages: list[dict[str, str]] = [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_message},
-            ]
+            # Build messages with conversation history and sliding window
+            messages = self._build_messages(system_prompt, user_message, thread)
 
             if not self.azure_client:
                 raise RuntimeError("Azure OpenAI client is not initialized")
@@ -157,10 +202,16 @@ class DungeonMasterAgent:
                 )
                 raise
 
+            ai_response = ai_response.strip()
+
+            # Record the exchange in the thread
+            thread.append({"role": "user", "content": user_message})
+            thread.append({"role": "assistant", "content": ai_response})
+
             logger.info("DM received Azure OpenAI response successfully.")
             # Structure the response in the expected format
             return {
-                "message": ai_response.strip(),
+                "message": ai_response,
                 "visuals": [],  # Simple implementation - no visual generation
                 "state_updates": {"last_action": user_input},
                 "combat_updates": None,
@@ -170,7 +221,13 @@ class DungeonMasterAgent:
             logger.error(f"Error in DM processing: {str(e)}")
             # Fall back to using the full fallback processing which handles dice, etc.
             logger.info("DM falling back after error.")
-            return await self._process_input_fallback(user_input, context)
+            result = await self._process_input_fallback(user_input, context)
+            # Record fallback exchange in the thread
+            thread.append({"role": "user", "content": user_message})
+            thread.append(
+                {"role": "assistant", "content": result.get("message", "")}
+            )
+            return result
 
     async def process_input_stream(
         self, user_input: str, context: dict[str, Any] = None
@@ -192,6 +249,16 @@ class DungeonMasterAgent:
 
         logger.info("DM processing streaming input (len=%d)", len(user_input))
 
+        session_id = context.get("session_id") or context.get(
+            "campaign_id", "default"
+        )
+        thread = self._get_or_create_thread(session_id)
+
+        # Build the user message (may include character name prefix)
+        user_message = user_input
+        if context.get("character_name"):
+            user_message = f"Player ({context['character_name']}): {user_input}"
+
         # Use fallback streaming if needed
         if self._fallback_mode:
             await self._process_input_stream_fallback(user_input, context)
@@ -210,16 +277,16 @@ class DungeonMasterAgent:
             # Create system prompt (static, no user input)
             system_prompt = self._get_dm_system_prompt()
 
-            # Create user message with context
-            user_message = self._build_user_message(user_input, context)
+            # Build messages with conversation history and sliding window
+            messages = self._build_messages(system_prompt, user_message, thread)
 
-            messages = [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_message},
-            ]
+            # Stream the AI response and capture the full text
+            full_response = await self._stream_ai_response(messages, websocket)
 
-            # Stream the AI response
-            await self._stream_ai_response(messages, websocket)
+            # Record the exchange in the thread
+            thread.append({"role": "user", "content": user_message})
+            if full_response:
+                thread.append({"role": "assistant", "content": full_response})
 
         except Exception as e:
             logger.error(f"Error in streaming processing: {str(e)}")
@@ -235,8 +302,12 @@ class DungeonMasterAgent:
 
     async def _stream_ai_response(
         self, messages: list[dict[str, str]], websocket: "WebSocket"
-    ) -> None:
-        """Stream AI response using Azure OpenAI chat completions."""
+    ) -> str:
+        """Stream AI response using Azure OpenAI chat completions.
+
+        Returns:
+            The full response text, or an empty string on failure.
+        """
         try:
             # Send start streaming message
             await self._send_chat_message(
@@ -272,6 +343,7 @@ class DungeonMasterAgent:
             await self._send_chat_message(
                 websocket, {"type": "chat_complete", "message": full_response.strip()}
             )
+            return full_response.strip()
 
         except Exception as e:
             logger.error("Error streaming AI response: %s", e, exc_info=True)
@@ -282,6 +354,7 @@ class DungeonMasterAgent:
                     "message": "Failed to generate response. Please try again.",
                 },
             )
+            return ""
 
     def _initialize_fallback_components(self) -> None:
         """Set up minimal components used in fallback mode."""
