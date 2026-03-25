@@ -8,6 +8,7 @@ from typing import Any
 
 from app.agent_client_setup import agent_client_manager
 from app.azure_openai_client import AzureOpenAIClient, azure_openai_client
+from app.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -131,6 +132,7 @@ class NarratorAgent:
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_message},
                 ],
+                deployment=settings.azure_openai_mini_deployment or None,
                 temperature=0.75,
                 max_tokens=350,
             )
@@ -399,6 +401,7 @@ class NarratorAgent:
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_message},
             ],
+            deployment=settings.azure_openai_mini_deployment or None,
             temperature=0.7,
             max_tokens=300,
         )
