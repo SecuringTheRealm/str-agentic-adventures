@@ -47,7 +47,7 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Setup Bun
+    - name: Set up Bun
       uses: oven-sh/setup-bun@v2
       with:
         bun-version: latest
@@ -62,22 +62,17 @@ jobs:
         cd frontend
         bunx playwright install --with-deps chromium
 
-    - name: Setup Python
-      uses: actions/setup-python@v5
+    - name: Set up Python and uv
+      uses: astral-sh/setup-uv@v5
       with:
         python-version: '3.12'
-
-    - name: Install UV
-      run: curl -LsSf https://astral.sh/uv/install.sh | sh
+        enable-cache: true
 
     - name: Install backend dependencies
-      run: |
-        export PATH="$HOME/.local/bin:$PATH"
-        uv sync
+      run: uv sync
 
     - name: Start backend server in test mode
       run: |
-        export PATH="$HOME/.local/bin:$PATH"
         cd backend
         uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 &
         # Wait for backend to be ready (up to 60s)
