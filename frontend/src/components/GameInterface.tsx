@@ -220,6 +220,9 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
       }
 
       setLoading(true);
+      setMessages([
+        { text: `Setting the scene for ${character.name}'s adventure…`, sender: "dm" },
+      ]);
       try {
         const narrative = await getOpeningNarrative(campaign.id, {
           name: character.name,

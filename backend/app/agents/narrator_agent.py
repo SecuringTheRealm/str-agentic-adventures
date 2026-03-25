@@ -643,21 +643,26 @@ class NarratorAgent:
             ),
         }
 
-        actions_by_setting: dict[str, list[str]] = {
-            "exploration": [
-                "Investigate your surroundings",
-                "Speak with nearby locals",
-                "Check your equipment",
+        actions_by_tone: dict[str, list[str]] = {
+            "heroic": [
+                "Look around and take in your surroundings",
+                "Speak with the nearest person",
+                "Check your equipment and supplies",
             ],
-            "combat": [
-                "Draw your weapons and prepare",
-                "Assess the threat",
-                "Look for cover",
+            "dark": [
+                "Scout the area for potential threats",
+                "Find a safe place to plan your next move",
+                "Look for allies or useful information",
             ],
-            "social": [
-                "Introduce yourself",
-                "Ask about local rumors",
-                "Look for a quest board",
+            "mystery": [
+                "Search for clues",
+                "Question the locals",
+                "Examine your surroundings carefully",
+            ],
+            "comedy": [
+                "Survey the situation (try not to make it worse)",
+                "Talk to someone nearby",
+                "Inspect your equipment",
             ],
         }
 
@@ -665,8 +670,8 @@ class NarratorAgent:
             tone,
             f"Adventure calls to {character_name}, and destiny waits for no one.",
         )
-        suggested_actions = actions_by_setting.get(
-            setting,
+        suggested_actions = actions_by_tone.get(
+            tone,
             [
                 "Look around and take in your surroundings",
                 "Speak with the nearest person",

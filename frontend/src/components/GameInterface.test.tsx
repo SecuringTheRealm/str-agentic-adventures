@@ -172,6 +172,20 @@ describe("GameInterface", () => {
     });
   });
 
+  it("shows loading placeholder before narrative arrives", async () => {
+    // Use a never-resolving promise to freeze the component in loading state
+    mockGetOpeningNarrative.mockReturnValue(new Promise(() => {}));
+
+    render(<GameInterface character={mockCharacter} campaign={mockCampaign} />);
+
+    // The "Setting the scene" placeholder should appear immediately
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Setting the scene for Aragorn's adventure/)
+      ).toBeInTheDocument();
+    });
+  });
+
   it("shows suggested actions after opening narrative", async () => {
     render(<GameInterface character={mockCharacter} campaign={mockCampaign} />);
 
