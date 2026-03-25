@@ -170,7 +170,7 @@ class ScribeAgent:
     def log_npc_interaction(self, interaction_data: dict[str, Any]) -> str:
         """Log an interaction with an NPC."""
         import uuid
-        from datetime import datetime
+        from datetime import UTC, datetime
 
         interaction_id = str(uuid.uuid4())
 
@@ -186,7 +186,7 @@ class ScribeAgent:
                 summary=interaction_data.get("summary", ""),
                 outcome=interaction_data.get("outcome"),
                 relationship_change=interaction_data.get("relationship_change", 0),
-                timestamp=interaction_data.get("timestamp") or datetime.utcnow(),
+                timestamp=interaction_data.get("timestamp") or datetime.now(UTC),
                 data=interaction_data,
             )
             db.add(interaction_record)

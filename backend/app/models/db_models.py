@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 
 from sqlalchemy import (
     JSON,
@@ -16,6 +16,10 @@ from sqlalchemy import (
 )
 
 from app.database import Base
+
+
+def _utcnow() -> datetime:
+    return datetime.now(UTC)
 
 
 class Character(Base):
@@ -44,9 +48,9 @@ class Campaign(Base):
     is_template = Column(Boolean, nullable=False, default=False)
     is_custom = Column(Boolean, nullable=False, default=True)
     template_id = Column(String, nullable=True)  # For cloned campaigns
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    created_at = Column(DateTime, nullable=False, default=_utcnow)
     updated_at = Column(
-        DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
+        DateTime, nullable=False, default=_utcnow, onupdate=_utcnow
     )
     data = Column(JSON, nullable=False)  # Full campaign data
 
@@ -65,9 +69,9 @@ class NPC(Base):
     personality = Column(JSON, nullable=False, default=dict)
     stats = Column(JSON, nullable=True)
     relationships = Column(JSON, nullable=False, default=list)
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    created_at = Column(DateTime, nullable=False, default=_utcnow)
     updated_at = Column(
-        DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
+        DateTime, nullable=False, default=_utcnow, onupdate=_utcnow
     )
     data = Column(JSON, nullable=False)  # Full NPC data
 
@@ -84,7 +88,7 @@ class NPCInteraction(Base):
     summary = Column(Text, nullable=False)
     outcome = Column(Text, nullable=True)
     relationship_change = Column(Integer, nullable=False, default=0)
-    timestamp = Column(DateTime, nullable=False, default=datetime.utcnow)
+    timestamp = Column(DateTime, nullable=False, default=_utcnow)
     data = Column(JSON, nullable=False)  # Full interaction data
 
 
