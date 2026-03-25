@@ -331,6 +331,44 @@ async def handle_dice_roll(
         else:
             await manager.send_personal_message(json.dumps(response), websocket)
 
+        # Ask the DM to narrate the roll outcome
+        try:
+            from app.agents.dungeon_master_agent import get_dungeon_master
+
+            dm_agent = get_dungeon_master()
+            roll_context = {
+                "player_name": player_name,
+                "notation": dice_notation,
+                "result": result,
+                "skill": skill,
+                "character_id": character_id,
+                "campaign_id": campaign_id,
+            }
+            narration = await dm_agent.narrate_dice_roll(roll_context)
+            if narration:
+                narration_message = {
+                    "type": "dm_narration",
+                    "narration": narration,
+                    "roll_context": {
+                        "player_name": player_name,
+                        "notation": dice_notation,
+                        "total": result.get("total"),
+                        "skill": skill,
+                    },
+                }
+                if campaign_id:
+                    await manager.send_campaign_message(
+                        json.dumps(narration_message), campaign_id
+                    )
+                else:
+                    await manager.send_personal_message(
+                        json.dumps(narration_message), websocket
+                    )
+        except Exception as narration_error:
+            logger.error(
+                "Error getting DM narration for dice roll: %s", narration_error
+            )
+
     except Exception as e:
         logger.error("Error handling dice roll: %s", e, exc_info=True)
         await manager.send_personal_message(

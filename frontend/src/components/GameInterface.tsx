@@ -156,6 +156,16 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
         break;
       }
 
+      case "dm_narration":
+        // DM narrates the outcome of the dice roll
+        if (typeof message.narration === "string") {
+          setMessages((prev) => [
+            ...prev,
+            { text: message.narration as string, sender: "dm" },
+          ]);
+        }
+        break;
+
       case "game_update":
         // Handle game state updates
         if (message.update_type === "combat_start") {

@@ -476,6 +476,118 @@ class DungeonMasterAgent:
         response["narration"] = self._fallback_generate_response("exploration")
         return response
 
+    async def narrate_dice_roll(self, roll_context: dict[str, Any]) -> str:
+        """
+        Generate a narrative description of a dice roll result.
+
+        Args:
+            roll_context: Dict with player_name, notation, result (total/rolls),
+                          skill, character_id, campaign_id.
+
+        Returns:
+            A short narrative string suitable for broadcasting to players.
+        """
+        player_name = roll_context.get("player_name", "The adventurer")
+        notation = roll_context.get("notation", "dice")
+        result = roll_context.get("result", {})
+        skill = roll_context.get("skill")
+        total = result.get("total", 0)
+        rolls = result.get("rolls", [])
+
+        if self._fallback_mode or not self.azure_client:
+            return self._fallback_narrate_dice_roll(
+                player_name, notation, total, rolls, skill
+            )
+
+        try:
+            skill_text = f" for a {skill.replace('_', ' ')} check" if skill else ""
+            rolls_text = f"[{', '.join(str(r) for r in rolls)}]" if rolls else ""
+            roll_detail = (
+                f"rolled {notation}{skill_text}: {rolls_text} = {total}"
+            )
+
+            is_crit_hit = (
+                len(rolls) == 1 and rolls[0] == 20 and "d20" in notation
+            )
+            is_crit_miss = (
+                len(rolls) == 1 and rolls[0] == 1 and "d20" in notation
+            )
+
+            special = ""
+            if is_crit_hit:
+                special = " This is a CRITICAL SUCCESS (natural 20)!"
+            elif is_crit_miss:
+                special = " This is a CRITICAL FAILURE (natural 1)!"
+
+            prompt = (
+                f"{player_name} {roll_detail}.{special} "
+                "As the Dungeon Master, narrate the outcome of this dice roll "
+                "in 1-2 dramatic sentences without revealing whether the check "
+                "succeeds or fails (leave that to the story context)."
+            )
+
+            ai_response = await self.azure_client.chat_completion(
+                messages=[
+                    {"role": "system", "content": self._get_dm_system_prompt()},
+                    {"role": "user", "content": prompt},
+                ],
+                temperature=0.8,
+                max_tokens=150,
+            )
+            return ai_response.strip()
+
+        except Exception as e:
+            logger.error("Error generating dice roll narrative: %s", e)
+            return self._fallback_narrate_dice_roll(
+                player_name, notation, total, rolls, skill
+            )
+
+    def _fallback_narrate_dice_roll(
+        self,
+        player_name: str,
+        notation: str,
+        total: int,
+        rolls: list[int],
+        skill: str | None,
+    ) -> str:
+        """Generate rule-based narration for a dice roll without AI."""
+        skill_text = f" for {skill.replace('_', ' ')}" if skill else ""
+
+        # Critical hit / miss on a single d20
+        if rolls and len(rolls) == 1 and "d20" in notation:
+            if rolls[0] == 20:
+                return (
+                    f"*A natural 20!* {player_name} rolls{skill_text}: "
+                    f"**{total}**. A critical success!"
+                )
+            if rolls[0] == 1:
+                return (
+                    f"*A natural 1!* {player_name} rolls{skill_text}: "
+                    f"**{total}**. A critical failure!"
+                )
+
+        # Quality-based description for d20 rolls
+        if "d20" in notation:
+            if total >= 20:
+                return (
+                    f"{player_name} rolls{skill_text}: **{total}**. "
+                    "An outstanding result!"
+                )
+            if total >= 15:
+                return (
+                    f"{player_name} rolls{skill_text}: **{total}**. A solid roll."
+                )
+            if total >= 10:
+                return (
+                    f"{player_name} rolls{skill_text}: **{total}**. "
+                    "A modest attempt."
+                )
+            return (
+                f"{player_name} rolls{skill_text}: **{total}**. A poor showing."
+            )
+
+        return f"{player_name} rolls {notation}: **{total}**."
+
     async def _process_input_stream_fallback(
         self, user_input: str, context: dict[str, Any]
     ) -> None:
