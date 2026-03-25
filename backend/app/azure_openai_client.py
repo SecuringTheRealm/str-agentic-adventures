@@ -114,3 +114,15 @@ class AzureOpenAIClient:
 
         except Exception as e:
             return {"success": False, "error": f"Failed to generate image: {str(e)}"}
+
+    def is_configured(self) -> bool:
+        """Return True if Azure OpenAI credentials are present."""
+        return (
+            bool(settings.azure_openai_endpoint)
+            and bool(settings.azure_openai_api_key)
+            and bool(settings.azure_openai_chat_deployment)
+        )
+
+
+# Module-level singleton – import and use this instead of instantiating AzureOpenAIClient directly.
+azure_openai_client = AzureOpenAIClient()

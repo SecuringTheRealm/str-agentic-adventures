@@ -7,7 +7,7 @@ import logging
 from typing import Any
 
 from app.agent_client_setup import agent_client_manager
-from app.azure_openai_client import AzureOpenAIClient
+from app.azure_openai_client import AzureOpenAIClient, azure_openai_client
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +39,7 @@ class NarratorAgent:
                 self._register_skills()
                 logger.info("Narrator agent initialized with Azure AI SDK")
                 try:
-                    self.azure_client = AzureOpenAIClient()
+                    self.azure_client = azure_openai_client
                 except Exception as azure_error:
                     logger.error(
                         "Failed to initialize Azure OpenAI client for Narrator agent: %s",

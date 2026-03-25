@@ -12,7 +12,7 @@ import re
 from typing import TYPE_CHECKING, Any
 
 from app.agent_client_setup import agent_client_manager
-from app.azure_openai_client import AzureOpenAIClient
+from app.azure_openai_client import AzureOpenAIClient, azure_openai_client
 from app.utils.dice import DiceRoller
 
 if TYPE_CHECKING:
@@ -45,7 +45,7 @@ class DungeonMasterAgent:
             else:
                 logger.info("DM Agent initialized with Azure AI Agents SDK")
                 try:
-                    self.azure_client = AzureOpenAIClient()
+                    self.azure_client = azure_openai_client
                 except Exception as azure_error:
                     logger.error(
                         "Failed to initialize Azure OpenAI client for DM agent: %s. "

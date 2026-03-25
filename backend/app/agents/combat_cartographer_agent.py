@@ -8,7 +8,7 @@ from typing import Any
 from azure.ai.inference import ChatCompletionsClient
 
 from app.agent_client_setup import agent_client_manager
-from app.azure_openai_client import AzureOpenAIClient
+from app.azure_openai_client import AzureOpenAIClient, azure_openai_client
 
 logger = logging.getLogger(__name__)
 
@@ -44,10 +44,10 @@ class CombatCartographerAgent:
             )
             self._fallback_mode = True
 
-        # Image generation uses AzureOpenAIClient (for DALL-E support)
+        # Image generation uses the shared AzureOpenAIClient singleton (for DALL-E support)
         if not self._fallback_mode:
             try:
-                self.azure_client = AzureOpenAIClient()
+                self.azure_client = azure_openai_client
             except Exception as e:
                 logger.warning(
                     f"Failed to initialize Azure OpenAI client for image generation: {e}"

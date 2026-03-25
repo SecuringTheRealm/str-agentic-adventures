@@ -224,7 +224,7 @@ class CampaignService:
                 db.query(CampaignDB)
                 .filter(
                     CampaignDB.id == campaign_id,
-                    not CampaignDB.is_template,  # Only allow deletion of non-templates
+                    CampaignDB.is_template == False,  # noqa: E712 - Only allow deletion of non-templates
                 )
                 .first()
             )

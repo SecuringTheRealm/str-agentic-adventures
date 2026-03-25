@@ -8,7 +8,7 @@ from typing import Any
 
 # Note: Converted from Agent plugin to direct function calls
 
-from app.azure_openai_client import AzureOpenAIClient
+from app.azure_openai_client import azure_openai_client
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ class CharacterVisualizationPlugin:
 
     def __init__(self) -> None:
         """Initialize the character visualization plugin."""
-        self.azure_client = AzureOpenAIClient()
+        self.azure_client = azure_openai_client
         self.character_portraits = {}
         self.character_variations = {}
 
