@@ -1,9 +1,16 @@
-"""Tests for backend/app/rules_engine.py — attack resolution and damage calculation."""
+"""Tests for backend/app/rules_engine.py — attack resolution, damage calculation, HP tracking, death saves, initiative."""
 
 from unittest.mock import patch
 
 import pytest
-from app.rules_engine import calculate_damage, resolve_attack
+from app.rules_engine import (
+    apply_damage,
+    apply_healing,
+    calculate_damage,
+    death_saving_throw,
+    resolve_attack,
+    roll_initiative,
+)
 
 # ---------------------------------------------------------------------------
 # resolve_attack
@@ -177,3 +184,215 @@ class TestCalculateDamageCritical:
         with patch("app.rules_engine.random.randint", return_value=3):
             result = calculate_damage("2d6", modifier=0, critical=False)
         assert len(result["rolls"]) == 2
+
+
+# ---------------------------------------------------------------------------
+# apply_damage / apply_healing
+# ---------------------------------------------------------------------------
+
+
+class TestApplyDamage:
+    """Tests for apply_damage()."""
+
+    def test_damage_reduces_hp(self) -> None:
+        """Damage correctly reduces current HP."""
+        result = apply_damage(current_hp=20, max_hp=20, damage=5)
+        assert result["new_hp"] == 15
+        assert result["unconscious"] is False
+        assert result["instant_death"] is False
+
+    def test_hp_cannot_go_below_zero(self) -> None:
+        """HP is clamped to 0, not negative."""
+        result = apply_damage(current_hp=5, max_hp=20, damage=10)
+        assert result["new_hp"] == 0
+
+    def test_unconscious_at_zero_hp(self) -> None:
+        """Character is unconscious when HP reaches 0."""
+        result = apply_damage(current_hp=5, max_hp=20, damage=5)
+        assert result["new_hp"] == 0
+        assert result["unconscious"] is True
+        assert result["instant_death"] is False
+
+    def test_instant_death_when_damage_equals_max_hp(self) -> None:
+        """Instant death when remaining damage (overkill) equals max_hp."""
+        # current_hp=5, damage=25: overkill = 20 = max_hp → instant death
+        result = apply_damage(current_hp=5, max_hp=20, damage=25)
+        assert result["new_hp"] == 0
+        assert result["instant_death"] is True
+
+    def test_instant_death_when_damage_exceeds_max_hp(self) -> None:
+        """Instant death when remaining damage (overkill) exceeds max_hp."""
+        # current_hp=1, damage=22: overkill = 21 > 20 → instant death
+        result = apply_damage(current_hp=1, max_hp=20, damage=22)
+        assert result["new_hp"] == 0
+        assert result["instant_death"] is True
+
+    def test_no_instant_death_when_damage_below_max_hp(self) -> None:
+        """No instant death when remaining damage < max_hp."""
+        result = apply_damage(current_hp=10, max_hp=20, damage=15)
+        assert result["new_hp"] == 0
+        assert result["unconscious"] is True
+        assert result["instant_death"] is False
+
+    def test_zero_damage(self) -> None:
+        """Zero damage leaves HP unchanged."""
+        result = apply_damage(current_hp=15, max_hp=20, damage=0)
+        assert result["new_hp"] == 15
+        assert result["unconscious"] is False
+
+    def test_negative_damage_treated_as_zero(self) -> None:
+        """Negative damage values are treated as 0."""
+        result = apply_damage(current_hp=15, max_hp=20, damage=-5)
+        assert result["new_hp"] == 15
+
+
+class TestApplyHealing:
+    """Tests for apply_healing()."""
+
+    def test_healing_increases_hp(self) -> None:
+        """Healing correctly increases HP."""
+        result = apply_healing(current_hp=5, max_hp=20, healing=10)
+        assert result["new_hp"] == 15
+
+    def test_healing_cannot_exceed_max_hp(self) -> None:
+        """Healing is capped at max_hp."""
+        result = apply_healing(current_hp=18, max_hp=20, healing=10)
+        assert result["new_hp"] == 20
+
+    def test_healing_at_full_hp(self) -> None:
+        """Healing when already at full HP stays at max."""
+        result = apply_healing(current_hp=20, max_hp=20, healing=5)
+        assert result["new_hp"] == 20
+
+    def test_negative_healing_treated_as_zero(self) -> None:
+        """Negative healing values are treated as 0."""
+        result = apply_healing(current_hp=10, max_hp=20, healing=-5)
+        assert result["new_hp"] == 10
+
+
+# ---------------------------------------------------------------------------
+# death_saving_throw
+# ---------------------------------------------------------------------------
+
+
+class TestDeathSavingThrow:
+    """Tests for death_saving_throw()."""
+
+    def test_success_at_roll_ten_or_higher(self) -> None:
+        """Roll >= 10 is a success."""
+        with patch("app.rules_engine.random.randint", return_value=10):
+            result = death_saving_throw()
+        assert result["roll"] == 10
+        assert result["success"] is True
+        assert result["critical_success"] is False
+        assert result["critical_fail"] is False
+
+    def test_failure_below_ten(self) -> None:
+        """Roll < 10 is a failure."""
+        with patch("app.rules_engine.random.randint", return_value=9):
+            result = death_saving_throw()
+        assert result["roll"] == 9
+        assert result["success"] is False
+        assert result["critical_success"] is False
+        assert result["critical_fail"] is False
+
+    def test_natural_20_critical_success(self) -> None:
+        """Natural 20 is a critical success (regain 1 HP)."""
+        with patch("app.rules_engine.random.randint", return_value=20):
+            result = death_saving_throw()
+        assert result["roll"] == 20
+        assert result["success"] is True
+        assert result["critical_success"] is True
+        assert result["critical_fail"] is False
+
+    def test_natural_1_critical_fail(self) -> None:
+        """Natural 1 is a critical failure (counts as 2 failures)."""
+        with patch("app.rules_engine.random.randint", return_value=1):
+            result = death_saving_throw()
+        assert result["roll"] == 1
+        assert result["success"] is False
+        assert result["critical_success"] is False
+        assert result["critical_fail"] is True
+
+    def test_result_contains_required_keys(self) -> None:
+        """Result always has the four required keys."""
+        result = death_saving_throw()
+        assert "roll" in result
+        assert "success" in result
+        assert "critical_success" in result
+        assert "critical_fail" in result
+
+    def test_roll_in_valid_range(self) -> None:
+        """Roll is always between 1 and 20."""
+        for _ in range(20):
+            result = death_saving_throw()
+            assert 1 <= result["roll"] <= 20
+
+
+# ---------------------------------------------------------------------------
+# roll_initiative
+# ---------------------------------------------------------------------------
+
+
+class TestRollInitiative:
+    """Tests for roll_initiative()."""
+
+    def test_initiative_sorted_descending(self) -> None:
+        """Combatants are sorted by initiative highest first."""
+        combatants = [
+            {"name": "Fighter", "dex_modifier": 2},
+            {"name": "Rogue", "dex_modifier": 4},
+            {"name": "Wizard", "dex_modifier": 1},
+        ]
+        with patch(
+            "app.rules_engine.random.randint",
+            side_effect=[5, 10, 8],  # Fighter=7, Rogue=14, Wizard=9
+        ):
+            results = roll_initiative(combatants)
+
+        assert results[0]["name"] == "Rogue"   # 14
+        assert results[1]["name"] == "Wizard"  # 9
+        assert results[2]["name"] == "Fighter" # 7
+
+    def test_dex_modifier_tiebreaker(self) -> None:
+        """Ties in initiative are broken by DEX modifier (higher wins)."""
+        combatants = [
+            {"name": "LowDex", "dex_modifier": 0},
+            {"name": "HighDex", "dex_modifier": 3},
+        ]
+        # Both roll 8 so total initiative is 8 vs 11... let's make raw dice tie
+        with patch(
+            "app.rules_engine.random.randint",
+            side_effect=[10, 7],  # LowDex=10, HighDex=10 (7+3)
+        ):
+            results = roll_initiative(combatants)
+
+        # Both have initiative 10; HighDex (modifier 3) wins the tiebreak
+        assert results[0]["name"] == "HighDex"
+        assert results[1]["name"] == "LowDex"
+
+    def test_initiative_includes_roll_and_total(self) -> None:
+        """Each result entry contains initiative_roll and initiative."""
+        combatants = [{"name": "A", "dex_modifier": 2}]
+        with patch("app.rules_engine.random.randint", return_value=12):
+            results = roll_initiative(combatants)
+        assert results[0]["initiative_roll"] == 12
+        assert results[0]["initiative"] == 14  # 12 + 2
+
+    def test_missing_dex_modifier_defaults_to_zero(self) -> None:
+        """Combatants without dex_modifier default to 0."""
+        combatants = [{"name": "Monster"}]
+        with patch("app.rules_engine.random.randint", return_value=15):
+            results = roll_initiative(combatants)
+        assert results[0]["initiative"] == 15
+
+    def test_empty_combatant_list(self) -> None:
+        """Empty list returns empty list."""
+        assert roll_initiative([]) == []
+
+    def test_original_combatant_data_preserved(self) -> None:
+        """Original combatant data is preserved in the result entries."""
+        combatants = [{"name": "Paladin", "dex_modifier": 1, "hp": 45}]
+        results = roll_initiative(combatants)
+        assert results[0]["name"] == "Paladin"
+        assert results[0]["hp"] == 45
