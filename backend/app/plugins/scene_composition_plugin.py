@@ -71,8 +71,7 @@ class SceneCompositionPlugin:
             result = self.azure_client.generate_image(
                 prompt=scene_prompt,
                 size="1792x1024",  # Landscape format for scenes
-                quality="standard",
-                style="vivid",
+                quality="medium",
             )
 
             # Create scene ID
@@ -120,7 +119,7 @@ class SceneCompositionPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error illustrating scene: {str(e)}")
+            logger.error("Error illustrating scene: %s", str(e))
             return {"status": "error", "error": f"Scene illustration failed: {str(e)}"}
 
     def create_location_template(
@@ -174,7 +173,7 @@ class SceneCompositionPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error creating location template: {str(e)}")
+            logger.error("Error creating location template: %s", str(e))
             return {
                 "status": "error",
                 "error": f"Location template creation failed: {str(e)}",
@@ -212,8 +211,7 @@ class SceneCompositionPlugin:
             result = self.azure_client.generate_image(
                 prompt=variation_prompt,
                 size="1792x1024",
-                quality="standard",
-                style="vivid",
+                quality="medium",
             )
 
             # Create variation data
@@ -246,7 +244,7 @@ class SceneCompositionPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error generating scene variation: {str(e)}")
+            logger.error("Error generating scene variation: %s", str(e))
             return {
                 "status": "error",
                 "error": f"Scene variation generation failed: {str(e)}",
@@ -289,8 +287,7 @@ class SceneCompositionPlugin:
             result = self.azure_client.generate_image(
                 prompt=prompt,
                 size=size,
-                quality="hd",  # Higher quality for cinematic shots
-                style="vivid",
+                quality="high",  # Higher quality for cinematic shots
             )
 
             # Create shot data
@@ -325,7 +322,7 @@ class SceneCompositionPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error creating establishing shot: {str(e)}")
+            logger.error("Error creating establishing shot: %s", str(e))
             return {
                 "status": "error",
                 "error": f"Establishing shot creation failed: {str(e)}",
@@ -363,8 +360,7 @@ class SceneCompositionPlugin:
             result = self.azure_client.generate_image(
                 prompt=map_prompt,
                 size="1024x1024",  # Square format for battle maps
-                quality="standard",
-                style="natural",  # More realistic for tactical use
+                quality="medium",
             )
 
             # Create map data
@@ -401,7 +397,7 @@ class SceneCompositionPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error generating battle map: {str(e)}")
+            logger.error("Error generating battle map: %s", str(e))
             return {
                 "status": "error",
                 "error": f"Battle map generation failed: {str(e)}",
@@ -437,7 +433,7 @@ class SceneCompositionPlugin:
             return {"status": "success", "analysis": analysis}
 
         except Exception as e:
-            logger.error(f"Error analyzing scene composition: {str(e)}")
+            logger.error("Error analyzing scene composition: %s", str(e))
             return {
                 "status": "error",
                 "error": f"Scene composition analysis failed: {str(e)}",

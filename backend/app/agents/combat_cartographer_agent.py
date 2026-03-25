@@ -39,18 +39,19 @@ class CombatCartographerAgent:
                 )
         except Exception as e:
             logger.warning(
-                f"Failed to initialize Combat Cartographer agent with Azure AI SDK: {e}. "
-                "Operating in fallback mode."
+                "Failed to initialize Combat Cartographer agent with Azure AI SDK: %s. "
+                "Operating in fallback mode.",
+                e,
             )
             self._fallback_mode = True
 
-        # Image generation uses the shared AzureOpenAIClient singleton (for DALL-E support)
+        # Image generation uses AzureOpenAIClient (for gpt-image-1 support)
         if not self._fallback_mode:
             try:
                 self.azure_client = azure_openai_client
             except Exception as e:
                 logger.warning(
-                    f"Failed to initialize Azure OpenAI client for image generation: {e}"
+                    "Failed to initialize Azure OpenAI client for image generation: %s", e
                 )
                 self._fallback_mode = True
 
@@ -97,11 +98,11 @@ class CombatCartographerAgent:
 
             logger.info("Combat Cartographer agent plugins initialized for direct access")
         except ImportError as e:
-            logger.error(f"Error importing Combat Cartographer agent plugins: {str(e)}")
+            logger.error("Error importing Combat Cartographer agent plugins: %s", str(e))
             raise
         except (AttributeError, ValueError) as e:
             logger.error(
-                f"Error initializing Combat Cartographer agent plugins: {str(e)}"
+                "Error initializing Combat Cartographer agent plugins: %s", str(e)
             )
             raise
 
@@ -148,9 +149,9 @@ class CombatCartographerAgent:
             # Add tactical map specifics
             prompt += ". Grid-based tactical map, D&D battle map style, clear terrain features, strategic positioning elements, top-down orthographic view, detailed but clear, suitable for tabletop RPG combat"
 
-            # Generate the map using Azure OpenAI DALL-E
+            # Generate the map using Azure OpenAI gpt-image-1
             image_result = await self.azure_client.generate_image(
-                prompt=prompt, size="1024x1024", quality="standard", style="vivid"
+                prompt=prompt, size="1024x1024", quality="medium"
             )
 
             if image_result["success"]:
@@ -169,7 +170,6 @@ class CombatCartographerAgent:
                     "generation_details": {
                         "size": image_result["size"],
                         "quality": image_result["quality"],
-                        "style": image_result["style"],
                     },
                 }
             else:
@@ -188,8 +188,7 @@ class CombatCartographerAgent:
                     "combat_context": combat_context,
                     "generation_details": {
                         "size": size if size else "1024x1024",
-                        "quality": "standard",
-                        "style": "placeholder",
+                        "quality": "medium",
                     },
                     "error": image_result.get("error", "Battle map generation failed"),
                 }
@@ -200,7 +199,7 @@ class CombatCartographerAgent:
             return battle_map
 
         except Exception as e:
-            logger.error(f"Error generating battle map: {str(e)}")
+            logger.error("Error generating battle map: %s", str(e))
             return {"error": "Failed to generate battle map"}
 
     async def update_map_with_combat_state(
@@ -305,11 +304,11 @@ class CombatCartographerAgent:
             }
             battle_map["map_version"] = battle_map.get("map_version", 1) + 1
 
-            logger.info(f"Successfully updated battle map {map_id} with combat state")
+            logger.info("Successfully updated battle map %s with combat state", map_id)
             return battle_map
 
         except Exception as e:
-            logger.error(f"Error updating battle map: {str(e)}")
+            logger.error("Error updating battle map: %s", str(e))
             return {"error": "Failed to update battle map"}
 
     def _calculate_map_stats(self, battle_map: dict[str, Any]) -> dict[str, Any]:

@@ -78,34 +78,36 @@ class AzureOpenAIClient:
         self,
         prompt: str,
         size: Literal["1024x1024", "1792x1024", "1024x1792"] = "1024x1024",
-        quality: Literal["standard", "hd"] = "standard",
-        style: Literal["vivid", "natural"] = "vivid",
+        quality: Literal["low", "medium", "high"] = "medium",
         deployment: str | None = None,
         **kwargs: Any,
     ) -> dict[str, Any]:
-        """Generate an image using Azure OpenAI DALL-E."""
+        """Generate an image using Azure OpenAI gpt-image-1.
+
+        Returns a dict with b64_json image data (as a data URI) on success.
+        """
         deployment_name = deployment or settings.azure_openai_dalle_deployment
         try:
-            # Use the new OpenAI SDK 1.0+ API for images
             response = await self.client.images.generate(
                 model=deployment_name,
                 prompt=prompt,
                 size=size,
                 quality=quality,
-                style=style,
                 n=1,
                 **kwargs,
             )
 
             if response and response.data:
                 image_data = response.data[0]
+                b64 = image_data.b64_json
+                data_uri = f"data:image/png;base64,{b64}"
                 return {
                     "success": True,
-                    "image_url": image_data.url,
+                    "image_url": data_uri,
+                    "b64_json": b64,
                     "revised_prompt": getattr(image_data, "revised_prompt", prompt),
                     "size": size,
                     "quality": quality,
-                    "style": style,
                 }
             return {
                 "success": False,

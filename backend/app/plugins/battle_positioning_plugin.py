@@ -70,7 +70,7 @@ class BattlePositioningPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error calculating starting positions: {str(e)}")
+            logger.error("Error calculating starting positions: %s", str(e))
             return {
                 "status": "error",
                 "error": f"Position calculation failed: {str(e)}",
@@ -122,7 +122,7 @@ class BattlePositioningPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error recommending formation adjustments: {str(e)}")
+            logger.error("Error recommending formation adjustments: %s", str(e))
             return {
                 "status": "error",
                 "error": f"Formation adjustment failed: {str(e)}",
@@ -166,7 +166,7 @@ class BattlePositioningPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error optimizing unit spacing: {str(e)}")
+            logger.error("Error optimizing unit spacing: %s", str(e))
             return {
                 "status": "error",
                 "error": f"Spacing optimization failed: {str(e)}",

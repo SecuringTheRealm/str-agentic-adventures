@@ -1,7 +1,7 @@
 """Campaign service for managing campaign operations."""
 
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import or_
@@ -210,7 +210,7 @@ class CampaignService:
                 db_campaign.world_art = updates["world_art"]
 
             db_campaign.data = campaign_to_dict(updated_campaign)
-            db_campaign.updated_at = datetime.utcnow()
+            db_campaign.updated_at = datetime.now(UTC)
 
             db.commit()
             db.refresh(db_campaign)

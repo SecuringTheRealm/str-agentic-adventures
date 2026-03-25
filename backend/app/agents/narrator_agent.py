@@ -52,8 +52,9 @@ class NarratorAgent:
 
         except Exception as e:
             logger.warning(
-                f"Failed to initialize Narrator agent with Azure AI SDK: {e}. "
-                "Operating in fallback mode."
+                "Failed to initialize Narrator agent with Azure AI SDK: %s. "
+                "Operating in fallback mode.",
+                e,
             )
             self._fallback_mode = True
             self._initialize_fallback_components()
@@ -83,7 +84,7 @@ class NarratorAgent:
 
             logger.info("Narrator agent plugins initialized for direct access")
         except Exception as e:
-            logger.error(f"Error initializing Narrator agent plugins: {str(e)}")
+            logger.error("Error initializing Narrator agent plugins: %s", str(e))
             # Don't raise - enter fallback mode instead
             self._fallback_mode = True
             logger.warning(
@@ -367,7 +368,7 @@ class NarratorAgent:
             return result
 
         except Exception as e:
-            logger.error(f"Error processing action: {str(e)}")
+            logger.error("Error processing action: %s", str(e))
             return {
                 "success": False,
                 "description": "Something unexpected happens, preventing your action.",
@@ -514,7 +515,7 @@ class NarratorAgent:
             }
 
         except Exception as e:
-            logger.error(f"Error creating campaign story: {str(e)}")
+            logger.error("Error creating campaign story: %s", str(e))
             return {
                 "success": False,
                 "message": f"Failed to create campaign story: {str(e)}",
@@ -569,7 +570,7 @@ class NarratorAgent:
             }
 
         except Exception as e:
-            logger.error(f"Error getting narrative status: {str(e)}")
+            logger.error("Error getting narrative status: %s", str(e))
             return {
                 "success": False,
                 "message": f"Failed to get narrative status: {str(e)}",

@@ -23,14 +23,14 @@ class CombatMCAgent:
     def __init__(self) -> None:
         """Initialize the Combat MC agent with Azure AI SDK."""
         self.chat_client: ChatCompletionsClient | None = None
-        self.fallback_mode = False  # Track if we're using fallback mechanics
+        self._fallback_mode = False  # Track if we're using fallback mechanics
         self.rules_engine: Any | None = None  # Store rules engine plugin instance
 
         # Try to get the shared chat client from agent client manager
         try:
             self.chat_client = agent_client_manager.get_chat_client()
             if self.chat_client is None:
-                self.fallback_mode = True
+                self._fallback_mode = True
                 logger.warning(
                     "Combat MC agent operating in fallback mode - Azure OpenAI not configured"
                 )
@@ -40,10 +40,11 @@ class CombatMCAgent:
                 logger.info("Combat MC agent initialized with Azure AI SDK")
         except Exception as e:
             logger.warning(
-                f"Failed to initialize Combat MC agent with Azure AI SDK: {e}. "
-                "Operating in fallback mode."
+                "Failed to initialize Combat MC agent with Azure AI SDK: %s. "
+                "Operating in fallback mode.",
+                e,
             )
-            self.fallback_mode = True
+            self._fallback_mode = True
             self._initialize_fallback_mechanics()
 
         # Active combat tracking
@@ -52,7 +53,7 @@ class CombatMCAgent:
     def _register_skills(self) -> None:
         """Register necessary skills for the Combat MC agent."""
         # Skip if in fallback mode
-        if self.fallback_mode or self.chat_client is None:
+        if self._fallback_mode or self.chat_client is None:
             logger.info(
                 "Combat MC agent in fallback mode - skipping plugin registration"
             )
@@ -70,9 +71,9 @@ class CombatMCAgent:
 
             logger.info("Combat MC agent plugins initialized for direct access")
         except Exception as e:
-            logger.error(f"Error initializing Combat MC agent plugins: {str(e)}")
+            logger.error("Error initializing Combat MC agent plugins: %s", str(e))
             logger.warning("Enabling fallback mode with built-in combat mechanics")
-            self.fallback_mode = True
+            self._fallback_mode = True
             self._initialize_fallback_mechanics()
 
     def _initialize_fallback_mechanics(self) -> None:
@@ -176,7 +177,7 @@ class CombatMCAgent:
             return encounter
 
         except Exception as e:
-            logger.error(f"Error creating encounter: {str(e)}")
+            logger.error("Error creating encounter: %s", str(e))
             return {"error": "Failed to create encounter"}
 
     async def start_combat(
@@ -203,7 +204,7 @@ class CombatMCAgent:
 
             # Players
             for player in party_members:
-                if self.fallback_mode:
+                if self._fallback_mode:
                     # Use fallback d20 roll
                     dex_mod = (
                         player.get("abilities", {}).get("dexterity", 10) - 10
@@ -228,7 +229,7 @@ class CombatMCAgent:
 
             # Enemies
             for enemy in encounter["enemies"]:
-                if self.fallback_mode:
+                if self._fallback_mode:
                     # Use fallback d20 roll with simple modifier
                     initiative_mod = random.randint(-2, 2)  # noqa: S311
                     roll_result = self._fallback_roll_d20(initiative_mod)
@@ -259,7 +260,7 @@ class CombatMCAgent:
             return encounter
 
         except Exception as e:
-            logger.error(f"Error starting combat: {str(e)}")
+            logger.error("Error starting combat: %s", str(e))
             return {"error": "Failed to start combat"}
 
     async def process_combat_action(
@@ -284,14 +285,14 @@ class CombatMCAgent:
             if encounter["status"] != "active":
                 return {"error": "Combat is not currently active"}
 
-            if self.fallback_mode:
+            if self._fallback_mode:
                 # Use fallback combat processing
                 return self._process_fallback_combat_action(encounter, action_data)
             # Use plugin-based combat processing
             return self._process_plugin_combat_action(encounter, action_data)
 
         except Exception as e:
-            logger.error(f"Error processing combat action: {str(e)}")
+            logger.error("Error processing combat action: %s", str(e))
             return {"error": "Failed to process combat action"}
 
     def _process_fallback_combat_action(
@@ -426,7 +427,7 @@ class CombatMCAgent:
             return result
 
         except Exception as e:
-            logger.error(f"Error in plugin-based combat action processing: {str(e)}")
+            logger.error("Error in plugin-based combat action processing: %s", str(e))
             result["message"] = f"Error processing {action_type} action"
             return result
 
@@ -488,7 +489,7 @@ class CombatMCAgent:
             return result
 
         except Exception as e:
-            logger.error(f"Error processing attack action: {str(e)}")
+            logger.error("Error processing attack action: %s", str(e))
             result["message"] = f"Error processing attack: {str(e)}"
             return result
 
@@ -569,7 +570,7 @@ class CombatMCAgent:
             return result
 
         except Exception as e:
-            logger.error(f"Error processing spell attack action: {str(e)}")
+            logger.error("Error processing spell attack action: %s", str(e))
             result["message"] = f"Error processing spell attack: {str(e)}"
             return result
 
@@ -606,7 +607,7 @@ class CombatMCAgent:
             return result
 
         except Exception as e:
-            logger.error(f"Error processing spell damage action: {str(e)}")
+            logger.error("Error processing spell damage action: %s", str(e))
             result["message"] = f"Error processing spell damage: {str(e)}"
             return result
 
@@ -640,7 +641,7 @@ class CombatMCAgent:
             return result
 
         except Exception as e:
-            logger.error(f"Error processing spell healing action: {str(e)}")
+            logger.error("Error processing spell healing action: %s", str(e))
             result["message"] = f"Error processing spell healing: {str(e)}"
             return result
 
@@ -684,7 +685,7 @@ class CombatMCAgent:
             return result
 
         except Exception as e:
-            logger.error(f"Error processing skill check action: {str(e)}")
+            logger.error("Error processing skill check action: %s", str(e))
             result["message"] = f"Error processing skill check: {str(e)}"
             return result
 
@@ -722,7 +723,7 @@ class CombatMCAgent:
             return result
 
         except Exception as e:
-            logger.error(f"Error processing saving throw action: {str(e)}")
+            logger.error("Error processing saving throw action: %s", str(e))
             result["message"] = f"Error processing saving throw: {str(e)}"
             return result
 
@@ -854,11 +855,11 @@ class CombatMCAgent:
 
     def is_fallback_mode(self) -> bool:
         """Check if the combat MC agent is running in fallback mode."""
-        return self.fallback_mode
+        return self._fallback_mode
 
     def get_capabilities(self) -> dict[str, Any]:
         """Get information about the agent's current capabilities."""
-        if self.fallback_mode:
+        if self._fallback_mode:
             return {
                 "mode": "fallback",
                 "capabilities": [

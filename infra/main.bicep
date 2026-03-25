@@ -25,8 +25,8 @@ param azureOpenAiChatDeployment string = 'gpt-4o-mini'
 @description('Azure OpenAI Embedding Deployment Name')
 param azureOpenAiEmbeddingDeployment string = 'text-embedding-ada-002'
 
-@description('Azure OpenAI DALL-E Deployment Name')
-param azureOpenAiDalleDeployment string = 'dall-e-3'
+@description('Azure OpenAI Image Generation Deployment Name')
+param azureOpenAiDalleDeployment string = 'gpt-image-1-mini'
 
 // This template should be deployed at the subscription level to create the resource group
 targetScope = 'subscription'
@@ -76,6 +76,17 @@ module storage 'modules/storage.bicep' = {
   }
 }
 
+// Create Azure Container Registry for backend images
+module containerRegistry 'modules/container-registry.bicep' = {
+  name: 'container-registry'
+  scope: rg
+  params: {
+    name: 'acr${resourceToken}'
+    location: location
+    tags: tags
+  }
+}
+
 // Backend Container App will be deployed separately via GitHub Actions workflow
 // This ensures the latest code is always deployed without requiring Bicep updates
 
@@ -99,6 +110,8 @@ output AZURE_SUBSCRIPTION_ID string = subscription().subscriptionId
 output FRONTEND_URI string = frontend.outputs.uri
 
 output AZURE_RESOURCE_GROUP string = rg.name
+output AZURE_CONTAINER_REGISTRY_ENDPOINT string = containerRegistry.outputs.loginServer
+output AZURE_CONTAINER_REGISTRY_NAME string = containerRegistry.outputs.name
 output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = containerAppsEnvironment.outputs.id
 output AZURE_STORAGE_ACCOUNT_NAME string = storage.outputs.name
 output AZURE_STATIC_WEB_APP_NAME string = frontend.outputs.name

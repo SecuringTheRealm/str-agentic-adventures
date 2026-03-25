@@ -8,7 +8,7 @@ This document explains how to deploy the STR Agentic Adventures application to A
 2. **Azure AI Foundry Project**: You need access to Azure AI Foundry with the following models deployed:
    - GPT-4 or GPT-4o-mini for chat completion
    - text-embedding-ada-002 for embeddings
-   - DALL-E 3 for image generation (optional)
+   - gpt-image-1-mini for image generation (optional)
 
 > **Getting Started with Azure AI Foundry**: Visit [ai.azure.com](https://ai.azure.com) to create your project and deploy the required OpenAI models. Azure AI Foundry provides a unified platform for managing Azure OpenAI services and is the recommended way to access OpenAI models in Azure.
 
@@ -37,7 +37,7 @@ This document explains how to deploy the STR Agentic Adventures application to A
 3. **Set up Azure AI Foundry credentials**:
    - Visit [Azure AI Foundry](https://ai.azure.com)
    - Create or select an existing project
-   - Deploy required models (GPT-4o-mini, text-embedding-ada-002, DALL-E 3)
+   - Deploy required models (GPT-4o-mini, text-embedding-ada-002, gpt-image-1-mini)
    - Note your project endpoint and API key from Project Settings
 
 4. **Configure your local environment**:
@@ -193,7 +193,7 @@ If you prefer using client secrets or federated credentials aren't available:
 1. **In Azure AI Foundry**, go to [ai.azure.com](https://ai.azure.com) and select your project
 2. **Endpoint**: Found in **Project settings** (e.g., `https://your-project.openai.azure.com/`)
 3. **API Key**: In **Project settings** > **Keys and Endpoint**, copy one of the available keys
-4. **Model Deployments**: Go to **Deployments** to verify your deployed models (gpt-4o-mini, text-embedding-ada-002, dall-e-3)
+4. **Model Deployments**: Go to **Deployments** to verify your deployed models (gpt-4o-mini, text-embedding-ada-002, gpt-image-1-mini)
 
 > **Note**: Azure AI Foundry provides a unified interface for managing your Azure OpenAI resources. If you prefer using the Azure Portal directly, you can access your Azure OpenAI Service resource, but Azure AI Foundry is the recommended approach.
 
@@ -220,7 +220,7 @@ Configure these in Settings > Secrets and variables > Actions > Repository varia
 - `AZURE_LOCATION`: Azure region (default: eastus)
 - `AZURE_OPENAI_CHAT_DEPLOYMENT`: Chat model deployment name (default: gpt-4o-mini)
 - `AZURE_OPENAI_EMBEDDING_DEPLOYMENT`: Embedding model deployment name (default: text-embedding-ada-002)
-- `AZURE_OPENAI_DALLE_DEPLOYMENT`: DALL-E deployment name (default: dall-e-3)
+- `AZURE_OPENAI_DALLE_DEPLOYMENT`: Image generation deployment name (default: gpt-image-1-mini)
 
 #### Finding Your Azure Values
 
@@ -294,26 +294,11 @@ Before running GitHub Actions, verify your service principal works:
 
 ### Deployment Workflows
 
-> **Note**: When a workflow triggers on `pull_request` with `branches: [ main ]`, it runs when pull requests are opened/updated that **target** the main branch, not when pushing **to** the main branch. This allows testing changes before they are merged.
-
 #### Production Deployment
 - **Trigger**: Push to `main` branch or manual trigger
 - **Workflow**: `.github/workflows/deploy-production.yml`
 - **Environment**: production
 - **Resources**: Creates a production environment with all Azure resources
-
-#### Pull Request Environments
-- **Trigger**: Pull request opened/updated against `main` branch (runs when PRs target main, not when pushing to main)
-- **Workflow**: `.github/workflows/deploy-pr.yml`
-- **Environment**: development (temporary environment named `pr-{PR_NUMBER}`)
-- **Resources**: Creates a temporary environment for testing each pull request
-- **Purpose**: Allows testing changes in isolation before merging to main
-
-#### Environment Cleanup
-- **Trigger**: Pull request closed/merged (automatically cleans up when PR is finished)
-- **Workflow**: `.github/workflows/cleanup-pr.yml`
-- **Action**: Deletes the temporary PR environment (`pr-{PR_NUMBER}`)
-- **Purpose**: Ensures no orphaned environments remain after PR completion
 
 ## Azure Resources
 

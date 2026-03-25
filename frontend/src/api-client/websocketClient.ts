@@ -97,6 +97,17 @@ export interface CharacterUpdateMessage extends BaseWebSocketMessage {
   data: Record<string, unknown>;
 }
 
+export interface DmNarrationMessage extends BaseWebSocketMessage {
+  type: "dm_narration";
+  narration: string;
+  roll_context?: {
+    player_name?: string;
+    notation?: string;
+    total?: number;
+    skill?: string;
+  };
+}
+
 /**
  * Connection control messages
  */
@@ -128,6 +139,7 @@ export type WebSocketMessage =
   | DiceResultMessage
   | GameUpdateMessage
   | CharacterUpdateMessage
+  | DmNarrationMessage
   | PingMessage
   | PongMessage
   | ErrorMessage;

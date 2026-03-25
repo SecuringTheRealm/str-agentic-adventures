@@ -6,7 +6,7 @@ import { expect, test } from "@playwright/test";
  * This test validates the complete user journey:
  * 1. Campaign creation
  * 2. Character creation with D&D 5e attributes
- * 3. Character portrait generation (Azure OpenAI DALL-E)
+ * 3. Character portrait generation (Azure OpenAI gpt-image-1)
  * 4. DM chat interaction asking "what do I see?"
  *
  * This test requires:
@@ -226,7 +226,7 @@ test.describe("Complete E2E Workflow with Azure OpenAI", () => {
       await portraitBtn.click();
       console.log("✅ Clicked portrait generation button");
 
-      // Wait for image generation (Azure OpenAI DALL-E takes time)
+      // Wait for image generation (Azure OpenAI gpt-image-1 takes time)
       console.log("⏳ Waiting for Azure OpenAI to generate portrait...");
       await page.waitForTimeout(30000); // 30 seconds for AI image generation
 

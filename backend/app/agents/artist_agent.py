@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 class ArtistAgent:
     """
     Artist Agent that generates visual imagery based on narrative moments.
-    Uses Azure AI SDK and DALL-E for image generation.
+    Uses Azure AI SDK and gpt-image-1 for image generation.
     """
 
     def __init__(self) -> None:
@@ -38,20 +38,22 @@ class ArtistAgent:
                 logger.info("Artist agent initialized with Azure AI SDK")
         except Exception as e:
             logger.warning(
-                f"Failed to initialize Artist agent with Azure AI SDK: {e}. "
-                "Operating in fallback mode."
+                "Failed to initialize Artist agent with Azure AI SDK: %s. "
+                "Operating in fallback mode.",
+                e,
             )
             self._fallback_mode = True
 
-        # Image generation uses the shared AzureOpenAIClient singleton (for DALL-E support)
-        # Only use if not in fallback mode
+        # Image generation uses AzureOpenAIClient (for gpt-image-1 support)
+        # Only initialize if not in fallback mode
         if not self._fallback_mode:
             try:
                 self.azure_client = azure_openai_client
             except Exception as e:
                 logger.warning(
                     "Failed to initialize Azure OpenAI client "
-                    f"for image generation: {e}"
+                    "for image generation: %s",
+                    e,
                 )
                 self._fallback_mode = True
 
@@ -93,7 +95,7 @@ class ArtistAgent:
 
             logger.info("Artist agent plugins initialized for direct access")
         except Exception as e:
-            logger.error(f"Error initializing Artist agent plugins: {str(e)}")
+            logger.error("Error initializing Artist agent plugins: %s", str(e))
             # Don't raise - enter fallback mode instead
             self._fallback_mode = True
             logger.warning(
@@ -132,7 +134,7 @@ class ArtistAgent:
             gender = character_details.get("gender", "")
             description = character_details.get("description", "")
 
-            # Create a detailed prompt for DALL-E
+            # Create a detailed prompt for image generation
             prompt = f"Fantasy character portrait of {name}, a {race} {character_class}"
             if gender:
                 prompt = (
@@ -151,9 +153,9 @@ class ArtistAgent:
                 "professional character portrait"
             )
 
-            # Generate the image using Azure OpenAI DALL-E
+            # Generate the image using Azure OpenAI gpt-image-1
             image_result = await self.azure_client.generate_image(
-                prompt=prompt, size="1024x1024", quality="standard", style="vivid"
+                prompt=prompt, size="1024x1024", quality="medium"
             )
 
             if image_result["success"]:
@@ -167,7 +169,6 @@ class ArtistAgent:
                     "generation_details": {
                         "size": image_result["size"],
                         "quality": image_result["quality"],
-                        "style": image_result["style"],
                     },
                 }
             else:
@@ -181,8 +182,7 @@ class ArtistAgent:
                     "placeholder": True,
                     "generation_details": {
                         "size": "512x512",
-                        "quality": "standard",
-                        "style": "placeholder",
+                        "quality": "medium",
                     },
                     "error": image_result.get("error", "Image generation failed"),
                 }
@@ -193,7 +193,7 @@ class ArtistAgent:
             return portrait
 
         except Exception as e:
-            logger.error(f"Error generating character portrait: {str(e)}")
+            logger.error("Error generating character portrait: %s", str(e))
             return {"error": "Failed to generate character portrait"}
 
     async def illustrate_scene(self, scene_context: dict[str, Any]) -> dict[str, Any]:
@@ -225,7 +225,7 @@ class ArtistAgent:
             notable_elements = scene_context.get("notable_elements", [])
             weather = scene_context.get("weather", "")
 
-            # Create a detailed prompt for DALL-E
+            # Create a detailed prompt for image generation
             prompt = f"Fantasy illustration of a {mood} {location} during {time}"
             if notable_elements:
                 prompt += f", featuring {', '.join(notable_elements)}"
@@ -239,9 +239,9 @@ class ArtistAgent:
                 "cinematic composition, concept art style"
             )
 
-            # Generate the image using Azure OpenAI DALL-E
+            # Generate the image using Azure OpenAI gpt-image-1
             image_result = await self.azure_client.generate_image(
-                prompt=prompt, size="1024x1024", quality="standard", style="vivid"
+                prompt=prompt, size="1024x1024", quality="medium"
             )
 
             if image_result["success"]:
@@ -261,7 +261,6 @@ class ArtistAgent:
                     "generation_details": {
                         "size": image_result["size"],
                         "quality": image_result["quality"],
-                        "style": image_result["style"],
                     },
                 }
             else:
@@ -281,8 +280,7 @@ class ArtistAgent:
                     },
                     "generation_details": {
                         "size": "1024x1024",
-                        "quality": "standard",
-                        "style": "placeholder",
+                        "quality": "medium",
                     },
                     "error": image_result.get("error", "Image generation failed"),
                 }
@@ -293,7 +291,7 @@ class ArtistAgent:
             return illustration
 
         except Exception as e:
-            logger.error(f"Error illustrating scene: {str(e)}")
+            logger.error("Error illustrating scene: %s", str(e))
             return {"error": "Failed to illustrate scene"}
 
     async def create_item_visualization(
@@ -327,7 +325,7 @@ class ArtistAgent:
             description = item_details.get("description", "")
             magical = item_details.get("magical", False)
 
-            # Create a detailed prompt for DALL-E
+            # Create a detailed prompt for image generation
             prompt = f"Fantasy {rarity} {item_type} named '{name}'"
             if magical:
                 prompt += ", magical item with glowing or mystical properties"
@@ -341,9 +339,9 @@ class ArtistAgent:
                 "item showcase style"
             )
 
-            # Generate the image using Azure OpenAI DALL-E
+            # Generate the image using Azure OpenAI gpt-image-1
             image_result = await self.azure_client.generate_image(
-                prompt=prompt, size="1024x1024", quality="standard", style="vivid"
+                prompt=prompt, size="1024x1024", quality="medium"
             )
 
             if image_result["success"]:
@@ -363,7 +361,6 @@ class ArtistAgent:
                     "generation_details": {
                         "size": image_result["size"],
                         "quality": image_result["quality"],
-                        "style": image_result["style"],
                     },
                 }
             else:
@@ -383,8 +380,7 @@ class ArtistAgent:
                     },
                     "generation_details": {
                         "size": "512x512",
-                        "quality": "standard",
-                        "style": "placeholder",
+                        "quality": "medium",
                     },
                     "error": image_result.get("error", "Image generation failed"),
                 }
@@ -395,7 +391,7 @@ class ArtistAgent:
             return item_visualization
 
         except Exception as e:
-            logger.error(f"Error creating item visualization: {str(e)}")
+            logger.error("Error creating item visualization: %s", str(e))
             return {"error": "Failed to create item visualization"}
 
 

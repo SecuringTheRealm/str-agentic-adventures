@@ -21,6 +21,9 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+MAX_HISTORY_MESSAGES = 20
+
+
 class DungeonMasterAgent:
     """
     Dungeon Master Agent using Azure AI Agents SDK to fulfill the role
@@ -32,6 +35,7 @@ class DungeonMasterAgent:
         self._fallback_mode = False
         self.chat_client = None
         self.azure_client: AzureOpenAIClient | None = None
+        self._threads: dict[str, list[dict[str, str]]] = {}
 
         # Try to get the shared chat client from agent client manager
         try:
@@ -56,29 +60,17 @@ class DungeonMasterAgent:
 
         except Exception as e:
             logger.warning(
-                f"Failed to initialize DM Agent with Azure AI SDK: {e}. "
-                "Operating in fallback mode."
+                "Failed to initialize DM Agent with Azure AI SDK: %s. "
+                "Operating in fallback mode.",
+                e,
             )
             self._fallback_mode = True
 
         # Fallback components are initialized lazily
         self._fallback_initialized = False
 
-    def _get_dm_system_prompt(self, context: dict[str, Any]) -> str:
-        """
-        Generate a comprehensive system prompt that embodies the Dungeon Master role
-        as specified in the PRD, replacing complex agent coordination.
-        """
-        character_info = ""
-        if context.get("character_name"):
-            character_name = context.get("character_name", "an adventurer")
-            character_level = context.get("character_level", "1")
-            character_class = context.get("character_class", "fighter")
-            character_info = (
-                f"The player character is {character_name}, "
-                f"a level {character_level} {character_class}. "
-            )
-
+    def _get_dm_system_prompt(self) -> str:
+        """Generate the static system prompt for the Dungeon Master role."""
         return (
             "You are an expert Dungeon Master for D&D 5e. You are the primary "
             "orchestrator of the tabletop RPG experience, responsible for:\n\n"
@@ -88,7 +80,6 @@ class DungeonMasterAgent:
             "- Ensuring continuity of game rules and narrative\n"
             "- Creating immersive storytelling and descriptions\n"
             "- Adjudicating player actions and their consequences\n\n"
-            f"{character_info}\n"
             "Your responses should:\n"
             "- Be engaging and immersive\n"
             "- Respect player agency and choices\n"
@@ -102,6 +93,53 @@ class DungeonMasterAgent:
             "exciting adventure. Keep responses focused and not overly long. You are "
             "the single point of coordination for the entire game experience."
         )
+
+    def _get_or_create_thread(self, session_id: str) -> list[dict[str, str]]:
+        """Return the message thread for a session, creating one if needed."""
+        if session_id not in self._threads:
+            self._threads[session_id] = []
+        return self._threads[session_id]
+
+    def _summarise_history(self, messages: list[dict[str, str]]) -> str:
+        """Create a brief summary of older conversation messages."""
+        summaries: list[str] = []
+        for msg in messages:
+            role = msg.get("role", "unknown")
+            content = msg.get("content", "")[:100]  # First 100 chars
+            if role == "user":
+                summaries.append(f"Player: {content}")
+            elif role == "assistant":
+                summaries.append(f"DM: {content}")
+        return " | ".join(summaries[-10:])  # Last 10 exchanges summary
+
+    def _build_messages(
+        self,
+        system_prompt: str,
+        user_message: str,
+        thread: list[dict[str, str]],
+    ) -> list[dict[str, str]]:
+        """Build the messages list with sliding window and optional summary."""
+        messages: list[dict[str, str]] = [
+            {"role": "system", "content": system_prompt},
+        ]
+
+        # Add summary of older messages if history exceeds the window
+        if len(thread) > MAX_HISTORY_MESSAGES:
+            dropped = thread[:-MAX_HISTORY_MESSAGES]
+            summary = self._summarise_history(dropped)
+            messages.append(
+                {
+                    "role": "system",
+                    "content": f"Previous conversation summary: {summary}",
+                }
+            )
+            recent = thread[-MAX_HISTORY_MESSAGES:]
+        else:
+            recent = list(thread)
+
+        messages.extend(recent)
+        messages.append({"role": "user", "content": user_message})
+        return messages
 
     async def process_input(
         self, user_input: str, context: dict[str, Any] = None
@@ -119,28 +157,36 @@ class DungeonMasterAgent:
         if not context:
             context = {}
 
-        logger.info(f"DM processing player input: {user_input}")
+        logger.info("DM processing player input (len=%d)", len(user_input))
         logger.info("DM fallback mode status: %s", self._fallback_mode)
+
+        session_id = context.get("session_id") or context.get(
+            "campaign_id", "default"
+        )
+        thread = self._get_or_create_thread(session_id)
+
+        # Build the user message (may include character name prefix)
+        user_message = user_input
+        if context.get("character_name"):
+            user_message = f"Player ({context['character_name']}): {user_input}"
 
         # Use fallback mode if needed
         if self._fallback_mode:
             logger.info("DM using fallback mode for input.")
-            return await self._process_input_fallback(user_input, context)
+            result = await self._process_input_fallback(user_input, context)
+            # Record the exchange in the thread even in fallback mode
+            thread.append({"role": "user", "content": user_message})
+            thread.append(
+                {"role": "assistant", "content": result.get("message", "")}
+            )
+            return result
 
         try:
-            # Create system prompt
-            system_prompt = self._get_dm_system_prompt(context)
+            # Create system prompt (static, no user input)
+            system_prompt = self._get_dm_system_prompt()
 
-            # Create user message with context
-            user_message = user_input
-            if context.get("character_name"):
-                user_message = f"Player ({context['character_name']}): {user_input}"
-
-            # Create messages for Azure AI SDK
-            messages: list[dict[str, str]] = [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_message},
-            ]
+            # Build messages with conversation history and sliding window
+            messages = self._build_messages(system_prompt, user_message, thread)
 
             if not self.azure_client:
                 raise RuntimeError("Azure OpenAI client is not initialized")
@@ -157,20 +203,32 @@ class DungeonMasterAgent:
                 )
                 raise
 
+            ai_response = ai_response.strip()
+
+            # Record the exchange in the thread
+            thread.append({"role": "user", "content": user_message})
+            thread.append({"role": "assistant", "content": ai_response})
+
             logger.info("DM received Azure OpenAI response successfully.")
             # Structure the response in the expected format
             return {
-                "message": ai_response.strip(),
+                "message": ai_response,
                 "visuals": [],  # Simple implementation - no visual generation
                 "state_updates": {"last_action": user_input},
                 "combat_updates": None,
             }
 
         except Exception as e:
-            logger.error(f"Error in DM processing: {str(e)}")
+            logger.error("Error in DM processing: %s", str(e))
             # Fall back to using the full fallback processing which handles dice, etc.
             logger.info("DM falling back after error.")
-            return await self._process_input_fallback(user_input, context)
+            result = await self._process_input_fallback(user_input, context)
+            # Record fallback exchange in the thread
+            thread.append({"role": "user", "content": user_message})
+            thread.append(
+                {"role": "assistant", "content": result.get("message", "")}
+            )
+            return result
 
     async def process_input_stream(
         self, user_input: str, context: dict[str, Any] = None
@@ -190,7 +248,17 @@ class DungeonMasterAgent:
             logger.error("No WebSocket provided for streaming")
             return
 
-        logger.info(f"DM processing streaming input: {user_input}")
+        logger.info("DM processing streaming input (len=%d)", len(user_input))
+
+        session_id = context.get("session_id") or context.get(
+            "campaign_id", "default"
+        )
+        thread = self._get_or_create_thread(session_id)
+
+        # Build the user message (may include character name prefix)
+        user_message = user_input
+        if context.get("character_name"):
+            user_message = f"Player ({context['character_name']}): {user_input}"
 
         # Use fallback streaming if needed
         if self._fallback_mode:
@@ -207,24 +275,22 @@ class DungeonMasterAgent:
                 },
             )
 
-            # Create system prompt
-            system_prompt = self._get_dm_system_prompt(context)
+            # Create system prompt (static, no user input)
+            system_prompt = self._get_dm_system_prompt()
 
-            # Create user message
-            user_message = user_input
-            if context.get("character_name"):
-                user_message = f"Player ({context['character_name']}): {user_input}"
+            # Build messages with conversation history and sliding window
+            messages = self._build_messages(system_prompt, user_message, thread)
 
-            messages = [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_message},
-            ]
+            # Stream the AI response and capture the full text
+            full_response = await self._stream_ai_response(messages, websocket)
 
-            # Stream the AI response
-            await self._stream_ai_response(messages, websocket)
+            # Record the exchange in the thread
+            thread.append({"role": "user", "content": user_message})
+            if full_response:
+                thread.append({"role": "assistant", "content": full_response})
 
         except Exception as e:
-            logger.error(f"Error in streaming processing: {str(e)}")
+            logger.error("Error in streaming processing: %s", str(e))
             await self._send_chat_message(
                 websocket,
                 {
@@ -237,8 +303,12 @@ class DungeonMasterAgent:
 
     async def _stream_ai_response(
         self, messages: list[dict[str, str]], websocket: "WebSocket"
-    ) -> None:
-        """Stream AI response using Azure OpenAI chat completions."""
+    ) -> str:
+        """Stream AI response using Azure OpenAI chat completions.
+
+        Returns:
+            The full response text, or an empty string on failure.
+        """
         try:
             # Send start streaming message
             await self._send_chat_message(
@@ -274,16 +344,18 @@ class DungeonMasterAgent:
             await self._send_chat_message(
                 websocket, {"type": "chat_complete", "message": full_response.strip()}
             )
+            return full_response.strip()
 
         except Exception as e:
-            logger.error(f"Error streaming AI response: {str(e)}")
+            logger.exception("Error streaming AI response: %s", e)
             await self._send_chat_message(
                 websocket,
                 {
                     "type": "chat_error",
-                    "message": f"Failed to generate response: {str(e)}",
+                    "message": "Failed to generate response. Please try again.",
                 },
             )
+            return ""
 
     def _initialize_fallback_components(self) -> None:
         """Set up minimal components used in fallback mode."""
@@ -405,6 +477,122 @@ class DungeonMasterAgent:
         response["narration"] = self._fallback_generate_response("exploration")
         return response
 
+    @staticmethod
+    def _detect_d20_special(
+        notation: str, rolls: list[int]
+    ) -> tuple[bool, bool]:
+        """Return (is_critical_hit, is_critical_miss) for a single d20 roll."""
+        if rolls and len(rolls) == 1 and "d20" in notation:
+            return rolls[0] == 20, rolls[0] == 1
+        return False, False
+
+    async def narrate_dice_roll(self, roll_context: dict[str, Any]) -> str:
+        """
+        Generate a narrative description of a dice roll result.
+
+        Args:
+            roll_context: Dict with player_name, notation, result (total/rolls),
+                          skill, character_id, campaign_id.
+
+        Returns:
+            A short narrative string suitable for broadcasting to players.
+        """
+        player_name = roll_context.get("player_name", "The adventurer")
+        notation = roll_context.get("notation", "dice")
+        result = roll_context.get("result", {})
+        skill = roll_context.get("skill")
+        total = result.get("total", 0)
+        rolls = result.get("rolls", [])
+
+        if self._fallback_mode or not self.azure_client:
+            return self._fallback_narrate_dice_roll(
+                player_name, notation, total, rolls, skill
+            )
+
+        try:
+            skill_text = f" for a {skill.replace('_', ' ')} check" if skill else ""
+            rolls_text = f"[{', '.join(str(r) for r in rolls)}]" if rolls else ""
+            roll_detail = (
+                f"rolled {notation}{skill_text}: {rolls_text} = {total}"
+            )
+
+            is_crit_hit, is_crit_miss = self._detect_d20_special(notation, rolls)
+
+            special = ""
+            if is_crit_hit:
+                special = " This is a CRITICAL SUCCESS (natural 20)!"
+            elif is_crit_miss:
+                special = " This is a CRITICAL FAILURE (natural 1)!"
+
+            prompt = (
+                f"{player_name} {roll_detail}.{special} "
+                "As the Dungeon Master, narrate the outcome of this dice roll "
+                "in 1-2 dramatic sentences without revealing whether the check "
+                "succeeds or fails (leave that to the story context)."
+            )
+
+            ai_response = await self.azure_client.chat_completion(
+                messages=[
+                    {"role": "system", "content": self._get_dm_system_prompt()},
+                    {"role": "user", "content": prompt},
+                ],
+                temperature=0.8,
+                max_tokens=150,
+            )
+            return ai_response.strip()
+
+        except Exception as e:
+            logger.error("Error generating dice roll narrative: %s", e)
+            return self._fallback_narrate_dice_roll(
+                player_name, notation, total, rolls, skill
+            )
+
+    def _fallback_narrate_dice_roll(
+        self,
+        player_name: str,
+        notation: str,
+        total: int,
+        rolls: list[int],
+        skill: str | None,
+    ) -> str:
+        """Generate rule-based narration for a dice roll without AI."""
+        skill_text = f" for {skill.replace('_', ' ')}" if skill else ""
+
+        # Critical hit / miss on a single d20
+        is_crit_hit, is_crit_miss = self._detect_d20_special(notation, rolls)
+        if is_crit_hit:
+            return (
+                f"*A natural 20!* {player_name} rolls{skill_text}: "
+                f"**{total}**. A critical success!"
+            )
+        if is_crit_miss:
+            return (
+                f"*A natural 1!* {player_name} rolls{skill_text}: "
+                f"**{total}**. A critical failure!"
+            )
+
+        # Quality-based description for d20 rolls
+        if "d20" in notation:
+            if total >= 20:
+                return (
+                    f"{player_name} rolls{skill_text}: **{total}**. "
+                    "An outstanding result!"
+                )
+            if total >= 15:
+                return (
+                    f"{player_name} rolls{skill_text}: **{total}**. A solid roll."
+                )
+            if total >= 10:
+                return (
+                    f"{player_name} rolls{skill_text}: **{total}**. "
+                    "A modest attempt."
+                )
+            return (
+                f"{player_name} rolls{skill_text}: **{total}**. A poor showing."
+            )
+
+        return f"{player_name} rolls {notation}: **{total}**."
+
     async def _process_input_stream_fallback(
         self, user_input: str, context: dict[str, Any]
     ) -> None:
@@ -432,7 +620,7 @@ class DungeonMasterAgent:
         try:
             await websocket.send_text(json.dumps(message))
         except Exception as exc:
-            logger.error(f"Error sending chat message: {exc}")
+            logger.error("Error sending chat message: %s", exc)
 
 
 # Lazy singleton instance

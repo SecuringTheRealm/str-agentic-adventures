@@ -6,13 +6,7 @@ import {
   getCampaignTemplates,
   getCampaignTemplatesWithRetry,
 } from "../services/api";
-import {
-  logApiConfiguration,
-  testApiConnectivity,
-  validateApiUrl,
-} from "../utils/api-debug";
 import { getRuntimeMode } from "../utils/environment";
-import { getApiBaseUrl } from "../utils/urls";
 import styles from "./CampaignGallery.module.css";
 
 interface CampaignGalleryProps {
@@ -36,33 +30,6 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
         setLoading(true);
         setError(null);
         setDebugInfo(null);
-
-        // Log API configuration for debugging
-        logApiConfiguration();
-
-        // Validate API URL configuration
-        const baseUrl = getApiBaseUrl();
-        const validation = validateApiUrl(baseUrl);
-
-        if (!validation.isValid) {
-          const errorMsg = `API URL configuration error: ${validation.issues.join(", ")}`;
-          console.error(errorMsg);
-          setError(errorMsg);
-          setDebugInfo(`Base URL: ${baseUrl}`);
-          return;
-        }
-
-        // Test API connectivity in development or when explicitly debugging
-        if (getRuntimeMode() === "development") {
-          const isConnected = await testApiConnectivity(baseUrl);
-          if (!isConnected) {
-            setError(
-              "Cannot connect to the backend API. Please ensure the backend server is running."
-            );
-            setDebugInfo(`Attempted to connect to: ${baseUrl}`);
-            return;
-          }
-        }
 
         // Load templates with retry logic for production reliability
         const isProduction = getRuntimeMode() === "production";

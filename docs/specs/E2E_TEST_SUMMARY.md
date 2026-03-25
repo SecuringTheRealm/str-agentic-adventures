@@ -68,14 +68,14 @@ The backend `/api/game/character` endpoint returns:
 
 ### Impact
 - Cannot complete character creation without Azure OpenAI
-- Cannot test portrait generation (DALL-E)
+- Cannot test portrait generation (gpt-image-1)
 - Cannot test DM chat functionality (GPT-4)
 - Full E2E workflow blocked
 
 ### Root Cause
 The application architecture uses AI agents for:
 - Character backstory enhancement
-- Portrait generation (DALL-E 3)
+- Portrait generation (gpt-image-1)
 - DM narrative responses (GPT-4)
 - Scene illustration generation
 

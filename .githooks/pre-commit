@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# Pre-commit hook: detect accidental secret commits
+# Enable with: git config core.hooksPath .githooks
+
+set -euo pipefail
+
+RED='\033[0;31m'
+NC='\033[0m'
+
+STAGED=$(git diff --cached --name-only --diff-filter=ACM)
+
+if [[ -z "$STAGED" ]]; then
+  exit 0
+fi
+
+FOUND=0
+
+for file in $STAGED; do
+  # Skip binary files, lock files, and generated/example files
+  case "$file" in
+    *.png|*.jpg|*.gif|*.ico|*.woff*|*.ttf|*.eot) continue ;;
+    *.lock|package-lock.json) continue ;;
+    frontend/src/api-client/*) continue ;;
+    .env.example|*/.env.example) continue ;;
+  esac
+
+  content=$(git show ":$file" 2>/dev/null) || continue
+
+  # Check each line for patterns that look like real secret assignments
+  while IFS= read -r line; do
+    # Match lines that assign a value to an API key / secret / password variable
+    if echo "$line" | grep -qiE '(AZURE_OPENAI_API_KEY|api_key|apikey|secret|password)\s*=\s*.{8,}'; then
+      # Extract the value portion and check if it's a placeholder
+      value=$(echo "$line" | sed -E 's/.*[=:]\s*["\x27]?([^"\x27 ]+)["\x27]?.*/\1/')
+      if ! echo "$value" | grep -qiE '(your-|placeholder|example|<|>|\$\{|\$\()'; then
+        echo -e "${RED}BLOCKED: Possible secret in $file:${NC}"
+        echo "  $line"
+        FOUND=1
+      fi
+    fi
+  done <<< "$content"
+done
+
+if [[ "$FOUND" -eq 1 ]]; then
+  echo ""
+  echo "To bypass (use with caution): git commit --no-verify"
+  exit 1
+fi
+
+exit 0

@@ -61,7 +61,7 @@ class EnvironmentalHazardsPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error identifying environmental hazards: {str(e)}")
+            logger.error("Error identifying environmental hazards: %s", str(e))
             return {
                 "status": "error",
                 "error": f"Hazard identification failed: {str(e)}",
@@ -108,7 +108,7 @@ class EnvironmentalHazardsPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error providing hazard mitigation: {str(e)}")
+            logger.error("Error providing hazard mitigation: %s", str(e))
             return {"status": "error", "error": f"Mitigation planning failed: {str(e)}"}
 
     def monitor_dynamic_hazards(
@@ -154,7 +154,7 @@ class EnvironmentalHazardsPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error monitoring dynamic hazards: {str(e)}")
+            logger.error("Error monitoring dynamic hazards: %s", str(e))
             return {"status": "error", "error": f"Hazard monitoring failed: {str(e)}"}
 
     def _scan_for_hazards(

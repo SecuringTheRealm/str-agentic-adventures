@@ -30,7 +30,7 @@ These endpoints use AI agents and require proper Azure OpenAI configuration:
 - `GET /api/game/character/{id}` - Get character (may use AI enhancements)
 
 ### Image Generation
-- `POST /api/game/generate-image` - Generate images (uses Artist agent with DALL-E)
+- `POST /api/game/generate-image` - Generate images (uses Artist agent with gpt-image-1)
 
 ### Gameplay
 - `POST /api/game/input` - Process player input (uses Dungeon Master agent)
@@ -48,8 +48,8 @@ AZURE_OPENAI_ENDPOINT=https://your-project.openai.azure.com/
 AZURE_OPENAI_API_KEY=your-api-key-here
 AZURE_OPENAI_CHAT_DEPLOYMENT=gpt-4o-mini
 AZURE_OPENAI_EMBEDDING_DEPLOYMENT=text-embedding-ada-002
-AZURE_OPENAI_DALLE_DEPLOYMENT=dall-e-3  # Optional, for image generation
-AZURE_OPENAI_API_VERSION=2023-12-01-preview
+AZURE_OPENAI_DALLE_DEPLOYMENT=gpt-image-1-mini  # Optional, for image generation
+AZURE_OPENAI_API_VERSION=2025-04-01-preview
 ```
 
 ## Error Handling

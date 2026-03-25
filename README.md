@@ -90,7 +90,7 @@ For setup instructions, see [Deployment Guide](docs/deployment.md).
 
 ### Required Azure Services
 
-- **Azure AI Foundry project** with deployed OpenAI models (GPT-4o-mini, text-embedding-ada-002, DALL-E 3)
+- **Azure AI Foundry project** with deployed OpenAI models (GPT-4o-mini, text-embedding-ada-002, gpt-image-1-mini)
 - **Azure Container Apps** for backend hosting
 - **Azure Static Web Apps** for frontend hosting
 - **Azure Storage Account** for file and image storage
@@ -119,7 +119,7 @@ To run the application locally, you need access to Azure OpenAI models through A
    - Deploy the following models:
      - **GPT-4o-mini** (for chat completion)
      - **text-embedding-ada-002** (for embeddings)
-     - **DALL-E 3** (for image generation, optional)
+     - **gpt-image-1-mini** (for image generation, optional)
 
 3. **Get your endpoints and keys**:
    - In Azure AI Foundry, go to **Project settings**
@@ -209,7 +209,7 @@ See [docs/specs/OPENAPI_CLIENT.md](docs/specs/OPENAPI_CLIENT.md) for detailed do
 - [Testing Strategy](docs/specs/TESTING_STRATEGY.md) - Test organization and strategy
 - [E2E Test Summary](docs/specs/E2E_TEST_SUMMARY.md) - End-to-end testing results and improvements
 - [OpenAPI Client](docs/specs/OPENAPI_CLIENT.md) - API client generation and usage
-- [UV Migration Guide](docs/specs/UV_MIGRATION.md) - Migration to UV package manager
+- [UV Package Manager](docs/specs/UV_MIGRATION.md) - UV package manager reference
 
 ### Reference Materials
 - [D&D 5e SRD Compliance](docs/reference/srd-5.2.1.md) - Complete SRD reference
@@ -218,5 +218,5 @@ See [docs/specs/OPENAPI_CLIENT.md](docs/specs/OPENAPI_CLIENT.md) for detailed do
 
 ### Architecture Decisions
 - [ADR Index](docs/adr/index.md) - Complete list of architectural decisions
-- [Project Requirements](docs/prd/index.md) - Product specification
+- [Project Requirements](docs/prd.md) - Product specification
 - [Deployment Guide](docs/deployment.md) - Production deployment instructions

@@ -100,7 +100,7 @@ Serves the built assets locally to validate production output.
 - For faster authoring and review, use the Codex MCP helper commands (`pw-explore-website`, `pw-generate-tests`, `pw-manual-testing`) documented here: https://blog.gopenai.com/automating-e2e-chat-flow-testing-with-codex-playwright-mcp-1ce4020dcbca.
 
 ### Test Coverage
-E2E tests validate key user stories from the [Product Requirements Document](../prd/index.md):
+E2E tests validate key user stories from the [Product Requirements Document](../prd.md):
 1. Campaign creation with D&D settings
 2. Character creation following D&D 5e SRD rules
 3. AI Dungeon Master interaction

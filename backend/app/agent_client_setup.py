@@ -11,7 +11,6 @@ import logging
 
 from azure.ai.agents import AgentsClient
 from azure.ai.inference import ChatCompletionsClient
-from azure.core.credentials import AzureKeyCredential
 from azure.identity import DefaultAzureCredential
 from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
@@ -53,12 +52,12 @@ class AgentClientManager:
                 logger.info("Azure OpenAI chat client initialized successfully")
             except ValueError as e:
                 logger.warning(
-                    f"Azure OpenAI not configured, entering fallback mode: {e}"
+                    "Azure OpenAI not configured, entering fallback mode: %s", e
                 )
                 self._fallback_mode = True
                 return None
             except Exception as e:
-                logger.error(f"Failed to initialize chat client: {e}")
+                logger.error("Failed to initialize chat client: %s", e)
                 self._fallback_mode = True
                 return None
 
@@ -83,12 +82,12 @@ class AgentClientManager:
                 logger.info("Azure AI Agents client initialized successfully")
             except ValueError as e:
                 logger.warning(
-                    f"Azure AI not configured, entering fallback mode: {e}"
+                    "Azure AI not configured, entering fallback mode: %s", e
                 )
                 self._fallback_mode = True
                 return None
             except Exception as e:
-                logger.error(f"Failed to initialize agents client: {e}")
+                logger.error("Failed to initialize agents client: %s", e)
                 self._fallback_mode = True
                 return None
 
@@ -111,9 +110,9 @@ class AgentClientManager:
             )
 
         try:
-            # Use API key authentication
-            credential = AzureKeyCredential(settings.azure_openai_api_key)
-            
+            # Use DefaultAzureCredential for managed identity / local dev auth
+            credential = DefaultAzureCredential()
+
             chat_client = ChatCompletionsClient(
                 endpoint=settings.azure_openai_endpoint,
                 credential=credential,
@@ -126,7 +125,7 @@ class AgentClientManager:
             return chat_client
 
         except Exception as e:
-            logger.error(f"Failed to configure chat client: {str(e)}")
+            logger.error("Failed to configure chat client: %s", str(e))
             raise
 
     def _create_agents_client(self) -> AgentsClient:
@@ -135,22 +134,23 @@ class AgentClientManager:
 
         Returns:
             AgentsClient: Configured agents client
+
+        Raises:
+            ValueError: If Azure AI project endpoint is not configured
         """
-        if not settings.is_azure_openai_configured():
+        if not settings.azure_ai_project_endpoint:
             raise ValueError(
-                "Azure OpenAI configuration is missing or invalid."
+                "Azure AI project endpoint is not configured. "
+                "Set AZURE_AI_PROJECT_ENDPOINT to your Foundry project endpoint "
+                "(format: https://<account>.services.ai.azure.com/api/projects/<project>)."
             )
 
         try:
-            # Try to use DefaultAzureCredential for managed identity
-            # Fall back to API key if that fails
-            try:
-                credential = DefaultAzureCredential()
-            except Exception:
-                credential = AzureKeyCredential(settings.azure_openai_api_key)
+            # Use DefaultAzureCredential for managed identity / local dev auth
+            credential = DefaultAzureCredential()
 
             agents_client = AgentsClient(
-                endpoint=settings.azure_openai_endpoint,
+                endpoint=settings.azure_ai_project_endpoint,
                 credential=credential,
             )
 
@@ -160,7 +160,7 @@ class AgentClientManager:
             return agents_client
 
         except Exception as e:
-            logger.error(f"Failed to configure agents client: {str(e)}")
+            logger.error("Failed to configure agents client: %s", str(e))
             raise
 
     def setup_observability(self) -> None:
@@ -181,7 +181,7 @@ class AgentClientManager:
             
             logger.info("OpenTelemetry observability configured")
         except Exception as e:
-            logger.warning(f"Failed to setup observability: {e}")
+            logger.warning("Failed to setup observability: %s", e)
 
     def get_tracer(self) -> trace.Tracer | None:
         """Get the OpenTelemetry tracer for agent operations."""

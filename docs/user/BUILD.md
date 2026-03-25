@@ -62,6 +62,20 @@ docker build -t str-agentic-adventures .
 docker run -p 8000:8000 str-agentic-adventures
 ```
 
+## UV Package Manager
+
+This project uses [UV](https://docs.astral.sh/uv/) for Python dependency management.
+
+```bash
+uv add <package>      # Add a dependency to pyproject.toml
+uv remove <package>   # Remove a dependency
+uv lock               # Refresh lock files after dependency changes
+uv run <command>      # Execute commands within the uv environment
+uv sync --frozen      # Install exact versions from lock file (used in CI)
+```
+
+`pyproject.toml` is the single source of truth for dependencies. `uv.lock` is committed for reproducible installs. Run `uv lock` locally if CI reports lock file drift, then commit the updated file.
+
 ## Key Improvements
 
 1. **Reproducible builds** - Uses uv.lock for exact dependency versions
