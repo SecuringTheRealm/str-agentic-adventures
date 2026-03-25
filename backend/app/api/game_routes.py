@@ -137,8 +137,6 @@ async def get_character(character_id: str, config: ConfigDep):
             detail=f"Failed to retrieve character: {str(e)}",
         ) from None
 
-    return character
-
 
 @router.post("/campaign", response_model=Campaign)
 async def create_campaign(campaign_data: CreateCampaignRequest, config: ConfigDep):
