@@ -49,8 +49,7 @@
     "api-contracts-backend.md",
     "data-models-backend.md",
     "frontend-architecture.md",
-    "project-overview.md",
-    "bmm-index.md"
+    "project-overview.md"
   ],
   "resume_instructions": "Continuing from step 2"
 }

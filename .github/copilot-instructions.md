@@ -23,8 +23,8 @@ AI-powered tabletop RPG application with a FastAPI backend and React frontend or
    ```
 2. Install backend deps and start the API:
    ```bash
-   make deps
-   make run
+   uv sync
+   cd backend && uv run python -m app.main
    ```
 3. In another shell:
    ```bash
@@ -35,7 +35,7 @@ AI-powered tabletop RPG application with a FastAPI backend and React frontend or
    ```
 
 ## Development Loop Essentials
-- Backend quick commands: `make run`, `make test`, `make lint`, `make format`.
+- Backend quick commands: `cd backend && uv run python -m app.main`, `uv run pytest backend/tests/ -v`, `uv run ruff check .`, `uv run ruff format .`.
 - Frontend quick commands: `npm run dev`, `npm run build`, `npm run test:run`, `npm run test:e2e`, `npm run lint`.
 - Regenerate `src/api-client/` after any backend contract change with `npm run generate:api`; never edit generated files manually.
 - Local `.env` files must stay uncommitted and should mirror placeholder values from `.env.example`.
@@ -51,7 +51,6 @@ AI-powered tabletop RPG application with a FastAPI backend and React frontend or
 - Missing UV? Re-run the install script above.
 - Frontend errors about missing API client mean `npm run generate:api` was skipped or backend was offline.
 - Some backend tests fail without Azure OpenAI credentials; configure local secrets when debugging those cases.
-- `scripts/validate-openapi-client.sh` assumes a pip-style requirements file—adjust or bypass if using UV.
 
 ## Key Documentation
 - `docs/AZURE_OPENAI_REQUIREMENTS.md` – Azure configuration and testing implications.

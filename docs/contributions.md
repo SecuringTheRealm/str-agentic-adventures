@@ -3,7 +3,6 @@
 This project stands on the shoulders of the open source community. The following projects provide critical infrastructure and functionality for Secure the Realm – Agentic Adventures.
 
 ## Agentic & Orchestration
-- **BMAD (Battle Master Agent Dynamics)** — Multi-agent orchestration framework used for specialist AI playbooks (`.bmad-core/agents/`). [GitHub](https://github.com/bmad-ai/bmad) · MIT License.
 - **Semantic Kernel** — Microsoft’s orchestration SDK underpinning agent reasoning and tool invocation within the backend. [GitHub](https://github.com/microsoft/semantic-kernel) · MIT License.
 
 ## Backend Platform
