@@ -75,6 +75,7 @@ Apply the [general coding guidelines](./general-coding.instructions.md) to all c
 - **Required**: Must run when backend models, endpoints, or request/response schemas change
 - **Location**: Generated files in `src/api-client/` (DO NOT edit manually)
 - **Workflow**: Backend changes → regenerate client → update frontend code → test
+- **Full reference**: [`docs/specs/OPENAPI_CLIENT.md`](../../docs/specs/OPENAPI_CLIENT.md)
 
 ### API Service Layer
 

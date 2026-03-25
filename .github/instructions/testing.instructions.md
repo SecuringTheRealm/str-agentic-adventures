@@ -4,7 +4,7 @@ applyTo: "**/test*/**,**/*test*"
 
 # Testing Guidelines and Best Practices
 
-Apply the [general coding guidelines](./general-coding.instructions.md) to all test code.
+Apply the [general coding guidelines](./general-coding.instructions.md) to all test code. For concrete patterns, factory examples, and CI workflow details see [`docs/specs/TESTING_STRATEGY.md`](../../docs/specs/TESTING_STRATEGY.md).
 
 ## Core Testing Principles
 

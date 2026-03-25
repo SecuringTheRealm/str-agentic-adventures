@@ -1,42 +1,63 @@
 # Documentation Index
 
-This directory contains all project documentation organized by category.
+**Project:** Securing the Realm – Agentic Adventures
+**Stack:** React 19 + TypeScript (frontend) · Python 3.12 + FastAPI + Azure AI Agents SDK (backend)
+**Deployment:** Azure Container Apps · PostgreSQL (prod) / SQLite (dev)
+
+---
+
+## Getting Started
+
+New to this project? Start here:
+
+1. [BUILD.md](user/BUILD.md) — local development environment setup
+2. [architecture.md](architecture.md) — system design and agent framework overview
+3. [prd.md](prd.md) — product requirements and vision
+4. [adr/index.md](adr/index.md) — architectural decisions
+
+---
 
 ## Directory Structure
 
 ### `/user/`
-User-facing guides and instructions:
+User-facing guides:
 - [BUILD.md](user/BUILD.md) - Build system and development setup guide
-- [FRONTEND.md](user/FRONTEND.md) - Frontend development guide and documentation
+- [FRONTEND.md](user/FRONTEND.md) - Frontend development guide
 
 ### `/specs/`
-Technical specifications and implementation details:
-- [TESTING_STRATEGY.md](specs/TESTING_STRATEGY.md) - Test organization and strategy
-- [E2E_TEST_SUMMARY.md](specs/E2E_TEST_SUMMARY.md) - End-to-end testing results and improvements
+Technical specifications:
+- [TESTING_STRATEGY.md](specs/TESTING_STRATEGY.md) - Test organization, patterns, and strategy
 - [OPENAPI_CLIENT.md](specs/OPENAPI_CLIENT.md) - API client generation and usage
-- [UV_MIGRATION.md](specs/UV_MIGRATION.md) - Migration to UV package manager
+- [E2E_TEST_SUMMARY.md](specs/E2E_TEST_SUMMARY.md) - End-to-end testing results
 
 ### `/reference/`
-Reference materials and compliance documentation:
-- [srd-5.2.1.md](reference/srd-5.2.1.md) - Complete D&D 5e SRD reference
-- [SRD_COMPLIANCE_SUMMARY.md](reference/SRD_COMPLIANCE_SUMMARY.md) - Summary of D&D 5e compliance
+Reference materials:
+- [srd-5.2.1.md](reference/srd-5.2.1.md) - Complete D&D 5e SRD (CC-BY-4.0)
+- [SRD_COMPLIANCE_SUMMARY.md](reference/SRD_COMPLIANCE_SUMMARY.md) - SRD compliance summary
 - [CONTAINER_OPTIMIZATION.md](reference/CONTAINER_OPTIMIZATION.md) - Deployment optimization guide
 
 ### `/adr/`
-Architecture Decision Records:
-- [index.md](adr/index.md) - Complete list of architectural decisions
-- Individual ADR files documenting specific architectural choices
+Architecture Decision Records — 19 ADRs documenting all major technical decisions:
+- [index.md](adr/index.md) - Full ADR index with descriptions
+- Key decisions: [ADR-0018](adr/0018-azure-ai-agents-sdk-adoption.md) (current agent SDK), [ADR-0011](adr/0011-openapi-client-generation.md) (OpenAPI client), [ADR-0019](adr/0019-api-prefix-configuration.md) (API prefix)
 
-## Root Directory Documents
+---
 
-- [deployment.md](deployment.md) - Production deployment instructions
-- [AZURE_OPENAI_REQUIREMENTS.md](AZURE_OPENAI_REQUIREMENTS.md) - Azure AI configuration guide
-- [migration-guide-azure-ai-sdk.md](migration-guide-azure-ai-sdk.md) - Semantic Kernel to Azure AI migration reference
+## Root Documents
 
-## Product Requirements
+| Document | Purpose |
+|----------|---------|
+| [prd.md](prd.md) | Product requirements and vision |
+| [architecture.md](architecture.md) | System architecture and design |
+| [deployment.md](deployment.md) | Production deployment instructions |
+| [AZURE_OPENAI_REQUIREMENTS.md](AZURE_OPENAI_REQUIREMENTS.md) | Azure AI configuration guide |
+| [api-contracts-backend.md](api-contracts-backend.md) | REST and WebSocket API contracts |
+| [data-models-backend.md](data-models-backend.md) | Database schema and ORM models |
+| [migration-guide-azure-ai-sdk.md](migration-guide-azure-ai-sdk.md) | Semantic Kernel → Azure AI SDK migration reference |
+| [contributions.md](contributions.md) | Open source acknowledgements |
 
-Product vision and requirements are documented in the modular PRD at [prd/index.md](prd/index.md).
+---
 
-## Agent Documentation
+## Agent & Coding Guidelines
 
-See [../AGENTS.md](../AGENTS.md) for detailed information about the AI agents and coding instructions.
+See [../AGENTS.md](../AGENTS.md) for repository-wide coding standards, security guardrails, and AI agent implementation guidelines.

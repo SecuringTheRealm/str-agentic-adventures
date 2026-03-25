@@ -1,10 +1,33 @@
-# Testing Strategy Improvements
+# Testing Strategy
 
-This document outlines the testing strategy improvements implemented for the Securing the Realm - Agentic Adventures project.
+This document is the authoritative reference for testing patterns, tooling, and strategy for the Securing the Realm – Agentic Adventures project. For AI coding context applied to test files see [`.github/instructions/testing.instructions.md`](../../.github/instructions/testing.instructions.md).
+
+## Core Principles
+
+- **Never rewrite tests just to make them pass** — investigate and fix the underlying code issue first.
+- **New features must include tests** — no feature is complete without test coverage.
+- Mock external services (Azure OpenAI, databases, APIs); keep tests deterministic.
+- Never commit `.only`, `.skip`, or disabled tests.
+
+### Coverage Thresholds
+
+| Metric | New code | Overall |
+|--------|----------|---------|
+| Statements | 90% | 85% |
+| Branches | 90% | 85% |
+| Functions | 90% | 85% |
+| Lines | 90% | 85% |
+
+## Test Failure Resolution
+
+1. Investigate the root cause — don't assume the test is wrong.
+2. Check whether your code change broke existing behaviour.
+3. Fix the code issue if the test was correct.
+4. Only adjust the test if it was testing incorrect behaviour or is outdated.
 
 ## Overview
 
-The testing strategy has been enhanced with:
+The testing strategy includes:
 - Factory pattern for test data generation
 - Parameterized tests for combat scenarios
 - Async test support

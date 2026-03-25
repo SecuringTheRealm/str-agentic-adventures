@@ -10,7 +10,6 @@
 - `frontend/`: TypeScript + React UI, generated OpenAPI client in `src/api-client/` (never edit manually), tests in `src/__tests__/` and `e2e/`.
 - `docs/`: Architecture (`docs/adr/`), design, specs, reference, and user guides. Update or link here instead of adding root-level docs.
 - `infra/`: Azure deployment artifacts and automation.
-- `.bmad-core/agents/`: BMAD agent playbooks used by orchestration tooling.
 
 ## Development Environment Setup
 - Python 3.12+ with [UV](https://github.com/astral-sh/uv). Run `make deps` to sync backend dependencies from `pyproject.toml` / `uv.lock`.
@@ -57,6 +56,7 @@
 - **Never Edit Manually**: The `src/api-client/` directory is auto-generated. Wrap generated calls in service modules (`src/services/`) instead.
 - **After Regeneration**: Restart the frontend dev server to pick up changes, then re-run builds and tests.
 - **Validation**: Use `./scripts/validate-openapi-client.sh` when modifying shared contracts.
+- **Full reference**: See `docs/specs/OPENAPI_CLIENT.md` for complete workflow, CI/CD integration, and troubleshooting.
 
 ## Documentation Expectations
 - **Structure**: Place new docs under appropriate `docs/` subdirectory (adr/, design/, specs/, reference/, user/). Follow snake_case filenames.
