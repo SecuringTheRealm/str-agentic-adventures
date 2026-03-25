@@ -161,7 +161,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
         if (typeof message.narration === "string") {
           setMessages((prev) => [
             ...prev,
-            { text: message.narration as string, sender: "dm" },
+            { text: message.narration, sender: "dm" },
           ]);
         }
         break;

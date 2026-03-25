@@ -476,6 +476,15 @@ class DungeonMasterAgent:
         response["narration"] = self._fallback_generate_response("exploration")
         return response
 
+    @staticmethod
+    def _detect_d20_special(
+        notation: str, rolls: list[int]
+    ) -> tuple[bool, bool]:
+        """Return (is_critical_hit, is_critical_miss) for a single d20 roll."""
+        if rolls and len(rolls) == 1 and "d20" in notation:
+            return rolls[0] == 20, rolls[0] == 1
+        return False, False
+
     async def narrate_dice_roll(self, roll_context: dict[str, Any]) -> str:
         """
         Generate a narrative description of a dice roll result.
@@ -506,12 +515,7 @@ class DungeonMasterAgent:
                 f"rolled {notation}{skill_text}: {rolls_text} = {total}"
             )
 
-            is_crit_hit = (
-                len(rolls) == 1 and rolls[0] == 20 and "d20" in notation
-            )
-            is_crit_miss = (
-                len(rolls) == 1 and rolls[0] == 1 and "d20" in notation
-            )
+            is_crit_hit, is_crit_miss = self._detect_d20_special(notation, rolls)
 
             special = ""
             if is_crit_hit:
@@ -554,17 +558,17 @@ class DungeonMasterAgent:
         skill_text = f" for {skill.replace('_', ' ')}" if skill else ""
 
         # Critical hit / miss on a single d20
-        if rolls and len(rolls) == 1 and "d20" in notation:
-            if rolls[0] == 20:
-                return (
-                    f"*A natural 20!* {player_name} rolls{skill_text}: "
-                    f"**{total}**. A critical success!"
-                )
-            if rolls[0] == 1:
-                return (
-                    f"*A natural 1!* {player_name} rolls{skill_text}: "
-                    f"**{total}**. A critical failure!"
-                )
+        is_crit_hit, is_crit_miss = self._detect_d20_special(notation, rolls)
+        if is_crit_hit:
+            return (
+                f"*A natural 20!* {player_name} rolls{skill_text}: "
+                f"**{total}**. A critical success!"
+            )
+        if is_crit_miss:
+            return (
+                f"*A natural 1!* {player_name} rolls{skill_text}: "
+                f"**{total}**. A critical failure!"
+            )
 
         # Quality-based description for d20 rolls
         if "d20" in notation:
