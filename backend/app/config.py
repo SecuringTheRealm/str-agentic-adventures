@@ -31,6 +31,10 @@ class Settings(BaseSettings):
     # Storage Settings
     storage_connection_string: str = ""
 
+    # CORS Settings
+    # Comma-separated list of allowed origins for CORS
+    allowed_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
+
     # App Settings
     # Note: Default binds to all interfaces (0.0.0.0) for development convenience.
     # Production deployments MUST override via APP_HOST environment variable

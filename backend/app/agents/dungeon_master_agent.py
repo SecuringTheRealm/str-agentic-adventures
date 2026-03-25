@@ -64,21 +64,8 @@ class DungeonMasterAgent:
         # Fallback components are initialized lazily
         self._fallback_initialized = False
 
-    def _get_dm_system_prompt(self, context: dict[str, Any]) -> str:
-        """
-        Generate a comprehensive system prompt that embodies the Dungeon Master role
-        as specified in the PRD, replacing complex agent coordination.
-        """
-        character_info = ""
-        if context.get("character_name"):
-            character_name = context.get("character_name", "an adventurer")
-            character_level = context.get("character_level", "1")
-            character_class = context.get("character_class", "fighter")
-            character_info = (
-                f"The player character is {character_name}, "
-                f"a level {character_level} {character_class}. "
-            )
-
+    def _get_dm_system_prompt(self) -> str:
+        """Generate the static system prompt for the Dungeon Master role."""
         return (
             "You are an expert Dungeon Master for D&D 5e. You are the primary "
             "orchestrator of the tabletop RPG experience, responsible for:\n\n"
@@ -88,7 +75,6 @@ class DungeonMasterAgent:
             "- Ensuring continuity of game rules and narrative\n"
             "- Creating immersive storytelling and descriptions\n"
             "- Adjudicating player actions and their consequences\n\n"
-            f"{character_info}\n"
             "Your responses should:\n"
             "- Be engaging and immersive\n"
             "- Respect player agency and choices\n"
@@ -102,6 +88,22 @@ class DungeonMasterAgent:
             "exciting adventure. Keep responses focused and not overly long. You are "
             "the single point of coordination for the entire game experience."
         )
+
+    def _build_user_message(self, user_input: str, context: dict[str, Any]) -> str:
+        """Build user message with context, keeping user input out of system prompts."""
+        parts = []
+        if context.get("character_name"):
+            character_name = context.get("character_name", "an adventurer")
+            character_level = context.get("character_level", "1")
+            character_class = context.get("character_class", "fighter")
+            parts.append(
+                f"[Character context: {character_name}, "
+                f"level {character_level} {character_class}]"
+            )
+            parts.append(f"Player ({character_name}): {user_input}")
+        else:
+            parts.append(user_input)
+        return "\n".join(parts)
 
     async def process_input(
         self, user_input: str, context: dict[str, Any] = None
@@ -119,7 +121,7 @@ class DungeonMasterAgent:
         if not context:
             context = {}
 
-        logger.info(f"DM processing player input: {user_input}")
+        logger.info("DM processing player input (len=%d)", len(user_input))
         logger.info("DM fallback mode status: %s", self._fallback_mode)
 
         # Use fallback mode if needed
@@ -128,13 +130,11 @@ class DungeonMasterAgent:
             return await self._process_input_fallback(user_input, context)
 
         try:
-            # Create system prompt
-            system_prompt = self._get_dm_system_prompt(context)
+            # Create system prompt (static, no user input)
+            system_prompt = self._get_dm_system_prompt()
 
             # Create user message with context
-            user_message = user_input
-            if context.get("character_name"):
-                user_message = f"Player ({context['character_name']}): {user_input}"
+            user_message = self._build_user_message(user_input, context)
 
             # Create messages for Azure AI SDK
             messages: list[dict[str, str]] = [
@@ -190,7 +190,7 @@ class DungeonMasterAgent:
             logger.error("No WebSocket provided for streaming")
             return
 
-        logger.info(f"DM processing streaming input: {user_input}")
+        logger.info("DM processing streaming input (len=%d)", len(user_input))
 
         # Use fallback streaming if needed
         if self._fallback_mode:
@@ -207,13 +207,11 @@ class DungeonMasterAgent:
                 },
             )
 
-            # Create system prompt
-            system_prompt = self._get_dm_system_prompt(context)
+            # Create system prompt (static, no user input)
+            system_prompt = self._get_dm_system_prompt()
 
-            # Create user message
-            user_message = user_input
-            if context.get("character_name"):
-                user_message = f"Player ({context['character_name']}): {user_input}"
+            # Create user message with context
+            user_message = self._build_user_message(user_input, context)
 
             messages = [
                 {"role": "system", "content": system_prompt},
@@ -276,12 +274,12 @@ class DungeonMasterAgent:
             )
 
         except Exception as e:
-            logger.error(f"Error streaming AI response: {str(e)}")
+            logger.error("Error streaming AI response: %s", e, exc_info=True)
             await self._send_chat_message(
                 websocket,
                 {
                     "type": "chat_error",
-                    "message": f"Failed to generate response: {str(e)}",
+                    "message": "Failed to generate response. Please try again.",
                 },
             )
 

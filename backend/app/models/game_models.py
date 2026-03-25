@@ -336,14 +336,14 @@ class Campaign(BaseModel):
 
 # Request/Response models
 class CreateCharacterRequest(BaseModel):
-    name: str
+    name: str = Field(max_length=100)
     race: Race
     character_class: CharacterClass
     abilities: Abilities
-    backstory: str | None = None
-    background: str | None = (
-        None  # Background choice from SRD (acolyte, criminal, etc.)
-    )
+    backstory: str | None = Field(default=None, max_length=2000)
+    background: str | None = Field(
+        default=None, max_length=100
+    )  # Background choice from SRD (acolyte, criminal, etc.)
 
 
 class LevelUpRequest(BaseModel):
@@ -365,9 +365,9 @@ class LevelUpResponse(BaseModel):
 
 
 class PlayerInput(BaseModel):
-    message: str = Field(min_length=1)
-    character_id: str = Field(min_length=1)
-    campaign_id: str = Field(min_length=1)
+    message: str = Field(min_length=1, max_length=1000)
+    character_id: str = Field(min_length=1, max_length=100)
+    campaign_id: str = Field(min_length=1, max_length=100)
 
 
 class GameResponse(BaseModel):
@@ -378,11 +378,11 @@ class GameResponse(BaseModel):
 
 
 class CreateCampaignRequest(BaseModel):
-    name: str
-    setting: str
-    tone: str | None = "heroic"
+    name: str = Field(max_length=200)
+    setting: str = Field(max_length=1000)
+    tone: str | None = Field(default="heroic", max_length=100)
     homebrew_rules: list[str] | None = []
-    description: str | None = None
+    description: str | None = Field(default=None, max_length=2000)
 
 
 class CampaignUpdateRequest(BaseModel):
@@ -405,9 +405,9 @@ class CampaignListResponse(BaseModel):
 
 
 class AIAssistanceRequest(BaseModel):
-    text: str
-    context_type: str  # "setting", "description", "plot_hook", etc.
-    campaign_tone: str | None = "heroic"
+    text: str = Field(max_length=2000)
+    context_type: str = Field(max_length=100)  # "setting", "description", "plot_hook", etc.
+    campaign_tone: str | None = Field(default="heroic", max_length=100)
 
 
 class AIAssistanceResponse(BaseModel):
@@ -416,10 +416,10 @@ class AIAssistanceResponse(BaseModel):
 
 
 class AIContentGenerationRequest(BaseModel):
-    suggestion: str  # The specific suggestion to generate content for
-    current_text: str  # Current text in the field
-    context_type: str  # "setting", "description", "plot_hook", etc.
-    campaign_tone: str | None = "heroic"
+    suggestion: str = Field(max_length=1000)  # The specific suggestion to generate content for
+    current_text: str = Field(max_length=2000)  # Current text in the field
+    context_type: str = Field(max_length=100)  # "setting", "description", "plot_hook", etc.
+    campaign_tone: str | None = Field(default="heroic", max_length=100)
 
 
 class AIContentGenerationResponse(BaseModel):
@@ -643,9 +643,9 @@ class UpdateNPCRequest(BaseModel):
 class NPCInteractionRequest(BaseModel):
     npc_id: str
     character_id: str | None = None
-    interaction_type: str
-    summary: str
-    outcome: str | None = None
+    interaction_type: str = Field(max_length=100)
+    summary: str = Field(max_length=2000)
+    outcome: str | None = Field(default=None, max_length=1000)
     relationship_change: int = 0
 
 

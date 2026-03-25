@@ -6,7 +6,9 @@ import logging
 from datetime import datetime
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Request, status
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from app.agents.artist_agent import get_artist
 from app.agents.combat_cartographer_agent import get_combat_cartographer
@@ -60,6 +62,9 @@ from app.services.campaign_service import campaign_service
 
 # Create a logger for this module
 logger = logging.getLogger(__name__)
+
+# Rate limiter for AI-calling endpoints
+limiter = Limiter(key_func=get_remote_address)
 
 router = APIRouter(tags=["game"])
 
@@ -353,31 +358,32 @@ async def get_ai_assistance(request: AIAssistanceRequest):
 
 
 @router.post("/campaign/ai-generate", response_model=AIContentGenerationResponse)
-async def generate_ai_content(request: AIContentGenerationRequest):
+@limiter.limit("10/minute")
+async def generate_ai_content(request: Request, request_body: AIContentGenerationRequest):  # noqa: ARG001
     """Generate AI content based on a specific suggestion and current text."""
     try:
         from app.azure_openai_client import azure_openai_client
 
-        # Create contextual prompt based on suggestion type and content
-        system_prompt = f"""You are an expert D&D campaign writer helping to enhance campaign content.
-Your task is to generate creative, contextual content based on a specific suggestion.
-Campaign Tone: {request.campaign_tone}
-Context Type: {request.context_type}
-Current Text: {request.current_text or "None"}
+        # Create contextual prompt - user input goes in user message only
+        system_prompt = (
+            "You are an expert D&D campaign writer helping to enhance campaign content.\n"
+            "Your task is to generate creative, contextual content based on a specific suggestion.\n\n"
+            "Guidelines:\n"
+            "- Generate 2-4 sentences of high-quality content that fulfills the suggestion\n"
+            "- If there's existing text, build upon it naturally and coherently\n"
+            "- Match the campaign tone specified by the user\n"
+            "- Be specific and evocative, not generic\n"
+            "- Focus on details that enhance the game experience\n"
+            "- Don't repeat the suggestion text itself\n\n"
+            "Respond with ONLY the generated content, no explanations or meta-text."
+        )
 
-The user wants you to: {request.suggestion}
-
-Guidelines:
-- Generate 2-4 sentences of high-quality content that fulfills the suggestion
-- If there's existing text, build upon it naturally and coherently
-- Match the campaign tone ({request.campaign_tone})
-- Be specific and evocative, not generic
-- Focus on details that enhance the game experience
-- Don't repeat the suggestion text itself
-
-Respond with ONLY the generated content, no explanations or meta-text."""
-
-        user_prompt = f"Current field content: {request.current_text or '(empty)'}\n\nSuggestion to implement: {request.suggestion}"
+        user_prompt = (
+            f"Campaign Tone: {request_body.campaign_tone}\n"
+            f"Context Type: {request_body.context_type}\n"
+            f"Current field content: {request_body.current_text or '(empty)'}\n\n"
+            f"Suggestion to implement: {request_body.suggestion}"
+        )
 
         messages = [
             {"role": "system", "content": system_prompt},
@@ -407,7 +413,8 @@ Respond with ONLY the generated content, no explanations or meta-text."""
 
 
 @router.post("/generate-image", response_model=dict[str, Any])
-async def generate_image(image_request: dict[str, Any]):
+@limiter.limit("10/minute")
+async def generate_image(request: Request, image_request: dict[str, Any]):  # noqa: ARG001
     """Generate an image based on the request details."""
     try:
         image_type = image_request.get("image_type")
@@ -434,7 +441,8 @@ async def generate_image(image_request: dict[str, Any]):
 
 
 @router.post("/battle-map", response_model=dict[str, Any])
-async def generate_battle_map(map_request: dict[str, Any]):
+@limiter.limit("10/minute")
+async def generate_battle_map(request: Request, map_request: dict[str, Any]):  # noqa: ARG001
     """Generate a battle map based on environment details."""
     try:
         environment = map_request.get("environment", {})
@@ -452,7 +460,8 @@ async def generate_battle_map(map_request: dict[str, Any]):
 
 
 @router.post("/input", response_model=GameResponse)
-async def process_player_input(player_input: PlayerInput):
+@limiter.limit("10/minute")
+async def process_player_input(request: Request, player_input: PlayerInput):  # noqa: ARG001
     """Process player input and get game response."""
     try:
         # Try to get character and campaign context, but fallback gracefully
@@ -707,7 +716,8 @@ async def input_manual_roll(manual_data: dict[str, Any]):
 
 # Campaign creation and world generation endpoints
 @router.post("/campaign/generate-world", response_model=dict[str, Any])
-async def generate_campaign_world(campaign_data: dict[str, Any]):
+@limiter.limit("10/minute")
+async def generate_campaign_world(request: Request, campaign_data: dict[str, Any]):  # noqa: ARG001
     """Generate world description and setting for a new campaign."""
     try:
         campaign_name = campaign_data.get("name", "Unnamed Campaign")

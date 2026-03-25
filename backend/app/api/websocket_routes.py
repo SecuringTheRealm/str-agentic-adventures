@@ -31,7 +31,8 @@ class ConnectionManager:
             self.campaign_connections[campaign_id].append(websocket)
 
         logger.info(
-            f"WebSocket connected. Total connections: {len(self.active_connections)}"
+            "WebSocket connected. Total connections: %d",
+            len(self.active_connections),
         )
 
     def disconnect(self, websocket: WebSocket, campaign_id: str = None) -> None:
@@ -47,7 +48,8 @@ class ConnectionManager:
                 del self.campaign_connections[campaign_id]
 
         logger.info(
-            f"WebSocket disconnected. Total connections: {len(self.active_connections)}"
+            "WebSocket disconnected. Total connections: %d",
+            len(self.active_connections),
         )
 
     async def send_personal_message(self, message: str, websocket: WebSocket) -> None:
@@ -238,12 +240,12 @@ async def handle_chat_input(
         await dm_agent.process_input_stream(user_input, context)
 
     except Exception as e:
-        logger.error(f"Error handling chat input: {str(e)}")
+        logger.error("Error handling chat input: %s", e, exc_info=True)
         await manager.send_personal_message(
             json.dumps(
                 {
                     "type": "chat_error",
-                    "message": f"Failed to process chat input: {str(e)}",
+                    "message": "Failed to process chat input. Please try again.",
                 }
             ),
             websocket,
@@ -330,9 +332,12 @@ async def handle_dice_roll(
             await manager.send_personal_message(json.dumps(response), websocket)
 
     except Exception as e:
-        logger.error(f"Error handling dice roll: {str(e)}")
+        logger.error("Error handling dice roll: %s", e, exc_info=True)
         await manager.send_personal_message(
-            json.dumps({"type": "error", "message": f"Failed to roll dice: {str(e)}"}),
+            json.dumps({
+                "type": "error",
+                "message": "Failed to roll dice. Please try again.",
+            }),
             websocket,
         )
 
