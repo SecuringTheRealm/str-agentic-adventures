@@ -60,8 +60,9 @@ class DungeonMasterAgent:
 
         except Exception as e:
             logger.warning(
-                f"Failed to initialize DM Agent with Azure AI SDK: {e}. "
-                "Operating in fallback mode."
+                "Failed to initialize DM Agent with Azure AI SDK: %s. "
+                "Operating in fallback mode.",
+                e,
             )
             self._fallback_mode = True
 
@@ -218,7 +219,7 @@ class DungeonMasterAgent:
             }
 
         except Exception as e:
-            logger.error(f"Error in DM processing: {str(e)}")
+            logger.error("Error in DM processing: %s", str(e))
             # Fall back to using the full fallback processing which handles dice, etc.
             logger.info("DM falling back after error.")
             result = await self._process_input_fallback(user_input, context)
@@ -289,7 +290,7 @@ class DungeonMasterAgent:
                 thread.append({"role": "assistant", "content": full_response})
 
         except Exception as e:
-            logger.error(f"Error in streaming processing: {str(e)}")
+            logger.error("Error in streaming processing: %s", str(e))
             await self._send_chat_message(
                 websocket,
                 {
@@ -346,7 +347,7 @@ class DungeonMasterAgent:
             return full_response.strip()
 
         except Exception as e:
-            logger.error("Error streaming AI response: %s", e, exc_info=True)
+            logger.exception("Error streaming AI response: %s", e)
             await self._send_chat_message(
                 websocket,
                 {
@@ -503,7 +504,7 @@ class DungeonMasterAgent:
         try:
             await websocket.send_text(json.dumps(message))
         except Exception as exc:
-            logger.error(f"Error sending chat message: {exc}")
+            logger.error("Error sending chat message: %s", exc)
 
 
 # Lazy singleton instance

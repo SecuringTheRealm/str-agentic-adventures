@@ -40,8 +40,9 @@ class CombatMCAgent:
                 logger.info("Combat MC agent initialized with Azure AI SDK")
         except Exception as e:
             logger.warning(
-                f"Failed to initialize Combat MC agent with Azure AI SDK: {e}. "
-                "Operating in fallback mode."
+                "Failed to initialize Combat MC agent with Azure AI SDK: %s. "
+                "Operating in fallback mode.",
+                e,
             )
             self.fallback_mode = True
             self._initialize_fallback_mechanics()
@@ -70,7 +71,7 @@ class CombatMCAgent:
 
             logger.info("Combat MC agent plugins initialized for direct access")
         except Exception as e:
-            logger.error(f"Error initializing Combat MC agent plugins: {str(e)}")
+            logger.error("Error initializing Combat MC agent plugins: %s", str(e))
             logger.warning("Enabling fallback mode with built-in combat mechanics")
             self.fallback_mode = True
             self._initialize_fallback_mechanics()
@@ -176,7 +177,7 @@ class CombatMCAgent:
             return encounter
 
         except Exception as e:
-            logger.error(f"Error creating encounter: {str(e)}")
+            logger.error("Error creating encounter: %s", str(e))
             return {"error": "Failed to create encounter"}
 
     async def start_combat(
@@ -259,7 +260,7 @@ class CombatMCAgent:
             return encounter
 
         except Exception as e:
-            logger.error(f"Error starting combat: {str(e)}")
+            logger.error("Error starting combat: %s", str(e))
             return {"error": "Failed to start combat"}
 
     async def process_combat_action(
@@ -291,7 +292,7 @@ class CombatMCAgent:
             return self._process_plugin_combat_action(encounter, action_data)
 
         except Exception as e:
-            logger.error(f"Error processing combat action: {str(e)}")
+            logger.error("Error processing combat action: %s", str(e))
             return {"error": "Failed to process combat action"}
 
     def _process_fallback_combat_action(
@@ -426,7 +427,7 @@ class CombatMCAgent:
             return result
 
         except Exception as e:
-            logger.error(f"Error in plugin-based combat action processing: {str(e)}")
+            logger.error("Error in plugin-based combat action processing: %s", str(e))
             result["message"] = f"Error processing {action_type} action"
             return result
 
@@ -488,7 +489,7 @@ class CombatMCAgent:
             return result
 
         except Exception as e:
-            logger.error(f"Error processing attack action: {str(e)}")
+            logger.error("Error processing attack action: %s", str(e))
             result["message"] = f"Error processing attack: {str(e)}"
             return result
 
@@ -569,7 +570,7 @@ class CombatMCAgent:
             return result
 
         except Exception as e:
-            logger.error(f"Error processing spell attack action: {str(e)}")
+            logger.error("Error processing spell attack action: %s", str(e))
             result["message"] = f"Error processing spell attack: {str(e)}"
             return result
 
@@ -606,7 +607,7 @@ class CombatMCAgent:
             return result
 
         except Exception as e:
-            logger.error(f"Error processing spell damage action: {str(e)}")
+            logger.error("Error processing spell damage action: %s", str(e))
             result["message"] = f"Error processing spell damage: {str(e)}"
             return result
 
@@ -640,7 +641,7 @@ class CombatMCAgent:
             return result
 
         except Exception as e:
-            logger.error(f"Error processing spell healing action: {str(e)}")
+            logger.error("Error processing spell healing action: %s", str(e))
             result["message"] = f"Error processing spell healing: {str(e)}"
             return result
 
@@ -684,7 +685,7 @@ class CombatMCAgent:
             return result
 
         except Exception as e:
-            logger.error(f"Error processing skill check action: {str(e)}")
+            logger.error("Error processing skill check action: %s", str(e))
             result["message"] = f"Error processing skill check: {str(e)}"
             return result
 
@@ -722,7 +723,7 @@ class CombatMCAgent:
             return result
 
         except Exception as e:
-            logger.error(f"Error processing saving throw action: {str(e)}")
+            logger.error("Error processing saving throw action: %s", str(e))
             result["message"] = f"Error processing saving throw: {str(e)}"
             return result
 

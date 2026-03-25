@@ -77,7 +77,7 @@ class ArtStyleAnalysisPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error analyzing art style: {str(e)}")
+            logger.error("Error analyzing art style: %s", str(e))
             return {"status": "error", "error": f"Art style analysis failed: {str(e)}"}
 
     def check_style_consistency(
@@ -136,7 +136,7 @@ class ArtStyleAnalysisPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error checking style consistency: {str(e)}")
+            logger.error("Error checking style consistency: %s", str(e))
             return {
                 "status": "error",
                 "error": f"Style consistency check failed: {str(e)}",
@@ -189,7 +189,7 @@ class ArtStyleAnalysisPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error creating style profile: {str(e)}")
+            logger.error("Error creating style profile: %s", str(e))
             return {
                 "status": "error",
                 "error": f"Style profile creation failed: {str(e)}",
@@ -239,7 +239,7 @@ class ArtStyleAnalysisPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error getting style recommendations: {str(e)}")
+            logger.error("Error getting style recommendations: %s", str(e))
             return {
                 "status": "error",
                 "error": f"Style recommendations failed: {str(e)}",

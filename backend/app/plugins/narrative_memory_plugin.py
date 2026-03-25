@@ -65,7 +65,7 @@ class NarrativeMemoryPlugin:
                 "fact_id": fact_id,
             }
         except Exception as e:
-            logger.error(f"Error storing fact in memory: {str(e)}")
+            logger.error("Error storing fact in memory: %s", str(e))
             return {"status": "error", "message": f"Failed to store fact: {str(e)}"}
 
     def record_event(
@@ -108,7 +108,7 @@ class NarrativeMemoryPlugin:
                 "event_id": event_id,
             }
         except Exception as e:
-            logger.error(f"Error recording event: {str(e)}")
+            logger.error("Error recording event: %s", str(e))
             return {"status": "error", "message": f"Failed to record event: {str(e)}"}
 
     def recall_facts(self, query: str = "", category: str = "") -> dict[str, Any]:
@@ -146,7 +146,7 @@ class NarrativeMemoryPlugin:
                 "count": len(filtered_memories),
             }
         except Exception as e:
-            logger.error(f"Error recalling facts: {str(e)}")
+            logger.error("Error recalling facts: %s", str(e))
             return {
                 "status": "error",
                 "message": f"Failed to recall facts: {str(e)}",
@@ -195,7 +195,7 @@ class NarrativeMemoryPlugin:
                 "count": len(filtered_events),
             }
         except Exception as e:
-            logger.error(f"Error recalling timeline: {str(e)}")
+            logger.error("Error recalling timeline: %s", str(e))
             return {
                 "status": "error",
                 "message": f"Failed to recall timeline: {str(e)}",
@@ -242,7 +242,7 @@ class NarrativeMemoryPlugin:
 
             return {"status": "success", "message": f"NPC {name} updated", "npc": npc}
         except Exception as e:
-            logger.error(f"Error updating NPC: {str(e)}")
+            logger.error("Error updating NPC: %s", str(e))
             return {"status": "error", "message": f"Failed to update NPC: {str(e)}"}
 
     def get_npc(self, name: str) -> dict[str, Any]:
@@ -265,7 +265,7 @@ class NarrativeMemoryPlugin:
                 return {"status": "success", "npc": npc}
             return {"status": "not_found", "message": f"NPC {name} not found"}
         except Exception as e:
-            logger.error(f"Error retrieving NPC: {str(e)}")
+            logger.error("Error retrieving NPC: %s", str(e))
             return {"status": "error", "message": f"Failed to retrieve NPC: {str(e)}"}
 
     def track_story_arc(
@@ -319,7 +319,7 @@ class NarrativeMemoryPlugin:
                 "arc_id": arc_id,
             }
         except Exception as e:
-            logger.error(f"Error tracking story arc: {str(e)}")
+            logger.error("Error tracking story arc: %s", str(e))
             return {
                 "status": "error",
                 "message": f"Failed to track story arc: {str(e)}",
@@ -369,7 +369,7 @@ class NarrativeMemoryPlugin:
                 "development_id": development_id,
             }
         except Exception as e:
-            logger.error(f"Error recording character development: {str(e)}")
+            logger.error("Error recording character development: %s", str(e))
             return {
                 "status": "error",
                 "message": f"Failed to record character development: {str(e)}",
@@ -414,7 +414,7 @@ class NarrativeMemoryPlugin:
                 "count": len(filtered_arcs),
             }
         except Exception as e:
-            logger.error(f"Error recalling story arcs: {str(e)}")
+            logger.error("Error recalling story arcs: %s", str(e))
             return {
                 "status": "error",
                 "message": f"Failed to recall story arcs: {str(e)}",

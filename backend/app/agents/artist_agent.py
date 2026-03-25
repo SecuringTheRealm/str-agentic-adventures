@@ -38,8 +38,9 @@ class ArtistAgent:
                 logger.info("Artist agent initialized with Azure AI SDK")
         except Exception as e:
             logger.warning(
-                f"Failed to initialize Artist agent with Azure AI SDK: {e}. "
-                "Operating in fallback mode."
+                "Failed to initialize Artist agent with Azure AI SDK: %s. "
+                "Operating in fallback mode.",
+                e,
             )
             self._fallback_mode = True
 
@@ -51,7 +52,8 @@ class ArtistAgent:
             except Exception as e:
                 logger.warning(
                     "Failed to initialize Azure OpenAI client "
-                    f"for image generation: {e}"
+                    "for image generation: %s",
+                    e,
                 )
                 self._fallback_mode = True
 
@@ -93,7 +95,7 @@ class ArtistAgent:
 
             logger.info("Artist agent plugins initialized for direct access")
         except Exception as e:
-            logger.error(f"Error initializing Artist agent plugins: {str(e)}")
+            logger.error("Error initializing Artist agent plugins: %s", str(e))
             # Don't raise - enter fallback mode instead
             self._fallback_mode = True
             logger.warning(
@@ -191,7 +193,7 @@ class ArtistAgent:
             return portrait
 
         except Exception as e:
-            logger.error(f"Error generating character portrait: {str(e)}")
+            logger.error("Error generating character portrait: %s", str(e))
             return {"error": "Failed to generate character portrait"}
 
     async def illustrate_scene(self, scene_context: dict[str, Any]) -> dict[str, Any]:
@@ -289,7 +291,7 @@ class ArtistAgent:
             return illustration
 
         except Exception as e:
-            logger.error(f"Error illustrating scene: {str(e)}")
+            logger.error("Error illustrating scene: %s", str(e))
             return {"error": "Failed to illustrate scene"}
 
     async def create_item_visualization(
@@ -389,7 +391,7 @@ class ArtistAgent:
             return item_visualization
 
         except Exception as e:
-            logger.error(f"Error creating item visualization: {str(e)}")
+            logger.error("Error creating item visualization: %s", str(e))
             return {"error": "Failed to create item visualization"}
 
 

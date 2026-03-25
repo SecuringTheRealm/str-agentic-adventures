@@ -37,7 +37,7 @@ def has_alembic_version_table() -> bool:
         tables = inspector.get_table_names()
         return "alembic_version" in tables
     except Exception as e:
-        logger.warning(f"Error checking for alembic_version table: {e}")
+        logger.warning("Error checking for alembic_version table: %s", e)
         return False
 
 
@@ -48,7 +48,7 @@ def is_database_empty() -> bool:
         tables = inspector.get_table_names()
         return len(tables) == 0
     except Exception as e:
-        logger.warning(f"Error checking if database is empty: {e}")
+        logger.warning("Error checking if database is empty: %s", e)
         return True
 
 
@@ -60,7 +60,7 @@ def get_current_revision() -> str | None:
             row = result.fetchone()
             return row[0] if row else None
     except Exception as e:
-        logger.warning(f"Error getting current revision: {e}")
+        logger.warning("Error getting current revision: %s", e)
         return None
 
 
@@ -71,7 +71,7 @@ def get_head_revision() -> str | None:
         script_dir = ScriptDirectory.from_config(cfg)
         return script_dir.get_current_head()
     except Exception as e:
-        logger.warning(f"Error getting head revision: {e}")
+        logger.warning("Error getting head revision: %s", e)
         return None
 
 
@@ -124,16 +124,16 @@ def run_migrations() -> None:
             return
 
         if current_rev == head_rev:
-            logger.info(f"Database is up to date (revision: {current_rev})")
+            logger.info("Database is up to date (revision: %s)", current_rev)
             return
 
-        logger.info(f"Database needs upgrade: {current_rev} -> {head_rev}")
+        logger.info("Database needs upgrade: %s -> %s", current_rev, head_rev)
         cfg = get_alembic_config()
         command.upgrade(cfg, "head")
         logger.info("Database migration completed successfully")
 
     except Exception as e:
-        logger.error(f"Error running database migrations: {e}")
+        logger.error("Error running database migrations: %s", e)
         # Don't raise the exception to allow the application to continue
         # In production, you might want to fail fast instead
 
@@ -155,4 +155,4 @@ def create_initial_migration() -> None:
         logger.info("Initial migration created")
 
     except Exception as e:
-        logger.error(f"Error creating initial migration: {e}")
+        logger.error("Error creating initial migration: %s", e)

@@ -57,7 +57,7 @@ class ConnectionManager:
             try:
                 await websocket.send_text(message)
             except Exception as e:
-                logger.error(f"Failed to send personal message: {str(e)}")
+                logger.error("Failed to send personal message: %s", str(e))
 
     async def send_campaign_message(self, message: str, campaign_id: str) -> None:
         if campaign_id in self.campaign_connections:
@@ -67,7 +67,7 @@ class ConnectionManager:
                     try:
                         await connection.send_text(message)
                     except Exception as e:
-                        logger.error(f"Failed to send campaign message: {str(e)}")
+                        logger.error("Failed to send campaign message: %s", str(e))
                         disconnected.append(connection)
                 else:
                     disconnected.append(connection)
@@ -83,7 +83,7 @@ class ConnectionManager:
                 try:
                     await connection.send_text(message)
                 except Exception as e:
-                    logger.error(f"Failed to broadcast message: {str(e)}")
+                    logger.error("Failed to broadcast message: %s", str(e))
                     disconnected.append(connection)
             else:
                 disconnected.append(connection)
@@ -118,7 +118,7 @@ async def chat_websocket(websocket: WebSocket, campaign_id: str) -> None:
                 )
     except WebSocketDisconnect:
         manager.disconnect(websocket, campaign_id)
-        logger.info(f"Client disconnected from chat in campaign {campaign_id}")
+        logger.info("Client disconnected from chat in campaign %s", campaign_id)
 
 
 @router.websocket("/ws/{campaign_id}")
@@ -139,7 +139,7 @@ async def campaign_websocket(websocket: WebSocket, campaign_id: str) -> None:
                 )
     except WebSocketDisconnect:
         manager.disconnect(websocket, campaign_id)
-        logger.info(f"Client disconnected from campaign {campaign_id}")
+        logger.info("Client disconnected from campaign %s", campaign_id)
 
 
 @router.websocket("/ws/global")
@@ -187,7 +187,7 @@ async def handle_chat_message(
                 websocket,
             )
     except Exception as e:
-        logger.error(f"Error handling chat message: {str(e)}")
+        logger.error("Error handling chat message: %s", str(e))
         await manager.send_personal_message(
             json.dumps({"type": "error", "message": "Failed to process chat message"}),
             websocket,
@@ -240,7 +240,7 @@ async def handle_chat_input(
         await dm_agent.process_input_stream(user_input, context)
 
     except Exception as e:
-        logger.error("Error handling chat input: %s", e, exc_info=True)
+        logger.exception("Error handling chat input: %s", e)
         await manager.send_personal_message(
             json.dumps(
                 {
@@ -281,7 +281,7 @@ async def handle_websocket_message(
                 websocket,
             )
     except Exception as e:
-        logger.error(f"Error handling WebSocket message: {str(e)}")
+        logger.error("Error handling WebSocket message: %s", str(e))
         await manager.send_personal_message(
             json.dumps({"type": "error", "message": "Failed to process message"}),
             websocket,
@@ -332,7 +332,7 @@ async def handle_dice_roll(
             await manager.send_personal_message(json.dumps(response), websocket)
 
     except Exception as e:
-        logger.error("Error handling dice roll: %s", e, exc_info=True)
+        logger.exception("Error handling dice roll: %s", e)
         await manager.send_personal_message(
             json.dumps({
                 "type": "error",
@@ -363,7 +363,7 @@ async def handle_game_update(
             await manager.broadcast(json.dumps(response))
 
     except Exception as e:
-        logger.error(f"Error handling game update: {str(e)}")
+        logger.error("Error handling game update: %s", str(e))
 
 
 async def handle_character_update(
@@ -387,7 +387,7 @@ async def handle_character_update(
             await manager.send_personal_message(json.dumps(response), websocket)
 
     except Exception as e:
-        logger.error(f"Error handling character update: {str(e)}")
+        logger.error("Error handling character update: %s", str(e))
 
 
 # Utility functions for broadcasting updates

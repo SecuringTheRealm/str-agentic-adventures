@@ -38,8 +38,9 @@ class ScribeAgent:
                 logger.info("Scribe agent initialized with Azure AI SDK")
         except Exception as e:
             logger.warning(
-                f"Failed to initialize Scribe agent with Azure AI SDK: {e}. "
-                "Operating in fallback mode."
+                "Failed to initialize Scribe agent with Azure AI SDK: %s. "
+                "Operating in fallback mode.",
+                e,
             )
             self._fallback_mode = True
 
@@ -243,7 +244,7 @@ class ScribeAgent:
                 characters = db.query(Character).all()
                 return {c.id: c.data.get("inventory", []) for c in characters}
         except Exception as e:
-            logger.error(f"Error retrieving inventory data: {str(e)}")
+            logger.error("Error retrieving inventory data: %s", str(e))
             return {}
 
     def _register_skills(self) -> None:
@@ -405,7 +406,7 @@ class ScribeAgent:
             return character_sheet
 
         except Exception as e:
-            logger.error(f"Error creating character: {str(e)}")
+            logger.error("Error creating character: %s", str(e))
             return {"error": f"Failed to create character: {str(e)}"}
 
     async def update_character(
@@ -438,7 +439,7 @@ class ScribeAgent:
             return character
 
         except Exception as e:
-            logger.error(f"Error updating character: {str(e)}")
+            logger.error("Error updating character: %s", str(e))
             return {"error": "Failed to update character"}
 
     async def get_character(self, character_id: str) -> dict[str, Any] | None:
@@ -521,7 +522,7 @@ class ScribeAgent:
             return {"inventory": inventory, "added_item": item}
 
         except Exception as e:
-            logger.error(f"Error adding to inventory: {str(e)}")
+            logger.error("Error adding to inventory: %s", str(e))
             return {"error": "Failed to add item to inventory"}
 
     async def get_inventory(self, character_id: str) -> dict[str, Any]:
@@ -558,7 +559,7 @@ class ScribeAgent:
                 }
 
         except Exception as e:
-            logger.error(f"Error getting inventory: {str(e)}")
+            logger.error("Error getting inventory: %s", str(e))
             return {"error": "Failed to get inventory"}
 
     async def remove_from_inventory(
@@ -620,7 +621,7 @@ class ScribeAgent:
                 }
 
         except Exception as e:
-            logger.error(f"Error removing from inventory: {str(e)}")
+            logger.error("Error removing from inventory: %s", str(e))
             return {"error": "Failed to remove item from inventory"}
 
     async def update_inventory_item(
@@ -670,7 +671,7 @@ class ScribeAgent:
                 }
 
         except Exception as e:
-            logger.error(f"Error updating inventory item: {str(e)}")
+            logger.error("Error updating inventory item: %s", str(e))
             return {"error": "Failed to update inventory item"}
 
     async def equip_item(
@@ -743,7 +744,7 @@ class ScribeAgent:
                 }
 
         except Exception as e:
-            logger.error(f"Error equipping item: {str(e)}")
+            logger.error("Error equipping item: %s", str(e))
             return {"error": "Failed to equip item"}
 
     def _get_valid_slots_for_item_type(self, item_type: str) -> list[str]:
@@ -810,7 +811,7 @@ class ScribeAgent:
                 }
 
         except Exception as e:
-            logger.error(f"Error unequipping item: {str(e)}")
+            logger.error("Error unequipping item: %s", str(e))
             return {"error": "Failed to unequip item"}
 
     async def calculate_encumbrance(self, character_id: str) -> dict[str, Any]:
@@ -876,7 +877,7 @@ class ScribeAgent:
                 }
 
         except Exception as e:
-            logger.error(f"Error calculating encumbrance: {str(e)}")
+            logger.error("Error calculating encumbrance: %s", str(e))
             return {"error": "Failed to calculate encumbrance"}
 
     async def apply_item_effects(self, character_id: str) -> dict[str, Any]:
@@ -935,7 +936,7 @@ class ScribeAgent:
                 }
 
         except Exception as e:
-            logger.error(f"Error applying item effects: {str(e)}")
+            logger.error("Error applying item effects: %s", str(e))
             return {"error": "Failed to apply item effects"}
 
     async def level_up_character(
@@ -1137,7 +1138,7 @@ class ScribeAgent:
             }
 
         except Exception as e:
-            logger.error(f"Error leveling up character: {str(e)}")
+            logger.error("Error leveling up character: %s", str(e))
             return {"error": f"Failed to level up character: {str(e)}"}
 
     async def award_experience(
@@ -1181,7 +1182,7 @@ class ScribeAgent:
             }
 
         except Exception as e:
-            logger.error(f"Error awarding experience: {str(e)}")
+            logger.error("Error awarding experience: %s", str(e))
             return {"error": f"Failed to award experience: {str(e)}"}
 
 

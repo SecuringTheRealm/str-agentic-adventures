@@ -74,7 +74,7 @@ class ImageGenerationPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error generating image: {str(e)}")
+            logger.error("Error generating image: %s", str(e))
             return {"status": "error", "error": f"Image generation failed: {str(e)}"}
 
     def optimize_prompt(
@@ -106,7 +106,7 @@ class ImageGenerationPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error optimizing prompt: {str(e)}")
+            logger.error("Error optimizing prompt: %s", str(e))
             return {"status": "error", "error": f"Prompt optimization failed: {str(e)}"}
 
     def get_generation_history(self, limit: int = 10) -> dict[str, Any]:
@@ -140,7 +140,7 @@ class ImageGenerationPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error getting generation history: {str(e)}")
+            logger.error("Error getting generation history: %s", str(e))
             return {
                 "status": "error",
                 "error": f"Failed to get generation history: {str(e)}",

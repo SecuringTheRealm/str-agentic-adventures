@@ -474,7 +474,7 @@ async def process_player_input(request: Request, player_input: PlayerInput):  # 
             character = await get_scribe().get_character(player_input.character_id)
         except Exception as e:
             logger.warning(
-                f"Could not retrieve character {player_input.character_id}: {str(e)}"
+                "Could not retrieve character %s: %s", player_input.character_id, str(e)
             )
         
         # Use fallback character info if character not found or error occurred
@@ -540,7 +540,7 @@ async def process_player_input(request: Request, player_input: PlayerInput):  # 
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Failed to process input: {str(e)}")
+        logger.error("Failed to process input: %s", str(e))
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to process input: {str(e)}",
