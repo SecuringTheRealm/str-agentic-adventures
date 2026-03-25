@@ -141,10 +141,10 @@ To run the application locally, you need access to Azure OpenAI models through A
 
 2. **Install dependencies and start services**:
    ```bash
-   # Backend
+   # Backend (uses uv for dependency management)
    cd backend
-   pip install -r requirements.txt
-   ./start.sh
+   uv sync
+   uv run uvicorn app.main:app --reload
 
    # Frontend (in a new terminal)
    cd frontend
