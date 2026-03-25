@@ -106,6 +106,37 @@ def get_class_features(character_class: str, level: int) -> list[dict[str, Any]]
     return features.get(str(level), [])
 
 
+def get_features_at_level(char_class: str, level: int) -> list[str]:
+    """Get feature names gained by a class at a specific level.
+
+    Args:
+        char_class: The character class name (e.g. 'fighter', 'wizard').
+        level: The character level (1-20).
+
+    Returns:
+        A list of feature names gained at that level.
+    """
+    features = get_class_features(char_class, level)
+    return [f["name"] if isinstance(f, dict) else f for f in features]
+
+
+def get_all_features_up_to_level(char_class: str, level: int) -> list[str]:
+    """Get all feature names gained by a class from level 1 up to the given level.
+
+    Args:
+        char_class: The character class name (e.g. 'fighter', 'wizard').
+        level: The maximum character level (1-20).
+
+    Returns:
+        A flat list of all feature names accumulated from level 1 through the
+        given level.
+    """
+    features: list[str] = []
+    for lvl in range(1, level + 1):
+        features.extend(get_features_at_level(char_class, lvl))
+    return features
+
+
 def get_class_info(character_class: str) -> dict[str, Any]:
     """Get class information including hit die and saving throws."""
     class_data = load_class_features()
