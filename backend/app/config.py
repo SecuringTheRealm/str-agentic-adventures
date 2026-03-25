@@ -21,8 +21,14 @@ class Settings(BaseSettings):
 
     # Model Deployments
     azure_openai_chat_deployment: str = ""
+    azure_openai_mini_deployment: str = ""  # GPT-4o-mini for structured/cheaper tasks
     azure_openai_embedding_deployment: str = ""
     azure_openai_dalle_deployment: str = "dall-e-3"
+
+    # Image generation cost controls
+    # Limits the number of DALL-E images generated per session to reduce spend.
+    max_images_per_session: int = 3
+    image_session_window_minutes: int = 30
 
     # Storage Settings
     storage_connection_string: str = ""
