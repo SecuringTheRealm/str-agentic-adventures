@@ -65,12 +65,6 @@ We will implement a comprehensive GitHub Actions-based CI/CD pipeline using spec
   - Frontend deployment to Azure Static Web Apps
   - Environment configuration and secrets management
 
-# PR Environment Pipeline (deploy-pr.yml)
-- PR Environment Creation: Triggered by PR events targeting main
-  - Creates isolated Azure environment named "pr-{PR_NUMBER}"
-  - Deploys both frontend and backend for testing
-  - Comments deployment URLs on pull request
-
 # Environment Cleanup (cleanup-pr.yml)
 - Automatic cleanup when PRs are closed/merged
 - Removes Azure resources to prevent cost accumulation
@@ -165,7 +159,6 @@ This ADR addresses the integration review requirement for ensuring "GitHub actio
 **Current Implementation Status**: Fully implemented and operational
 - ✅ Comprehensive CI pipeline with 62+ backend tests and frontend test suite
 - ✅ Production deployment automation to Azure Container Apps and Static Web Apps  
-- ✅ PR environment management with automatic cleanup
 - ✅ Path-based optimization for efficient resource usage
 - ✅ ADR compliance testing ensures architectural decisions are properly implemented
 - ✅ Infrastructure as Code with Azure Bicep deployment stacks
@@ -175,5 +168,4 @@ This ADR addresses the integration review requirement for ensuring "GitHub actio
 - `.github/workflows/integration-tests.yml`: Comprehensive integration testing for main branch
 - `.github/workflows/e2e-tests.yml`: End-to-end testing for main branch and nightly validation
 - `.github/workflows/deploy-production.yml`: Production deployment automation  
-- `.github/workflows/deploy-pr.yml`: PR environment creation and deployment
 - `.github/workflows/cleanup-pr.yml`: Automatic PR environment cleanup

@@ -302,13 +302,6 @@ Before running GitHub Actions, verify your service principal works:
 - **Environment**: production
 - **Resources**: Creates a production environment with all Azure resources
 
-#### Pull Request Environments
-- **Trigger**: Pull request opened/updated against `main` branch (runs when PRs target main, not when pushing to main)
-- **Workflow**: `.github/workflows/deploy-pr.yml`
-- **Environment**: development (temporary environment named `pr-{PR_NUMBER}`)
-- **Resources**: Creates a temporary environment for testing each pull request
-- **Purpose**: Allows testing changes in isolation before merging to main
-
 #### Environment Cleanup
 - **Trigger**: Pull request closed/merged (automatically cleans up when PR is finished)
 - **Workflow**: `.github/workflows/cleanup-pr.yml`
