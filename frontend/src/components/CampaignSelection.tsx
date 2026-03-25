@@ -4,6 +4,7 @@ import { type Campaign, deleteCampaign, getCampaigns } from "../services/api";
 import CampaignEditor from "./CampaignEditor";
 import CampaignGallery from "./CampaignGallery";
 import styles from "./CampaignSelection.module.css";
+import ConfirmDialog from "./ConfirmDialog";
 
 interface CampaignSelectionProps {
   onCampaignCreated: (campaign: Campaign) => void;
@@ -21,6 +22,7 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [campaignToDelete, setCampaignToDelete] = useState<string | null>(null);
 
   // Cache filtered custom campaigns to avoid repeated filtering
   const customCampaigns = campaigns.filter((c) => c.is_custom || false);
@@ -75,18 +77,25 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({
     setViewMode("gallery");
   };
 
-  const handleDeleteCampaign = async (campaignId: string) => {
-    if (!window.confirm("Are you sure you want to delete this campaign?")) {
-      return;
-    }
+  const handleDeleteCampaign = (campaignId: string) => {
+    setCampaignToDelete(campaignId);
+  };
 
+  const handleConfirmDelete = async () => {
+    if (!campaignToDelete) return;
+    const idToDelete = campaignToDelete;
+    setCampaignToDelete(null);
     try {
-      await deleteCampaign(campaignId);
+      await deleteCampaign(idToDelete);
       await loadCampaigns();
     } catch (err) {
       setError("Failed to delete campaign");
       console.error("Error deleting campaign:", err);
     }
+  };
+
+  const handleCancelDelete = () => {
+    setCampaignToDelete(null);
   };
 
   const handleBackToGallery = () => {
@@ -106,23 +115,153 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({
 
   if (viewMode === "list") {
     return (
+      <>
+        <div className={styles.campaignManager}>
+          <div className={styles.managerHeader}>
+            <h2>My Campaigns</h2>
+            <div className={styles.headerActions}>
+              <button
+                type="button"
+                className="action-button secondary"
+                onClick={handleBackToGallery}
+              >
+                ← Browse Templates
+              </button>
+              <button
+                type="button"
+                className="action-button primary"
+                onClick={handleCreateCustom}
+              >
+                + Create New
+              </button>
+            </div>
+          </div>
+
+          {error && (
+            <div className={styles.errorMessage}>
+              {error}
+              <button type="button" onClick={() => setError(null)}>
+                ×
+              </button>
+            </div>
+          )}
+
+          {loading ? (
+            <div className={styles.loadingState}>
+              <div className={styles.loadingSpinner} />
+              <p>Loading campaigns...</p>
+            </div>
+          ) : (
+            <div className={styles.campaignList}>
+              {customCampaigns.length === 0 ? (
+                <div className={styles.emptyState}>
+                  <div className={styles.emptyIcon}>📚</div>
+                  <h3>No Custom Campaigns Yet</h3>
+                  <p>
+                    Create your first custom campaign or select a template to
+                    get started!
+                  </p>
+                  <button
+                    type="button"
+                    className="action-button primary"
+                    onClick={handleBackToGallery}
+                  >
+                    Browse Templates
+                  </button>
+                </div>
+              ) : (
+                customCampaigns.map((campaign) => (
+                  <div key={campaign.id} className={styles.campaignItem}>
+                    <div className={styles.campaignInfo}>
+                      <h3>{campaign.name}</h3>
+                      <p className={styles.campaignDescription}>
+                        {campaign.description || campaign.setting}
+                      </p>
+                      <div className={styles.campaignMeta}>
+                        <span className={`tone-badge ${campaign.tone}`}>
+                          {campaign.tone}
+                        </span>
+                        {campaign.template_id && (
+                          <span className={styles.cloneBadge}>
+                            Cloned from template
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className={styles.campaignActions}>
+                      <button
+                        type="button"
+                        className="action-button primary small"
+                        onClick={() => handleCampaignSelected(campaign)}
+                      >
+                        Play
+                      </button>
+                      <button
+                        type="button"
+                        className="action-button secondary small"
+                        onClick={() => handleEditCampaign(campaign)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        className="action-button danger small"
+                        onClick={() => {
+                          if (!campaign.id) {
+                            console.error(
+                              "Cannot delete campaign: ID is missing"
+                            );
+                            return;
+                          }
+                          handleDeleteCampaign(campaign.id);
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+        </div>
+        <ConfirmDialog
+          isOpen={campaignToDelete !== null}
+          title="Delete Campaign"
+          message="Are you sure you want to delete this campaign? This action cannot be undone."
+          onConfirm={handleConfirmDelete}
+          onCancel={handleCancelDelete}
+          confirmLabel="Delete"
+          cancelLabel="Cancel"
+        />
+      </>
+    );
+  }
+
+  return (
+    <>
       <div className={styles.campaignManager}>
         <div className={styles.managerHeader}>
-          <h2>My Campaigns</h2>
+          <div className={styles.headerContent}>
+            <h2 className={styles.sectionTitle}>Campaign Hub</h2>
+            <p>
+              Choose from our curated templates or manage your custom campaigns
+            </p>
+          </div>
           <div className={styles.headerActions}>
             <button
               type="button"
-              className="action-button secondary"
-              onClick={handleBackToGallery}
+              className={`view-toggle ${viewMode === "gallery" ? "active" : ""}`}
+              onClick={() => setViewMode("gallery")}
             >
-              ← Browse Templates
+              Gallery
             </button>
             <button
               type="button"
-              className="action-button primary"
-              onClick={handleCreateCustom}
+              className={`view-toggle ${(viewMode as string) === "list" ? "active" : ""}`}
+              onClick={() => setViewMode("list")}
             >
-              + Create New
+              My Campaigns ({customCampaigns.length})
             </button>
           </div>
         </div>
@@ -136,11 +275,11 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({
           </div>
         )}
 
-        {loading ? (
-          <div className={styles.loadingState}>
-            <div className={styles.loadingSpinner} />
-            <p>Loading campaigns...</p>
-          </div>
+        {viewMode === "gallery" ? (
+          <CampaignGallery
+            onCampaignSelected={handleCampaignSelected}
+            onCreateCustom={handleCreateCustom}
+          />
         ) : (
           <div className={styles.campaignList}>
             {customCampaigns.length === 0 ? (
@@ -198,7 +337,9 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({
                       className="action-button danger small"
                       onClick={() => {
                         if (!campaign.id) {
-                          console.error("Cannot delete campaign: ID is missing");
+                          console.error(
+                            "Cannot delete campaign: ID is missing"
+                          );
                           return;
                         }
                         handleDeleteCampaign(campaign.id);
@@ -213,122 +354,16 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({
           </div>
         )}
       </div>
-    );
-  }
-
-  return (
-    <div className={styles.campaignManager}>
-      <div className={styles.managerHeader}>
-        <div className={styles.headerContent}>
-          <h2 className={styles.sectionTitle}>Campaign Hub</h2>
-          <p>
-            Choose from our curated templates or manage your custom campaigns
-          </p>
-        </div>
-        <div className={styles.headerActions}>
-          <button
-            type="button"
-            className={`view-toggle ${viewMode === "gallery" ? "active" : ""}`}
-            onClick={() => setViewMode("gallery")}
-          >
-            Gallery
-          </button>
-          <button
-            type="button"
-            className={`view-toggle ${(viewMode as string) === "list" ? "active" : ""}`}
-            onClick={() => setViewMode("list")}
-          >
-            My Campaigns ({customCampaigns.length})
-          </button>
-        </div>
-      </div>
-
-      {error && (
-        <div className={styles.errorMessage}>
-          {error}
-          <button type="button" onClick={() => setError(null)}>
-            ×
-          </button>
-        </div>
-      )}
-
-      {viewMode === "gallery" ? (
-        <CampaignGallery
-          onCampaignSelected={handleCampaignSelected}
-          onCreateCustom={handleCreateCustom}
-        />
-      ) : (
-        <div className={styles.campaignList}>
-          {customCampaigns.length === 0 ? (
-            <div className={styles.emptyState}>
-              <div className={styles.emptyIcon}>📚</div>
-              <h3>No Custom Campaigns Yet</h3>
-              <p>
-                Create your first custom campaign or select a template to get
-                started!
-              </p>
-              <button
-                type="button"
-                className="action-button primary"
-                onClick={handleBackToGallery}
-              >
-                Browse Templates
-              </button>
-            </div>
-          ) : (
-            customCampaigns.map((campaign) => (
-              <div key={campaign.id} className={styles.campaignItem}>
-                <div className={styles.campaignInfo}>
-                  <h3>{campaign.name}</h3>
-                  <p className={styles.campaignDescription}>
-                    {campaign.description || campaign.setting}
-                  </p>
-                  <div className={styles.campaignMeta}>
-                    <span className={`tone-badge ${campaign.tone}`}>
-                      {campaign.tone}
-                    </span>
-                    {campaign.template_id && (
-                      <span className={styles.cloneBadge}>
-                        Cloned from template
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className={styles.campaignActions}>
-                  <button
-                    type="button"
-                    className="action-button primary small"
-                    onClick={() => handleCampaignSelected(campaign)}
-                  >
-                    Play
-                  </button>
-                  <button
-                    type="button"
-                    className="action-button secondary small"
-                    onClick={() => handleEditCampaign(campaign)}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    type="button"
-                    className="action-button danger small"
-                    onClick={() => {
-                      if (!campaign.id) {
-                        console.error("Cannot delete campaign: ID is missing");
-                        return;
-                      }
-                      handleDeleteCampaign(campaign.id);
-                    }}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      )}
-    </div>
+      <ConfirmDialog
+        isOpen={campaignToDelete !== null}
+        title="Delete Campaign"
+        message="Are you sure you want to delete this campaign? This action cannot be undone."
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+      />
+    </>
   );
 };
 

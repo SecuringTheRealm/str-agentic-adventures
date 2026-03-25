@@ -42,39 +42,30 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '22'
-        cache: 'npm'
-        cache-dependency-path: frontend/package-lock.json
+    - name: Set up Bun
+      uses: oven-sh/setup-bun@v2
 
     - name: Install frontend dependencies
       run: |
         cd frontend
-        npm ci --legacy-peer-deps
+        bun install
 
     - name: Install Playwright browsers
       run: |
         cd frontend
-        npx playwright install chromium
+        bunx playwright install chromium
 
-    - name: Setup Python (for backend mock server)
-      uses: actions/setup-python@v4
+    - name: Set up Python and uv
+      uses: astral-sh/setup-uv@v5
       with:
         python-version: '3.12'
-
-    - name: Install UV
-      run: curl -LsSf https://astral.sh/uv/install.sh | sh
+        enable-cache: true
 
     - name: Install backend dependencies
-      run: |
-        export PATH="$HOME/.local/bin:$PATH"
-        uv sync
+      run: uv sync
 
     - name: Start backend server
       run: |
-        export PATH="$HOME/.local/bin:$PATH"
         cd backend
         uv run python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 &
         sleep 10  # Give server time to start
@@ -82,23 +73,23 @@ jobs:
     - name: Generate API client
       run: |
         cd frontend
-        npm run generate:api
+        bun run generate:api
 
     - name: Build frontend for E2E tests
       run: |
         cd frontend
-        npm run build
+        bun run build
       
     - name: Start frontend dev server
       run: |
         cd frontend
-        npm start &
+        bun start &
         sleep 15  # Give frontend time to start
         
     - name: Run Playwright E2E tests
       run: |
         cd frontend
-        npx playwright test --reporter=list
+        bunx playwright test --reporter=list
 
     - name: Upload test results
       uses: actions/upload-artifact@v4

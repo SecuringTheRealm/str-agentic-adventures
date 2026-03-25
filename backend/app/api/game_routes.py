@@ -1076,6 +1076,113 @@ async def process_combat_turn(combat_id: str, turn_data: dict[str, Any]):
         ) from e
 
 
+@router.post("/encounter/generate", response_model=dict[str, Any])
+async def generate_encounter(encounter_request: dict[str, Any]):
+    """Generate a balanced encounter for the party.
+
+    Request body:
+        - ``party_levels``: List of character levels (required).
+        - ``difficulty``: Desired difficulty — ``easy``, ``medium``, ``hard``,
+          or ``deadly`` (default ``"medium"``).
+        - ``location``: Thematic location hint, e.g. ``"dungeon"``, ``"forest"``
+          (default ``"dungeon"``).
+
+    Returns a dict describing the generated encounter, including selected
+    monsters, adjusted XP, and XP award per character.
+    """
+    from app.encounter_balancer import generate_balanced_encounter
+
+    try:
+        raw_party_levels = encounter_request.get("party_levels", [1])
+        raw_difficulty = encounter_request.get("difficulty", "medium")
+        raw_location = encounter_request.get("location", "dungeon")
+
+        # Validate types immediately after extraction
+        if not isinstance(raw_party_levels, list) or not raw_party_levels:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="party_levels must be a non-empty list of integers",
+            )
+        if not isinstance(raw_difficulty, str):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="difficulty must be a string",
+            )
+        if not isinstance(raw_location, str):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="location must be a string",
+            )
+
+        # Coerce party level entries to int, reject non-numeric values
+        try:
+            party_levels: list[int] = [int(lvl) for lvl in raw_party_levels]
+        except (TypeError, ValueError) as exc:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="party_levels must contain only integers",
+            ) from exc
+
+        difficulty: str = raw_difficulty
+        location: str = raw_location
+
+        valid_difficulties = {"easy", "medium", "hard", "deadly"}
+        if difficulty.lower() not in valid_difficulties:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"difficulty must be one of: {', '.join(sorted(valid_difficulties))}",
+            )
+
+        result = generate_balanced_encounter(
+            party_levels=party_levels,
+            difficulty=difficulty,
+            location=location,
+        )
+        return result
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate encounter: {str(e)}",
+        ) from e
+
+
+@router.post("/encounter/xp-award", response_model=dict[str, Any])
+async def encounter_xp_award(award_request: dict[str, Any]):
+    """Calculate XP awarded to each character after completing an encounter.
+
+    Request body:
+        - ``monsters``: List of monster dicts (each with ``"cr"`` or ``"xp"``).
+        - ``party_size``: Number of characters receiving XP (required, ≥ 1).
+
+    Returns total XP and per-character XP.
+    """
+    from app.encounter_balancer import calculate_xp_award
+
+    try:
+        monsters: list[dict[str, Any]] = award_request.get("monsters", [])
+        party_size: int = award_request.get("party_size", 1)
+
+        if not isinstance(party_size, int) or party_size < 1:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="party_size must be a positive integer",
+            )
+
+        result = calculate_xp_award(monsters=monsters, party_size=party_size)
+        return result
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to calculate XP award: {str(e)}",
+        ) from e
+
+
 # Helper functions for campaign generation
 async def generate_world_description(
     name: str, setting: str, tone: str, homebrew_rules: list[str]

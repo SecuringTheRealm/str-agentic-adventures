@@ -128,38 +128,69 @@ class CombatMCAgent:
             Dict[str, Any]: The created combat encounter
         """
         try:
-            # Extract basic party information for encounter scaling
-            avg_level = self._calculate_average_party_level(party_info)
-            party_size = len(party_info.get("members", []))
+            from app.encounter_balancer import generate_balanced_encounter
 
-            # Generate a simple encounter for now
+            # Extract basic party information for encounter scaling
+            members = party_info.get("members", [])
+            party_size = len(members) or 1
+            party_levels = [m.get("level", 1) for m in members] or [1]
+            avg_level = sum(party_levels) / len(party_levels)
+
             encounter_id = f"encounter_{len(self.active_combats) + 1}"
 
-            # Determine enemy type from narrative context
+            # Determine thematic location from narrative context
             location = narrative_context.get("location", "dungeon")
-            enemy_types = self._get_enemy_types_for_location(location)
+            difficulty = narrative_context.get("difficulty", "medium")
 
-            # Create enemies scaled to party
+            # Generate a CR-balanced encounter
+            balanced = generate_balanced_encounter(
+                party_levels=party_levels,
+                difficulty=difficulty,
+                location=location,
+            )
+
+            # Convert SRD monster dicts to the Enemy format used internally
+            # HP fallback: ~7 HP per average party level approximates SRD monster HP
+            # for mid-CR creatures when explicit monster HP is unavailable.
+            _FALLBACK_HP_PER_AVG_LEVEL = 7
             enemies = []
-            num_enemies = self._calculate_enemy_count(party_size, avg_level)
-
-            for i in range(num_enemies):
-                enemy_type = random.choice(enemy_types)  # noqa: S311
+            for i, monster in enumerate(balanced["monsters"]):
+                enemy_type = monster.get("id") or monster.get("name", "unknown").lower()
+                hp = monster.get("hp", max(1, int(avg_level * _FALLBACK_HP_PER_AVG_LEVEL)))
                 enemies.append(
                     {
                         "id": f"enemy_{i + 1}",
                         "type": enemy_type,
-                        "level": max(
-                            1, int(avg_level * 0.75)
-                        ),  # Slightly lower than party avg
-                        "hitPoints": {
-                            "current": 10 * max(1, int(avg_level * 0.75)),
-                            "maximum": 10 * max(1, int(avg_level * 0.75)),
-                        },
-                        "initiative": 0,  # Will be rolled when combat starts
+                        "name": monster.get("name", enemy_type.capitalize()),
+                        "cr": monster.get("cr", "1/4"),
+                        "xp": monster.get("xp", 0),
+                        "ac": monster.get("ac", 10),
+                        "level": 1,
+                        "hitPoints": {"current": hp, "maximum": hp},
+                        "initiative": 0,  # Rolled when combat starts
                         "actions": self._get_actions_for_enemy_type(enemy_type),
                     }
                 )
+
+            # If balancer returned nothing, fall back to simple generation
+            if not enemies:
+                enemy_types = self._get_enemy_types_for_location(location)
+                num_enemies = self._calculate_enemy_count(party_size, avg_level)
+                for i in range(num_enemies):
+                    enemy_type = random.choice(enemy_types)  # noqa: S311
+                    enemies.append(
+                        {
+                            "id": f"enemy_{i + 1}",
+                            "type": enemy_type,
+                            "level": max(1, int(avg_level * 0.75)),
+                            "hitPoints": {
+                                "current": 10 * max(1, int(avg_level * 0.75)),
+                                "maximum": 10 * max(1, int(avg_level * 0.75)),
+                            },
+                            "initiative": 0,
+                            "actions": self._get_actions_for_enemy_type(enemy_type),
+                        }
+                    )
 
             # Create the encounter structure
             encounter = {
@@ -167,8 +198,14 @@ class CombatMCAgent:
                 "status": "ready",  # ready, active, completed
                 "enemies": enemies,
                 "round": 0,
-                "turn_order": [],  # Will be populated when initiative is rolled
+                "turn_order": [],  # Populated when initiative is rolled
                 "narrative_context": narrative_context,
+                # Encounter balancing metadata
+                "encounter_difficulty": balanced.get("difficulty", "unknown"),
+                "xp_budget": balanced.get("xp_budget", 0),
+                "adjusted_xp": balanced.get("adjusted_xp", 0),
+                "raw_xp": balanced.get("raw_xp", 0),
+                "xp_per_character": balanced.get("xp_per_character", 0),
             }
 
             # Store the encounter

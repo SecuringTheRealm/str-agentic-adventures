@@ -31,8 +31,10 @@ jobs:
           AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
           AZURE_OPENAI_API_VERSION: ${{ secrets.AZURE_OPENAI_API_VERSION }}
           AZURE_OPENAI_CHAT_DEPLOYMENT: ${{ secrets.AZURE_OPENAI_CHAT_DEPLOYMENT }}
+          AZURE_OPENAI_MINI_DEPLOYMENT: ${{ secrets.AZURE_OPENAI_MINI_DEPLOYMENT }}
           AZURE_OPENAI_EMBEDDING_DEPLOYMENT: ${{ secrets.AZURE_OPENAI_EMBEDDING_DEPLOYMENT }}
           AZURE_OPENAI_DALLE_DEPLOYMENT: ${{ secrets.AZURE_OPENAI_DALLE_DEPLOYMENT }}
+          AZURE_AI_PROJECT_ENDPOINT: ${{ secrets.AZURE_AI_PROJECT_ENDPOINT }}
           AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         run: |
@@ -49,8 +51,10 @@ jobs:
             AZURE_OPENAI_ENDPOINT \
             AZURE_OPENAI_API_VERSION \
             AZURE_OPENAI_CHAT_DEPLOYMENT \
+            AZURE_OPENAI_MINI_DEPLOYMENT \
             AZURE_OPENAI_EMBEDDING_DEPLOYMENT \
             AZURE_OPENAI_DALLE_DEPLOYMENT \
+            AZURE_AI_PROJECT_ENDPOINT \
             AZURE_SUBSCRIPTION_ID \
             AZURE_TENANT_ID
           do
@@ -72,42 +76,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Set up Python 3.12 (aligned with CI workflows)
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      # Set up Python 3.12 and uv (aligned with CI workflows)
+      # astral-sh/setup-uv installs both uv and Python, and handles dependency caching
+      - name: Set up Python and uv
+        uses: astral-sh/setup-uv@v5
         with:
           python-version: "3.12"
-
-      # Install UV package manager for Python dependency management
-      - name: Install UV
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
-
-      # Cache Python dependencies to speed up subsequent runs
-      # Cache key based on pyproject.toml and uv.lock ensures invalidation on dependency changes
-      - name: Cache Python dependencies (UV)
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/uv
-          key: >-
-            ${{ runner.os }}-uv-${{ hashFiles('**/pyproject.toml', '**/uv.lock') }}
-          restore-keys: ${{ runner.os }}-uv-
+          enable-cache: true
 
       # Install Python dependencies including dev dependencies for linting, testing, etc.
       - name: Install Python dependencies
-        run: |
-          export PATH="$HOME/.local/bin:$PATH"
-          uv sync
+        run: uv sync
 
-      # Set up Node.js 22 with npm caching (aligned with CI workflows)
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: "npm"
-          cache-dependency-path: frontend/package-lock.json
+      # Set up Bun for frontend dependency management and tooling
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
 
       # Install frontend dependencies
-      # --legacy-peer-deps required due to peer dependency conflicts in some packages
       - name: Install frontend dependencies
-        run: |
-          cd frontend && npm ci --legacy-peer-deps
+        run: cd frontend && bun install
