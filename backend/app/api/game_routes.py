@@ -13,6 +13,10 @@ from slowapi.util import get_remote_address
 from app.agents.artist_agent import get_artist
 from app.agents.combat_cartographer_agent import get_combat_cartographer
 from app.agents.dungeon_master_agent import get_dungeon_master
+from app.agents.orchestration import (
+    detect_agent_triggers,
+    orchestrate_specialist_agents,
+)
 from app.agents.scribe_agent import get_scribe
 from app.config import ConfigDep
 from app.models.game_models import (
@@ -497,6 +501,30 @@ async def process_player_input(request: Request, player_input: PlayerInput):  # 
         )
         logger.info("DM response payload: %s", dm_response)
 
+        # Auto-detect and invoke specialist agents based on context
+        dm_message = dm_response.get("message", "")
+        triggers = detect_agent_triggers(dm_message, player_input.message)
+        specialist_results: dict[str, Any] = {}
+        if triggers:
+            logger.info("Orchestration triggers detected: %s", triggers)
+            specialist_results = await orchestrate_specialist_agents(
+                triggers=triggers,
+                player_input=player_input.message,
+                game_state=context,
+                session_id=player_input.campaign_id or "",
+            )
+            logger.info("Specialist agent results: %s", list(specialist_results.keys()))
+
+        # Merge specialist outputs into state_updates so the frontend
+        # receives them alongside the DM narrative.
+        merged_state = dm_response.get("state_updates", {})
+        merged_state.update(specialist_results)
+
+        # If combat was triggered by orchestration, surface it as combat_updates
+        combat_updates = dm_response.get("combat_updates")
+        if "combat_update" in specialist_results and combat_updates is None:
+            combat_updates = specialist_results["combat_update"]
+
         # Transform the DM response to the GameResponse format
         images = []
         for visual in dm_response.get("visuals", []):
@@ -504,10 +532,10 @@ async def process_player_input(request: Request, player_input: PlayerInput):  # 
                 images.append(visual["image_url"])
 
         return GameResponse(
-            message=dm_response.get("message", ""),
+            message=dm_message,
             images=images,
-            state_updates=dm_response.get("state_updates", {}),
-            combat_updates=dm_response.get("combat_updates"),
+            state_updates=merged_state,
+            combat_updates=combat_updates,
         )
     except HTTPException:
         raise
@@ -1167,14 +1195,36 @@ async def process_exploration_action(
 async def process_general_action(
     session_id: str, character_id: str, description: str
 ) -> dict[str, Any]:
-    """Process a general action."""
-    return {
+    """Process a general action, with auto-detection of specialist agents."""
+    base_result: dict[str, Any] = {
         "type": "general",
         "description": description,
         "result": "Your action has consequences that ripple through the world.",
         "effects": ["The situation changes", "New opportunities arise"],
         "next_actions": ["Continue the adventure", "Try something else"],
     }
+
+    # Auto-detect specialist agent triggers from the player description.
+    # We use an empty DM response here because the DM hasn't processed the
+    # action in this code path (the session/action endpoint doesn't call the
+    # DM agent directly).
+    triggers = detect_agent_triggers(dm_response="", player_input=description)
+    if triggers:
+        logger.info(
+            "General action orchestration triggers for session %s: %s",
+            session_id,
+            triggers,
+        )
+        specialist_results = await orchestrate_specialist_agents(
+            triggers=triggers,
+            player_input=description,
+            game_state={"character_id": character_id} if character_id else None,
+            session_id=session_id,
+        )
+        if specialist_results:
+            base_result["specialist_results"] = specialist_results
+
+    return base_result
 
 
 # Spell System API Endpoints
