@@ -10,10 +10,9 @@
 - `frontend/`: TypeScript + React UI, generated OpenAPI client in `src/api-client/` (never edit manually), tests in `src/__tests__/` and `e2e/`.
 - `docs/`: Architecture (`docs/adr/`), design, specs, reference, and user guides. Update or link here instead of adding root-level docs.
 - `infra/`: Azure deployment artifacts and automation.
-- `.bmad-core/agents/`: BMAD agent playbooks used by orchestration tooling.
 
 ## Development Environment Setup
-- Python 3.12+ with [UV](https://github.com/astral-sh/uv). Run `make deps` to sync backend dependencies from `pyproject.toml` / `uv.lock`.
+- Python 3.12+ with [UV](https://github.com/astral-sh/uv). Run `uv sync` to sync backend dependencies from `pyproject.toml` / `uv.lock`.
 - Node.js ≥22 (CI and local development both require >=22). Install frontend packages with `npm install` inside `frontend/`.
 - Java (OpenJDK) for OpenAPI client generation: `brew install openjdk` on macOS. Required for `npm run generate:api`. In GitHub Actions runner, Java is pre-installed.
 - SQLite for local development (no external DB needed). Use `sqlite3` CLI.
@@ -22,11 +21,11 @@
 - **CI/CD Note**: The deploy workflow automatically generates the frontend API client from the deployed backend's OpenAPI schema before building.
 
 ## Build, Test, and Development Commands
-- `make run`: start the backend at `http://localhost:8000`.
+- `cd backend && uv run python -m app.main`: start the backend at `http://localhost:8000`.
 - `cd frontend && npm run dev`: start the Vite dev server at `http://127.0.0.1:5173`.
-- `make test`: execute backend pytest suite with UV.
+- `uv run pytest backend/tests/ -v`: execute backend pytest suite with UV.
 - `cd frontend && npm run test:run`: run Vitest in watchless mode; `npm run test:e2e` launches Playwright (requires `npx playwright install` once).
-- `make lint` / `make format`: Ruff linting + formatting for Python; `cd frontend && npm run lint` uses Biome.
+- `uv run ruff check .` / `uv run ruff format .`: Ruff linting + formatting for Python; `cd frontend && npm run lint` uses Biome.
 - `cd frontend && npm run build`: type-check with `tsc --noEmit` and build production bundle.
 
 ## Coding Style & Naming Conventions
@@ -56,7 +55,6 @@
 - **When to Regenerate**: After any backend API schema change (models, endpoints, request/response types), regenerate with `cd frontend && npm run generate:api`.
 - **Never Edit Manually**: The `src/api-client/` directory is auto-generated. Wrap generated calls in service modules (`src/services/`) instead.
 - **After Regeneration**: Restart the frontend dev server to pick up changes, then re-run builds and tests.
-- **Validation**: Use `./scripts/validate-openapi-client.sh` when modifying shared contracts.
 
 ## Documentation Expectations
 - **Structure**: Place new docs under appropriate `docs/` subdirectory (adr/, design/, specs/, reference/, user/). Follow snake_case filenames.
