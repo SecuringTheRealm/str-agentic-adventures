@@ -445,3 +445,6 @@ docs/architecture/
 flatten.xml
 frontend/screenshots/
 frontend/scripts/manual-dm-test.mjs
+
+# Git worktrees (agent worktrees should not be committed)
+.claude/worktrees/
