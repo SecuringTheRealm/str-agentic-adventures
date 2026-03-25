@@ -10,6 +10,7 @@ import {
   getOpeningNarrative,
   sendPlayerInput,
 } from "../services/api";
+import AutoSaveToast from "./AutoSaveToast";
 import BattleMap from "./BattleMap";
 import CharacterSheet from "./CharacterSheet";
 import ChatBox from "./ChatBox";
@@ -87,6 +88,9 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
   // Add fallback mode when WebSocket isn't available
   const [useWebSocketFallback, setUseWebSocketFallback] =
     useState<boolean>(false);
+
+  // Track the last auto-save timestamp to drive the AutoSaveToast
+  const [lastAutoSave, setLastAutoSave] = useState<string | null>(null);
 
   const handleChatWebSocketMessage = (message: WebSocketMessage) => {
     switch (message.type) {
@@ -568,6 +572,11 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
           setBattleMapUrl(null);
         }
       }
+
+      // Show auto-save notification when the backend reports a save
+      if (response.state_updates?.auto_saved && response.state_updates?.last_auto_save) {
+        setLastAutoSave(response.state_updates.last_auto_save as string);
+      }
     } catch (error) {
       console.error("Error with REST API fallback:", error);
       const errorMessage = extractErrorMessage(
@@ -588,6 +597,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 
   return (
     <div className={styles.gameInterface} data-testid="game-interface">
+      <AutoSaveToast lastAutoSave={lastAutoSave} />
       <div className={styles.gameContainer}>
         <div className={styles.leftPanel}>
           <CharacterSheet character={character} />

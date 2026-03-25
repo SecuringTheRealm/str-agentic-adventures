@@ -19,7 +19,8 @@ from app.agents.orchestration import (
     orchestrate_specialist_agents,
 )
 from app.agents.scribe_agent import get_scribe
-from app.config import ConfigDep
+from app.auto_save import check_and_schedule_auto_save
+from app.config import ConfigDep, get_settings
 from app.image_budget import ImageBudgetTracker
 from app.models.game_models import (
     NPC,
@@ -588,6 +589,25 @@ async def process_player_input(request: Request, player_input: PlayerInput):  # 
         combat_updates = dm_response.get("combat_updates")
         if "combat_update" in specialist_results and combat_updates is None:
             combat_updates = specialist_results["combat_update"]
+
+        # Auto-save: check whether it's time to persist game state.
+        # This is non-blocking – the DB write is scheduled as a background task.
+        dm_agent = get_dungeon_master()
+        conversation_history = dm_agent._threads.get(
+            player_input.campaign_id, []
+        )
+        cfg = get_settings()
+        auto_saved, _interaction_count = check_and_schedule_auto_save(
+            campaign_id=player_input.campaign_id,
+            auto_save_interval=cfg.auto_save_interval,
+            conversation_history=list(conversation_history),
+            character_data=character if isinstance(character, dict) else None,
+        )
+        if auto_saved:
+            from datetime import UTC, datetime as _datetime
+
+            merged_state["auto_saved"] = True
+            merged_state["last_auto_save"] = _datetime.now(UTC).isoformat()
 
         # Transform the DM response to the GameResponse format
         images = []
