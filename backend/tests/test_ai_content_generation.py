@@ -25,12 +25,10 @@ class TestAIContentGeneration:
         }
 
         # This test focuses on endpoint structure, not Azure OpenAI functionality
-        with patch("app.azure_openai_client.AzureOpenAIClient") as mock_client_class:
-            mock_client = AsyncMock()
+        with patch("app.azure_openai_client.azure_openai_client") as mock_client:
             mock_client.chat_completion = AsyncMock(
                 return_value="Generated test content"
             )
-            mock_client_class.return_value = mock_client
 
             response = client.post("/game/campaign/ai-generate", json=request_data)
 
@@ -62,12 +60,10 @@ class TestAIContentGeneration:
             "campaign_tone": "dark",
         }
 
-        with patch("app.azure_openai_client.AzureOpenAIClient") as mock_client_class:
-            mock_client = AsyncMock()
+        with patch("app.azure_openai_client.azure_openai_client") as mock_client:
             mock_client.chat_completion = AsyncMock(
                 return_value="A dark forest shrouded in mist"
             )
-            mock_client_class.return_value = mock_client
 
             response = client.post("/game/campaign/ai-generate", json=request_data)
             assert response.status_code == 200
@@ -90,12 +86,10 @@ class TestAIContentGeneration:
         }
 
         # Mock Azure OpenAI to raise an exception
-        with patch("app.azure_openai_client.AzureOpenAIClient") as mock_client_class:
-            mock_client = AsyncMock()
+        with patch("app.azure_openai_client.azure_openai_client") as mock_client:
             mock_client.chat_completion = AsyncMock(
                 side_effect=Exception("Azure OpenAI error")
             )
-            mock_client_class.return_value = mock_client
 
             response = client.post("/game/campaign/ai-generate", json=request_data)
             assert (

@@ -356,10 +356,7 @@ async def get_ai_assistance(request: AIAssistanceRequest):
 async def generate_ai_content(request: AIContentGenerationRequest):
     """Generate AI content based on a specific suggestion and current text."""
     try:
-        from app.azure_openai_client import AzureOpenAIClient
-
-        # Initialize the Azure OpenAI client
-        openai_client = AzureOpenAIClient()
+        from app.azure_openai_client import azure_openai_client
 
         # Create contextual prompt based on suggestion type and content
         system_prompt = f"""You are an expert D&D campaign writer helping to enhance campaign content.
@@ -388,7 +385,7 @@ Respond with ONLY the generated content, no explanations or meta-text."""
         ]
 
         # Generate content using Azure OpenAI
-        generated_content = await openai_client.chat_completion(
+        generated_content = await azure_openai_client.chat_completion(
             messages, temperature=0.7, max_tokens=300
         )
 
