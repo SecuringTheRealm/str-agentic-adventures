@@ -192,7 +192,8 @@ SPELL_SLOTS_BY_CLASS_LEVEL = {
 }
 
 
-# Warlock pact slot spell level by character level (pact magic uses one unified slot level)
+# Warlock pact slot spell level by character level
+# (pact magic uses one unified slot level)
 WARLOCK_PACT_SLOT_LEVELS = {
     1: 1, 2: 1,
     3: 2, 4: 2,
@@ -202,7 +203,8 @@ WARLOCK_PACT_SLOT_LEVELS = {
     15: 5, 16: 5, 17: 5, 18: 5, 19: 5, 20: 5,
 }
 
-# Classes with spellcasting (non-spellcasting classes are absent from SPELL_SLOTS_BY_CLASS_LEVEL)
+# Classes with spellcasting
+# (non-spellcasting classes are absent from SPELL_SLOTS_BY_CLASS_LEVEL)
 SPELLCASTING_CLASSES = set(SPELL_SLOTS_BY_CLASS_LEVEL.keys())
 
 
@@ -1435,7 +1437,8 @@ class RulesEnginePlugin:
 
 #         name="advance_concentration_round",
 #     )
-    def advance_concentration_round(self) -> dict[str, Any]:        """
+    def advance_concentration_round(self) -> dict[str, Any]:
+        """
         Reduce spell duration for all concentrating characters by one round.
         Should be called at the end of each combat round.
 
@@ -1483,3 +1486,128 @@ class RulesEnginePlugin:
                 "success": False,
                 "error": f"Error advancing concentration round: {str(e)}",
             }
+
+    def get_spell_slots(self, char_class: str, level: int) -> dict[int, int]:
+        """
+        Return the maximum spell slots for a class at a given character level.
+
+        For warlocks this returns a single entry keyed by the pact slot level.
+        Half-casters (paladin, ranger) return an empty dict at level 1 as they
+        gain spell slots starting at level 2.
+
+        Args:
+            char_class: The character's class (e.g. "wizard", "warlock").
+            level: The character's level (1-20).
+
+        Returns:
+            dict[int, int]: Mapping of {spell_level: slot_count}.
+
+        Raises:
+            ValueError: If the class is not a spellcasting class or level is invalid.
+        """
+        class_lower = char_class.lower()
+        if class_lower not in SPELLCASTING_CLASSES:
+            raise ValueError(f"{char_class!r} is not a spellcasting class")
+        if not 1 <= level <= 20:
+            raise ValueError(f"Level must be between 1 and 20, got {level}")
+
+        class_table = SPELL_SLOTS_BY_CLASS_LEVEL[class_lower]
+
+        if level not in class_table:
+            # Half-casters have no entry for level 1
+            return {}
+
+        slots_list = class_table[level]
+
+        if class_lower == "warlock":
+            # Warlock pact magic: all slots share one unified level
+            pact_level = WARLOCK_PACT_SLOT_LEVELS[level]
+            return {pact_level: slots_list[0]}
+
+        return dict(enumerate(slots_list, 1))
+
+    def use_spell_slot(
+        self, available_slots: dict[int, int], spell_level: int
+    ) -> dict[int, int]:
+        """
+        Consume one spell slot of the given level.
+
+        Args:
+            available_slots: Current available slots as {spell_level: count}.
+            spell_level: The level of slot to consume.
+
+        Returns:
+            dict[int, int]: Updated slot counts after consumption.
+
+        Raises:
+            ValueError: If no slot of the requested level is available.
+        """
+        if available_slots.get(spell_level, 0) <= 0:
+            raise ValueError(
+                f"No spell slots of level {spell_level} available"
+            )
+        updated = dict(available_slots)
+        updated[spell_level] -= 1
+        return updated
+
+    def recover_slots(
+        self, char_class: str, level: int, rest_type: str
+    ) -> dict[int, int]:
+        """
+        Recover spell slots after a rest.
+
+        - Long rest: all classes recover all slots.
+        - Short rest: only warlocks (pact magic) recover all slots.
+
+        Args:
+            char_class: The character's class.
+            level: The character's level.
+            rest_type: Either ``"long"`` or ``"short"``.
+
+        Returns:
+            dict[int, int]: Full maximum slot counts after recovery.
+
+        Raises:
+            ValueError: If rest_type is not ``"long"`` or ``"short"``, or if the
+                class is not a spellcasting class.
+        """
+        rest_type_lower = rest_type.lower()
+        if rest_type_lower not in ("long", "short"):
+            raise ValueError(
+                f"rest_type must be 'long' or 'short', got {rest_type!r}"
+            )
+
+        class_lower = char_class.lower()
+
+        if rest_type_lower == "long":
+            return self.get_spell_slots(class_lower, level)
+
+        # Short rest: only warlocks recover
+        if class_lower == "warlock":
+            return self.get_spell_slots(class_lower, level)
+
+        # Non-warlocks do not recover on a short rest — return empty dict to
+        # signal no recovery (caller retains current available slots unchanged)
+        return {}
+
+    def can_cast_at_level(
+        self, available_slots: dict[int, int], spell_level: int
+    ) -> bool:
+        """
+        Check whether a spell of the given level can be cast (including upcasting).
+
+        A spell of ``spell_level`` can be cast if there is at least one slot of
+        that level *or higher* still available.
+
+        Args:
+            available_slots: Current available slots as {spell_level: count}.
+            spell_level: Minimum slot level required.
+
+        Returns:
+            bool: True if a suitable slot exists, False otherwise.
+        """
+        return any(
+            count > 0
+            for slot_lvl, count in available_slots.items()
+            if slot_lvl >= spell_level
+        )
