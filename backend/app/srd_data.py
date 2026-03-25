@@ -17,6 +17,33 @@ _class_features_data: dict[str, Any] | None = None
 _racial_traits_data: dict[str, Any] | None = None
 _backgrounds_data: dict[str, Any] | None = None
 _spells_data: list[dict[str, Any]] | None = None
+_monsters_data: list[dict[str, Any]] | None = None
+_weapons_data: dict[str, Any] | None = None
+_armor_data: dict[str, Any] | None = None
+
+# XP required to reach each character level (D&D 5e SRD)
+XP_THRESHOLDS: dict[int, int] = {
+    1: 0,
+    2: 300,
+    3: 900,
+    4: 2700,
+    5: 6500,
+    6: 14000,
+    7: 23000,
+    8: 34000,
+    9: 48000,
+    10: 64000,
+    11: 85000,
+    12: 100000,
+    13: 120000,
+    14: 140000,
+    15: 165000,
+    16: 195000,
+    17: 225000,
+    18: 265000,
+    19: 305000,
+    20: 355000,
+}
 
 
 def load_class_features() -> dict[str, Any]:
@@ -157,3 +184,187 @@ def get_class_spellcasting_ability(character_class: str) -> str | None:
     """Get the spellcasting ability for a character class."""
     class_info = get_class_info(character_class)
     return class_info.get("spellcasting_ability")
+
+
+def get_level_for_xp(xp: int) -> int:
+    """Return the character level corresponding to the given XP total."""
+    level = 1
+    for lvl, threshold in XP_THRESHOLDS.items():
+        if xp >= threshold:
+            level = lvl
+    return level
+
+
+# ---------------------------------------------------------------------------
+# Monsters
+# ---------------------------------------------------------------------------
+
+
+def load_monsters() -> list[dict[str, Any]]:
+    """Load monster stat blocks from JSON file."""
+    global _monsters_data
+    if _monsters_data is None:
+        try:
+            with open(DATA_DIR / "monsters.json") as f:
+                _monsters_data = json.load(f)
+        except Exception as e:
+            logger.error(f"Failed to load monsters data: {e}")
+            _monsters_data = []
+    return _monsters_data
+
+
+def get_monster_by_id(monster_id: str) -> dict[str, Any] | None:
+    """Get a monster stat block by its ID."""
+    monsters = load_monsters()
+    return next(
+        (m for m in monsters if m.get("id") == monster_id.lower().replace(" ", "_")),
+        None,
+    )
+
+
+def get_monster_by_name(name: str) -> dict[str, Any] | None:
+    """Get a monster stat block by its name (case-insensitive)."""
+    monsters = load_monsters()
+    return next(
+        (m for m in monsters if m.get("name", "").lower() == name.lower()),
+        None,
+    )
+
+
+def get_monsters_by_cr(cr: str) -> list[dict[str, Any]]:
+    """Get all monsters with a specific challenge rating."""
+    monsters = load_monsters()
+    return [m for m in monsters if str(m.get("cr")) == str(cr)]
+
+
+def get_monsters_by_type(monster_type: str) -> list[dict[str, Any]]:
+    """Get all monsters of a specific type (e.g. 'humanoid', 'undead')."""
+    monsters = load_monsters()
+    return [
+        m
+        for m in monsters
+        if m.get("type", "").lower() == monster_type.lower()
+    ]
+
+
+# ---------------------------------------------------------------------------
+# Weapons
+# ---------------------------------------------------------------------------
+
+
+def load_weapons() -> dict[str, Any]:
+    """Load weapon tables from JSON file."""
+    global _weapons_data
+    if _weapons_data is None:
+        try:
+            with open(DATA_DIR / "weapons.json") as f:
+                _weapons_data = json.load(f)
+        except Exception as e:
+            logger.error(f"Failed to load weapons data: {e}")
+            _weapons_data = {}
+    return _weapons_data
+
+
+def get_all_weapons() -> list[dict[str, Any]]:
+    """Return a flat list of all weapons across all categories."""
+    weapons_by_category = load_weapons()
+    all_weapons: list[dict[str, Any]] = []
+    for category_weapons in weapons_by_category.values():
+        all_weapons.extend(category_weapons)
+    return all_weapons
+
+
+def get_weapon_by_id(weapon_id: str) -> dict[str, Any] | None:
+    """Get a weapon by its ID."""
+    return next(
+        (w for w in get_all_weapons() if w.get("id") == weapon_id.lower()),
+        None,
+    )
+
+
+def get_weapons_by_category(category: str) -> list[dict[str, Any]]:
+    """Get all weapons in a category (e.g. 'simple_melee', 'martial_ranged')."""
+    weapons_by_category = load_weapons()
+    return weapons_by_category.get(category.lower(), [])
+
+
+def get_weapons_with_property(prop: str) -> list[dict[str, Any]]:
+    """Get all weapons that have a specific property (e.g. 'finesse', 'heavy')."""
+    return [
+        w for w in get_all_weapons() if prop.lower() in w.get("properties", [])
+    ]
+
+
+# ---------------------------------------------------------------------------
+# Armor
+# ---------------------------------------------------------------------------
+
+
+def load_armor() -> dict[str, Any]:
+    """Load armor table from JSON file."""
+    global _armor_data
+    if _armor_data is None:
+        try:
+            with open(DATA_DIR / "armor.json") as f:
+                _armor_data = json.load(f)
+        except Exception as e:
+            logger.error(f"Failed to load armor data: {e}")
+            _armor_data = {}
+    return _armor_data
+
+
+def get_all_armor() -> list[dict[str, Any]]:
+    """Return a flat list of all armor pieces across all categories."""
+    armor_by_category = load_armor()
+    all_armor: list[dict[str, Any]] = []
+    for category_armor in armor_by_category.values():
+        all_armor.extend(category_armor)
+    return all_armor
+
+
+def get_armor_by_id(armor_id: str) -> dict[str, Any] | None:
+    """Get an armor entry by its ID."""
+    return next(
+        (a for a in get_all_armor() if a.get("id") == armor_id.lower()),
+        None,
+    )
+
+
+def get_armor_by_category(category: str) -> list[dict[str, Any]]:
+    """Get all armor in a category (e.g. 'light', 'medium', 'heavy', 'shield')."""
+    armor_by_category = load_armor()
+    return armor_by_category.get(category.lower(), [])
+
+
+def calculate_armor_class(
+    armor_id: str, dexterity_modifier: int, shield: bool = False
+) -> int:
+    """Calculate total AC for a given armor, DEX modifier, and optional shield."""
+    armor = get_armor_by_id(armor_id)
+    if armor is None:
+        # Unarmored: 10 + DEX modifier
+        return 10 + dexterity_modifier
+
+    base_ac = armor.get("base_ac", 10)
+    dex_cap = armor.get("dex_bonus_cap")
+    category = armor.get("category", "")
+
+    if category == "shield":
+        # Shield by itself doesn't grant a full AC; it adds to existing AC.
+        # Treat as unarmored + shield bonus when called standalone.
+        return 10 + dexterity_modifier + base_ac
+
+    if dex_cap is None:
+        # No cap: add full DEX modifier
+        effective_dex = dexterity_modifier
+    elif dex_cap == 0:
+        # Heavy armour: no DEX bonus
+        effective_dex = 0
+    else:
+        effective_dex = min(dexterity_modifier, dex_cap)
+
+    total = base_ac + effective_dex
+    if shield:
+        shield_entry = get_armor_by_id("shield")
+        total += shield_entry.get("base_ac", 2) if shield_entry else 2
+    return total

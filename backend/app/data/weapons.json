@@ -1,0 +1,364 @@
+{
+  "simple_melee": [
+    {
+      "id": "club",
+      "name": "Club",
+      "damage_dice": "1d4",
+      "damage_type": "bludgeoning",
+      "weight": 2,
+      "cost": "1 sp",
+      "properties": ["light"]
+    },
+    {
+      "id": "dagger",
+      "name": "Dagger",
+      "damage_dice": "1d4",
+      "damage_type": "piercing",
+      "weight": 1,
+      "cost": "2 gp",
+      "properties": ["finesse", "light", "thrown"],
+      "range": "20/60"
+    },
+    {
+      "id": "greatclub",
+      "name": "Greatclub",
+      "damage_dice": "1d8",
+      "damage_type": "bludgeoning",
+      "weight": 10,
+      "cost": "2 sp",
+      "properties": ["two-handed"]
+    },
+    {
+      "id": "handaxe",
+      "name": "Handaxe",
+      "damage_dice": "1d6",
+      "damage_type": "slashing",
+      "weight": 2,
+      "cost": "5 gp",
+      "properties": ["light", "thrown"],
+      "range": "20/60"
+    },
+    {
+      "id": "javelin",
+      "name": "Javelin",
+      "damage_dice": "1d6",
+      "damage_type": "piercing",
+      "weight": 2,
+      "cost": "5 sp",
+      "properties": ["thrown"],
+      "range": "30/120"
+    },
+    {
+      "id": "light_hammer",
+      "name": "Light Hammer",
+      "damage_dice": "1d4",
+      "damage_type": "bludgeoning",
+      "weight": 2,
+      "cost": "2 gp",
+      "properties": ["light", "thrown"],
+      "range": "20/60"
+    },
+    {
+      "id": "mace",
+      "name": "Mace",
+      "damage_dice": "1d6",
+      "damage_type": "bludgeoning",
+      "weight": 4,
+      "cost": "5 gp",
+      "properties": []
+    },
+    {
+      "id": "quarterstaff",
+      "name": "Quarterstaff",
+      "damage_dice": "1d6",
+      "damage_type": "bludgeoning",
+      "weight": 4,
+      "cost": "2 sp",
+      "properties": ["versatile"],
+      "versatile_damage_dice": "1d8"
+    },
+    {
+      "id": "sickle",
+      "name": "Sickle",
+      "damage_dice": "1d4",
+      "damage_type": "slashing",
+      "weight": 2,
+      "cost": "1 gp",
+      "properties": ["light"]
+    },
+    {
+      "id": "spear",
+      "name": "Spear",
+      "damage_dice": "1d6",
+      "damage_type": "piercing",
+      "weight": 3,
+      "cost": "1 gp",
+      "properties": ["thrown", "versatile"],
+      "range": "20/60",
+      "versatile_damage_dice": "1d8"
+    }
+  ],
+  "simple_ranged": [
+    {
+      "id": "light_crossbow",
+      "name": "Light Crossbow",
+      "damage_dice": "1d8",
+      "damage_type": "piercing",
+      "weight": 5,
+      "cost": "25 gp",
+      "properties": ["ammunition", "loading", "two-handed"],
+      "range": "80/320"
+    },
+    {
+      "id": "dart",
+      "name": "Dart",
+      "damage_dice": "1d4",
+      "damage_type": "piercing",
+      "weight": 0.25,
+      "cost": "5 cp",
+      "properties": ["finesse", "thrown"],
+      "range": "20/60"
+    },
+    {
+      "id": "shortbow",
+      "name": "Shortbow",
+      "damage_dice": "1d6",
+      "damage_type": "piercing",
+      "weight": 2,
+      "cost": "25 gp",
+      "properties": ["ammunition", "two-handed"],
+      "range": "80/320"
+    },
+    {
+      "id": "sling",
+      "name": "Sling",
+      "damage_dice": "1d4",
+      "damage_type": "bludgeoning",
+      "weight": 0,
+      "cost": "1 sp",
+      "properties": ["ammunition"],
+      "range": "30/120"
+    }
+  ],
+  "martial_melee": [
+    {
+      "id": "battleaxe",
+      "name": "Battleaxe",
+      "damage_dice": "1d8",
+      "damage_type": "slashing",
+      "weight": 4,
+      "cost": "10 gp",
+      "properties": ["versatile"],
+      "versatile_damage_dice": "1d10"
+    },
+    {
+      "id": "flail",
+      "name": "Flail",
+      "damage_dice": "1d8",
+      "damage_type": "bludgeoning",
+      "weight": 2,
+      "cost": "10 gp",
+      "properties": []
+    },
+    {
+      "id": "glaive",
+      "name": "Glaive",
+      "damage_dice": "1d10",
+      "damage_type": "slashing",
+      "weight": 6,
+      "cost": "20 gp",
+      "properties": ["heavy", "reach", "two-handed"]
+    },
+    {
+      "id": "greataxe",
+      "name": "Greataxe",
+      "damage_dice": "1d12",
+      "damage_type": "slashing",
+      "weight": 7,
+      "cost": "30 gp",
+      "properties": ["heavy", "two-handed"]
+    },
+    {
+      "id": "greatsword",
+      "name": "Greatsword",
+      "damage_dice": "2d6",
+      "damage_type": "slashing",
+      "weight": 6,
+      "cost": "50 gp",
+      "properties": ["heavy", "two-handed"]
+    },
+    {
+      "id": "halberd",
+      "name": "Halberd",
+      "damage_dice": "1d10",
+      "damage_type": "slashing",
+      "weight": 6,
+      "cost": "20 gp",
+      "properties": ["heavy", "reach", "two-handed"]
+    },
+    {
+      "id": "lance",
+      "name": "Lance",
+      "damage_dice": "1d12",
+      "damage_type": "piercing",
+      "weight": 6,
+      "cost": "10 gp",
+      "properties": ["reach", "special"]
+    },
+    {
+      "id": "longsword",
+      "name": "Longsword",
+      "damage_dice": "1d8",
+      "damage_type": "slashing",
+      "weight": 3,
+      "cost": "15 gp",
+      "properties": ["versatile"],
+      "versatile_damage_dice": "1d10"
+    },
+    {
+      "id": "maul",
+      "name": "Maul",
+      "damage_dice": "2d6",
+      "damage_type": "bludgeoning",
+      "weight": 10,
+      "cost": "10 gp",
+      "properties": ["heavy", "two-handed"]
+    },
+    {
+      "id": "morningstar",
+      "name": "Morningstar",
+      "damage_dice": "1d8",
+      "damage_type": "piercing",
+      "weight": 4,
+      "cost": "15 gp",
+      "properties": []
+    },
+    {
+      "id": "pike",
+      "name": "Pike",
+      "damage_dice": "1d10",
+      "damage_type": "piercing",
+      "weight": 18,
+      "cost": "5 gp",
+      "properties": ["heavy", "reach", "two-handed"]
+    },
+    {
+      "id": "rapier",
+      "name": "Rapier",
+      "damage_dice": "1d8",
+      "damage_type": "piercing",
+      "weight": 2,
+      "cost": "25 gp",
+      "properties": ["finesse"]
+    },
+    {
+      "id": "scimitar",
+      "name": "Scimitar",
+      "damage_dice": "1d6",
+      "damage_type": "slashing",
+      "weight": 3,
+      "cost": "25 gp",
+      "properties": ["finesse", "light"]
+    },
+    {
+      "id": "shortsword",
+      "name": "Shortsword",
+      "damage_dice": "1d6",
+      "damage_type": "piercing",
+      "weight": 2,
+      "cost": "10 gp",
+      "properties": ["finesse", "light"]
+    },
+    {
+      "id": "trident",
+      "name": "Trident",
+      "damage_dice": "1d6",
+      "damage_type": "piercing",
+      "weight": 4,
+      "cost": "5 gp",
+      "properties": ["thrown", "versatile"],
+      "range": "20/60",
+      "versatile_damage_dice": "1d8"
+    },
+    {
+      "id": "war_pick",
+      "name": "War Pick",
+      "damage_dice": "1d8",
+      "damage_type": "piercing",
+      "weight": 2,
+      "cost": "5 gp",
+      "properties": []
+    },
+    {
+      "id": "warhammer",
+      "name": "Warhammer",
+      "damage_dice": "1d8",
+      "damage_type": "bludgeoning",
+      "weight": 2,
+      "cost": "15 gp",
+      "properties": ["versatile"],
+      "versatile_damage_dice": "1d10"
+    },
+    {
+      "id": "whip",
+      "name": "Whip",
+      "damage_dice": "1d4",
+      "damage_type": "slashing",
+      "weight": 3,
+      "cost": "2 gp",
+      "properties": ["finesse", "reach"]
+    }
+  ],
+  "martial_ranged": [
+    {
+      "id": "blowgun",
+      "name": "Blowgun",
+      "damage_dice": "1",
+      "damage_type": "piercing",
+      "weight": 1,
+      "cost": "10 gp",
+      "properties": ["ammunition", "loading"],
+      "range": "25/100"
+    },
+    {
+      "id": "hand_crossbow",
+      "name": "Hand Crossbow",
+      "damage_dice": "1d6",
+      "damage_type": "piercing",
+      "weight": 3,
+      "cost": "75 gp",
+      "properties": ["ammunition", "light", "loading"],
+      "range": "30/120"
+    },
+    {
+      "id": "heavy_crossbow",
+      "name": "Heavy Crossbow",
+      "damage_dice": "1d10",
+      "damage_type": "piercing",
+      "weight": 18,
+      "cost": "50 gp",
+      "properties": ["ammunition", "heavy", "loading", "two-handed"],
+      "range": "100/400"
+    },
+    {
+      "id": "longbow",
+      "name": "Longbow",
+      "damage_dice": "1d8",
+      "damage_type": "piercing",
+      "weight": 2,
+      "cost": "50 gp",
+      "properties": ["ammunition", "heavy", "two-handed"],
+      "range": "150/600"
+    },
+    {
+      "id": "net",
+      "name": "Net",
+      "damage_dice": "0",
+      "damage_type": "none",
+      "weight": 3,
+      "cost": "1 gp",
+      "properties": ["special", "thrown"],
+      "range": "5/15"
+    }
+  ]
+}
