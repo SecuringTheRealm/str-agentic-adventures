@@ -3,12 +3,15 @@ API routes for the AI Dungeon Master application.
 """
 
 import logging
-from datetime import datetime
+import random
+import uuid
+from datetime import UTC, datetime
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from slowapi import Limiter
 from slowapi.util import get_remote_address
+from sqlalchemy.orm import Session
 
 from app.agents.artist_agent import get_artist
 from app.agents.combat_cartographer_agent import get_combat_cartographer
@@ -20,7 +23,9 @@ from app.agents.orchestration import (
 )
 from app.agents.scribe_agent import get_scribe
 from app.config import ConfigDep
+from app.database import get_session
 from app.image_budget import ImageBudgetTracker
+from app.models.db_models import NPCProfileDB, NPCRelationshipDB
 from app.models.game_models import (
     NPC,
     AIAssistanceRequest,
@@ -38,6 +43,7 @@ from app.models.game_models import (
     ConcentrationRequest,
     CreateCampaignRequest,
     CreateCharacterRequest,
+    CreateNPCProfileRequest,
     CreateNPCRequest,
     EncumbranceResponse,
     Equipment,
@@ -57,12 +63,17 @@ from app.models.game_models import (
     NPCInteractionRequest,
     NPCInteractionResponse,
     NPCPersonality,
+    NPCProfile,
+    NPCProfileListResponse,
+    NPCProfileWithRelationship,
+    NPCRelationship,
     NPCStatsResponse,
     PlayerInput,
     Spell,
     SpellAttackBonusRequest,
     SpellCastingResponse,
     SpellListResponse,
+    UpdateDispositionRequest,
 )
 from app.services.campaign_service import campaign_service
 
