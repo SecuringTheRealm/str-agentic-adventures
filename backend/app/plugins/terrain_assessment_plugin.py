@@ -57,7 +57,7 @@ class TerrainAssessmentPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error assessing terrain features: {str(e)}")
+            logger.error("Error assessing terrain features: %s", str(e))
             return {"status": "error", "error": f"Terrain assessment failed: {str(e)}"}
 
     def analyze_movement_costs(
@@ -95,7 +95,7 @@ class TerrainAssessmentPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error analyzing movement costs: {str(e)}")
+            logger.error("Error analyzing movement costs: %s", str(e))
             return {"status": "error", "error": f"Movement analysis failed: {str(e)}"}
 
     def evaluate_defensive_terrain(
@@ -136,7 +136,7 @@ class TerrainAssessmentPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error evaluating defensive terrain: {str(e)}")
+            logger.error("Error evaluating defensive terrain: %s", str(e))
             return {
                 "status": "error",
                 "error": f"Defensive evaluation failed: {str(e)}",

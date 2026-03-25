@@ -244,3 +244,26 @@ export const generateBattleMap = async (
     await gameApi.generateBattleMapGameBattleMapPost(mapRequest);
   return response.data;
 };
+
+export interface OpeningNarrativeResponse {
+  scene_description: string;
+  quest_hook: string;
+  suggested_actions: string[];
+  help_text: string;
+}
+
+export const getOpeningNarrative = async (
+  campaignId: string,
+  character: {
+    name?: string;
+    character_class?: string;
+    race?: string;
+    backstory?: string;
+  }
+): Promise<OpeningNarrativeResponse> => {
+  const response = await apiClient.post<OpeningNarrativeResponse>(
+    `/game/campaign/${campaignId}/opening-narrative`,
+    { character }
+  );
+  return response.data;
+};

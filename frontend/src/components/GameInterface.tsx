@@ -1,5 +1,5 @@
 import type React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useWebSocketSDK } from "../hooks/useWebSocketSDK";
 import type { WebSocketMessage } from "../services/api";
 import {
@@ -7,6 +7,7 @@ import {
   type Character,
   generateBattleMap,
   generateImage,
+  getOpeningNarrative,
   sendPlayerInput,
 } from "../services/api";
 import BattleMap from "./BattleMap";
@@ -72,6 +73,16 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
   const [streamingMessage, setStreamingMessage] = useState<string>("");
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
   const [webSocketDiceResult, setWebSocketDiceResult] = useState<any>(null);
+  const [suggestedActions, setSuggestedActions] = useState<string[]>([]);
+
+  // Stable session ID for image-generation budget tracking.
+  // useRef ensures it never changes across re-renders.
+  const sessionIdRef = useRef<string>(crypto.randomUUID());
+  const sessionId = sessionIdRef.current;
+
+  // How many more images the player can generate this session.
+  // Initialised to null (unknown) and updated from the server response.
+  const [imagesRemaining, setImagesRemaining] = useState<number | null>(null);
 
   // Add fallback mode when WebSocket isn't available
   const [useWebSocketFallback, setUseWebSocketFallback] =
@@ -156,6 +167,16 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
         break;
       }
 
+      case "dm_narration":
+        // DM narrates the outcome of the dice roll
+        if (typeof message.narration === "string") {
+          setMessages((prev) => [
+            ...prev,
+            { text: message.narration, sender: "dm" },
+          ]);
+        }
+        break;
+
       case "game_update":
         // Handle game state updates
         if (message.update_type === "combat_start") {
@@ -203,14 +224,48 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
   const effectiveChatConnected = chatConnected || useWebSocketFallback;
 
   useEffect(() => {
-    // Initial welcome message
-    const welcomeMessage = `Welcome, ${character.name}! Your adventure in ${campaign.name} begins now. ${campaign.world_description || ""}`;
-    setMessages([{ text: welcomeMessage, sender: "dm" }]);
-
     // Set initial world image if available
     if (campaign.world_art?.image_url) {
       setCurrentImage(campaign.world_art.image_url);
     }
+
+    // Fetch the opening narrative from the backend
+    const fetchOpeningNarrative = async () => {
+      if (!campaign.id) {
+        // Fallback welcome message if no campaign id
+        const welcomeMessage = `Welcome, ${character.name}! Your adventure in ${campaign.name} begins now. ${campaign.world_description || ""}`;
+        setMessages([{ text: welcomeMessage.trim(), sender: "dm" }]);
+        return;
+      }
+
+      setLoading(true);
+      setMessages([
+        { text: `Setting the scene for ${character.name}'s adventure…`, sender: "dm" },
+      ]);
+      try {
+        const narrative = await getOpeningNarrative(campaign.id, {
+          name: character.name,
+          character_class: character.character_class,
+          race: character.race,
+          backstory: character.backstory ?? undefined,
+        });
+
+        const openingText = narrative.quest_hook
+          ? `${narrative.scene_description}\n\n${narrative.quest_hook}`
+          : narrative.scene_description;
+
+        setMessages([{ text: openingText, sender: "dm" }]);
+        setSuggestedActions(narrative.suggested_actions ?? []);
+      } catch {
+        // Fall back to a simple welcome message if the narrative call fails
+        const welcomeMessage = `Welcome, ${character.name}! Your adventure in ${campaign.name} begins now. ${campaign.world_description || ""}`;
+        setMessages([{ text: welcomeMessage.trim(), sender: "dm" }]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOpeningNarrative();
   }, [character, campaign]);
 
   const handleGenerateCharacterPortrait = async () => {
@@ -229,6 +284,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
     setImageLoading(true);
     try {
       const portraitData = await generateImage({
+        session_id: sessionId,
         image_type: "character_portrait",
         details: {
           name: character.name,
@@ -246,6 +302,12 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
         const imageUrl = portraitData.image_url as string;
         if (imageUrl && typeof imageUrl === "string") {
           setCurrentImage(imageUrl);
+          if (
+            "images_remaining" in portraitData &&
+            typeof portraitData.images_remaining === "number"
+          ) {
+            setImagesRemaining(portraitData.images_remaining);
+          }
           setMessages((prev) => [
             ...prev,
             {
@@ -281,6 +343,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
     setImageLoading(true);
     try {
       const sceneData = await generateImage({
+        session_id: sessionId,
         image_type: "scene_illustration",
         details: {
           location: "fantasy tavern", // Default scene, could be dynamic
@@ -298,6 +361,12 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
         const imageUrl = sceneData.image_url as string;
         if (imageUrl && typeof imageUrl === "string") {
           setCurrentImage(imageUrl);
+          if (
+            "images_remaining" in sceneData &&
+            typeof sceneData.images_remaining === "number"
+          ) {
+            setImagesRemaining(sceneData.images_remaining);
+          }
           setMessages((prev) => [
             ...prev,
             {
@@ -333,6 +402,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
     setImageLoading(true);
     try {
       const mapData = await generateBattleMap({
+        session_id: sessionId,
         environment: {
           location: "dungeon corridor",
           terrain: "stone",
@@ -346,6 +416,12 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
         if (imageUrl && typeof imageUrl === "string") {
           setBattleMapUrl(imageUrl);
           setCombatActive(true);
+          if (
+            "images_remaining" in mapData &&
+            typeof mapData.images_remaining === "number"
+          ) {
+            setImagesRemaining(mapData.images_remaining);
+          }
           setMessages((prev) => [
             ...prev,
             {
@@ -425,8 +501,9 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
       return;
     }
 
-    // Add player message to chat
+    // Add player message to chat and clear suggested actions
     setMessages((prev) => [...prev, { text: message, sender: "player" }]);
+    setSuggestedActions([]);
 
     // Try WebSocket first, fallback to REST API
     if (chatConnected && chatSocket) {
@@ -538,17 +615,26 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
             onSendMessage={handlePlayerInput}
             isLoading={loading}
             streamingMessage={isStreaming ? streamingMessage : undefined}
+            suggestedActions={suggestedActions}
+            onSuggestedAction={handlePlayerInput}
           />
         </div>
 
         <div className={styles.rightPanel}>
           <div className={styles.visualControls}>
             <h4>Generate Visuals</h4>
+            {imagesRemaining !== null && (
+              <p className={styles.imageBudget}>
+                {imagesRemaining > 0
+                  ? `${imagesRemaining} illustration${imagesRemaining === 1 ? "" : "s"} remaining this session`
+                  : "Image limit reached for this session"}
+              </p>
+            )}
             <div className={styles.visualButtons}>
               <button
                 type="button"
                 onClick={handleGenerateCharacterPortrait}
-                disabled={imageLoading}
+                disabled={imageLoading || imagesRemaining === 0}
                 className={styles.visualButton}
               >
                 {imageLoading ? "Generating..." : "Character Portrait"}
@@ -556,7 +642,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
               <button
                 type="button"
                 onClick={handleGenerateSceneIllustration}
-                disabled={imageLoading}
+                disabled={imageLoading || imagesRemaining === 0}
                 className={styles.visualButton}
               >
                 {imageLoading ? "Generating..." : "Scene Illustration"}
@@ -564,7 +650,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
               <button
                 type="button"
                 onClick={handleGenerateBattleMap}
-                disabled={imageLoading}
+                disabled={imageLoading || imagesRemaining === 0}
                 className={styles.visualButton}
               >
                 {imageLoading ? "Generating..." : "Battle Map"}

@@ -298,7 +298,7 @@ class RulesEnginePlugin:
                 "total_slots": sum(slots),
             }
         except Exception as e:
-            logger.error(f"Error getting spell slots: {str(e)}")
+            logger.error("Error getting spell slots: %s", str(e))
             return {"error": f"Error getting spell slots: {str(e)}"}
 
     def calculate_spell_attack_bonus(
@@ -331,7 +331,7 @@ class RulesEnginePlugin:
                 "formula": "proficiency_bonus + spellcasting_ability_modifier",
             }
         except Exception as e:
-            logger.error(f"Error calculating spell attack bonus: {str(e)}")
+            logger.error("Error calculating spell attack bonus: %s", str(e))
             return {"error": f"Error calculating spell attack bonus: {str(e)}"}
 
     def resolve_spell_effect(
@@ -380,7 +380,7 @@ class RulesEnginePlugin:
 
             return effect
         except Exception as e:
-            logger.error(f"Error resolving spell effect: {str(e)}")
+            logger.error("Error resolving spell effect: %s", str(e))
             return {"error": f"Error resolving spell effect: {str(e)}"}
 
     def calculate_spell_save_dc(
@@ -413,7 +413,7 @@ class RulesEnginePlugin:
                 "formula": "8 + proficiency_bonus + spellcasting_ability_modifier",
             }
         except Exception as e:
-            logger.error(f"Error calculating spell save DC: {str(e)}")
+            logger.error("Error calculating spell save DC: %s", str(e))
             return {"error": f"Error calculating spell save DC: {str(e)}"}
 
     def resolve_spell_damage(
@@ -447,7 +447,7 @@ class RulesEnginePlugin:
                 "roll_details": roll_result,
             }
         except Exception as e:
-            logger.error(f"Error resolving spell damage: {str(e)}")
+            logger.error("Error resolving spell damage: %s", str(e))
             return {"error": f"Error resolving spell damage: {str(e)}"}
 
     def resolve_spell_healing(
@@ -488,7 +488,7 @@ class RulesEnginePlugin:
                 "roll_details": roll_result,
             }
         except Exception as e:
-            logger.error(f"Error resolving spell healing: {str(e)}")
+            logger.error("Error resolving spell healing: %s", str(e))
             return {"error": f"Error resolving spell healing: {str(e)}"}
 
     def resolve_saving_throw(
@@ -538,7 +538,7 @@ class RulesEnginePlugin:
                 "margin": total_roll - save_dc,
             }
         except Exception as e:
-            logger.error(f"Error resolving saving throw: {str(e)}")
+            logger.error("Error resolving saving throw: %s", str(e))
             return {"error": f"Error resolving saving throw: {str(e)}"}
 
 #         name="roll_dice",
@@ -570,7 +570,7 @@ class RulesEnginePlugin:
             return result
 
         except Exception as e:
-            logger.error(f"Error rolling dice: {str(e)}")
+            logger.error("Error rolling dice: %s", str(e))
             return {
                 "notation": dice_notation,
                 "error": f"Invalid dice notation: {str(e)}",
@@ -868,7 +868,7 @@ class RulesEnginePlugin:
                 "total": total,
             }
         except Exception as e:
-            logger.error(f"Error performing skill check: {str(e)}")
+            logger.error("Error performing skill check: %s", str(e))
             return {"error": f"Error performing skill check: {str(e)}"}
 
     def resolve_attack(
@@ -933,7 +933,7 @@ class RulesEnginePlugin:
                 "is_critical_miss": is_critical_miss,
             }
         except Exception as e:
-            logger.error(f"Error resolving attack: {str(e)}")
+            logger.error("Error resolving attack: %s", str(e))
             return {"error": f"Error resolving attack: {str(e)}"}
 
     def calculate_damage(
@@ -980,7 +980,7 @@ class RulesEnginePlugin:
 
             return damage_roll
         except Exception as e:
-            logger.error(f"Error calculating damage: {str(e)}")
+            logger.error("Error calculating damage: %s", str(e))
             return {"error": f"Error calculating damage: {str(e)}"}
 
     def calculate_level(self, experience: int) -> dict[str, Any]:
@@ -1014,7 +1014,7 @@ class RulesEnginePlugin:
                 "can_level_up": experience >= exp_for_next if exp_for_next else False,
             }
         except Exception as e:
-            logger.error(f"Error calculating level: {str(e)}")
+            logger.error("Error calculating level: %s", str(e))
             return {"error": f"Error calculating level: {str(e)}"}
 
     def calculate_proficiency_bonus(self, level: int) -> dict[str, Any]:
@@ -1038,7 +1038,7 @@ class RulesEnginePlugin:
 
             return {"level": level, "proficiency_bonus": proficiency_bonus}
         except Exception as e:
-            logger.error(f"Error calculating proficiency bonus: {str(e)}")
+            logger.error("Error calculating proficiency bonus: %s", str(e))
             return {"error": f"Error calculating proficiency bonus: {str(e)}"}
 
     def check_asi_eligibility(self, level: int, asi_used: int) -> dict[str, Any]:
@@ -1068,7 +1068,7 @@ class RulesEnginePlugin:
                 "can_improve_abilities": asi_remaining > 0,
             }
         except Exception as e:
-            logger.error(f"Error checking ASI eligibility: {str(e)}")
+            logger.error("Error checking ASI eligibility: %s", str(e))
             return {"error": f"Error checking ASI eligibility: {str(e)}"}
 
     def calculate_level_up_hp(
@@ -1124,7 +1124,7 @@ class RulesEnginePlugin:
                 "method": "rolled",
             }
         except Exception as e:
-            logger.error(f"Error calculating level up HP: {str(e)}")
+            logger.error("Error calculating level up HP: %s", str(e))
             return {"error": f"Error calculating level up HP: {str(e)}"}
 
     def roll_with_character(
@@ -1258,7 +1258,7 @@ class RulesEnginePlugin:
             if character_id in self.concentration_spells:
                 old_spell = self.concentration_spells[character_id]["spell"]
                 logger.info(
-                    f"Character {character_id} lost concentration on {old_spell.get('name', 'Unknown')}"
+                    "Character %s lost concentration on %s", character_id, old_spell.get('name', 'Unknown')
                 )
 
             # Start new concentration
@@ -1277,7 +1277,7 @@ class RulesEnginePlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error starting concentration: {str(e)}")
+            logger.error("Error starting concentration: %s", str(e))
             return {
                 "success": False,
                 "error": f"Error starting concentration: {str(e)}",
@@ -1315,7 +1315,7 @@ class RulesEnginePlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error ending concentration: {str(e)}")
+            logger.error("Error ending concentration: %s", str(e))
             return {"success": False, "error": f"Error ending concentration: {str(e)}"}
 
     def check_concentration(self, character_id: str) -> dict[str, Any]:
@@ -1348,7 +1348,7 @@ class RulesEnginePlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error checking concentration: {str(e)}")
+            logger.error("Error checking concentration: %s", str(e))
             return {"error": f"Error checking concentration: {str(e)}"}
 
     def concentration_saving_throw(
@@ -1413,7 +1413,7 @@ class RulesEnginePlugin:
             return result
 
         except Exception as e:
-            logger.error(f"Error with concentration saving throw: {str(e)}")
+            logger.error("Error with concentration saving throw: %s", str(e))
             return {
                 "success": False,
                 "error": f"Error with concentration saving throw: {str(e)}",
@@ -1465,7 +1465,7 @@ class RulesEnginePlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error advancing concentration round: {str(e)}")
+            logger.error("Error advancing concentration round: %s", str(e))
             return {
                 "success": False,
                 "error": f"Error advancing concentration round: {str(e)}",

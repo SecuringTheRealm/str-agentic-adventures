@@ -8,6 +8,7 @@ from typing import Any
 
 from app.agent_client_setup import agent_client_manager
 from app.azure_openai_client import AzureOpenAIClient, azure_openai_client
+from app.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -51,8 +52,9 @@ class NarratorAgent:
 
         except Exception as e:
             logger.warning(
-                f"Failed to initialize Narrator agent with Azure AI SDK: {e}. "
-                "Operating in fallback mode."
+                "Failed to initialize Narrator agent with Azure AI SDK: %s. "
+                "Operating in fallback mode.",
+                e,
             )
             self._fallback_mode = True
             self._initialize_fallback_components()
@@ -82,7 +84,7 @@ class NarratorAgent:
 
             logger.info("Narrator agent plugins initialized for direct access")
         except Exception as e:
-            logger.error(f"Error initializing Narrator agent plugins: {str(e)}")
+            logger.error("Error initializing Narrator agent plugins: %s", str(e))
             # Don't raise - enter fallback mode instead
             self._fallback_mode = True
             logger.warning(
@@ -130,6 +132,7 @@ class NarratorAgent:
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_message},
                 ],
+                deployment=settings.azure_openai_mini_deployment or None,
                 temperature=0.75,
                 max_tokens=350,
             )
@@ -365,7 +368,7 @@ class NarratorAgent:
             return result
 
         except Exception as e:
-            logger.error(f"Error processing action: {str(e)}")
+            logger.error("Error processing action: %s", str(e))
             return {
                 "success": False,
                 "description": "Something unexpected happens, preventing your action.",
@@ -398,6 +401,7 @@ class NarratorAgent:
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_message},
             ],
+            deployment=settings.azure_openai_mini_deployment or None,
             temperature=0.7,
             max_tokens=300,
         )
@@ -511,11 +515,180 @@ class NarratorAgent:
             }
 
         except Exception as e:
-            logger.error(f"Error creating campaign story: {str(e)}")
+            logger.error("Error creating campaign story: %s", str(e))
             return {
                 "success": False,
                 "message": f"Failed to create campaign story: {str(e)}",
             }
+
+    async def generate_opening_narrative(
+        self,
+        campaign_context: dict[str, Any],
+        character_context: dict[str, Any],
+    ) -> dict[str, Any]:
+        """
+        Generate an opening narrative for a new game session.
+
+        Args:
+            campaign_context: Campaign details
+                (id, name, setting, tone, world_description)
+            character_context: Character details
+                (name, character_class, race, backstory)
+
+        Returns:
+            Dict with scene_description, quest_hook, suggested_actions, and
+            help_text
+        """
+        setting = campaign_context.get("setting", "fantasy")
+        tone = campaign_context.get("tone", "heroic")
+        campaign_id = campaign_context.get("id", "")
+        world_description = campaign_context.get("world_description", "")
+
+        character_name = character_context.get("name", "adventurer")
+        character_class = character_context.get("character_class", "adventurer")
+        character_race = character_context.get("race", "")
+        backstory = character_context.get("backstory", "")
+
+        # Build the scene description using the existing describe_scene method
+        scene_context: dict[str, Any] = {
+            "location": world_description or f"a {setting} world",
+            "time": "the start of a new adventure",
+            "mood": tone,
+            "campaign_id": campaign_id,
+            "characters": character_name,
+        }
+        scene_description = await self.describe_scene(scene_context)
+
+        if self._fallback_mode or not self.azure_client:
+            fallback = self._fallback_opening_narrative(
+                character_name, character_class, setting, tone
+            )
+            fallback["scene_description"] = scene_description
+            return fallback
+
+        try:
+            system_prompt = (
+                "You are a Dungeon Master crafting the opening of a D&D adventure. "
+                "Be evocative, immersive, and tailor the narrative to the character."
+            )
+
+            char_desc = (
+                f"{character_race} {character_class} named {character_name}"
+                if character_race
+                else f"{character_class} named {character_name}"
+            )
+            backstory_line = f" Character backstory: {backstory}." if backstory else ""
+
+            user_message = (
+                f"Create an opening for a {tone} adventure in a {setting} setting "
+                f"for a {char_desc}.{backstory_line}\n\n"
+                "Respond ONLY with a JSON object with these exact fields:\n"
+                "{\n"
+                '  "quest_hook": "A compelling one-sentence hook that draws '
+                'the character into adventure",\n'
+                '  "suggested_actions": ["action 1", "action 2", "action 3"]\n'
+                "}\n"
+                "The suggested_actions should be 2-3 contextual, specific actions "
+                "the player can take right now."
+            )
+
+            response = await self.azure_client.chat_completion(
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_message},
+                ],
+                temperature=0.8,
+                max_tokens=300,
+            )
+
+            parsed = json.loads(response.strip())
+            quest_hook = parsed.get("quest_hook", "")
+            suggested_actions = parsed.get("suggested_actions", [])
+
+            return {
+                "scene_description": scene_description,
+                "quest_hook": quest_hook,
+                "suggested_actions": suggested_actions[:3],
+                "help_text": "What can I do?",
+            }
+
+        except Exception as exc:
+            logger.error("Failed to generate opening narrative details: %s", exc)
+            fallback = self._fallback_opening_narrative(
+                character_name, character_class, setting, tone
+            )
+            fallback["scene_description"] = scene_description
+            return fallback
+
+    def _fallback_opening_narrative(
+        self,
+        character_name: str,
+        character_class: str,
+        setting: str,
+        tone: str,
+    ) -> dict[str, Any]:
+        """Generate a fallback opening narrative when Azure OpenAI is not available."""
+        hooks: dict[str, str] = {
+            "heroic": (
+                f"A desperate messenger has arrived with urgent news that only a "
+                f"{character_class} of your skill can address."
+            ),
+            "dark": (
+                "Dark omens have troubled the land, and whispered prophecies speak "
+                "of one who will rise to meet the coming shadow."
+            ),
+            "mystery": (
+                "A cryptic letter arrived at dawn, sealed with an unfamiliar crest "
+                "and bearing your name."
+            ),
+            "comedy": (
+                "Through a series of unfortunate misunderstandings, you find yourself "
+                "at the center of a most peculiar situation."
+            ),
+        }
+
+        actions_by_tone: dict[str, list[str]] = {
+            "heroic": [
+                "Look around and take in your surroundings",
+                "Speak with the nearest person",
+                "Check your equipment and supplies",
+            ],
+            "dark": [
+                "Scout the area for potential threats",
+                "Find a safe place to plan your next move",
+                "Look for allies or useful information",
+            ],
+            "mystery": [
+                "Search for clues",
+                "Question the locals",
+                "Examine your surroundings carefully",
+            ],
+            "comedy": [
+                "Survey the situation (try not to make it worse)",
+                "Talk to someone nearby",
+                "Inspect your equipment",
+            ],
+        }
+
+        quest_hook = hooks.get(
+            tone,
+            f"Adventure calls to {character_name}, and destiny waits for no one.",
+        )
+        suggested_actions = actions_by_tone.get(
+            tone,
+            [
+                "Look around and take in your surroundings",
+                "Speak with the nearest person",
+                "Check your equipment and supplies",
+            ],
+        )
+
+        return {
+            "scene_description": f"Your adventure begins, {character_name}.",
+            "quest_hook": quest_hook,
+            "suggested_actions": suggested_actions,
+            "help_text": "What can I do?",
+        }
 
     async def get_narrative_status(self, campaign_id: str) -> dict[str, Any]:
         """
@@ -566,7 +739,7 @@ class NarratorAgent:
             }
 
         except Exception as e:
-            logger.error(f"Error getting narrative status: {str(e)}")
+            logger.error("Error getting narrative status: %s", str(e))
             return {
                 "success": False,
                 "message": f"Failed to get narrative status: {str(e)}",

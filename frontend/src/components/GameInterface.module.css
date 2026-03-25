@@ -56,6 +56,13 @@
   font-weight: 600;
 }
 
+.imageBudget {
+  margin: 0 0 8px 0;
+  font-size: 11px;
+  color: #c8b870;
+  font-style: italic;
+}
+
 .visualButtons {
   display: flex;
   flex-direction: column;

@@ -13,12 +13,14 @@ from slowapi.util import get_remote_address
 from app.agents.artist_agent import get_artist
 from app.agents.combat_cartographer_agent import get_combat_cartographer
 from app.agents.dungeon_master_agent import get_dungeon_master
+from app.agents.narrator_agent import get_narrator
 from app.agents.orchestration import (
     detect_agent_triggers,
     orchestrate_specialist_agents,
 )
 from app.agents.scribe_agent import get_scribe
 from app.config import ConfigDep
+from app.image_budget import ImageBudgetTracker
 from app.models.game_models import (
     NPC,
     AIAssistanceRequest,
@@ -71,6 +73,25 @@ logger = logging.getLogger(__name__)
 limiter = Limiter(key_func=get_remote_address)
 
 router = APIRouter(tags=["game"])
+
+# ---------------------------------------------------------------------------
+# Per-session image budget – initialised from config on first use
+# ---------------------------------------------------------------------------
+_image_budget: ImageBudgetTracker | None = None
+
+
+def _get_image_budget() -> ImageBudgetTracker:
+    """Return the singleton ImageBudgetTracker, creating it on first call."""
+    global _image_budget
+    if _image_budget is None:
+        from app.config import get_settings
+
+        cfg = get_settings()
+        _image_budget = ImageBudgetTracker(
+            max_images=cfg.max_images_per_session,
+            window_minutes=cfg.image_session_window_minutes,
+        )
+    return _image_budget
 
 
 @router.post("/character", response_model=CharacterSheet)
@@ -136,8 +157,6 @@ async def get_character(character_id: str, config: ConfigDep):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to retrieve character: {str(e)}",
         ) from None
-
-    return character
 
 
 @router.post("/campaign", response_model=Campaign)
@@ -419,8 +438,28 @@ async def generate_ai_content(request: Request, request_body: AIContentGeneratio
 @router.post("/generate-image", response_model=dict[str, Any])
 @limiter.limit("10/minute")
 async def generate_image(request: Request, image_request: dict[str, Any]):  # noqa: ARG001
-    """Generate an image based on the request details."""
+    """Generate an image based on the request details.
+
+    Accepts an optional ``session_id`` field in the request body.  Each session
+    is limited to ``max_images_per_session`` DALL-E calls per rolling
+    ``image_session_window_minutes`` window (configurable via environment
+    variables).  Requests that exceed the budget receive a 429 response.
+    """
     try:
+        # Enforce per-session image budget
+        session_id = str(image_request.get("session_id") or "anonymous")
+        budget = _get_image_budget()
+        allowed, remaining = budget.check_and_record(session_id)
+        if not allowed:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail=(
+                    f"Image budget exceeded. You may generate at most "
+                    f"{budget.max_images} image(s) per "
+                    f"{budget.window.seconds // 60}-minute session."
+                ),
+            )
+
         image_type = image_request.get("image_type")
         details = image_request.get("details", {})
 
@@ -436,7 +475,10 @@ async def generate_image(request: Request, image_request: dict[str, Any]):  # no
                 detail=f"Unsupported image type: {image_type}",
             )
 
+        result["images_remaining"] = remaining
         return result
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -447,15 +489,37 @@ async def generate_image(request: Request, image_request: dict[str, Any]):  # no
 @router.post("/battle-map", response_model=dict[str, Any])
 @limiter.limit("10/minute")
 async def generate_battle_map(request: Request, map_request: dict[str, Any]):  # noqa: ARG001
-    """Generate a battle map based on environment details."""
+    """Generate a battle map based on environment details.
+
+    Accepts an optional ``session_id`` field in the request body.  The same
+    per-session image budget used by ``/generate-image`` applies here.
+    """
     try:
+        # Enforce per-session image budget (battle maps count as images)
+        session_id = str(map_request.get("session_id") or "anonymous")
+        budget = _get_image_budget()
+        allowed, remaining = budget.check_and_record(session_id)
+        if not allowed:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail=(
+                    f"Image budget exceeded. You may generate at most "
+                    f"{budget.max_images} image(s) per "
+                    f"{budget.window.seconds // 60}-minute session."
+                ),
+            )
+
         environment = map_request.get("environment", {})
         combat_context = map_request.get("combat_context")
 
-        return await get_combat_cartographer().generate_battle_map(
+        result = await get_combat_cartographer().generate_battle_map(
             environment, combat_context
         )
+        result["images_remaining"] = remaining
+        return result
 
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -474,7 +538,7 @@ async def process_player_input(request: Request, player_input: PlayerInput):  # 
             character = await get_scribe().get_character(player_input.character_id)
         except Exception as e:
             logger.warning(
-                f"Could not retrieve character {player_input.character_id}: {str(e)}"
+                "Could not retrieve character %s: %s", player_input.character_id, str(e)
             )
         
         # Use fallback character info if character not found or error occurred
@@ -540,7 +604,7 @@ async def process_player_input(request: Request, player_input: PlayerInput):  # 
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Failed to process input: {str(e)}")
+        logger.error("Failed to process input: %s", str(e))
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to process input: {str(e)}",
@@ -802,6 +866,45 @@ async def start_game_session(campaign_id: str, session_data: dict[str, Any]):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to start game session: {str(e)}",
+        ) from e
+
+
+@router.post("/campaign/{campaign_id}/opening-narrative", response_model=dict[str, Any])
+async def get_opening_narrative(campaign_id: str, request_data: dict[str, Any]):
+    """Generate an atmospheric opening narrative for a new game session.
+
+    Returns a scene description, quest hook, and 2-3 suggested actions based on
+    the campaign setting and character context.
+    """
+    try:
+        campaign = campaign_service.get_campaign(campaign_id)
+        if not campaign:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Campaign {campaign_id} not found",
+            ) from None
+
+        campaign_context = {
+            "id": campaign_id,
+            "name": campaign.name,
+            "setting": campaign.setting,
+            "tone": campaign.tone,
+            "world_description": campaign.world_description or "",
+        }
+        character_context = request_data.get("character", {})
+
+        opening = await get_narrator().generate_opening_narrative(
+            campaign_context=campaign_context,
+            character_context=character_context,
+        )
+        return opening
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate opening narrative: {str(e)}",
         ) from e
 
 

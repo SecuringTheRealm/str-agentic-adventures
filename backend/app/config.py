@@ -22,12 +22,18 @@ class Settings(BaseSettings):
 
     # Model Deployments
     azure_openai_chat_deployment: str = ""
+    azure_openai_mini_deployment: str = ""  # GPT-4o-mini for structured/cheaper tasks
     azure_openai_embedding_deployment: str = ""
     azure_openai_dalle_deployment: str = "gpt-image-1-mini"
 
     # Azure AI Foundry project endpoint
     # Format: https://<account>.services.ai.azure.com/api/projects/<project>
     azure_ai_project_endpoint: str = ""
+
+    # Image generation cost controls
+    # Limits the number of DALL-E images generated per session to reduce spend.
+    max_images_per_session: int = 3
+    image_session_window_minutes: int = 30
 
     # Storage Settings
     storage_connection_string: str = ""
@@ -65,11 +71,13 @@ _settings: Settings | None = None
 
 def init_settings() -> Settings:
     """Initialize settings by loading .env file. Called at startup."""
+    global _settings
     # Load environment variables from .env file
     load_dotenv()
 
     try:
-        return Settings()
+        _settings = Settings()
+        return _settings
     except Exception as e:
         # Check if this is due to missing Azure OpenAI configuration
         error_msg = str(e)

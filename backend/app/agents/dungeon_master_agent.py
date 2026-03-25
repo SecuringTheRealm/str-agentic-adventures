@@ -60,8 +60,9 @@ class DungeonMasterAgent:
 
         except Exception as e:
             logger.warning(
-                f"Failed to initialize DM Agent with Azure AI SDK: {e}. "
-                "Operating in fallback mode."
+                "Failed to initialize DM Agent with Azure AI SDK: %s. "
+                "Operating in fallback mode.",
+                e,
             )
             self._fallback_mode = True
 
@@ -218,7 +219,7 @@ class DungeonMasterAgent:
             }
 
         except Exception as e:
-            logger.error(f"Error in DM processing: {str(e)}")
+            logger.error("Error in DM processing: %s", str(e))
             # Fall back to using the full fallback processing which handles dice, etc.
             logger.info("DM falling back after error.")
             result = await self._process_input_fallback(user_input, context)
@@ -289,7 +290,7 @@ class DungeonMasterAgent:
                 thread.append({"role": "assistant", "content": full_response})
 
         except Exception as e:
-            logger.error(f"Error in streaming processing: {str(e)}")
+            logger.error("Error in streaming processing: %s", str(e))
             await self._send_chat_message(
                 websocket,
                 {
@@ -476,6 +477,122 @@ class DungeonMasterAgent:
         response["narration"] = self._fallback_generate_response("exploration")
         return response
 
+    @staticmethod
+    def _detect_d20_special(
+        notation: str, rolls: list[int]
+    ) -> tuple[bool, bool]:
+        """Return (is_critical_hit, is_critical_miss) for a single d20 roll."""
+        if rolls and len(rolls) == 1 and "d20" in notation:
+            return rolls[0] == 20, rolls[0] == 1
+        return False, False
+
+    async def narrate_dice_roll(self, roll_context: dict[str, Any]) -> str:
+        """
+        Generate a narrative description of a dice roll result.
+
+        Args:
+            roll_context: Dict with player_name, notation, result (total/rolls),
+                          skill, character_id, campaign_id.
+
+        Returns:
+            A short narrative string suitable for broadcasting to players.
+        """
+        player_name = roll_context.get("player_name", "The adventurer")
+        notation = roll_context.get("notation", "dice")
+        result = roll_context.get("result", {})
+        skill = roll_context.get("skill")
+        total = result.get("total", 0)
+        rolls = result.get("rolls", [])
+
+        if self._fallback_mode or not self.azure_client:
+            return self._fallback_narrate_dice_roll(
+                player_name, notation, total, rolls, skill
+            )
+
+        try:
+            skill_text = f" for a {skill.replace('_', ' ')} check" if skill else ""
+            rolls_text = f"[{', '.join(str(r) for r in rolls)}]" if rolls else ""
+            roll_detail = (
+                f"rolled {notation}{skill_text}: {rolls_text} = {total}"
+            )
+
+            is_crit_hit, is_crit_miss = self._detect_d20_special(notation, rolls)
+
+            special = ""
+            if is_crit_hit:
+                special = " This is a CRITICAL SUCCESS (natural 20)!"
+            elif is_crit_miss:
+                special = " This is a CRITICAL FAILURE (natural 1)!"
+
+            prompt = (
+                f"{player_name} {roll_detail}.{special} "
+                "As the Dungeon Master, narrate the outcome of this dice roll "
+                "in 1-2 dramatic sentences without revealing whether the check "
+                "succeeds or fails (leave that to the story context)."
+            )
+
+            ai_response = await self.azure_client.chat_completion(
+                messages=[
+                    {"role": "system", "content": self._get_dm_system_prompt()},
+                    {"role": "user", "content": prompt},
+                ],
+                temperature=0.8,
+                max_tokens=150,
+            )
+            return ai_response.strip()
+
+        except Exception as e:
+            logger.error("Error generating dice roll narrative: %s", e)
+            return self._fallback_narrate_dice_roll(
+                player_name, notation, total, rolls, skill
+            )
+
+    def _fallback_narrate_dice_roll(
+        self,
+        player_name: str,
+        notation: str,
+        total: int,
+        rolls: list[int],
+        skill: str | None,
+    ) -> str:
+        """Generate rule-based narration for a dice roll without AI."""
+        skill_text = f" for {skill.replace('_', ' ')}" if skill else ""
+
+        # Critical hit / miss on a single d20
+        is_crit_hit, is_crit_miss = self._detect_d20_special(notation, rolls)
+        if is_crit_hit:
+            return (
+                f"*A natural 20!* {player_name} rolls{skill_text}: "
+                f"**{total}**. A critical success!"
+            )
+        if is_crit_miss:
+            return (
+                f"*A natural 1!* {player_name} rolls{skill_text}: "
+                f"**{total}**. A critical failure!"
+            )
+
+        # Quality-based description for d20 rolls
+        if "d20" in notation:
+            if total >= 20:
+                return (
+                    f"{player_name} rolls{skill_text}: **{total}**. "
+                    "An outstanding result!"
+                )
+            if total >= 15:
+                return (
+                    f"{player_name} rolls{skill_text}: **{total}**. A solid roll."
+                )
+            if total >= 10:
+                return (
+                    f"{player_name} rolls{skill_text}: **{total}**. "
+                    "A modest attempt."
+                )
+            return (
+                f"{player_name} rolls{skill_text}: **{total}**. A poor showing."
+            )
+
+        return f"{player_name} rolls {notation}: **{total}**."
+
     async def _process_input_stream_fallback(
         self, user_input: str, context: dict[str, Any]
     ) -> None:
@@ -503,7 +620,7 @@ class DungeonMasterAgent:
         try:
             await websocket.send_text(json.dumps(message))
         except Exception as exc:
-            logger.error(f"Error sending chat message: {exc}")
+            logger.error("Error sending chat message: %s", exc)
 
 
 # Lazy singleton instance

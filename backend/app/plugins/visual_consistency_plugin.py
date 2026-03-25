@@ -81,7 +81,7 @@ class VisualConsistencyPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error creating character visual profile: {str(e)}")
+            logger.error("Error creating character visual profile: %s", str(e))
             return {
                 "status": "error",
                 "error": f"Character visual profile creation failed: {str(e)}",
@@ -150,7 +150,7 @@ class VisualConsistencyPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error validating character consistency: {str(e)}")
+            logger.error("Error validating character consistency: %s", str(e))
             return {
                 "status": "error",
                 "error": f"Character consistency validation failed: {str(e)}",
@@ -213,7 +213,7 @@ class VisualConsistencyPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error creating world visual theme: {str(e)}")
+            logger.error("Error creating world visual theme: %s", str(e))
             return {
                 "status": "error",
                 "error": f"World visual theme creation failed: {str(e)}",
@@ -283,7 +283,7 @@ class VisualConsistencyPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error validating world consistency: {str(e)}")
+            logger.error("Error validating world consistency: %s", str(e))
             return {
                 "status": "error",
                 "error": f"World consistency validation failed: {str(e)}",
@@ -342,7 +342,7 @@ class VisualConsistencyPlugin:
             }
 
         except Exception as e:
-            logger.error(f"Error generating consistency report: {str(e)}")
+            logger.error("Error generating consistency report: %s", str(e))
             return {
                 "status": "error",
                 "error": f"Consistency report generation failed: {str(e)}",
