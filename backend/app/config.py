@@ -65,11 +65,13 @@ _settings: Settings | None = None
 
 def init_settings() -> Settings:
     """Initialize settings by loading .env file. Called at startup."""
+    global _settings
     # Load environment variables from .env file
     load_dotenv()
 
     try:
-        return Settings()
+        _settings = Settings()
+        return _settings
     except Exception as e:
         # Check if this is due to missing Azure OpenAI configuration
         error_msg = str(e)

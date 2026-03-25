@@ -23,14 +23,14 @@ class CombatMCAgent:
     def __init__(self) -> None:
         """Initialize the Combat MC agent with Azure AI SDK."""
         self.chat_client: ChatCompletionsClient | None = None
-        self.fallback_mode = False  # Track if we're using fallback mechanics
+        self._fallback_mode = False  # Track if we're using fallback mechanics
         self.rules_engine: Any | None = None  # Store rules engine plugin instance
 
         # Try to get the shared chat client from agent client manager
         try:
             self.chat_client = agent_client_manager.get_chat_client()
             if self.chat_client is None:
-                self.fallback_mode = True
+                self._fallback_mode = True
                 logger.warning(
                     "Combat MC agent operating in fallback mode - Azure OpenAI not configured"
                 )
@@ -44,7 +44,7 @@ class CombatMCAgent:
                 "Operating in fallback mode.",
                 e,
             )
-            self.fallback_mode = True
+            self._fallback_mode = True
             self._initialize_fallback_mechanics()
 
         # Active combat tracking
@@ -53,7 +53,7 @@ class CombatMCAgent:
     def _register_skills(self) -> None:
         """Register necessary skills for the Combat MC agent."""
         # Skip if in fallback mode
-        if self.fallback_mode or self.chat_client is None:
+        if self._fallback_mode or self.chat_client is None:
             logger.info(
                 "Combat MC agent in fallback mode - skipping plugin registration"
             )
@@ -73,7 +73,7 @@ class CombatMCAgent:
         except Exception as e:
             logger.error("Error initializing Combat MC agent plugins: %s", str(e))
             logger.warning("Enabling fallback mode with built-in combat mechanics")
-            self.fallback_mode = True
+            self._fallback_mode = True
             self._initialize_fallback_mechanics()
 
     def _initialize_fallback_mechanics(self) -> None:
@@ -204,7 +204,7 @@ class CombatMCAgent:
 
             # Players
             for player in party_members:
-                if self.fallback_mode:
+                if self._fallback_mode:
                     # Use fallback d20 roll
                     dex_mod = (
                         player.get("abilities", {}).get("dexterity", 10) - 10
@@ -229,7 +229,7 @@ class CombatMCAgent:
 
             # Enemies
             for enemy in encounter["enemies"]:
-                if self.fallback_mode:
+                if self._fallback_mode:
                     # Use fallback d20 roll with simple modifier
                     initiative_mod = random.randint(-2, 2)  # noqa: S311
                     roll_result = self._fallback_roll_d20(initiative_mod)
@@ -285,7 +285,7 @@ class CombatMCAgent:
             if encounter["status"] != "active":
                 return {"error": "Combat is not currently active"}
 
-            if self.fallback_mode:
+            if self._fallback_mode:
                 # Use fallback combat processing
                 return self._process_fallback_combat_action(encounter, action_data)
             # Use plugin-based combat processing
@@ -855,11 +855,11 @@ class CombatMCAgent:
 
     def is_fallback_mode(self) -> bool:
         """Check if the combat MC agent is running in fallback mode."""
-        return self.fallback_mode
+        return self._fallback_mode
 
     def get_capabilities(self) -> dict[str, Any]:
         """Get information about the agent's current capabilities."""
-        if self.fallback_mode:
+        if self._fallback_mode:
             return {
                 "mode": "fallback",
                 "capabilities": [
