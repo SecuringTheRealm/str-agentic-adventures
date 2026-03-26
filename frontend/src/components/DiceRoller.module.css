@@ -288,6 +288,8 @@
 
   .historyItem {
     font-size: 1rem; /* Prevent iOS zoom */
+  }
+}
 
   }
 }

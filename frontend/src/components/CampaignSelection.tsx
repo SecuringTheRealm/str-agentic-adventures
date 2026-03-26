@@ -1,8 +1,8 @@
 import type React from "react";
 import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { deleteCampaign, getCampaigns } from "../services/api";
 import type { Campaign } from "../types";
-import CampaignEditor from "./CampaignEditor";
 import CampaignGallery from "./CampaignGallery";
 import styles from "./CampaignSelection.module.css";
 import ConfirmDialog from "./ConfirmDialog";
@@ -11,15 +11,13 @@ interface CampaignSelectionProps {
   onCampaignCreated: (campaign: Campaign) => void;
 }
 
-type ViewMode = "gallery" | "editor" | "list";
+type ViewMode = "gallery" | "list";
 
 const CampaignSelection: React.FC<CampaignSelectionProps> = ({
   onCampaignCreated,
 }) => {
+  const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<ViewMode>("gallery");
-  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(
-    null
-  );
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,32 +48,11 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({
   };
 
   const handleCreateCustom = () => {
-    setSelectedCampaign(null);
-    setViewMode("editor");
+    navigate("/campaigns/new");
   };
 
   const handleEditCampaign = (campaign: Campaign) => {
-    setSelectedCampaign(campaign);
-    setViewMode("editor");
-  };
-
-  const handleCampaignSaved = async (campaign: Campaign) => {
-    // Refresh campaigns list
-    await loadCampaigns();
-
-    // If this was a new campaign creation, pass it up
-    if (!selectedCampaign) {
-      onCampaignCreated(campaign);
-    } else {
-      // If editing, go back to list view
-      setViewMode("list");
-      setSelectedCampaign(null);
-    }
-  };
-
-  const handleCancelEdit = () => {
-    setSelectedCampaign(null);
-    setViewMode("gallery");
+    navigate(`/campaigns/${campaign.id}/edit`);
   };
 
   const handleDeleteCampaign = (campaignId: string) => {
@@ -101,18 +78,7 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({
 
   const handleBackToGallery = () => {
     setViewMode("gallery");
-    setSelectedCampaign(null);
   };
-
-  if (viewMode === "editor") {
-    return (
-      <CampaignEditor
-        campaign={selectedCampaign || undefined}
-        onCampaignSaved={handleCampaignSaved}
-        onCancel={handleCancelEdit}
-      />
-    );
-  }
 
   if (viewMode === "list") {
     return (

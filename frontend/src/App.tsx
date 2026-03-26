@@ -1,36 +1,15 @@
-import { useId, useState } from "react";
+import { useId } from "react";
+import { Navigate, Route, Routes } from "react-router-dom";
 import "./App.css";
-import CampaignSelection from "./components/CampaignSelection";
-import CharacterSelection from "./components/CharacterSelection";
-import GameInterface from "./components/GameInterface";
-import type { Campaign, Character } from "./types";
+import CampaignEditPage from "./pages/CampaignEditPage";
+import CampaignNewPage from "./pages/CampaignNewPage";
+import CampaignSelectionPage from "./pages/CampaignSelectionPage";
+import CharacterNewPage from "./pages/CharacterNewPage";
+import CharacterSelectionPage from "./pages/CharacterSelectionPage";
+import GamePage from "./pages/GamePage";
 
 function App() {
   const mainId = useId();
-  const [currentCampaign, setCurrentCampaign] = useState<Campaign | null>(null);
-  const [currentCharacter, setCurrentCharacter] = useState<Character | null>(
-    null
-  );
-  const [gameStarted, setGameStarted] = useState(false);
-  const [showCharacterSelection, setShowCharacterSelection] = useState(false);
-
-  const handleCampaignCreated = (campaign: Campaign) => {
-    setCurrentCampaign(campaign);
-    setShowCharacterSelection(true);
-  };
-
-  const handleCharacterSelected = (character: Character) => {
-    setCurrentCharacter(character);
-    setShowCharacterSelection(false);
-    setGameStarted(true);
-  };
-
-  const handleBackToCampaigns = () => {
-    setCurrentCampaign(null);
-    setCurrentCharacter(null);
-    setGameStarted(false);
-    setShowCharacterSelection(false);
-  };
 
   return (
     <div className="App">
@@ -39,39 +18,27 @@ function App() {
       </a>
       <header className="App-header">
         <h1>Securing the Realm - Agentic Adventures</h1>
-        {gameStarted && (
-          <button
-            type="button"
-            onClick={handleBackToCampaigns}
-            className="back-button"
-          >
-            ← Back to Campaigns
-          </button>
-        )}
       </header>
 
       <main id={mainId} className="App-main">
-        {!gameStarted && !showCharacterSelection ? (
-          <div className="campaign-setup">
-            <CampaignSelection onCampaignCreated={handleCampaignCreated} />
-          </div>
-        ) : showCharacterSelection && currentCampaign ? (
-          <div className="character-setup">
-            <CharacterSelection
-              campaign={currentCampaign}
-              onCharacterSelected={handleCharacterSelected}
-              onBackToCampaigns={handleBackToCampaigns}
-            />
-          </div>
-        ) : (
-          currentCampaign &&
-          currentCharacter && (
-            <GameInterface
-              campaign={currentCampaign}
-              character={currentCharacter}
-            />
-          )
-        )}
+        <Routes>
+          <Route path="/" element={<CampaignSelectionPage />} />
+          <Route path="/campaigns/new" element={<CampaignNewPage />} />
+          <Route path="/campaigns/:id/edit" element={<CampaignEditPage />} />
+          <Route
+            path="/campaigns/:id/characters"
+            element={<CharacterSelectionPage />}
+          />
+          <Route
+            path="/campaigns/:id/characters/new"
+            element={<CharacterNewPage />}
+          />
+          <Route
+            path="/campaigns/:id/play/:characterId"
+            element={<GamePage />}
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </main>
     </div>
   );
