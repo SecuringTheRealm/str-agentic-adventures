@@ -15,9 +15,8 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pythonjsonlogger.json import JsonFormatter
-from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
-from slowapi.util import get_remote_address
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
 
@@ -25,6 +24,7 @@ from app.api import websocket_routes
 
 # Local imports
 from app.api.routes import all_routers
+from app.api.routes._shared import limiter
 from app.config import init_settings
 from app.middleware.prompt_shield_middleware import PromptShieldMiddleware
 from app.services.campaign_service import campaign_service
@@ -44,9 +44,6 @@ logging.root.handlers = [_handler]
 logging.root.setLevel(_log_level)
 
 logger = logging.getLogger(__name__)
-
-# Rate limiter configuration
-limiter = Limiter(key_func=get_remote_address)
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
@@ -140,8 +137,48 @@ app.include_router(websocket_routes.router)
 
 # Health check endpoint
 @app.get("/health")
-async def health_check() -> dict[str, Any]:
+@limiter.limit("120/minute")
+async def health_check(request: Request) -> dict[str, Any]:  # noqa: ARG001
     return {"status": "ok", "version": "0.1.0"}
+
+
+@app.get("/health/dependencies")
+@limiter.limit("120/minute")
+async def health_dependencies(request: Request) -> dict[str, str]:  # noqa: ARG001
+    """Return the health status of external dependencies and the circuit breaker."""
+    from app.agent_client_setup import agent_client_manager
+    from app.agents.base_agent import azure_circuit_breaker
+
+    # Azure OpenAI status
+    cb_state = azure_circuit_breaker.current_state  # "closed", "open", "half-open"
+    if agent_client_manager.is_fallback_mode():
+        azure_status = "unavailable"
+    elif cb_state == "open":
+        azure_status = "degraded"
+    else:
+        azure_status = "healthy"
+
+    # Database status — attempt a lightweight query
+    try:
+        from sqlalchemy import text
+
+        from app.database import get_session_local
+
+        session_factory = get_session_local()
+        db = session_factory()
+        try:
+            db.execute(text("SELECT 1"))
+            db_status = "healthy"
+        finally:
+            db.close()
+    except Exception:
+        db_status = "unavailable"
+
+    return {
+        "azure_openai": azure_status,
+        "database": db_status,
+        "circuit_breaker_state": cb_state,
+    }
 
 
 # Root endpoint

@@ -5,6 +5,8 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
+import pybreaker
+
 from app.agent_client_setup import agent_client_manager
 from app.azure_openai_client import AzureOpenAIClient, azure_openai_client
 
@@ -13,6 +15,14 @@ if TYPE_CHECKING:
     from azure.ai.inference import ChatCompletionsClient
 
 logger = logging.getLogger(__name__)
+
+# Module-level circuit breaker for Azure OpenAI calls.
+# Opens after 3 consecutive failures, auto-resets after 60 seconds.
+azure_circuit_breaker = pybreaker.CircuitBreaker(
+    fail_max=3,
+    reset_timeout=60,
+    name="azure_openai",
+)
 
 
 class BaseAgent:
@@ -141,14 +151,24 @@ class BaseAgent:
             self._sdk_thread_ids[session_id] = thread_id
         return thread_id
 
+    @property
+    def _circuit_open(self) -> bool:
+        """Return True if the circuit breaker is open (Azure deemed unavailable)."""
+        return azure_circuit_breaker.current_state == pybreaker.STATE_OPEN
+
     async def _sdk_chat(
         self, session_id: str, user_message: str
     ) -> str | None:
         """Send a user message through the SDK agent and return the response.
 
-        This method handles the full lifecycle: ensure agent exists, get/create
-        a thread for the session, add the user message, run the agent, and
-        return the response text.
+        The call is guarded by the module-level circuit breaker.  When the
+        breaker is open, we skip the Azure call entirely and return ``None``
+        so that callers fall back to deterministic logic.
+
+        Note: pybreaker's ``call_async`` relies on Tornado, which is not
+        available in this project.  Instead we check ``_circuit_open`` before
+        calling and drive ``_handle_success`` / ``_handle_error`` manually
+        for pure-asyncio compatibility.
 
         Args:
             session_id: Game session identifier.
@@ -158,6 +178,31 @@ class BaseAgent:
             The agent's response text, or None if any step fails (caller
             should fall back to direct AzureOpenAIClient).
         """
+        if self._circuit_open:
+            logger.warning(
+                "%s: circuit breaker open — returning fallback", self.agent_name
+            )
+            return None
+
+        try:
+            result = await self._sdk_chat_inner(session_id, user_message)
+            # Record success so half-open transitions back to closed
+            azure_circuit_breaker.state._handle_success()  # noqa: SLF001
+            return result
+        except Exception as exc:
+            # Record failure; pybreaker will trip the breaker after fail_max
+            azure_circuit_breaker.state._handle_error(exc, reraise=False)  # noqa: SLF001
+            logger.warning(
+                "%s: Azure call failed, circuit breaker recorded failure: %s",
+                self.agent_name,
+                exc,
+            )
+            return None
+
+    async def _sdk_chat_inner(
+        self, session_id: str, user_message: str
+    ) -> str | None:
+        """Inner SDK chat logic executed inside the circuit breaker."""
         agent_id = await self._ensure_agent_created()
         if agent_id is None:
             return None

@@ -4,16 +4,13 @@ import logging
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, Request, status
-from slowapi import Limiter
-from slowapi.util import get_remote_address
 
 from app.agents.artist_agent import get_artist
 from app.agents.combat_cartographer_agent import get_combat_cartographer
+from app.api.routes._shared import limiter
 from app.image_budget import ImageBudgetTracker
 
 logger = logging.getLogger(__name__)
-
-limiter = Limiter(key_func=get_remote_address)
 
 router = APIRouter(tags=["images"])
 
@@ -38,7 +35,7 @@ def _get_image_budget() -> ImageBudgetTracker:
 
 
 @router.post("/generate-image", response_model=dict[str, Any])
-@limiter.limit("10/minute")
+@limiter.limit("5/minute")
 async def generate_image(  # noqa: ARG001
     request: Request, image_request: dict[str, Any],
 ) -> dict[str, Any]:
@@ -90,7 +87,7 @@ async def generate_image(  # noqa: ARG001
 
 
 @router.post("/battle-map", response_model=dict[str, Any])
-@limiter.limit("10/minute")
+@limiter.limit("5/minute")
 async def generate_battle_map(  # noqa: ARG001
     request: Request, map_request: dict[str, Any],
 ) -> dict[str, Any]:

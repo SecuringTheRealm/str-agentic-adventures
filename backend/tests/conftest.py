@@ -3,9 +3,14 @@ Test configuration and utilities for improved configuration handling.
 """
 
 import pytest
+from app.api.routes._shared import limiter
 from app.config import Settings, get_config
 from app.main import app
 from fastapi.testclient import TestClient
+
+# Disable the rate limiter globally during tests so that endpoint tests
+# exercise business logic without being blocked by per-IP rate limits.
+limiter.enabled = False
 
 # Import factories for use in tests (gracefully handle missing dependencies)
 try:

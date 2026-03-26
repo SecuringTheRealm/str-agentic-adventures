@@ -8,6 +8,7 @@ fires for "general" actions; explicit action types set by the frontend still
 take priority.
 """
 
+import asyncio
 import logging
 import re
 from typing import Any
@@ -104,16 +105,80 @@ def detect_agent_triggers(dm_response: str, player_input: str) -> list[str]:
     return triggers
 
 
+async def _call_combat_mc(
+    player_input: str, state: dict[str, Any]
+) -> tuple[str, Any] | None:
+    """Invoke the Combat MC agent, returning a key-value pair or None on failure."""
+    try:
+        from app.agents.combat_mc_agent import get_combat_mc
+
+        combat_mc = get_combat_mc()
+        action_data: dict[str, Any] = {
+            "type": "attack",
+            "description": player_input,
+            "actor_id": state.get("character_id", "player"),
+            "target_id": state.get("target_id", "enemy_1"),
+        }
+        combat_result = await combat_mc.process_combat_action(
+            encounter_id=state.get("encounter_id", "auto"),
+            action_data=action_data,
+        )
+        return ("combat_update", combat_result)
+    except Exception as exc:
+        logger.error("Combat MC orchestration failed: %s", exc)
+        return None
+
+
+async def _call_narrator(
+    player_input: str, state: dict[str, Any]
+) -> tuple[str, Any] | None:
+    """Invoke the Narrator agent, returning a key-value pair or None on failure."""
+    try:
+        from app.agents.narrator_agent import get_narrator
+
+        narrator = get_narrator()
+        scene_context: dict[str, Any] = {
+            "location": state.get("location", "an unknown place"),
+            "mood": state.get("mood", "neutral"),
+            "recent_events": player_input,
+        }
+        scene = await narrator.describe_scene(scene_context=scene_context)
+        return ("scene_narrative", scene)
+    except Exception as exc:
+        logger.error("Narrator orchestration failed: %s", exc)
+        return None
+
+
+async def _call_scribe(
+    state: dict[str, Any],
+) -> tuple[str, Any] | None:
+    """Invoke the Scribe agent, returning a key-value pair or None on failure."""
+    try:
+        from app.agents.scribe_agent import get_scribe
+
+        scribe = get_scribe()
+        character_id = state.get("character_id", "")
+        if character_id:
+            char_info = await scribe.get_character(character_id)
+        else:
+            char_info = {"note": "No character_id in game state"}
+        return ("character_update", char_info)
+    except Exception as exc:
+        logger.error("Scribe orchestration failed: %s", exc)
+        return None
+
+
 async def orchestrate_specialist_agents(
     triggers: list[str],
     player_input: str,
     game_state: dict[str, Any] | None,
     session_id: str,
 ) -> dict[str, Any]:
-    """Invoke specialist agents based on the detected triggers.
+    """Invoke specialist agents in parallel based on the detected triggers.
 
     Each specialist agent call is wrapped in its own try/except so that a
-    failure in one agent does not prevent the others from running.
+    failure in one agent does not prevent the others from running.  Calls
+    are dispatched concurrently via ``asyncio.gather``.
 
     Args:
         triggers: List of agent identifiers from ``detect_agent_triggers``.
@@ -128,57 +193,25 @@ async def orchestrate_specialist_agents(
     if not triggers:
         return {}
 
-    results: dict[str, Any] = {}
     state = game_state or {}
+    tasks: list[Any] = []
 
     if "combat_mc" in triggers:
-        try:
-            from app.agents.combat_mc_agent import get_combat_mc
-
-            combat_mc = get_combat_mc()
-            # Use a lightweight action dict; full encounter management is
-            # handled separately by the combat workflow endpoints.
-            action_data: dict[str, Any] = {
-                "type": "attack",
-                "description": player_input,
-                "actor_id": state.get("character_id", "player"),
-                "target_id": state.get("target_id", "enemy_1"),
-            }
-            combat_result = await combat_mc.process_combat_action(
-                encounter_id=state.get("encounter_id", "auto"),
-                action_data=action_data,
-            )
-            results["combat_update"] = combat_result
-        except Exception as exc:
-            logger.error("Combat MC orchestration failed: %s", exc)
+        tasks.append(_call_combat_mc(player_input, state))
 
     if "narrator" in triggers:
-        try:
-            from app.agents.narrator_agent import get_narrator
-
-            narrator = get_narrator()
-            scene_context: dict[str, Any] = {
-                "location": state.get("location", "an unknown place"),
-                "mood": state.get("mood", "neutral"),
-                "recent_events": player_input,
-            }
-            scene = await narrator.describe_scene(scene_context=scene_context)
-            results["scene_narrative"] = scene
-        except Exception as exc:
-            logger.error("Narrator orchestration failed: %s", exc)
+        tasks.append(_call_narrator(player_input, state))
 
     if "scribe" in triggers:
-        try:
-            from app.agents.scribe_agent import get_scribe
+        tasks.append(_call_scribe(state))
 
-            scribe = get_scribe()
-            character_id = state.get("character_id", "")
-            if character_id:
-                char_info = await scribe.get_character(character_id)
-            else:
-                char_info = {"note": "No character_id in game state"}
-            results["character_update"] = char_info
-        except Exception as exc:
-            logger.error("Scribe orchestration failed: %s", exc)
+    # Run all agent calls concurrently; individual failures return None
+    raw_results = await asyncio.gather(*tasks, return_exceptions=False)
+
+    results: dict[str, Any] = {}
+    for item in raw_results:
+        if item is not None:
+            key, value = item
+            results[key] = value
 
     return results
