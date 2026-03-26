@@ -300,6 +300,7 @@ jobs:
               "DATABASE_NAME=${{ steps.infrastructure-deploy.outputs.DATABASE_NAME }}" \
               "DATABASE_USER=adminuser" \
               "DATABASE_PASSWORD=$DB_PASSWORD" \
+              "APPLICATIONINSIGHTS_CONNECTION_STRING=${{ steps.infrastructure-deploy.outputs.APPLICATIONINSIGHTS_CONNECTION_STRING }}" \
               "APP_HOST=0.0.0.0" \
               "APP_PORT=8000" \
               "APP_DEBUG=false" \
