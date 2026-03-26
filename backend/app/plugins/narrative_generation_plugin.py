@@ -10,7 +10,6 @@ import random
 from typing import Any
 
 # Note: Converted from Agent plugin to direct function calls
-
 from app.models.game_models import (
     NarrativeChoice,
     NarrativeEvent,

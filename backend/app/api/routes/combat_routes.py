@@ -14,7 +14,7 @@ router = APIRouter(tags=["combat"])
 
 
 @router.post("/combat/initialize", response_model=dict[str, Any])
-async def initialize_combat(combat_data: dict[str, Any]):
+async def initialize_combat(combat_data: dict[str, Any]) -> dict[str, Any]:
     """Initialize a new combat encounter."""
     try:
         session_id = combat_data.get("session_id")
@@ -84,7 +84,7 @@ async def initialize_combat(combat_data: dict[str, Any]):
 
 
 @router.post("/combat/{combat_id}/turn", response_model=dict[str, Any])
-async def process_combat_turn(combat_id: str, turn_data: dict[str, Any]):
+async def process_combat_turn(combat_id: str, turn_data: dict[str, Any]) -> dict[str, Any]:
     """Process a single combat turn."""
     try:
         action_type = turn_data.get(
@@ -144,7 +144,7 @@ async def process_combat_turn(combat_id: str, turn_data: dict[str, Any]):
 
 
 @router.post("/encounter/generate", response_model=dict[str, Any])
-async def generate_encounter(encounter_request: dict[str, Any]):
+async def generate_encounter(encounter_request: dict[str, Any]) -> dict[str, Any]:
     """Generate a balanced encounter for the party.
 
     Request body:
@@ -200,12 +200,11 @@ async def generate_encounter(encounter_request: dict[str, Any]):
                 detail=f"difficulty must be one of: {', '.join(sorted(valid_difficulties))}",
             )
 
-        result = generate_balanced_encounter(
+        return generate_balanced_encounter(
             party_levels=party_levels,
             difficulty=difficulty,
             location=location,
         )
-        return result
 
     except HTTPException:
         raise
@@ -217,7 +216,7 @@ async def generate_encounter(encounter_request: dict[str, Any]):
 
 
 @router.post("/encounter/xp-award", response_model=dict[str, Any])
-async def encounter_xp_award(award_request: dict[str, Any]):
+async def encounter_xp_award(award_request: dict[str, Any]) -> dict[str, Any]:
     """Calculate XP awarded to each character after completing an encounter.
 
     Request body:
@@ -238,8 +237,7 @@ async def encounter_xp_award(award_request: dict[str, Any]):
                 detail="party_size must be a positive integer",
             )
 
-        result = calculate_xp_award(monsters=monsters, party_size=party_size)
-        return result
+        return calculate_xp_award(monsters=monsters, party_size=party_size)
 
     except HTTPException:
         raise

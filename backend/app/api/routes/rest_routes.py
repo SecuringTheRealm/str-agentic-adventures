@@ -61,7 +61,7 @@ def calculate_short_rest(
 
     hp_recovered = 0
     for _ in range(dice_to_use):
-        roll = random.randint(1, die_size)
+        roll = random.randint(1, die_size)  # noqa: S311
         healing = max(1, roll + con_mod)
         hp_recovered += healing
 

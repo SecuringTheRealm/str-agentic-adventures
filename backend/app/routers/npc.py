@@ -1,7 +1,7 @@
 """NPC-related API routes."""
 
 import logging
-
+from typing import Any
 
 from fastapi import APIRouter, HTTPException, status
 
@@ -20,7 +20,7 @@ router = APIRouter(tags=["npc"])
 
 
 @router.get("/npc/{npc_id}/personality", response_model=NPCPersonality)
-async def get_npc_personality(npc_id: str):
+async def get_npc_personality(npc_id: str) -> dict[str, Any]:
     """Get NPC personality traits and behaviors."""
     try:
         return NPCPersonality(
@@ -41,7 +41,7 @@ async def get_npc_personality(npc_id: str):
 
 
 @router.post("/npc/{npc_id}/interaction", response_model=NPCInteractionResponse)
-async def log_npc_interaction(npc_id: str, request: NPCInteractionRequest):
+async def log_npc_interaction(npc_id: str, request: NPCInteractionRequest) -> dict[str, Any]:
     """Log and retrieve NPC interaction history."""
     try:
         interaction = NPCInteraction(
@@ -73,7 +73,7 @@ async def log_npc_interaction(npc_id: str, request: NPCInteractionRequest):
 
 
 @router.post("/npc/{npc_id}/generate-stats", response_model=NPCStatsResponse)
-async def generate_npc_stats(npc_id: str, request: GenerateNPCStatsRequest):
+async def generate_npc_stats(npc_id: str, request: GenerateNPCStatsRequest) -> dict[str, Any]:
     """Generate combat stats for NPCs dynamically."""
     try:
         import random

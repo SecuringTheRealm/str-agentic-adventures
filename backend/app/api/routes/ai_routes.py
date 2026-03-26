@@ -21,7 +21,7 @@ router = APIRouter(tags=["ai"])
 
 
 @router.post("/campaign/ai-assist", response_model=AIAssistanceResponse)
-async def get_ai_assistance(request: AIAssistanceRequest):
+async def get_ai_assistance(request: AIAssistanceRequest) -> dict[str, Any]:
     """Get AI assistance for campaign text enhancement."""
     try:
         # For now, provide simple suggestions based on context type
@@ -89,9 +89,10 @@ async def get_ai_assistance(request: AIAssistanceRequest):
 
 @router.post("/campaign/ai-generate", response_model=AIContentGenerationResponse)
 @limiter.limit("10/minute")
-async def generate_ai_content(
-    request: Request, request_body: AIContentGenerationRequest
-):  # noqa: ARG001
+async def generate_ai_content(  # noqa: ARG001
+    request: Request,
+    request_body: AIContentGenerationRequest,
+) -> AIContentGenerationResponse:
     """Generate AI content based on a specific suggestion and current text."""
     try:
         from app.azure_openai_client import azure_openai_client
@@ -146,7 +147,9 @@ async def generate_ai_content(
 
 @router.post("/generate-image", response_model=dict[str, Any])
 @limiter.limit("10/minute")
-async def generate_image(request: Request, image_request: dict[str, Any]):  # noqa: ARG001
+async def generate_image(  # noqa: ARG001
+    request: Request, image_request: dict[str, Any],
+) -> dict[str, Any]:
     """Generate an image based on the request details.
 
     Accepts an optional ``session_id`` field in the request body.  Each session
@@ -197,7 +200,9 @@ async def generate_image(request: Request, image_request: dict[str, Any]):  # no
 
 @router.post("/battle-map", response_model=dict[str, Any])
 @limiter.limit("10/minute")
-async def generate_battle_map(request: Request, map_request: dict[str, Any]):  # noqa: ARG001
+async def generate_battle_map(  # noqa: ARG001
+    request: Request, map_request: dict[str, Any],
+) -> dict[str, Any]:
     """Generate a battle map based on environment details.
 
     Accepts an optional ``session_id`` field in the request body.  The same

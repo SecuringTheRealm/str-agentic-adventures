@@ -9,7 +9,6 @@ from unittest.mock import Mock, patch
 
 import pytest
 from app.agents.combat_mc_agent import CombatMCAgent
-from app.plugins.rules_engine_plugin import RulesEnginePlugin
 
 
 @pytest.mark.integration
@@ -17,106 +16,107 @@ async def test_agent_integration() -> None:
     """Test that the CombatMCAgent can be created and used with mocked Azure dependencies."""
 
     # Mock the Azure OpenAI configuration
-    with patch.dict(
-        os.environ,
-        {
-            "AZURE_OPENAI_ENDPOINT": "https://test.openai.azure.com/",
-            "AZURE_OPENAI_API_KEY": "test-key",
-            "AZURE_OPENAI_CHAT_DEPLOYMENT": "test-chat",
-            "AZURE_OPENAI_EMBEDDING_DEPLOYMENT": "test-embedding",
-        },
-    ):
-        # Mock the agent client creation to avoid actual Azure calls
-        with patch(
+    with (
+        patch.dict(
+            os.environ,
+            {
+                "AZURE_OPENAI_ENDPOINT": "https://test.openai.azure.com/",
+                "AZURE_OPENAI_API_KEY": "test-key",
+                "AZURE_OPENAI_CHAT_DEPLOYMENT": "test-chat",
+                "AZURE_OPENAI_EMBEDDING_DEPLOYMENT": "test-embedding",
+            },
+        ),
+        patch(
             "app.agent_client_setup.agent_client_manager.get_chat_client"
-        ) as mock_get_client:
-            mock_client = Mock()
-            mock_get_client.return_value = mock_client
+        ) as mock_get_client,
+    ):
+        mock_client = Mock()
+        mock_get_client.return_value = mock_client
 
-            # Create the agent
-            agent = CombatMCAgent()
-            
-            # Set fallback mode to False for testing
-            agent.fallback_mode = False
+        # Create the agent
+        agent = CombatMCAgent()
 
-            # Verify it's not in fallback mode (client is working)
-            assert not agent.is_fallback_mode()
+        # Set fallback mode to False for testing
+        agent.fallback_mode = False
 
-            # Create a test encounter
-            party_info = {
-                "members": [
-                    {"level": 3, "class": "fighter"},
-                    {"level": 3, "class": "wizard"},
-                ]
-            }
-            narrative_context = {"location": "forest"}
+        # Verify it's not in fallback mode (client is working)
+        assert not agent.is_fallback_mode()
 
-            encounter = await agent.create_encounter(party_info, narrative_context)
-
-            # Verify encounter was created
-            assert "id" in encounter
-            assert encounter["status"] == "ready"
-            assert len(encounter["enemies"]) > 0
-
-            # Start combat
-            party_members = [
-                {"id": "player1", "name": "Fighter", "abilities": {"dexterity": 14}},
-                {"id": "player2", "name": "Wizard", "abilities": {"dexterity": 12}},
+        # Create a test encounter
+        party_info = {
+            "members": [
+                {"level": 3, "class": "fighter"},
+                {"level": 3, "class": "wizard"},
             ]
+        }
+        narrative_context = {"location": "forest"}
 
-            combat_result = await agent.start_combat(encounter["id"], party_members)
+        encounter = await agent.create_encounter(party_info, narrative_context)
 
-            # Verify combat was started
-            assert combat_result["status"] == "active"
-            assert combat_result["round"] == 1
-            assert len(combat_result["turn_order"]) > 0
+        # Verify encounter was created
+        assert "id" in encounter
+        assert encounter["status"] == "ready"
+        assert len(encounter["enemies"]) > 0
 
-            # Test plugin-based attack action
-            attack_action = {
-                "type": "attack",
-                "actor_id": "player1",
-                "target_id": "enemy_1",
-                "attack_bonus": 5,
-                "target_ac": 12,
-                "damage": "1d8+3",
-            }
+        # Start combat
+        party_members = [
+            {"id": "player1", "name": "Fighter", "abilities": {"dexterity": 14}},
+            {"id": "player2", "name": "Wizard", "abilities": {"dexterity": 12}},
+        ]
 
-            action_result = await agent.process_combat_action(
-                encounter["id"], attack_action
-            )
+        combat_result = await agent.start_combat(encounter["id"], party_members)
 
-            # Verify action was processed using plugins
-            assert action_result["action_type"] == "attack"
-            assert "success" in action_result
-            assert "attack_roll" in action_result
+        # Verify combat was started
+        assert combat_result["status"] == "active"
+        assert combat_result["round"] == 1
+        assert len(combat_result["turn_order"]) > 0
 
-            # Test spell attack action
-            spell_attack = {
-                "type": "spell_attack",
-                "actor_id": "player2",
-                "target_id": "enemy_1",
-                "spellcasting_modifier": 3,
-                "proficiency_bonus": 2,
-                "target_ac": 12,
-                "damage": "1d10",
-                "damage_type": "fire",
-            }
+        # Test plugin-based attack action
+        attack_action = {
+            "type": "attack",
+            "actor_id": "player1",
+            "target_id": "enemy_1",
+            "attack_bonus": 5,
+            "target_ac": 12,
+            "damage": "1d8+3",
+        }
 
-            spell_result = await agent.process_combat_action(
-                encounter["id"], spell_attack
-            )
+        action_result = await agent.process_combat_action(
+            encounter["id"], attack_action
+        )
 
-            # Verify spell attack was processed
-            assert spell_result["action_type"] == "spell_attack"
-            assert "spell_attack_bonus" in spell_result
+        # Verify action was processed using plugins
+        assert action_result["action_type"] == "attack"
+        assert "success" in action_result
+        assert "attack_roll" in action_result
 
-            print("✓ Agent integration test passed!")
-            print(f"✓ Encounter created: {encounter['id']}")
-            print(
-                f"✓ Combat started with {len(combat_result['turn_order'])} participants"
-            )
-            print(f"✓ Attack result: {action_result['message']}")
-            print(f"✓ Spell attack result: {spell_result['message']}")
+        # Test spell attack action
+        spell_attack = {
+            "type": "spell_attack",
+            "actor_id": "player2",
+            "target_id": "enemy_1",
+            "spellcasting_modifier": 3,
+            "proficiency_bonus": 2,
+            "target_ac": 12,
+            "damage": "1d10",
+            "damage_type": "fire",
+        }
+
+        spell_result = await agent.process_combat_action(
+            encounter["id"], spell_attack
+        )
+
+        # Verify spell attack was processed
+        assert spell_result["action_type"] == "spell_attack"
+        assert "spell_attack_bonus" in spell_result
+
+        print("✓ Agent integration test passed!")
+        print(f"✓ Encounter created: {encounter['id']}")
+        print(
+            f"✓ Combat started with {len(combat_result['turn_order'])} participants"
+        )
+        print(f"✓ Attack result: {action_result['message']}")
+        print(f"✓ Spell attack result: {spell_result['message']}")
 
 
 if __name__ == "__main__":

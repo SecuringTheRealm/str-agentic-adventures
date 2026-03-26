@@ -5,7 +5,9 @@ Main FastAPI application to serve the AI Dungeon Master backend.
 import logging
 import os
 import sys
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from typing import Any
 
 import uvicorn
 from dotenv import load_dotenv
@@ -17,10 +19,12 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import Response
+
+from app.api import websocket_routes
 
 # Local imports
 from app.api.routes import all_routers
-from app.api import websocket_routes
 from app.config import init_settings
 from app.services.campaign_service import campaign_service
 
@@ -47,7 +51,7 @@ limiter = Limiter(key_func=get_remote_address)
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """Add security headers to all responses."""
 
-    async def dispatch(self, request: Request, call_next):  # noqa: ANN001
+    async def dispatch(self, request: Request, call_next: Any) -> Response:  # noqa: ANN401
         """Add security headers to the response."""
         response = await call_next(request)
         response.headers["X-Content-Type-Options"] = "nosniff"
@@ -57,7 +61,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """Handle application lifespan events."""
     # Startup
     logger.info("Initializing configuration...")
@@ -132,13 +136,13 @@ app.include_router(websocket_routes.router)
 
 # Health check endpoint
 @app.get("/health")
-async def health_check():
+async def health_check() -> dict[str, Any]:
     return {"status": "ok", "version": "0.1.0"}
 
 
 # Root endpoint
 @app.get("/")
-async def root():
+async def root() -> dict[str, Any]:
     return {"message": "Welcome to the AI Dungeon Master API"}
 
 

@@ -134,11 +134,11 @@ class CombatMCAgent(BaseAgent):
             # Convert SRD monster dicts to the Enemy format used internally
             # HP fallback: ~7 HP per average party level approximates SRD monster HP
             # for mid-CR creatures when explicit monster HP is unavailable.
-            _FALLBACK_HP_PER_AVG_LEVEL = 7
+            fallback_hp_per_avg_level = 7
             enemies = []
             for i, monster in enumerate(balanced["monsters"]):
                 enemy_type = monster.get("id") or monster.get("name", "unknown").lower()
-                hp = monster.get("hp", max(1, int(avg_level * _FALLBACK_HP_PER_AVG_LEVEL)))
+                hp = monster.get("hp", max(1, int(avg_level * fallback_hp_per_avg_level)))
                 enemies.append(
                     {
                         "id": f"enemy_{i + 1}",
@@ -451,7 +451,7 @@ class CombatMCAgent(BaseAgent):
             return result
 
     def _process_attack_action(
-        self, action_data: dict[str, Any], result: dict[str, Any], rules_plugin
+        self, action_data: dict[str, Any], result: dict[str, Any], rules_plugin: Any  # noqa: ANN401
     ) -> dict[str, Any]:
         """Process an attack action using the rules engine plugin."""
         try:
@@ -513,7 +513,7 @@ class CombatMCAgent(BaseAgent):
             return result
 
     def _process_spell_attack_action(
-        self, action_data: dict[str, Any], result: dict[str, Any], rules_plugin
+        self, action_data: dict[str, Any], result: dict[str, Any], rules_plugin: Any  # noqa: ANN401
     ) -> dict[str, Any]:
         """Process a spell attack action using the rules engine plugin."""
         try:
@@ -594,7 +594,7 @@ class CombatMCAgent(BaseAgent):
             return result
 
     def _process_spell_damage_action(
-        self, action_data: dict[str, Any], result: dict[str, Any], rules_plugin
+        self, action_data: dict[str, Any], result: dict[str, Any], rules_plugin: Any  # noqa: ANN401
     ) -> dict[str, Any]:
         """Process a spell damage action (e.g., area effects, save-or-suck spells)."""
         try:
@@ -631,7 +631,7 @@ class CombatMCAgent(BaseAgent):
             return result
 
     def _process_spell_healing_action(
-        self, action_data: dict[str, Any], result: dict[str, Any], rules_plugin
+        self, action_data: dict[str, Any], result: dict[str, Any], rules_plugin: Any  # noqa: ANN401
     ) -> dict[str, Any]:
         """Process a spell healing action."""
         try:
@@ -665,7 +665,7 @@ class CombatMCAgent(BaseAgent):
             return result
 
     def _process_skill_check_action(
-        self, action_data: dict[str, Any], result: dict[str, Any], rules_plugin
+        self, action_data: dict[str, Any], result: dict[str, Any], rules_plugin: Any  # noqa: ANN401
     ) -> dict[str, Any]:
         """Process a skill check action using the rules engine plugin."""
         try:
@@ -709,7 +709,7 @@ class CombatMCAgent(BaseAgent):
             return result
 
     def _process_saving_throw_action(
-        self, action_data: dict[str, Any], result: dict[str, Any], rules_plugin
+        self, action_data: dict[str, Any], result: dict[str, Any], rules_plugin: Any  # noqa: ANN401
     ) -> dict[str, Any]:
         """Process a saving throw action using the rules engine plugin."""
         try:
@@ -820,7 +820,7 @@ class CombatMCAgent(BaseAgent):
         return result
 
     def _process_contested_action(
-        self, action_data: dict[str, Any], result: dict[str, Any], rules_plugin
+        self, action_data: dict[str, Any], result: dict[str, Any], rules_plugin: Any  # noqa: ANN401
     ) -> dict[str, Any]:
         """Process contested actions like grapple or shove."""
         action_type = action_data.get("type")
@@ -959,7 +959,7 @@ class CombatMCAgent(BaseAgent):
 _combat_mc = None
 
 
-def get_combat_mc():
+def get_combat_mc() -> CombatMCAgent:
     """Get the combat MC instance, creating it if necessary."""
     global _combat_mc
     if _combat_mc is None:

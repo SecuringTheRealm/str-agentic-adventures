@@ -14,46 +14,47 @@ class TestAgentMocking:
     def test_agent_imports_available(self) -> None:
         """Test that agent modules can be imported with proper mocking."""
         # Mock Azure AI SDK and dependencies
-        with patch.dict(
-            "sys.modules",
-            {
-                "azure.ai.inference": Mock(),
-                "azure.ai.agents": Mock(),
-                "azure.core.credentials": Mock(),
-                "azure.identity": Mock(),
-                "opentelemetry": Mock(),
-                "opentelemetry.sdk": Mock(),
-                "opentelemetry.sdk.trace": Mock(),
-                "opentelemetry.sdk.trace.export": Mock(),
-                "app.config": Mock(),
-            },
+        with (
+            patch.dict(
+                "sys.modules",
+                {
+                    "azure.ai.inference": Mock(),
+                    "azure.ai.agents": Mock(),
+                    "azure.core.credentials": Mock(),
+                    "azure.identity": Mock(),
+                    "opentelemetry": Mock(),
+                    "opentelemetry.sdk": Mock(),
+                    "opentelemetry.sdk.trace": Mock(),
+                    "opentelemetry.sdk.trace.export": Mock(),
+                    "app.config": Mock(),
+                },
+            ),
+            patch("app.agent_client_setup.AgentClientManager") as mock_manager,
         ):
-            # Mock agent client manager
-            with patch("app.agent_client_setup.AgentClientManager") as mock_manager:
-                mock_client = Mock()
-                mock_manager.get_chat_client.return_value = mock_client
+            mock_client = Mock()
+            mock_manager.get_chat_client.return_value = mock_client
 
-                # Try importing the agent
-                try:
-                    import sys
+            # Try importing the agent
+            try:
+                import sys
 
-                    if "app.agents.scribe_agent" in sys.modules:
-                        del sys.modules["app.agents.scribe_agent"]
-                    if "app.agent_client_setup" in sys.modules:
-                        del sys.modules["app.agent_client_setup"]
+                if "app.agents.scribe_agent" in sys.modules:
+                    del sys.modules["app.agents.scribe_agent"]
+                if "app.agent_client_setup" in sys.modules:
+                    del sys.modules["app.agent_client_setup"]
 
-                    from app.agents.scribe_agent import ScribeAgent
+                from app.agents.scribe_agent import ScribeAgent
 
-                    # Test that we can create an instance
-                    with patch("app.agents.base_agent.agent_client_manager", mock_manager):
-                        agent = ScribeAgent()
-                        assert hasattr(agent, "characters")
-                        assert hasattr(agent, "npcs")
+                # Test that we can create an instance
+                with patch("app.agents.base_agent.agent_client_manager", mock_manager):
+                    agent = ScribeAgent()
+                    assert hasattr(agent, "characters")
+                    assert hasattr(agent, "npcs")
 
-                except ImportError as e:
-                    # If import still fails, that's fine for our testing purposes
-                    # We'll test the API endpoints instead which is more important
-                    pytest.skip(f"Could not import agent due to dependencies: {e}")
+            except ImportError as e:
+                # If import still fails, that's fine for our testing purposes
+                # We'll test the API endpoints instead which is more important
+                pytest.skip(f"Could not import agent due to dependencies: {e}")
 
     def test_agent_interface_contracts(self) -> None:
         """Test expected agent interface contracts without importing actual agents."""

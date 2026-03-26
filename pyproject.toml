@@ -80,7 +80,7 @@ dev = [
 
 [tool.ruff]
 target-version = "py312"
-line-length = 88
+line-length = 120
 extend-exclude = [
     "migrations",
     "alembic",
@@ -103,8 +103,8 @@ convention = "google"
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["E402", "F401"]  # Ignore import-related warnings in __init__ files
-"tests/*" = ["S101"]  # Allow assert in tests
-"backend/tests/*" = ["S101"]  # Allow assert in tests
+"tests/*" = ["S101", "ANN001", "ANN002", "ANN003", "ANN201", "ANN202"]
+"backend/tests/*" = ["S101", "ANN001", "ANN002", "ANN003", "ANN201", "ANN202"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 10

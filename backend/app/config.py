@@ -2,7 +2,7 @@
 Configuration for the backend application.
 """
 
-from typing import Annotated
+from typing import Annotated, Any
 
 from dotenv import load_dotenv
 from fastapi import Depends
@@ -118,10 +118,10 @@ def set_settings(settings: Settings) -> None:
 class SettingsProxy:
     """Proxy object that forwards attribute access to the settings instance."""
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> Any:  # noqa: ANN401
         return getattr(get_settings(), name)
 
-    def __setattr__(self, name, value) -> None:
+    def __setattr__(self, name: str, value: Any) -> None:  # noqa: ANN401
         return setattr(get_settings(), name, value)
 
 

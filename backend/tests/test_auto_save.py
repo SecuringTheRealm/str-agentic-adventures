@@ -13,7 +13,6 @@ from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-
 from app.auto_save import (
     _MAX_SNAPSHOTS,
     _extract_character_stats,
@@ -24,7 +23,6 @@ from app.auto_save import (
     reset_interaction_counter,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers / fixtures
 # ---------------------------------------------------------------------------
@@ -32,7 +30,6 @@ from app.auto_save import (
 
 def _fresh_campaign_id() -> str:
     """Return a unique campaign ID so tests don't share counter state."""
-    import uuid
 
     return f"test-campaign-{uuid.uuid4().hex[:8]}"
 
@@ -120,7 +117,7 @@ class TestCheckAndScheduleAutoSave:
         cid = _fresh_campaign_id()
         interval = 5
         with patch("app.auto_save.asyncio.create_task") as mock_create_task:
-            for i in range(1, interval + 1):
+            for _i in range(1, interval + 1):
                 saved, count = check_and_schedule_auto_save(
                     campaign_id=cid,
                     auto_save_interval=interval,
@@ -366,10 +363,8 @@ class TestProcessPlayerInputAutoSave:
             # Restore default settings
             from app.config import init_settings
 
-            try:
+            with contextlib.suppress(Exception):
                 init_settings()
-            except Exception:
-                pass
 
     def test_response_is_not_blocked_by_auto_save(self):
         """The response returns immediately; DB write is background-tasked."""
@@ -445,7 +440,5 @@ class TestProcessPlayerInputAutoSave:
             reset_interaction_counter(campaign_id)
             from app.config import init_settings
 
-            try:
+            with contextlib.suppress(Exception):
                 init_settings()
-            except Exception:
-                pass

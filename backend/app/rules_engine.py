@@ -6,7 +6,7 @@ get_proficiency_bonus, and is_asi_level.
 
 import random
 import re
-from enum import Enum
+from enum import StrEnum
 from typing import TypedDict
 
 from app.srd_data import CLASS_HIT_DICE, XP_THRESHOLDS
@@ -335,7 +335,7 @@ def remove_combatant(
 # ---------------------------------------------------------------------------
 
 
-class Condition(str, Enum):
+class Condition(StrEnum):
     """D&D 5e conditions per SRD."""
 
     PRONE = "prone"

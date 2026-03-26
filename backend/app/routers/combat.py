@@ -18,7 +18,7 @@ router = APIRouter(tags=["combat"])
 
 
 @router.post("/combat/initialize", response_model=dict[str, Any])
-async def initialize_combat(combat_data: dict[str, Any]):
+async def initialize_combat(combat_data: dict[str, Any]) -> dict[str, Any]:
     """Initialize a new combat encounter."""
     try:
         session_id = combat_data.get("session_id")
@@ -84,7 +84,7 @@ async def initialize_combat(combat_data: dict[str, Any]):
 
 
 @router.post("/combat/{combat_id}/turn", response_model=dict[str, Any])
-async def process_combat_turn(combat_id: str, turn_data: dict[str, Any]):
+async def process_combat_turn(combat_id: str, turn_data: dict[str, Any]) -> dict[str, Any]:
     """Process a single combat turn."""
     try:
         action_type = turn_data.get("action", "attack")
@@ -139,7 +139,7 @@ async def process_combat_turn(combat_id: str, turn_data: dict[str, Any]):
 
 
 @router.post("/combat/{combat_id}/cast-spell", response_model=SpellCastingResponse)
-async def cast_spell_in_combat(combat_id: str, request: CastSpellRequest):
+async def cast_spell_in_combat(combat_id: str, request: CastSpellRequest) -> dict[str, Any]:
     """Cast spells during combat with sophisticated effect resolution."""
     try:
         spell_data = await _get_spell_data(request.spell_id)
@@ -203,8 +203,8 @@ async def _get_spell_data(spell_id: str) -> dict[str, Any]:
                     "higher_levels": spell.higher_levels,
                     **spell.data,
                 }
-    except Exception:
-        pass
+    except Exception:  # noqa: S110
+        pass  # SRD lookup failed; fall back to basic spell data below
 
     return _get_default_spell_data(spell_id)
 

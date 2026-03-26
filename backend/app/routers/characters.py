@@ -26,7 +26,7 @@ router = APIRouter(tags=["characters"])
 
 
 @router.post("/character", response_model=CharacterSheet)
-async def create_character(character_data: CreateCharacterRequest, config: ConfigDep):
+async def create_character(character_data: CreateCharacterRequest, config: ConfigDep) -> dict[str, Any]:
     """Create a new player character."""
     try:
         character_dict = character_data.model_dump()
@@ -54,7 +54,7 @@ async def create_character(character_data: CreateCharacterRequest, config: Confi
 
 
 @router.get("/character/{character_id}", response_model=dict[str, Any])
-async def get_character(character_id: str, config: ConfigDep):
+async def get_character(character_id: str, config: ConfigDep) -> dict[str, Any]:
     """Retrieve a character sheet by ID."""
     try:
         character = await get_scribe().get_character(character_id)
@@ -81,7 +81,7 @@ async def get_character(character_id: str, config: ConfigDep):
 
 
 @router.post("/character/{character_id}/level-up", response_model=dict[str, Any])
-async def level_up_character(character_id: str, level_up_data: LevelUpRequest):
+async def level_up_character(character_id: str, level_up_data: LevelUpRequest) -> dict[str, Any]:
     """Level up a character."""
     try:
         result = await get_scribe().level_up_character(
@@ -108,7 +108,7 @@ async def level_up_character(character_id: str, level_up_data: LevelUpRequest):
 @router.post(
     "/character/{character_id}/award-experience", response_model=dict[str, Any]
 )
-async def award_experience(character_id: str, experience_data: dict[str, int]):
+async def award_experience(character_id: str, experience_data: dict[str, int]) -> dict[str, Any]:
     """Award experience points to a character."""
     try:
         experience_points = experience_data.get("experience_points", 0)
@@ -136,7 +136,7 @@ async def award_experience(character_id: str, experience_data: dict[str, int]):
 
 
 @router.get("/character/{character_id}/progression-info", response_model=dict[str, Any])
-async def get_progression_info(character_id: str):
+async def get_progression_info(character_id: str) -> dict[str, Any]:
     """Get progression information for a character."""
     try:
         character = await get_scribe().get_character(character_id)
@@ -175,7 +175,7 @@ async def get_progression_info(character_id: str):
 
 
 @router.post("/character/{character_id}/spells", response_model=dict[str, Any])
-async def manage_character_spells(character_id: str, request: ManageSpellsRequest):
+async def manage_character_spells(character_id: str, request: ManageSpellsRequest) -> dict[str, Any]:
     """Manage known spells for a character."""
     try:
         return {
@@ -193,7 +193,7 @@ async def manage_character_spells(character_id: str, request: ManageSpellsReques
 
 
 @router.post("/character/{character_id}/spell-slots", response_model=dict[str, Any])
-async def manage_spell_slots(character_id: str, request: ManageSpellSlotsRequest):
+async def manage_spell_slots(character_id: str, request: ManageSpellSlotsRequest) -> dict[str, Any]:
     """Manage spell slot usage and recovery for a character."""
     try:
         return {
@@ -214,7 +214,7 @@ async def manage_spell_slots(character_id: str, request: ManageSpellSlotsRequest
 @router.post(
     "/character/{character_id}/concentration", response_model=ConcentrationCheckResponse
 )
-async def manage_concentration(character_id: str, request: ConcentrationRequest):
+async def manage_concentration(character_id: str, request: ConcentrationRequest) -> dict[str, Any]:
     """Manage spell concentration tracking for a character."""
     try:
         if request.action == "start":
@@ -271,7 +271,7 @@ async def manage_concentration(character_id: str, request: ConcentrationRequest)
 
 
 @router.post("/character/{character_id}/equipment", response_model=EquipmentResponse)
-async def manage_equipment(character_id: str, request: ManageEquipmentRequest):
+async def manage_equipment(character_id: str, request: ManageEquipmentRequest) -> dict[str, Any]:
     """Equip/unequip items with stat effects."""
     try:
         sample_stat_effects = {
@@ -311,7 +311,7 @@ async def manage_equipment(character_id: str, request: ManageEquipmentRequest):
 
 
 @router.get("/character/{character_id}/encumbrance", response_model=EncumbranceResponse)
-async def get_encumbrance(character_id: str):
+async def get_encumbrance(character_id: str) -> dict[str, Any]:
     """Calculate carrying capacity and weight."""
     try:
         strength_score = 15

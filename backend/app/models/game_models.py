@@ -4,14 +4,14 @@ Data models for the AI Dungeon Master application.
 
 import uuid
 from datetime import UTC, datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
 
 # Enum definitions
-class CharacterClass(str, Enum):
+class CharacterClass(StrEnum):
     FIGHTER = "fighter"
     WIZARD = "wizard"
     ROGUE = "rogue"
@@ -26,7 +26,7 @@ class CharacterClass(str, Enum):
     BARBARIAN = "barbarian"
 
 
-class Race(str, Enum):
+class Race(StrEnum):
     HUMAN = "human"
     ELF = "elf"
     DWARF = "dwarf"
@@ -38,7 +38,7 @@ class Race(str, Enum):
     TIEFLING = "tiefling"
 
 
-class Ability(str, Enum):
+class Ability(StrEnum):
     STRENGTH = "strength"
     DEXTERITY = "dexterity"
     CONSTITUTION = "constitution"
@@ -47,7 +47,7 @@ class Ability(str, Enum):
     CHARISMA = "charisma"
 
 
-class CombatState(str, Enum):
+class CombatState(StrEnum):
     READY = "ready"
     ACTIVE = "active"
     COMPLETED = "completed"
@@ -78,7 +78,7 @@ class Item(BaseModel):
     properties: dict[str, Any] | None = None
 
 
-class ItemRarity(str, Enum):
+class ItemRarity(StrEnum):
     COMMON = "common"
     UNCOMMON = "uncommon"
     RARE = "rare"
@@ -87,7 +87,7 @@ class ItemRarity(str, Enum):
     ARTIFACT = "artifact"
 
 
-class ItemType(str, Enum):
+class ItemType(StrEnum):
     WEAPON = "weapon"
     ARMOR = "armor"
     SHIELD = "shield"
@@ -117,7 +117,7 @@ class Equipment(BaseModel):
     properties: list[str] = Field(default_factory=list)  # e.g., ["finesse", "light", "versatile"]
 
 
-class EquipmentSlot(str, Enum):
+class EquipmentSlot(StrEnum):
     MAIN_HAND = "main_hand"
     OFF_HAND = "off_hand"
     TWO_HANDS = "two_hands"
@@ -765,7 +765,7 @@ class NPCProfileListResponse(BaseModel):
     total_count: int
 
 
-class RestType(str, Enum):
+class RestType(StrEnum):
     SHORT = "short"
     LONG = "long"
 

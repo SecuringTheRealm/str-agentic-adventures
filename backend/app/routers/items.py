@@ -1,7 +1,7 @@
 """Items and inventory API routes."""
 
 import logging
-
+from typing import Any
 
 from fastapi import APIRouter, HTTPException, status
 
@@ -20,7 +20,7 @@ router = APIRouter(tags=["items"])
 
 
 @router.post("/items/magical-effects", response_model=MagicalEffectsResponse)
-async def manage_magical_effects(request: MagicalEffectsRequest):
+async def manage_magical_effects(request: MagicalEffectsRequest) -> dict[str, Any]:
     """Apply magical item effects to character stats."""
     try:
         magical_effects = {
@@ -80,7 +80,7 @@ async def get_item_catalog(
     rarity: ItemRarity | None = None,
     min_value: int | None = None,
     max_value: int | None = None,
-):
+) -> dict[str, Any]:
     """Browse available items with rarity and value information."""
     try:
         sample_items = [

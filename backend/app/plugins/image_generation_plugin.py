@@ -7,7 +7,6 @@ import logging
 from typing import Any
 
 # Note: Converted from Agent plugin to direct function calls
-
 from app.azure_openai_client import azure_openai_client
 
 logger = logging.getLogger(__name__)

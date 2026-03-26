@@ -1,13 +1,12 @@
 """Tests for the NPC Profile and NPCRelationship endpoints."""
 
 import pytest
+from app.database import Base, get_session
+from app.main import app
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
-
-from app.database import Base, get_session
-from app.main import app
 
 
 def _make_test_db():
@@ -30,10 +29,10 @@ def _make_test_db():
 @pytest.fixture
 def client():
     """Test client backed by an isolated in-memory database."""
-    TestingSessionLocal = _make_test_db()
+    testing_session_local = _make_test_db()
 
     def override_get_session():
-        db = TestingSessionLocal()
+        db = testing_session_local()
         try:
             yield db
         finally:

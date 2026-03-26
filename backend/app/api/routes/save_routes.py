@@ -27,7 +27,7 @@ router = APIRouter(tags=["saves"])
 # ---------------------------------------------------------------------------
 
 
-def _save_slot_from_db(db_slot: Any) -> SaveSlot:
+def _save_slot_from_db(db_slot: Any) -> SaveSlot:  # noqa: ANN401
     """Convert a SaveSlotDB ORM object to a SaveSlot Pydantic model."""
     return SaveSlot(
         id=db_slot.id,
@@ -50,7 +50,7 @@ def _save_slot_from_db(db_slot: Any) -> SaveSlot:
 
 
 @router.get("/campaign/{campaign_id}/saves", response_model=SaveSlotListResponse)
-async def list_save_slots(campaign_id: str, db: DbDep):
+async def list_save_slots(campaign_id: str, db: DbDep) -> dict[str, Any]:
     """List all save slots for a campaign."""
     campaign = db.query(CampaignDB).filter(CampaignDB.id == campaign_id).first()
     if not campaign:
@@ -73,7 +73,7 @@ async def list_save_slots(campaign_id: str, db: DbDep):
     response_model=SaveSlot,
     status_code=status.HTTP_201_CREATED,
 )
-async def create_save_slot(campaign_id: str, request: CreateSaveSlotRequest, db: DbDep):
+async def create_save_slot(campaign_id: str, request: CreateSaveSlotRequest, db: DbDep) -> dict[str, Any]:
     """Create a new save slot for a campaign, picking the next available slot number (1-5)."""
     campaign = db.query(CampaignDB).filter(CampaignDB.id == campaign_id).first()
     if not campaign:
@@ -122,7 +122,7 @@ async def create_save_slot(campaign_id: str, request: CreateSaveSlotRequest, db:
 
 
 @router.get("/campaign/{campaign_id}/saves/{slot_number}", response_model=SaveSlot)
-async def get_save_slot(campaign_id: str, slot_number: int, db: DbDep):
+async def get_save_slot(campaign_id: str, slot_number: int, db: DbDep) -> dict[str, Any]:
     """Get a specific save slot by slot number."""
     campaign = db.query(CampaignDB).filter(CampaignDB.id == campaign_id).first()
     if not campaign:
@@ -147,7 +147,7 @@ async def get_save_slot(campaign_id: str, slot_number: int, db: DbDep):
 
 
 @router.delete("/campaign/{campaign_id}/saves/{slot_number}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_save_slot(campaign_id: str, slot_number: int, db: DbDep):
+async def delete_save_slot(campaign_id: str, slot_number: int, db: DbDep) -> None:
     """Delete a save slot, freeing that slot number for future use."""
     campaign = db.query(CampaignDB).filter(CampaignDB.id == campaign_id).first()
     if not campaign:
@@ -173,7 +173,7 @@ async def delete_save_slot(campaign_id: str, slot_number: int, db: DbDep):
 
 
 @router.post("/campaign/{campaign_id}/saves/{slot_number}/load")
-async def load_save_slot(campaign_id: str, slot_number: int, db: DbDep):
+async def load_save_slot(campaign_id: str, slot_number: int, db: DbDep) -> dict[str, Any]:
     """Load a save slot, returning the full save_data state blob."""
     campaign = db.query(CampaignDB).filter(CampaignDB.id == campaign_id).first()
     if not campaign:

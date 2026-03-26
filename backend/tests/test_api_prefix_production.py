@@ -11,9 +11,9 @@ class TestProductionAPIPrefix:
     @pytest.fixture
     def production_client(self):
         """Create a test client that simulates production environment with /api root_path."""
-        from fastapi import FastAPI
+
         from app.main import app as base_app
-        import types
+        from fastapi import FastAPI
 
         # Create a new FastAPI instance with root_path="/api"
         prod_app = FastAPI(root_path="/api")
