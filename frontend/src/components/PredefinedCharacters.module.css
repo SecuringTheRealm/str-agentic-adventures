@@ -11,7 +11,7 @@
 
 .predefinedCharactersHeader h2 {
   margin: 0 0 10px 0;
-  color: #e4bb1e; /* Gold accent color */
+  color: var(--color-accent-gold); /* Gold accent color */
   font-size: 2rem;
   font-family: "Cinzel", serif;
   font-weight: 600;
@@ -20,7 +20,7 @@
 
 .predefinedCharactersHeader p {
   margin: 10px 0 20px 0;
-  color: #f4f1e8; /* Warm off-white text */
+  color: var(--color-text-warm); /* Warm off-white text */
   font-size: 1.1rem;
   font-family: "Cinzel", serif;
 }
@@ -33,39 +33,39 @@
 }
 
 .characterCard {
-  background: rgba(15, 64, 79, 0.8); /* Fantasy theme background */
+  background: var(--color-fantasy-primary-80); /* Fantasy theme background */
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
-  border: 2px solid #788070; /* Steel border */
+  border: 2px solid var(--color-steel); /* Steel border */
 }
 
 .characterCard:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 15px rgba(228, 187, 30, 0.3); /* Gold shadow */
-  border-color: #e4bb1e; /* Gold border on hover */
+  box-shadow: 0 8px 15px var(--color-gold-glow-30); /* Gold shadow */
+  border-color: var(--color-accent-gold); /* Gold border on hover */
 }
 
 .characterHeader {
   text-align: center;
   margin-bottom: 20px;
   padding-bottom: 15px;
-  border-bottom: 1px solid #908c6b; /* Stone color border */
+  border-bottom: 1px solid var(--color-stone); /* Stone color border */
 }
 
 .characterHeader h3 {
   margin: 0 0 8px 0;
-  color: #e4bb1e; /* Gold color for names */
+  color: var(--color-accent-gold); /* Gold color for names */
   font-size: 1.3rem;
   font-family: "Cinzel", serif;
   font-weight: 600;
 }
 
 .characterBasics {
-  color: #f4f1e8; /* Warm off-white text */
+  color: var(--color-text-warm); /* Warm off-white text */
   font-size: 0.9rem;
   font-weight: 500;
   font-family: "Cinzel", serif;
@@ -79,22 +79,22 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(144, 140, 107, 0.3); /* Stone color background */
+  background: var(--color-stone-30); /* Stone color background */
   padding: 10px;
   border-radius: 6px;
   margin-bottom: 15px;
-  border: 1px solid #908c6b; /* Stone border */
+  border: 1px solid var(--color-stone); /* Stone border */
 }
 
 .statLabel {
   font-weight: 600;
-  color: #e4bb1e; /* Gold color for labels */
+  color: var(--color-accent-gold); /* Gold color for labels */
   font-family: "Cinzel", serif;
 }
 
 .statValue {
   font-weight: 700;
-  color: #f4f1e8; /* Light text */
+  color: var(--color-text-warm); /* Light text */
   font-size: 1.1rem;
   font-family: "Cinzel", serif;
 }
@@ -108,17 +108,17 @@
 
 .ability {
   text-align: center;
-  background: rgba(120, 128, 112, 0.3); /* Steel color background */
+  background: var(--color-steel-30); /* Steel color background */
   padding: 8px 4px;
   border-radius: 4px;
-  border: 1px solid #788070; /* Steel border */
+  border: 1px solid var(--color-steel); /* Steel border */
 }
 
 .abilityName {
   display: block;
   font-size: 0.7rem;
   font-weight: 600;
-  color: #e4bb1e; /* Gold color for labels */
+  color: var(--color-accent-gold); /* Gold color for labels */
   margin-bottom: 2px;
   font-family: "Cinzel", serif;
 }
@@ -127,27 +127,27 @@
   display: block;
   font-size: 1rem;
   font-weight: 700;
-  color: #f4f1e8; /* Light text */
+  color: var(--color-text-warm); /* Light text */
   font-family: "Cinzel", serif;
 }
 
 .abilityModifier {
   display: block;
   font-size: 0.8rem;
-  color: #d0c8b8; /* Light fantasy text */
+  color: var(--color-text-muted-warm); /* Light fantasy text */
   font-family: "Cinzel", serif;
 }
 
 .equipmentPreview {
-  background: rgba(177, 80, 5, 0.2); /* Wood color background */
+  background: var(--color-wood-dark-20); /* Wood color background */
   padding: 12px;
   border-radius: 6px;
-  border: 1px solid #b15005; /* Wood border */
+  border: 1px solid var(--color-wood-dark); /* Wood border */
 }
 
 .equipmentPreview h4 {
   margin: 0 0 8px 0;
-  color: #e4bb1e; /* Gold color for headings */
+  color: var(--color-accent-gold); /* Gold color for headings */
   font-size: 0.9rem;
   font-weight: 600;
   font-family: "Cinzel", serif;
@@ -160,7 +160,7 @@
 }
 
 .equipmentPreview li {
-  color: #f4f1e8; /* Light text */
+  color: var(--color-text-warm); /* Light text */
   font-size: 0.8rem;
   margin: 3px 0;
   padding-left: 12px;
@@ -170,7 +170,7 @@
 
 .equipmentPreview li::before {
   content: "•";
-  color: #e4bb1e; /* Gold bullet */
+  color: var(--color-accent-gold); /* Gold bullet */
   position: absolute;
   left: 0;
 }
@@ -178,9 +178,10 @@
 .selectCharacterButton {
   width: 100%;
   padding: 12px 20px;
-  background: linear-gradient(135deg, #b15005, #d67c2d); /* Wood gradient */
+  min-height: 44px;
+  background: linear-gradient(135deg, var(--color-wood-dark), var(--color-wood-light)); /* Wood gradient */
   color: white;
-  border: 2px solid #e4bb1e; /* Gold border */
+  border: 2px solid var(--color-accent-gold); /* Gold border */
   border-radius: 6px;
   font-size: 1rem;
   font-weight: 600;
@@ -190,16 +191,18 @@
 }
 
 .selectCharacterButton:hover {
-  background: linear-gradient(135deg, #d67c2d, #e4953f); /* Lighter wood on hover */
-  box-shadow: 0 2px 4px rgba(228, 187, 30, 0.3);
+  background: linear-gradient(135deg, var(--color-wood-light), var(--color-gold-warm)); /* Lighter wood on hover */
+  box-shadow: 0 2px 4px var(--color-gold-glow-30);
 }
 
 .backButton {
   padding: 8px 16px;
-  border: 1px solid #e4bb1e; /* Gold border */
+  min-height: 44px;
+  min-width: 44px;
+  border: 1px solid var(--color-accent-gold); /* Gold border */
   border-radius: 4px;
-  background-color: rgba(120, 128, 112, 0.8); /* Steel color */
-  color: #f4f1e8; /* Light text */
+  background-color: var(--color-steel-80); /* Steel color */
+  color: var(--color-text-warm); /* Light text */
   cursor: pointer;
   font-size: 0.9rem;
   transition: all 0.2s ease;
@@ -207,8 +210,8 @@
 }
 
 .backButton:hover {
-  background-color: rgba(144, 140, 107, 0.9); /* Stone color on hover */
-  border-color: #e4bb1e;
+  background-color: var(--color-stone-90); /* Stone color on hover */
+  border-color: var(--color-accent-gold);
 }
 
 @media (max-width: 768px) {
@@ -227,5 +230,38 @@
 
   .abilitiesGrid {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .predefinedCharacters {
+    padding: 10px;
+  }
+
+  .predefinedCharactersHeader h2 {
+    font-size: 1.5rem;
+  }
+
+  .predefinedCharactersHeader p {
+    font-size: 1rem; /* Prevent iOS zoom */
+  }
+
+  .characterBasics {
+    font-size: 1rem; /* Prevent iOS zoom */
+  }
+
+  .selectCharacterButton {
+    min-height: 44px;
+    font-size: 1rem; /* Prevent iOS zoom */
+  }
+
+  .backButton {
+    min-height: 44px;
+    font-size: 1rem; /* Prevent iOS zoom */
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
 }

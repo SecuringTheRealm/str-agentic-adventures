@@ -2,10 +2,10 @@
   max-width: 800px;
   margin: 0 auto;
   padding: 2rem;
-  background: rgba(15, 64, 79, 0.8); /* Fantasy theme background */
+  background: var(--color-fantasy-primary-80); /* Fantasy theme background */
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-  border: 2px solid #e4bb1e; /* Gold border */
+  border: 2px solid var(--color-accent-gold); /* Gold border */
 }
 
 .editorHeader {
@@ -14,11 +14,11 @@
   align-items: center;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid #908c6b; /* Stone color border */
+  border-bottom: 2px solid var(--color-stone); /* Stone color border */
 }
 
 .editorHeader h2 {
-  color: #e4bb1e; /* Gold accent color */
+  color: var(--color-accent-gold); /* Gold accent color */
   margin: 0;
   font-family: "Cinzel", serif;
   font-weight: 600;
@@ -36,7 +36,7 @@
   align-items: center;
   gap: 0.5rem;
   font-size: 0.9rem;
-  color: #f4f1e8; /* Light text */
+  color: var(--color-text-warm); /* Light text */
   cursor: pointer;
   font-family: "Cinzel", serif;
 }
@@ -46,7 +46,7 @@
 }
 
 .unsavedIndicator {
-  color: #e4bb1e; /* Gold for indicators */
+  color: var(--color-accent-gold); /* Gold for indicators */
   font-size: 0.9rem;
   font-weight: 500;
   font-family: "Cinzel", serif;
@@ -59,7 +59,7 @@
 .formGroup label {
   display: block;
   font-weight: 600;
-  color: #e4bb1e; /* Gold for labels */
+  color: var(--color-accent-gold); /* Gold for labels */
   margin-bottom: 0.5rem;
   font-family: "Cinzel", serif;
 }
@@ -69,11 +69,11 @@
 .formGroup textarea {
   width: 100%;
   padding: 0.75rem;
-  border: 2px solid #908c6b; /* Stone color border */
+  border: 2px solid var(--color-stone); /* Stone color border */
   border-radius: 8px;
   font-size: 1rem;
-  background: rgba(26, 47, 58, 0.6); /* Darker fantasy background */
-  color: #f4f1e8; /* Light text */
+  background: var(--color-fantasy-bg-60); /* Darker fantasy background */
+  color: var(--color-text-warm); /* Light text */
   font-family: "Cinzel", serif;
   transition:
     border-color 0.2s ease,
@@ -84,13 +84,18 @@
 .formGroup select:focus,
 .formGroup textarea:focus {
   outline: none;
+  border-color: var(--color-accent-gold); /* Gold focus border */
+  box-shadow: 0 0 0 3px var(--color-gold-glow-20);
+
+  outline: 2px solid #e4bb1e;
+  outline-offset: 2px;
   border-color: #e4bb1e; /* Gold focus border */
   box-shadow: 0 0 0 3px rgba(228, 187, 30, 0.2);
 }
 
 .formGroup input.error,
 .formGroup textarea.error {
-  border-color: #dc3545;
+  border-color: var(--color-danger-red);
 }
 
 .formGroup textarea {
@@ -104,31 +109,31 @@
   gap: 0.5rem;
   margin-bottom: 0.5rem;
   padding: 0.5rem;
-  background: rgba(144, 140, 107, 0.2); /* Stone color background */
+  background: var(--color-stone-20); /* Stone color background */
   border-radius: 6px;
-  border: 1px solid #908c6b; /* Stone border */
+  border: 1px solid var(--color-stone); /* Stone border */
 }
 
 .editorToolbar button {
   padding: 0.25rem 0.5rem;
-  border: 1px solid #788070; /* Steel border */
-  background: rgba(26, 47, 58, 0.6); /* Darker fantasy background */
-  color: #f4f1e8; /* Light text */
+  border: 1px solid var(--color-steel); /* Steel border */
+  background: var(--color-fantasy-bg-60); /* Darker fantasy background */
+  color: var(--color-text-warm); /* Light text */
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.875rem;
   font-family: "Cinzel", serif;
   transition: all 0.2s ease;
-  min-width: 30px;
-  height: 30px;
+  min-width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .editorToolbar button:hover {
-  background: rgba(144, 140, 107, 0.4); /* Stone color on hover */
-  border-color: #e4bb1e; /* Gold border on hover */
+  background: var(--color-stone-40); /* Stone color on hover */
+  border-color: var(--color-accent-gold); /* Gold border on hover */
 }
 
 .editorToolbar button:active {
@@ -136,27 +141,27 @@
 }
 
 .aiAssistBtn {
-  background: linear-gradient(135deg, #b15005, #d67c2d); /* Wood gradient */
+  background: linear-gradient(135deg, var(--color-wood-dark), var(--color-wood-light)); /* Wood gradient */
   color: white;
-  border-color: #e4bb1e; /* Gold border */
+  border-color: var(--color-accent-gold); /* Gold border */
   font-weight: 600;
 }
 
 .aiAssistBtn:hover {
-  background: linear-gradient(135deg, #d67c2d, #e4953f); /* Lighter wood on hover */
+  background: linear-gradient(135deg, var(--color-wood-light), var(--color-gold-warm)); /* Lighter wood on hover */
 }
 
 .validationError {
-  color: #ffcccb; /* Light red text */
+  color: var(--color-danger-pale); /* Light red text */
   font-size: 0.875rem;
   margin-top: 0.25rem;
   font-family: "Cinzel", serif;
 }
 
 .errorMessage {
-  background: rgba(220, 53, 69, 0.2); /* Dark red background */
-  border: 1px solid #dc3545;
-  color: #ffcccb; /* Light red text */
+  background: var(--color-danger-20); /* Dark red background */
+  border: 1px solid var(--color-danger-red);
+  color: var(--color-danger-pale); /* Light red text */
   padding: 1rem;
   border-radius: 8px;
   margin-bottom: 1.5rem;
@@ -165,7 +170,7 @@
 
 .helpText {
   font-size: 0.875rem;
-  color: #d0c8b8; /* Light fantasy text */
+  color: var(--color-text-muted-warm); /* Light fantasy text */
   margin-top: 0.25rem;
   font-family: "Cinzel", serif;
 }
@@ -176,12 +181,13 @@
   justify-content: flex-end;
   margin-top: 2rem;
   padding-top: 1rem;
-  border-top: 1px solid #908c6b; /* Stone color border */
+  border-top: 1px solid var(--color-stone); /* Stone color border */
 }
 
 .cancelButton,
 .saveButton {
   padding: 0.75rem 1.5rem;
+  min-height: 44px;
   border-radius: 8px;
   font-size: 1rem;
   font-weight: 600;
@@ -196,25 +202,25 @@
 }
 
 .cancelButton {
-  background: rgba(120, 128, 112, 0.8); /* Steel color */
-  color: #f4f1e8; /* Light text */
-  border: 2px solid #788070; /* Steel border */
+  background: var(--color-steel-80); /* Steel color */
+  color: var(--color-text-warm); /* Light text */
+  border: 2px solid var(--color-steel); /* Steel border */
 }
 
 .cancelButton:hover:not(:disabled) {
-  background: rgba(144, 140, 107, 0.9); /* Stone color on hover */
-  border-color: #e4bb1e;
+  background: var(--color-stone-90); /* Stone color on hover */
+  border-color: var(--color-accent-gold);
 }
 
 .saveButton {
-  background: linear-gradient(135deg, #b15005, #d67c2d); /* Wood gradient */
+  background: linear-gradient(135deg, var(--color-wood-dark), var(--color-wood-light)); /* Wood gradient */
   color: white;
-  border: 2px solid #e4bb1e; /* Gold border */
+  border: 2px solid var(--color-accent-gold); /* Gold border */
 }
 
 .saveButton:hover:not(:disabled) {
-  background: linear-gradient(135deg, #d67c2d, #e4953f); /* Lighter wood on hover */
-  box-shadow: 0 2px 4px rgba(228, 187, 30, 0.3);
+  background: linear-gradient(135deg, var(--color-wood-light), var(--color-gold-warm)); /* Lighter wood on hover */
+  box-shadow: 0 2px 4px var(--color-gold-glow-30);
 }
 
 .saveButton:disabled,
@@ -226,8 +232,8 @@
 .loadingSpinner {
   width: 20px;
   height: 20px;
-  border: 2px solid rgba(144, 140, 107, 0.3); /* Stone color */
-  border-top: 2px solid #e4bb1e; /* Gold color */
+  border: 2px solid var(--color-stone-30); /* Stone color */
+  border-top: 2px solid var(--color-accent-gold); /* Gold color */
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -272,13 +278,13 @@
 
 .modalContent {
   position: relative;
-  background: rgba(15, 64, 79, 0.95); /* Fantasy theme background */
+  background: var(--color-fantasy-primary-95); /* Fantasy theme background */
   border-radius: 12px;
   max-width: 500px;
   width: 90%;
   max-height: 80vh;
   overflow: hidden;
-  border: 2px solid #e4bb1e; /* Gold border */
+  border: 2px solid var(--color-accent-gold); /* Gold border */
   box-shadow:
     0 20px 25px -5px rgba(0, 0, 0, 0.3),
     0 10px 10px -5px rgba(0, 0, 0, 0.2);
@@ -289,8 +295,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 1.5rem;
-  border-bottom: 1px solid #908c6b; /* Stone color border */
-  background: linear-gradient(135deg, #b15005, #d67c2d); /* Wood gradient */
+  border-bottom: 1px solid var(--color-stone); /* Stone color border */
+  background: linear-gradient(135deg, var(--color-wood-dark), var(--color-wood-light)); /* Wood gradient */
   color: white;
 }
 
@@ -308,8 +314,8 @@
   font-size: 1.5rem;
   cursor: pointer;
   padding: 0;
-  width: 30px;
-  height: 30px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -337,7 +343,7 @@
 
 .suggestions h4 {
   margin: 0 0 1rem 0;
-  color: #e4bb1e; /* Gold for headings */
+  color: var(--color-accent-gold); /* Gold for headings */
   font-family: "Cinzel", serif;
   font-weight: 600;
 }
@@ -355,22 +361,22 @@
   gap: 1rem;
   padding: 1rem;
   margin-bottom: 0.5rem;
-  background: rgba(26, 47, 58, 0.6); /* Darker fantasy background */
+  background: var(--color-fantasy-bg-60); /* Darker fantasy background */
   border-radius: 8px;
-  border: 1px solid #788070; /* Steel border */
+  border: 1px solid var(--color-steel); /* Steel border */
 }
 
 .suggestions li span {
   flex: 1;
   line-height: 1.5;
-  color: #f4f1e8; /* Light text */
+  color: var(--color-text-warm); /* Light text */
   font-family: "Cinzel", serif;
 }
 
 .applySuggestion {
-  background: linear-gradient(135deg, #b15005, #d67c2d); /* Wood gradient */
+  background: linear-gradient(135deg, var(--color-wood-dark), var(--color-wood-light)); /* Wood gradient */
   color: white;
-  border: 1px solid #e4bb1e; /* Gold border */
+  border: 1px solid var(--color-accent-gold); /* Gold border */
   padding: 0.5rem 1rem;
   border-radius: 6px;
   font-size: 0.875rem;
@@ -382,8 +388,8 @@
 }
 
 .applySuggestion:hover {
-  background: linear-gradient(135deg, #d67c2d, #e4953f); /* Lighter wood on hover */
-  box-shadow: 0 2px 4px rgba(228, 187, 30, 0.3);
+  background: linear-gradient(135deg, var(--color-wood-light), var(--color-gold-warm)); /* Lighter wood on hover */
+  box-shadow: 0 2px 4px var(--color-gold-glow-30);
 }
 
 /* Responsive design */
@@ -426,5 +432,40 @@
 
   .applySuggestion {
     align-self: flex-end;
+  }
+}
+
+@media (max-width: 480px) {
+  .campaignEditor {
+    padding: 0.75rem;
+    margin: 0.5rem;
+  }
+
+  .formGroup input,
+  .formGroup select,
+  .formGroup textarea {
+    font-size: 16px; /* Prevent iOS zoom */
+  }
+
+  .cancelButton,
+  .saveButton {
+    min-height: 44px;
+    font-size: 1rem; /* Prevent iOS zoom */
+  }
+
+  .editorToolbar button {
+    min-width: 44px;
+    height: 44px;
+    font-size: 1rem; /* Prevent iOS zoom */
+  }
+
+  .applySuggestion {
+    min-height: 44px;
+    font-size: 1rem; /* Prevent iOS zoom */
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
 }

@@ -1,21 +1,22 @@
 .characterSheet {
   padding: 15px;
-  background: linear-gradient(135deg, #0f404f, #1a2f3a); /* Fantasy gradient */
+  background: linear-gradient(135deg, var(--color-fantasy-primary), var(--color-fantasy-bg)); /* Fantasy gradient */
   height: 100%;
   overflow-y: auto;
-  color: #f4f1e8; /* Warm off-white */
-  border: 2px solid #e4bb1e; /* Gold border */
+  -webkit-overflow-scrolling: touch;
+  color: var(--color-text-warm); /* Warm off-white */
+  border: 2px solid var(--color-accent-gold); /* Gold border */
 }
 
 .characterHeader {
-  border-bottom: 2px solid #e4bb1e; /* Gold border */
+  border-bottom: 2px solid var(--color-accent-gold); /* Gold border */
   padding-bottom: 10px;
   margin-bottom: 15px;
 }
 
 .characterHeader h2 {
   margin: 0;
-  color: #e4bb1e; /* Gold for character name */
+  color: var(--color-accent-gold); /* Gold for character name */
   font-size: 1.5rem;
   font-family: "Cinzel Decorative", serif;
   font-weight: 700;
@@ -25,7 +26,7 @@
 .characterBasics {
   font-size: 0.9rem;
   margin-top: 5px;
-  color: #d0c8b8; /* Lighter fantasy text */
+  color: var(--color-text-muted-warm); /* Lighter fantasy text */
   font-family: "Cinzel", serif;
 }
 
@@ -33,10 +34,10 @@
   display: flex;
   justify-content: space-between;
   margin-bottom: 15px;
-  background: rgba(144, 140, 107, 0.3); /* Stone color background */
+  background: var(--color-stone-30); /* Stone color background */
   padding: 10px;
   border-radius: 5px;
-  border: 1px solid #908c6b; /* Stone border */
+  border: 1px solid var(--color-stone); /* Stone border */
 }
 
 .hitPoints,
@@ -46,7 +47,7 @@
 
 .statLabel {
   font-size: 0.8rem;
-  color: #e4bb1e; /* Gold for labels */
+  color: var(--color-accent-gold); /* Gold for labels */
   margin-bottom: 2px;
   font-family: "Cinzel", serif;
   font-weight: 500;
@@ -55,14 +56,14 @@
 .statValue {
   font-size: 1.2rem;
   font-weight: bold;
-  color: #f4f1e8; /* Light text */
+  color: var(--color-text-warm); /* Light text */
   font-family: "Cinzel", serif;
 }
 
 .abilities h3,
 .inventory h3 {
   margin: 10px 0;
-  color: #e4bb1e; /* Gold for section headers */
+  color: var(--color-accent-gold); /* Gold for section headers */
   font-size: 1rem;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -78,16 +79,16 @@
 }
 
 .ability {
-  background: rgba(120, 128, 112, 0.3); /* Steel color background */
+  background: var(--color-steel-30); /* Steel color background */
   padding: 10px;
   border-radius: 5px;
   text-align: center;
-  border: 1px solid #788070; /* Steel border */
+  border: 1px solid var(--color-steel); /* Steel border */
 }
 
 .abilityName {
   font-size: 0.8rem;
-  color: #e4bb1e; /* Gold for ability names */
+  color: var(--color-accent-gold); /* Gold for ability names */
   font-family: "Cinzel", serif;
   font-weight: 500;
 }
@@ -95,13 +96,13 @@
 .abilityScore {
   font-size: 1.1rem;
   font-weight: bold;
-  color: #f4f1e8; /* Light text */
+  color: var(--color-text-warm); /* Light text */
   font-family: "Cinzel", serif;
 }
 
 .abilityMod {
   font-size: 0.9rem;
-  color: #d0c8b8; /* Light fantasy text */
+  color: var(--color-text-muted-warm); /* Light fantasy text */
   font-family: "Cinzel", serif;
 }
 
@@ -112,30 +113,64 @@
 }
 
 .inventoryItem {
-  background: rgba(177, 80, 5, 0.3); /* Wood color background */
+  background: var(--color-wood-dark-30); /* Wood color background */
   padding: 8px 12px;
   margin-bottom: 5px;
   border-radius: 3px;
   display: flex;
   justify-content: space-between;
-  border: 1px solid #b15005; /* Wood border */
+  border: 1px solid var(--color-wood-dark); /* Wood border */
   font-family: "Cinzel", serif;
 }
 
 .itemName {
   flex: 1;
-  color: #f4f1e8; /* Light text */
+  color: var(--color-text-warm); /* Light text */
 }
 
 .itemQuantity {
-  color: #e4bb1e; /* Gold for quantities */
+  color: var(--color-accent-gold); /* Gold for quantities */
   font-weight: bold;
   font-family: "Cinzel", serif;
 }
 
 .emptyInventory {
-  color: #908c6b; /* Stone color for empty state */
+  color: var(--color-stone); /* Stone color for empty state */
   font-style: italic;
   padding: 10px;
   font-family: "Cinzel", serif;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .abilitiesGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .characterSheet {
+    padding: 10px;
+  }
+
+  .characterBasics {
+    font-size: 1rem; /* Prevent iOS zoom - min 16px */
+  }
+
+  .statLabel {
+    font-size: 1rem; /* Prevent iOS zoom - min 16px */
+  }
+
+  .abilityName {
+    font-size: 1rem; /* Prevent iOS zoom - min 16px */
+  }
+
+  .abilityMod {
+    font-size: 1rem; /* Prevent iOS zoom - min 16px */
+  }
+
+  .abilitiesGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
 }
