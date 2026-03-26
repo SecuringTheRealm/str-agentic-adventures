@@ -12,7 +12,7 @@ from app.services.prompt_shield_service import prompt_shield_service
 logger = logging.getLogger(__name__)
 
 # Path prefixes that should be checked for prompt injection
-_GUARDED_PREFIXES = ("/game/", "/api/game/", "/api/combat/")
+_GUARDED_PREFIXES = ("/game/",)
 
 
 def _should_check(request: Request) -> bool:

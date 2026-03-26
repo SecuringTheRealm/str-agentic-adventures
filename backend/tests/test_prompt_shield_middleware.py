@@ -213,13 +213,17 @@ class TestPromptShieldMiddleware:
         assert response.status_code == status.HTTP_200_OK
 
     def test_non_game_endpoints_not_checked(self, client: TestClient) -> None:
-        """Non-game endpoints are not checked by the middleware."""
+        """Non-game POST endpoints are not checked by the middleware."""
         with patch(
             "app.middleware.prompt_shield_middleware.prompt_shield_service.check_user_input",
         ) as shield_mock:
-            response = client.get("/health")
+            response = client.post("/health", json={"message": "test"})
         shield_mock.assert_not_called()
-        assert response.status_code == status.HTTP_200_OK
+        # 405 or 404 expected — the point is the shield was NOT called
+        assert response.status_code in (
+            status.HTTP_404_NOT_FOUND,
+            status.HTTP_405_METHOD_NOT_ALLOWED,
+        )
 
     def test_get_requests_not_checked(self, client: TestClient) -> None:
         """GET requests are not checked by the middleware."""
