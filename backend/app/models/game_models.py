@@ -722,6 +722,15 @@ class SaveSlotListResponse(BaseModel):
 # NPC Profile models for game-engine disposition tracking
 
 
+class NPCConversationEntry(BaseModel):
+    """A single recorded conversation with an NPC."""
+
+    timestamp: str
+    summary: str
+    disposition_change: int = 0
+    topics: list[str] = Field(default_factory=list)
+
+
 class NPCProfile(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str
@@ -731,6 +740,7 @@ class NPCProfile(BaseModel):
     location: str = ""
     is_alive: bool = True
     conversation_notes: list[str] = Field(default_factory=list)
+    conversation_history: list[NPCConversationEntry] = Field(default_factory=list)
 
 
 class NPCRelationship(BaseModel):
@@ -753,6 +763,14 @@ class CreateNPCProfileRequest(BaseModel):
 class UpdateDispositionRequest(BaseModel):
     disposition_score: int
     event_note: str | None = Field(default=None, max_length=500)
+
+
+class RecordConversationRequest(BaseModel):
+    """Request body for recording an NPC conversation."""
+
+    summary: str = Field(max_length=2000)
+    disposition_change: int = 0
+    topics: list[str] = Field(default_factory=list)
 
 
 class NPCProfileWithRelationship(BaseModel):

@@ -24,8 +24,10 @@ from app.models.game_models import (
     NPCProfileWithRelationship,
     NPCRelationship,
     NPCStatsResponse,
+    RecordConversationRequest,
     UpdateDispositionRequest,
 )
+from app.services.npc_dialogue_service import npc_dialogue_service
 
 logger = logging.getLogger(__name__)
 
@@ -295,6 +297,7 @@ async def list_npc_profiles(
             location=row.location or "",
             is_alive=row.is_alive,
             conversation_notes=row.conversation_notes or [],
+            conversation_history=row.conversation_history or [],
         )
         for row in rows
     ]
@@ -319,6 +322,7 @@ async def create_npc_profile(
         location=request.location,
         is_alive=True,
         conversation_notes=[],
+        conversation_history=[],
     )
     db.add(row)
     db.commit()
@@ -332,6 +336,7 @@ async def create_npc_profile(
         location=row.location or "",
         is_alive=row.is_alive,
         conversation_notes=row.conversation_notes or [],
+        conversation_history=row.conversation_history or [],
     )
 
 
@@ -361,6 +366,7 @@ async def get_npc_profile(
         location=row.location or "",
         is_alive=row.is_alive,
         conversation_notes=row.conversation_notes or [],
+        conversation_history=row.conversation_history or [],
     )
     rel_row = (
         db.query(NPCRelationshipDB)
@@ -446,3 +452,58 @@ async def update_npc_disposition(
         key_events=rel_row.key_events or [],
         last_interaction=rel_row.last_interaction or "",
     )
+
+
+# ---------------------------------------------------------------------------
+# NPC Dialogue endpoints
+# ---------------------------------------------------------------------------
+
+
+@router.get("/npcs/{campaign_id}/{npc_id}/dialogue-context")
+async def get_npc_dialogue_context(
+    campaign_id: str,
+    npc_id: str,
+    db: DbDep,
+) -> dict:
+    """Get NPC context for dialogue generation."""
+    ctx = npc_dialogue_service.get_npc_context(npc_id, campaign_id, db)
+    if not ctx:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"NPC {npc_id} not found in campaign {campaign_id}",
+        )
+    return ctx
+
+
+@router.post(
+    "/npcs/{campaign_id}/{npc_id}/conversation",
+    status_code=status.HTTP_201_CREATED,
+)
+async def record_npc_conversation(
+    campaign_id: str,
+    npc_id: str,
+    request: RecordConversationRequest,
+    db: DbDep,
+) -> dict:
+    """Record a conversation interaction with an NPC."""
+    # Verify NPC exists
+    npc_row = (
+        db.query(NPCProfileDB)
+        .filter(NPCProfileDB.id == npc_id, NPCProfileDB.campaign_id == campaign_id)
+        .first()
+    )
+    if npc_row is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"NPC {npc_id} not found in campaign {campaign_id}",
+        )
+
+    npc_dialogue_service.record_conversation(
+        npc_id=npc_id,
+        campaign_id=campaign_id,
+        summary=request.summary,
+        disposition_change=request.disposition_change,
+        topics=request.topics,
+        db=db,
+    )
+    return {"status": "recorded", "npc_id": npc_id, "campaign_id": campaign_id}
