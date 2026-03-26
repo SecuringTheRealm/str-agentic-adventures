@@ -87,6 +87,28 @@ module containerRegistry 'modules/container-registry.bicep' = {
   }
 }
 
+// Create User-Assigned Managed Identity for container app
+module managedIdentity 'modules/managed-identity.bicep' = {
+  name: 'managed-identity'
+  scope: rg
+  params: {
+    name: '${environmentName}-id-${resourceToken}'
+    location: location
+    tags: tags
+  }
+}
+
+// Assign roles to managed identity (AcrPull + Storage Blob Data Contributor)
+module roleAssignments 'modules/role-assignments.bicep' = {
+  name: 'role-assignments'
+  scope: rg
+  params: {
+    principalId: managedIdentity.outputs.principalId
+    acrName: containerRegistry.outputs.name
+    storageAccountName: storage.outputs.name
+  }
+}
+
 // Backend Container App will be deployed separately via GitHub Actions workflow
 // This ensures the latest code is always deployed without requiring Bicep updates
 
@@ -115,3 +137,5 @@ output AZURE_CONTAINER_REGISTRY_NAME string = containerRegistry.outputs.name
 output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = containerAppsEnvironment.outputs.id
 output AZURE_STORAGE_ACCOUNT_NAME string = storage.outputs.name
 output AZURE_STATIC_WEB_APP_NAME string = frontend.outputs.name
+output AZURE_MANAGED_IDENTITY_ID string = managedIdentity.outputs.id
+output AZURE_MANAGED_IDENTITY_CLIENT_ID string = managedIdentity.outputs.clientId
