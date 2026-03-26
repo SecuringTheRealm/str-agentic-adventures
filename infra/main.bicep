@@ -57,6 +57,18 @@ module logAnalytics 'modules/log-analytics.bicep' = {
   }
 }
 
+// Create Application Insights for observability
+module appInsights 'modules/application-insights.bicep' = {
+  name: 'application-insights'
+  scope: rg
+  params: {
+    name: '${environmentName}-ai-${resourceToken}'
+    location: location
+    tags: tags
+    logAnalyticsWorkspaceId: logAnalytics.outputs.id
+  }
+}
+
 // Create Container Apps environment
 module containerAppsEnvironment 'modules/container-apps-environment.bicep' = {
   name: 'container-apps-environment'
@@ -172,3 +184,4 @@ output AZURE_MANAGED_IDENTITY_PRINCIPAL_ID string = managedIdentity.outputs.prin
 output AZURE_KEY_VAULT_NAME string = keyVault.outputs.name
 output DATABASE_HOST string = postgresql.outputs.host
 output DATABASE_NAME string = postgresql.outputs.databaseName
+output APPLICATIONINSIGHTS_CONNECTION_STRING string = appInsights.outputs.connectionString

@@ -9,6 +9,7 @@ with automatic fallback to direct AzureOpenAIClient when the SDK is unavailable.
 from __future__ import annotations
 
 import logging
+import os
 from typing import TYPE_CHECKING, Any
 
 from azure.ai.agents.aio import AgentsClient
@@ -373,8 +374,29 @@ class AgentClientManager:
         """Setup OpenTelemetry for agent observability."""
         try:
             provider = TracerProvider()
-            processor = SimpleSpanProcessor(ConsoleSpanExporter())
-            provider.add_span_processor(processor)
+
+            # Use Azure Monitor exporter if connection string is available
+            connection_string = os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING")
+            if connection_string:
+                try:
+                    from azure.monitor.opentelemetry.exporter import AzureMonitorTraceExporter  # noqa: I001
+                    from opentelemetry.sdk.trace.export import BatchSpanProcessor
+
+                    exporter = AzureMonitorTraceExporter(connection_string=connection_string)
+                    processor = BatchSpanProcessor(exporter)
+                    provider.add_span_processor(processor)
+                    logger.info("OpenTelemetry configured with Azure Monitor exporter")
+                except ImportError:
+                    logger.warning(
+                        "azure-monitor-opentelemetry-exporter not installed, falling back to console"
+                    )
+                    processor = SimpleSpanProcessor(ConsoleSpanExporter())
+                    provider.add_span_processor(processor)
+            else:
+                # Fallback to console for local development
+                processor = SimpleSpanProcessor(ConsoleSpanExporter())
+                provider.add_span_processor(processor)
+
             trace.set_tracer_provider(provider)
             self._tracer = trace.get_tracer(__name__)
             logger.info("OpenTelemetry observability configured")
