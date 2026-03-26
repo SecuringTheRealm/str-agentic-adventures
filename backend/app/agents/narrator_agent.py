@@ -1,10 +1,15 @@
 """
 Narrator Agent - Manages campaign narrative and story elements.
+
+Uses the Microsoft Agent Framework SDK for narrative generation when available,
+falling back to direct AzureOpenAIClient calls otherwise.
 """
 
 import json
 import logging
 from typing import Any
+
+from azure.ai.agents.models import FunctionDefinition, FunctionToolDefinition
 
 from app.agents.base_agent import BaseAgent
 from app.azure_openai_client import azure_openai_client
@@ -13,10 +18,67 @@ from app.config import settings
 logger = logging.getLogger(__name__)
 
 
+def _build_narrative_tool_definitions() -> list[FunctionToolDefinition]:
+    """Build FunctionToolDefinition instances for narrative generation."""
+    return [
+        FunctionToolDefinition(
+            function=FunctionDefinition(
+                name="describe_scene",
+                description=(
+                    "Generate a rich, immersive description of a scene based on "
+                    "location, time of day, mood, and recent events."
+                ),
+                parameters={
+                    "type": "object",
+                    "properties": {
+                        "location": {
+                            "type": "string",
+                            "description": "The name or description of the location",
+                        },
+                        "time_of_day": {
+                            "type": "string",
+                            "description": "Time of day (dawn, morning, noon, etc.)",
+                        },
+                        "mood": {
+                            "type": "string",
+                            "description": "Atmosphere/mood (tense, peaceful, mysterious)",
+                        },
+                    },
+                    "required": ["location"],
+                },
+            )
+        ),
+        FunctionToolDefinition(
+            function=FunctionDefinition(
+                name="advance_narrative",
+                description=(
+                    "Advance the story by activating or completing plot points "
+                    "based on player actions and the current narrative state."
+                ),
+                parameters={
+                    "type": "object",
+                    "properties": {
+                        "current_situation": {
+                            "type": "string",
+                            "description": "Description of what just happened",
+                        },
+                        "action": {
+                            "type": "string",
+                            "description": "The player action that triggers the advance",
+                        },
+                    },
+                    "required": ["current_situation"],
+                },
+            )
+        ),
+    ]
+
+
 class NarratorAgent(BaseAgent):
-    """
-    Narrator Agent that manages campaign narrative and story elements.
-    Uses Azure AI SDK for narrative generation.
+    """Narrator Agent that manages campaign narrative and story elements.
+
+    Uses the Microsoft Agent Framework SDK for narrative generation when
+    available, with automatic fallback to the direct AzureOpenAIClient.
     """
 
     agent_name = "Narrator"
@@ -37,6 +99,19 @@ class NarratorAgent(BaseAgent):
                 logger.warning("Narrator agent switching to fallback mode.")
                 self._fallback_mode = True
                 self._initialize_fallback_components()
+
+    def _get_sdk_instructions(self) -> str:
+        """Return system instructions for the SDK Narrator agent."""
+        return (
+            "You are the Narrator collaborating with a Dungeon Master. "
+            "Craft immersive, sensory scene descriptions for players in 3-4 "
+            "sentences. Keep the tone cinematic but concise. Focus on "
+            "actionable details that invite interaction."
+        )
+
+    def _get_sdk_tools(self) -> list[FunctionToolDefinition]:
+        """Return narrative generation tool definitions for the SDK agent."""
+        return _build_narrative_tool_definitions()
 
     def _initialize_fallback_components(self) -> None:
         """Initialize fallback components when Azure OpenAI is not available."""

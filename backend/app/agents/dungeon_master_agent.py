@@ -1,8 +1,9 @@
 """
-Dungeon Master Agent - Migrated to Azure AI Agents SDK.
+Dungeon Master Agent - Uses the Microsoft Agent Framework for orchestration.
 
-This agent uses Azure AI Agents SDK for production-grade orchestration of the
-D&D experience through AI guidance.
+This agent uses the Microsoft Agent Framework SDK for production-grade
+orchestration of the D&D experience through AI guidance, falling back to
+direct AzureOpenAIClient calls when the SDK is unavailable.
 """
 
 import json
@@ -12,6 +13,8 @@ import re
 import uuid
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
+
+from azure.ai.agents.models import FunctionDefinition, FunctionToolDefinition
 
 from app.agents.base_agent import BaseAgent
 from app.azure_openai_client import azure_openai_client
@@ -28,10 +31,62 @@ logger = logging.getLogger(__name__)
 MAX_HISTORY_MESSAGES = 20
 
 
+def _build_dice_tool_definitions() -> list[FunctionToolDefinition]:
+    """Build FunctionToolDefinition instances for dice-rolling mechanics."""
+    return [
+        FunctionToolDefinition(
+            function=FunctionDefinition(
+                name="roll_dice",
+                description=(
+                    "Roll dice using standard D&D notation (e.g., 1d20, 2d6+3). "
+                    "Use this whenever a dice roll is needed during gameplay."
+                ),
+                parameters={
+                    "type": "object",
+                    "properties": {
+                        "notation": {
+                            "type": "string",
+                            "description": "Dice notation like 1d20, 2d6+3, 4d8-1",
+                        }
+                    },
+                    "required": ["notation"],
+                },
+            )
+        ),
+        FunctionToolDefinition(
+            function=FunctionDefinition(
+                name="roll_ability_check",
+                description=(
+                    "Roll a d20 ability check with modifier, advantage, or disadvantage."
+                ),
+                parameters={
+                    "type": "object",
+                    "properties": {
+                        "modifier": {
+                            "type": "integer",
+                            "description": "The ability modifier to add to the roll",
+                        },
+                        "advantage": {
+                            "type": "boolean",
+                            "description": "Whether the roll has advantage",
+                        },
+                        "disadvantage": {
+                            "type": "boolean",
+                            "description": "Whether the roll has disadvantage",
+                        },
+                    },
+                    "required": ["modifier"],
+                },
+            )
+        ),
+    ]
+
+
 class DungeonMasterAgent(BaseAgent):
-    """
-    Dungeon Master Agent using Azure AI Agents SDK to fulfill the role
-    of orchestrating the D&D experience through AI guidance.
+    """Dungeon Master Agent using the Microsoft Agent Framework SDK.
+
+    Orchestrates the D&D experience through AI guidance with automatic
+    fallback to direct AzureOpenAIClient when the SDK is unavailable.
     """
 
     agent_name = "DM"
@@ -53,6 +108,14 @@ class DungeonMasterAgent(BaseAgent):
 
         # Fallback components are initialized lazily
         self._fallback_initialized = False
+
+    def _get_sdk_instructions(self) -> str:
+        """Return the DM system prompt for SDK agent creation."""
+        return self._get_dm_system_prompt()
+
+    def _get_sdk_tools(self) -> list[FunctionToolDefinition]:
+        """Return dice-rolling tool definitions for the SDK agent."""
+        return _build_dice_tool_definitions()
 
     def _get_dm_system_prompt(self) -> str:
         """Generate the static system prompt for the Dungeon Master role."""
@@ -203,15 +266,14 @@ class DungeonMasterAgent(BaseAgent):
     async def process_input(
         self, user_input: str, context: dict[str, Any] = None
     ) -> dict[str, Any]:
-        """
-        Process user input using Azure AI Agents SDK.
+        """Process user input, trying the SDK first then falling back to direct API.
 
         Args:
-            user_input: The player's input text
-            context: Additional context information
+            user_input: The player's input text.
+            context: Additional context information.
 
         Returns:
-            Dict with required fields: message, visuals, state_updates, combat_updates
+            Dict with required fields: message, visuals, state_updates, combat_updates.
         """
         if not context:
             context = {}
@@ -241,11 +303,22 @@ class DungeonMasterAgent(BaseAgent):
             self._persist_thread(session_id)
             return result
 
-        try:
-            # Create system prompt (static, no user input)
-            system_prompt = self._get_dm_system_prompt()
+        # --- Try the Microsoft Agent Framework SDK first ---
+        sdk_response = await self._sdk_chat(session_id, user_message)
+        if sdk_response is not None:
+            logger.info("DM received response via Microsoft Agent Framework SDK.")
+            thread.append({"role": "user", "content": user_message})
+            thread.append({"role": "assistant", "content": sdk_response})
+            return {
+                "message": sdk_response,
+                "visuals": [],
+                "state_updates": {"last_action": user_input},
+                "combat_updates": None,
+            }
 
-            # Build messages with conversation history and sliding window
+        # --- Fall back to direct AzureOpenAIClient ---
+        try:
+            system_prompt = self._get_dm_system_prompt()
             messages = self._build_messages(system_prompt, user_message, thread)
 
             if not self.azure_client:
@@ -271,20 +344,17 @@ class DungeonMasterAgent(BaseAgent):
 
             logger.info("DM received Azure OpenAI response successfully.")
             self._persist_thread(session_id)
-            # Structure the response in the expected format
             return {
                 "message": ai_response,
-                "visuals": [],  # Simple implementation - no visual generation
+                "visuals": [],
                 "state_updates": {"last_action": user_input},
                 "combat_updates": None,
             }
 
         except Exception as e:
             logger.error("Error in DM processing: %s", str(e))
-            # Fall back to using the full fallback processing which handles dice, etc.
             logger.info("DM falling back after error.")
             result = await self._process_input_fallback(user_input, context)
-            # Record fallback exchange in the thread
             thread.append({"role": "user", "content": user_message})
             thread.append(
                 {"role": "assistant", "content": result.get("message", "")}
@@ -295,12 +365,11 @@ class DungeonMasterAgent(BaseAgent):
     async def process_input_stream(
         self, user_input: str, context: dict[str, Any] = None
     ) -> None:
-        """
-        Process user input with streaming responses via WebSocket.
+        """Process user input with streaming responses via WebSocket.
 
         Args:
-            user_input: The player's input text
-            context: Context including WebSocket for streaming
+            user_input: The player's input text.
+            context: Context including WebSocket for streaming.
         """
         if not context:
             context = {}
@@ -551,8 +620,7 @@ class DungeonMasterAgent(BaseAgent):
         return False, False
 
     async def narrate_dice_roll(self, roll_context: dict[str, Any]) -> str:
-        """
-        Generate a narrative description of a dice roll result.
+        """Generate a narrative description of a dice roll result.
 
         Args:
             roll_context: Dict with player_name, notation, result (total/rolls),

@@ -1,9 +1,14 @@
 """
 Scribe Agent - Manages character sheets and game data.
+
+Uses the Microsoft Agent Framework SDK for character/NPC query tools
+when available, with automatic fallback to direct database queries.
 """
 
 import logging
 from typing import Any
+
+from azure.ai.agents.models import FunctionDefinition, FunctionToolDefinition
 
 from app.agents.base_agent import BaseAgent
 from app.database import get_session_context, init_db
@@ -12,10 +17,71 @@ from app.models.db_models import NPC, Character, NPCInteraction
 logger = logging.getLogger(__name__)
 
 
+def _build_scribe_tool_definitions() -> list[FunctionToolDefinition]:
+    """Build FunctionToolDefinition instances for character and NPC queries."""
+    return [
+        FunctionToolDefinition(
+            function=FunctionDefinition(
+                name="get_character",
+                description=(
+                    "Retrieve a character's full sheet including stats, inventory, "
+                    "and equipment by their character ID."
+                ),
+                parameters={
+                    "type": "object",
+                    "properties": {
+                        "character_id": {
+                            "type": "string",
+                            "description": "The unique character identifier",
+                        }
+                    },
+                    "required": ["character_id"],
+                },
+            )
+        ),
+        FunctionToolDefinition(
+            function=FunctionDefinition(
+                name="get_npc",
+                description=(
+                    "Retrieve NPC details including personality, relationships, "
+                    "and interaction history."
+                ),
+                parameters={
+                    "type": "object",
+                    "properties": {
+                        "npc_id": {
+                            "type": "string",
+                            "description": "The unique NPC identifier",
+                        }
+                    },
+                    "required": ["npc_id"],
+                },
+            )
+        ),
+        FunctionToolDefinition(
+            function=FunctionDefinition(
+                name="get_inventory",
+                description="Retrieve a character's current inventory and equipment.",
+                parameters={
+                    "type": "object",
+                    "properties": {
+                        "character_id": {
+                            "type": "string",
+                            "description": "The unique character identifier",
+                        }
+                    },
+                    "required": ["character_id"],
+                },
+            )
+        ),
+    ]
+
+
 class ScribeAgent(BaseAgent):
-    """
-    Scribe Agent that manages character sheets, inventory, equipment, and game data.
-    This agent is responsible for tracking and updating structured game data.
+    """Scribe Agent that manages character sheets, inventory, equipment, and game data.
+
+    Uses the Microsoft Agent Framework SDK for character/NPC query tools
+    when available, with automatic fallback to direct database queries.
     """
 
     agent_name = "Scribe"
@@ -24,6 +90,19 @@ class ScribeAgent(BaseAgent):
         """Initialize Scribe-specific components after base client setup."""
         init_db()
         self._register_skills()
+
+    def _get_sdk_instructions(self) -> str:
+        """Return system instructions for the SDK Scribe agent."""
+        return (
+            "You are the Scribe for a D&D 5e game. You manage character sheets, "
+            "inventory, equipment, and NPC data. Use the provided tools to look "
+            "up character information, NPC details, and inventory data when "
+            "players ask about their characters or the world."
+        )
+
+    def _get_sdk_tools(self) -> list[FunctionToolDefinition]:
+        """Return character/NPC query tool definitions for the SDK agent."""
+        return _build_scribe_tool_definitions()
 
     @property
     def characters(self) -> dict[str, Any]:
