@@ -123,6 +123,7 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Cleanup existing deployment stack (if exists)
+        if: inputs.is-production == false
         id: cleanup-stack
         run: |
           STACK_NAME="${{ inputs.stack-name }}"
@@ -158,6 +159,20 @@ jobs:
           fi
         timeout-minutes: 8
 
+      - name: Preview infrastructure changes (what-if)
+        if: inputs.is-production == true
+        run: |
+          az deployment sub what-if \
+            --location "${{ inputs.location }}" \
+            --template-file infra/main.bicep \
+            --parameters \
+              environmentName="${{ inputs.environment-name }}" \
+              location="${{ inputs.location }}" \
+              resourceGroupName="${{ inputs.resource-group-name }}" \
+              azureOpenAiEndpoint="${{ secrets.AZURE_OPENAI_ENDPOINT }}" \
+              azureOpenAiApiKey="${{ secrets.AZURE_OPENAI_API_KEY }}"
+        timeout-minutes: 5
+
       - name: Deploy Infrastructure with Bicep (Deployment Stack)
         id: infrastructure-deploy
         uses: azure/bicep-deploy@v2
@@ -180,9 +195,9 @@ jobs:
               "azureOpenAiEmbeddingDeployment": "${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT || 'text-embedding-ada-002' }}",
               "azureOpenAiDalleDeployment": "${{ vars.AZURE_OPENAI_DALLE_DEPLOYMENT || 'gpt-image-1-mini' }}"
             }
-          action-on-unmanage-resources: delete
-          action-on-unmanage-resourcegroups: delete
-          deny-settings-mode: none
+          action-on-unmanage-resources: ${{ inputs.is-production && 'detach' || 'delete' }}
+          action-on-unmanage-resourcegroups: ${{ inputs.is-production && 'detach' || 'delete' }}
+          deny-settings-mode: ${{ inputs.is-production && 'denyDelete' || 'none' }}
         timeout-minutes: 20
 
       - name: Set up Docker Buildx
