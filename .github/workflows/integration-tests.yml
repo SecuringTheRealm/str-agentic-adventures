@@ -41,29 +41,17 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Setup Python
-      uses: actions/setup-python@v4
+    - name: Set up Python and uv
+      uses: astral-sh/setup-uv@v5
       with:
         python-version: '3.12'
-
-    - name: Setup Node.js (for OpenAPI client validation)
-      uses: actions/setup-node@v4
-      with:
-        node-version: '22'
-        cache: 'npm'
-        cache-dependency-path: frontend/package-lock.json
-
-    - name: Install UV
-      run: curl -LsSf https://astral.sh/uv/install.sh | sh
+        enable-cache: true
 
     - name: Install backend dependencies
-      run: |
-        export PATH="$HOME/.local/bin:$PATH"
-        uv sync
+      run: uv sync
 
     - name: Run backend integration tests (slow)
       run: |
-        export PATH="$HOME/.local/bin:$PATH"
         cd backend
         uv run python -m pytest tests/ -m "integration or slow" --durations=20 -v
 
@@ -76,29 +64,20 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Setup Python
-      uses: actions/setup-python@v4
+    - name: Set up Python and uv
+      uses: astral-sh/setup-uv@v5
       with:
         python-version: '3.12'
+        enable-cache: true
 
-    - name: Setup Node.js (for OpenAPI client validation)
-      uses: actions/setup-node@v4
-      with:
-        node-version: '22'
-        cache: 'npm'
-        cache-dependency-path: frontend/package-lock.json
-
-    - name: Install UV
-      run: curl -LsSf https://astral.sh/uv/install.sh | sh
+    - name: Set up Bun
+      uses: oven-sh/setup-bun@v2
 
     - name: Install backend dependencies
-      run: |
-        export PATH="$HOME/.local/bin:$PATH"
-        uv sync
+      run: uv sync
 
     - name: Check API compatibility
       run: |
-        export PATH="$HOME/.local/bin:$PATH"
         uv run python -c "
         import sys
         sys.path.append('backend')
@@ -109,7 +88,6 @@ jobs:
 
     - name: Performance regression check
       run: |
-        export PATH="$HOME/.local/bin:$PATH"
         cd backend
         echo "Running performance regression tests..."
         uv run python -m pytest tests/test_parameterized_combat.py -m "slow" --durations=10 -v
@@ -119,10 +97,9 @@ jobs:
       run: |
         # Install frontend dependencies for OpenAPI generation
         cd frontend
-        npm ci --legacy-peer-deps
+        bun install
         
         # Start backend server for OpenAPI schema generation
-        export PATH="$HOME/.local/bin:$PATH"
         cd ../backend
         uv run python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 &
         BACKEND_PID=$!
@@ -142,7 +119,7 @@ jobs:
         
         # Generate API client
         cd ../frontend
-        npm run generate:api || {
+        bun run generate:api || {
           echo "❌ OpenAPI client generation failed"
           kill $BACKEND_PID 2>/dev/null || true
           exit 1

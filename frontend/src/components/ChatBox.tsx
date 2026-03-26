@@ -63,7 +63,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
 
   return (
     <div className={styles.chatBox}>
-      <div className={styles.messagesContainer}>
+      <div className={styles.messagesContainer} role="log" aria-live="polite" aria-label="Chat messages">
         {messages.map((message, index) => (
           <div
             key={`${message.text}-${index}`}
@@ -87,13 +87,16 @@ const ChatBox: React.FC<ChatBoxProps> = ({
         {isLoading && !streamingMessage && (
           <div className={`${styles.message} ${styles.dmMessage}`}>
             <div className={styles.messageSender}>Dungeon Master</div>
-            <div className={`${styles.messageText} ${styles.loading}`}>
+            <output
+              className={`${styles.messageText} ${styles.loading}`}
+              aria-label="Loading"
+            >
               <div className={styles.typingIndicator}>
                 <span />
                 <span />
                 <span />
               </div>
-            </div>
+            </output>
           </div>
         )}
         <div ref={messagesEndRef} />
@@ -125,6 +128,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="What do you want to do?"
+          aria-label="Enter your action"
           disabled={isLoading}
           data-testid="chat-input"
         />

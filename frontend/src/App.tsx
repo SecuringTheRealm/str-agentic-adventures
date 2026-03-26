@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import "./App.css";
 import CampaignSelection from "./components/CampaignSelection";
 import CharacterSelection from "./components/CharacterSelection";
@@ -6,6 +6,7 @@ import GameInterface from "./components/GameInterface";
 import type { Campaign, Character } from "./types";
 
 function App() {
+  const mainId = useId();
   const [currentCampaign, setCurrentCampaign] = useState<Campaign | null>(null);
   const [currentCharacter, setCurrentCharacter] = useState<Character | null>(
     null
@@ -33,6 +34,9 @@ function App() {
 
   return (
     <div className="App">
+      <a href={`#${mainId}`} className="skip-link">
+        Skip to main content
+      </a>
       <header className="App-header">
         <h1>Securing the Realm - Agentic Adventures</h1>
         {gameStarted && (
@@ -46,7 +50,7 @@ function App() {
         )}
       </header>
 
-      <main className="App-main">
+      <main id={mainId} className="App-main">
         {!gameStarted && !showCharacterSelection ? (
           <div className="campaign-setup">
             <CampaignSelection onCampaignCreated={handleCampaignCreated} />

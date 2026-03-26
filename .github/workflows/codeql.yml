@@ -46,17 +46,15 @@ jobs:
         cd backend
         uv sync
 
-    - name: Setup Node.js
+    - name: Setup Bun
       if: matrix.language == 'javascript'
-      uses: actions/setup-node@v4
-      with:
-        node-version: '22'
+      uses: oven-sh/setup-bun@v2
 
     - name: Install JavaScript dependencies
       if: matrix.language == 'javascript'
       run: |
         cd frontend
-        npm ci
+        bun install
 
     - name: Autobuild
       uses: github/codeql-action/autobuild@v3
