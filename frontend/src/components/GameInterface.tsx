@@ -3,13 +3,12 @@ import { useEffect, useRef, useState } from "react";
 import { useWebSocketSDK } from "../hooks/useWebSocketSDK";
 import type { WebSocketMessage } from "../services/api";
 import {
-  type Campaign,
-  type Character,
   generateBattleMap,
   generateImage,
   getOpeningNarrative,
   sendPlayerInput,
 } from "../services/api";
+import type { Campaign, Character, DiceResult } from "../types";
 import BattleMap from "./BattleMap";
 import CharacterSheet from "./CharacterSheet";
 import ChatBox from "./ChatBox";
@@ -72,7 +71,8 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
   const [combatActive, setCombatActive] = useState<boolean>(false);
   const [streamingMessage, setStreamingMessage] = useState<string>("");
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
-  const [webSocketDiceResult, setWebSocketDiceResult] = useState<any>(null);
+  const [webSocketDiceResult, setWebSocketDiceResult] =
+    useState<DiceResult | null>(null);
   const [suggestedActions, setSuggestedActions] = useState<string[]>([]);
 
   // Stable session ID for image-generation budget tracking.
@@ -240,7 +240,10 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 
       setLoading(true);
       setMessages([
-        { text: `Setting the scene for ${character.name}'s adventure…`, sender: "dm" },
+        {
+          text: `Setting the scene for ${character.name}'s adventure…`,
+          sender: "dm",
+        },
       ]);
       try {
         const narrative = await getOpeningNarrative(campaign.id, {
@@ -589,7 +592,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
   return (
     <div className={styles.gameInterface} data-testid="game-interface">
       <div className={styles.gameContainer}>
-        <div className={styles.leftPanel}>
+        <aside aria-label="Character sheet" className={styles.leftPanel}>
           <CharacterSheet character={character} />
           <DiceRoller
             characterId={character.id}
@@ -607,9 +610,9 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
               }
             }}
           />
-        </div>
+        </aside>
 
-        <div className={styles.centerPanel}>
+        <main aria-label="Game chat" className={styles.centerPanel}>
           <ChatBox
             messages={messages}
             onSendMessage={handlePlayerInput}
@@ -618,9 +621,9 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
             suggestedActions={suggestedActions}
             onSuggestedAction={handlePlayerInput}
           />
-        </div>
+        </main>
 
-        <div className={styles.rightPanel}>
+        <aside aria-label="Visuals and battle map" className={styles.rightPanel}>
           <div className={styles.visualControls}>
             <h4>Generate Visuals</h4>
             {imagesRemaining !== null && (
@@ -667,7 +670,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
               <BattleMap mapUrl={battleMapUrl} />
             </div>
           )}
-        </div>
+        </aside>
       </div>
     </div>
   );

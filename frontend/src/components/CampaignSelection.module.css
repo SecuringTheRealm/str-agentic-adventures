@@ -2,14 +2,9 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
-  background: rgba(
-    15,
-    64,
-    79,
-    0.8
-  ); /* Semi-transparent primary fantasy color */
+  background: var(--color-fantasy-primary-80); /* Semi-transparent primary fantasy color */
   border-radius: 8px;
-  border: 2px solid #e4bb1e; /* Gold border to match theme */
+  border: 2px solid var(--color-accent-gold); /* Gold border to match theme */
 }
 
 .managerHeader {
@@ -18,12 +13,12 @@
   align-items: flex-start;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid #e4bb1e; /* Gold accent border */
+  border-bottom: 2px solid var(--color-accent-gold); /* Gold accent border */
 }
 
 .headerContent h1 {
   font-size: 2.5rem;
-  color: #e4bb1e; /* Gold accent color for main title */
+  color: var(--color-accent-gold); /* Gold accent color for main title */
   margin: 0 0 0.5rem 0;
   font-family: "Cinzel", serif; /* Match fantasy theme font */
   font-weight: 600;
@@ -31,14 +26,14 @@
 }
 
 .headerContent p {
-  color: #f4f1e8; /* Warm off-white for better contrast */
+  color: var(--color-text-warm); /* Warm off-white for better contrast */
   font-size: 1.1rem;
   margin: 0;
 }
 
 .managerHeader h2,
 .sectionTitle {
-  color: #e4bb1e; /* Gold color for consistency */
+  color: var(--color-accent-gold); /* Gold color for consistency */
   margin: 0;
   font-family: "Cinzel", serif;
   font-weight: 600;
@@ -53,9 +48,10 @@
 
 .viewToggle {
   padding: 0.5rem 1rem;
-  border: 2px solid #788070; /* Steel color border */
-  background: rgba(15, 64, 79, 0.6); /* Semi-transparent primary */
-  color: #f4f1e8; /* Light text for contrast */
+  min-height: 44px;
+  border: 2px solid var(--color-steel); /* Steel color border */
+  background: var(--color-fantasy-primary-60); /* Semi-transparent primary */
+  color: var(--color-text-warm); /* Light text for contrast */
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -64,14 +60,14 @@
 }
 
 .viewToggle:hover {
-  border-color: #e4bb1e; /* Gold on hover */
-  background: rgba(15, 64, 79, 0.8);
+  border-color: var(--color-accent-gold); /* Gold on hover */
+  background: var(--color-fantasy-primary-80);
 }
 
 .viewToggle.active {
-  background: #e4bb1e; /* Gold background when active */
-  color: #0f404f; /* Dark text for contrast on gold */
-  border-color: #e4bb1e;
+  background: var(--color-accent-gold); /* Gold background when active */
+  color: var(--color-fantasy-primary); /* Dark text for contrast on gold */
+  border-color: var(--color-accent-gold);
   font-weight: 600;
 }
 
@@ -95,46 +91,46 @@
 .actionButton.primary {
   background: linear-gradient(
     135deg,
-    #b15005,
-    #d67c2d
+    var(--color-wood-dark),
+    var(--color-wood-light)
   ); /* Wood gradient to match theme */
   color: white;
-  border-color: #e4bb1e; /* Gold border */
+  border-color: var(--color-accent-gold); /* Gold border */
 }
 
 .actionButton.primary:hover:not(:disabled) {
   background: linear-gradient(
     135deg,
-    #d67c2d,
-    #e4953f
+    var(--color-wood-light),
+    var(--color-gold-warm)
   ); /* Lighter wood on hover */
-  box-shadow: 0 2px 4px rgba(228, 187, 30, 0.3);
+  box-shadow: 0 2px 4px var(--color-gold-glow-30);
 }
 
 .actionButton.secondary {
-  background: rgba(120, 128, 112, 0.8); /* Steel color with transparency */
-  color: #f4f1e8;
-  border-color: #788070;
+  background: var(--color-steel-80); /* Steel color with transparency */
+  color: var(--color-text-warm);
+  border-color: var(--color-steel);
 }
 
 .actionButton.secondary:hover:not(:disabled) {
-  background: rgba(144, 140, 107, 0.9); /* Stone color on hover */
-  border-color: #e4bb1e;
+  background: var(--color-stone-90); /* Stone color on hover */
+  border-color: var(--color-accent-gold);
 }
 
 .actionButton.danger {
   background: linear-gradient(
     135deg,
-    #8b4513,
-    #a0522d
+    var(--color-wood-saddle),
+    var(--color-wood-medium)
   ); /* Brown gradients for danger */
   color: white;
-  border-color: #a0522d;
+  border-color: var(--color-wood-medium);
 }
 
 .actionButton.danger:hover:not(:disabled) {
-  background: linear-gradient(135deg, #a0522d, #cd853f);
-  border-color: #cd853f;
+  background: linear-gradient(135deg, var(--color-wood-medium), var(--color-wood-peru));
+  border-color: var(--color-wood-peru);
 }
 
 .actionButton.small {
@@ -148,9 +144,9 @@
 }
 
 .errorMessage {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #dc2626;
+  background: var(--color-danger-bg);
+  border: 1px solid var(--color-danger-border);
+  color: var(--color-danger-vivid);
   padding: 1rem;
   border-radius: 8px;
   margin-bottom: 1.5rem;
@@ -162,12 +158,12 @@
 .errorMessage button {
   background: none;
   border: none;
-  color: #dc2626;
+  color: var(--color-danger-vivid);
   font-size: 1.25rem;
   cursor: pointer;
   padding: 0;
-  width: 24px;
-  height: 24px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -185,8 +181,8 @@
 .loadingSpinner {
   width: 40px;
   height: 40px;
-  border: 4px solid rgba(144, 140, 107, 0.3); /* Stone color */
-  border-top: 4px solid #e4bb1e; /* Gold color */
+  border: 4px solid var(--color-stone-30); /* Stone color */
+  border-top: 4px solid var(--color-accent-gold); /* Gold color */
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -207,8 +203,8 @@
 }
 
 .campaignItem {
-  background: rgba(26, 47, 58, 0.6); /* Darker fantasy background */
-  border: 2px solid #788070; /* Steel color border */
+  background: var(--color-fantasy-bg-60); /* Darker fantasy background */
+  border: 2px solid var(--color-steel); /* Steel color border */
   border-radius: 12px;
   padding: 1.5rem;
   display: flex;
@@ -218,9 +214,9 @@
 }
 
 .campaignItem:hover {
-  border-color: #e4bb1e; /* Gold border on hover */
-  box-shadow: 0 4px 6px rgba(228, 187, 30, 0.2);
-  background: rgba(26, 47, 58, 0.8);
+  border-color: var(--color-accent-gold); /* Gold border on hover */
+  box-shadow: 0 4px 6px var(--color-gold-glow-20);
+  background: var(--color-fantasy-bg-80);
 }
 
 .campaignInfo {
@@ -230,14 +226,14 @@
 
 .campaignInfo h3 {
   margin: 0 0 0.5rem 0;
-  color: #e4bb1e; /* Gold color for campaign names */
+  color: var(--color-accent-gold); /* Gold color for campaign names */
   font-size: 1.25rem;
   font-family: "Cinzel", serif;
   font-weight: 600;
 }
 
 .campaignDescription {
-  color: #f4f1e8; /* Light warm text */
+  color: var(--color-text-warm); /* Light warm text */
   margin: 0 0 1rem 0;
   line-height: 1.5;
 }
@@ -257,27 +253,27 @@
 }
 
 .toneBadge.heroic {
-  background: #3b82f6;
+  background: var(--color-tone-heroic);
   color: white;
 }
 
 .toneBadge.dark {
-  background: #374151;
+  background: var(--color-tone-dark);
   color: white;
 }
 
 .toneBadge.lighthearted {
-  background: #f59e0b;
+  background: var(--color-tone-lighthearted);
   color: white;
 }
 
 .toneBadge.gritty {
-  background: #ef4444;
+  background: var(--color-danger);
   color: white;
 }
 
 .toneBadge.mysterious {
-  background: #8b5cf6;
+  background: var(--color-primary);
   color: white;
 }
 
@@ -285,9 +281,9 @@
   padding: 0.25rem 0.75rem;
   border-radius: 20px;
   font-size: 0.8rem;
-  background: #f3f4f6;
-  color: #6b7280;
-  border: 1px solid #d1d5db;
+  background: var(--color-clone-bg);
+  color: var(--color-clone-text);
+  border: 1px solid var(--color-clone-border);
 }
 
 .campaignActions {
@@ -299,9 +295,9 @@
 .emptyState {
   text-align: center;
   padding: 3rem 2rem;
-  background: rgba(15, 64, 79, 0.4); /* Semi-transparent primary */
+  background: var(--color-fantasy-primary-40); /* Semi-transparent primary */
   border-radius: 12px;
-  border: 2px dashed #788070; /* Steel dashed border */
+  border: 2px dashed var(--color-steel); /* Steel dashed border */
 }
 
 .emptyIcon {
@@ -310,14 +306,14 @@
 }
 
 .emptyState h3 {
-  color: #e4bb1e; /* Gold color for headings */
+  color: var(--color-accent-gold); /* Gold color for headings */
   margin: 0 0 0.5rem 0;
   font-family: "Cinzel", serif;
   font-weight: 600;
 }
 
 .emptyState p {
-  color: #f4f1e8; /* Light warm text */
+  color: var(--color-text-warm); /* Light warm text */
   margin: 0 0 2rem 0;
 }
 
@@ -356,5 +352,24 @@
 
   .headerContent h1 {
     font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .campaignManager {
+    padding: 0.75rem;
+  }
+
+  .headerContent h1 {
+    font-size: 1.5rem;
+  }
+
+  .actionButton {
+    min-height: 44px;
+  }
+
+  .viewToggle {
+    min-height: 44px;
+    font-size: 1rem; /* Prevent iOS zoom */
   }
 }

@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import App from "./App";
-import type { Campaign, Character } from "./services/api";
+import type { Campaign, Character } from "./types";
 
 // Mock API calls
 vi.mock("./services/api", () => ({

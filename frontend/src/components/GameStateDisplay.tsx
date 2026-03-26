@@ -1,31 +1,7 @@
 import type React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
+import type { CombatState, GameSession } from "../types";
 import styles from "./GameStateDisplay.module.css";
-
-interface GameSession {
-  session_id: string;
-  campaign_id: string;
-  type: string;
-  status: string;
-  current_scene: string;
-  available_actions: string[];
-  scene_count: number;
-  started_at: string;
-}
-
-interface CombatState {
-  combat_id: string;
-  status: string;
-  round: number;
-  current_turn: number;
-  initiative_order: Array<{
-    type: string;
-    id: string;
-    name: string;
-    initiative: number;
-  }>;
-  environment: string;
-}
 
 interface GameStateDisplayProps {
   session?: GameSession | null;
@@ -42,6 +18,8 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
   onActionSelect,
   onCombatAction,
 }) => {
+  const actionSelectId = useId();
+  const targetSelectId = useId();
   const [selectedAction, setSelectedAction] = useState<string>("");
   const [actionDescription, setActionDescription] = useState<string>("");
   const [targetId, setTargetId] = useState<string>("");
@@ -120,7 +98,7 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
 
       {/* Combat State */}
       {combatState && combatState.status === "active" && (
-        <div className={styles.combatState}>
+        <div className={styles.combatState} aria-live="polite">
           <div className={styles.combatHeader}>
             <h3>Combat</h3>
             <div className={styles.combatInfo}>
@@ -186,7 +164,11 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
         <div className={styles.availableActions}>
           <h4>Available Actions:</h4>
           <div className={styles.actionSelection}>
+            <label htmlFor={actionSelectId} className={styles.srOnly}>
+              Available action
+            </label>
             <select
+              id={actionSelectId}
               value={selectedAction}
               onChange={(e) => setSelectedAction(e.target.value)}
               className={styles.actionSelect}
@@ -212,7 +194,11 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
                 {combatState &&
                   (selectedAction.toLowerCase().includes("attack") ||
                     selectedAction.toLowerCase().includes("target")) && (
+                    <label htmlFor="target-select" className={styles.srOnly}>
+                      Select target
+                    </label>
                     <select
+                      id="target-select"
                       value={targetId}
                       onChange={(e) => setTargetId(e.target.value)}
                       className={styles.targetSelect}
@@ -255,7 +241,7 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
               }}
               className="quick-action-button attack"
             >
-              ⚔️ Attack
+              <span aria-hidden="true">⚔️</span> Attack
             </button>
             <button
               type="button"
@@ -265,7 +251,7 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
               }}
               className="quick-action-button spell"
             >
-              ✨ Spell
+              <span aria-hidden="true">✨</span> Spell
             </button>
             <button
               type="button"
@@ -275,7 +261,7 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
               }}
               className="quick-action-button move"
             >
-              🏃 Move
+              <span aria-hidden="true">🏃</span> Move
             </button>
             <button
               type="button"
@@ -285,7 +271,7 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
               }}
               className="quick-action-button defend"
             >
-              🛡️ Defend
+              <span aria-hidden="true">🛡️</span> Defend
             </button>
             <button
               type="button"
@@ -295,7 +281,7 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
               }}
               className="quick-action-button item"
             >
-              🎒 Item
+              <span aria-hidden="true">🎒</span> Item
             </button>
           </div>
         </div>

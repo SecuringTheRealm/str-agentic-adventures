@@ -1,6 +1,6 @@
 import type React from "react";
 import { predefinedCharacters } from "../data/predefinedCharacters";
-import type { Character } from "../services/api";
+import type { Character } from "../types";
 import styles from "./PredefinedCharacters.module.css";
 
 interface PredefinedCharactersProps {

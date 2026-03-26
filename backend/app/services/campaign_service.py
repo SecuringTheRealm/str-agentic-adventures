@@ -6,7 +6,7 @@ from typing import Any
 
 from sqlalchemy import or_
 
-from app.database import get_session
+from app.database import get_session_context
 from app.models.db_models import Campaign as CampaignDB
 from app.models.game_models import Campaign, CreateCampaignRequest
 
@@ -55,7 +55,7 @@ class CampaignService:
         )
 
         # Save to database
-        with next(get_session()) as db:
+        with get_session_context() as db:
             db_campaign = CampaignDB(
                 id=campaign_id,
                 name=campaign_data.name,
@@ -75,7 +75,7 @@ class CampaignService:
 
     def get_campaign(self, campaign_id: str) -> Campaign | None:
         """Retrieve a campaign by ID."""
-        with next(get_session()) as db:
+        with get_session_context() as db:
             db_campaign = (
                 db.query(CampaignDB).filter(CampaignDB.id == campaign_id).first()
             )
@@ -87,7 +87,7 @@ class CampaignService:
         self, include_templates: bool = True, include_custom: bool = True
     ) -> list[Campaign]:
         """List campaigns based on filters."""
-        with next(get_session()) as db:
+        with get_session_context() as db:
             query = db.query(CampaignDB)
 
             conditions = []
@@ -110,7 +110,7 @@ class CampaignService:
 
     def get_templates(self) -> list[Campaign]:
         """Get pre-built campaign templates."""
-        with next(get_session()) as db:
+        with get_session_context() as db:
             db_campaigns = db.query(CampaignDB).filter(CampaignDB.is_template).all()
 
             campaigns = []
@@ -146,7 +146,7 @@ class CampaignService:
         )
 
         # Save to database
-        with next(get_session()) as db:
+        with get_session_context() as db:
             db_campaign = CampaignDB(
                 id=cloned_campaign.id,
                 name=cloned_campaign.name,
@@ -171,7 +171,7 @@ class CampaignService:
         self, campaign_id: str, updates: dict[str, Any]
     ) -> Campaign | None:
         """Update an existing campaign."""
-        with next(get_session()) as db:
+        with get_session_context() as db:
             db_campaign = (
                 db.query(CampaignDB).filter(CampaignDB.id == campaign_id).first()
             )
@@ -219,7 +219,7 @@ class CampaignService:
 
     def delete_campaign(self, campaign_id: str) -> bool:
         """Delete a campaign (only custom campaigns, not templates)."""
-        with next(get_session()) as db:
+        with get_session_context() as db:
             db_campaign = (
                 db.query(CampaignDB)
                 .filter(
@@ -342,7 +342,7 @@ class CampaignService:
             },
         ]
 
-        with next(get_session()) as db:
+        with get_session_context() as db:
             for template_data in templates:
                 # Check if template already exists
                 existing = (

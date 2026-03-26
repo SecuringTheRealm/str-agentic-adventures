@@ -1,4 +1,4 @@
-import type { Character } from "../services/api";
+import type { Character } from "../types";
 
 // Predefined characters following D&D 5e rules for quick selection
 export const predefinedCharacters: Omit<Character, "id">[] = [
