@@ -4,6 +4,7 @@ Main FastAPI application to serve the AI Dungeon Master backend.
 
 import logging
 import os
+import sys
 from contextlib import asynccontextmanager
 
 import uvicorn
@@ -11,24 +12,32 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from pythonjsonlogger.json import JsonFormatter
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 from starlette.middleware.base import BaseHTTPMiddleware
 
 # Local imports
-from app.api import game_routes, websocket_routes
+from app.api.routes import all_routers
+from app.api import websocket_routes
 from app.config import init_settings
 from app.services.campaign_service import campaign_service
 
 # Load environment variables
 load_dotenv()
 
-# Configure logging
-logging.basicConfig(
-    level=getattr(logging, os.getenv("APP_LOG_LEVEL", "INFO").upper()),
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+# Configure structured JSON logging
+_log_level = getattr(logging, os.getenv("APP_LOG_LEVEL", "INFO").upper())
+_handler = logging.StreamHandler(sys.stdout)
+_handler.setFormatter(
+    JsonFormatter(
+        fmt="%(asctime)s %(name)s %(levelname)s %(message)s %(module)s %(funcName)s"
+    )
 )
+logging.root.handlers = [_handler]
+logging.root.setLevel(_log_level)
+
 logger = logging.getLogger(__name__)
 
 # Rate limiter configuration
@@ -116,7 +125,8 @@ async def global_exception_handler(request: Request, exc: Exception) -> JSONResp
 
 
 # Include routers
-app.include_router(game_routes.router, prefix="/game")
+for _router in all_routers:
+    app.include_router(_router, prefix="/game")
 app.include_router(websocket_routes.router)
 
 

@@ -115,3 +115,38 @@ class Spell(Base):
         JSON, nullable=False, default=list
     )  # Classes that can learn this spell
     data = Column(JSON, nullable=False)  # Additional spell data and effects
+
+
+class NPCProfileDB(Base):
+    """NPCProfile table for game-engine NPC profiles."""
+
+    __tablename__ = "npc_profiles"
+
+    id = Column(String, primary_key=True, index=True)
+    campaign_id = Column(String, ForeignKey("campaigns.id"), nullable=False, index=True)
+    name = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    personality_traits = Column(JSON, nullable=False, default=list)
+    disposition = Column(String, nullable=False, default="neutral")
+    location = Column(String, nullable=True)
+    is_alive = Column(Boolean, nullable=False, default=True)
+    conversation_notes = Column(JSON, nullable=False, default=list)
+    created_at = Column(DateTime, nullable=False, default=_utcnow)
+    updated_at = Column(DateTime, nullable=False, default=_utcnow, onupdate=_utcnow)
+
+
+class NPCRelationshipDB(Base):
+    """NPCRelationship table for tracking NPC disposition within a campaign."""
+
+    __tablename__ = "npc_relationships"
+
+    id = Column(String, primary_key=True, index=True)
+    npc_id = Column(String, ForeignKey("npc_profiles.id"), nullable=False, index=True)
+    campaign_id = Column(String, ForeignKey("campaigns.id"), nullable=False, index=True)
+    disposition_score = Column(Integer, nullable=False, default=0)
+    interactions_count = Column(Integer, nullable=False, default=0)
+    key_events = Column(JSON, nullable=False, default=list)
+    last_interaction = Column(String, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=_utcnow)
+    updated_at = Column(DateTime, nullable=False, default=_utcnow, onupdate=_utcnow)
+

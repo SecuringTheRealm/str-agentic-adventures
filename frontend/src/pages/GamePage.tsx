@@ -1,12 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import GameInterface from "../components/GameInterface";
-import {
-  type Campaign,
-  type Character,
-  getCampaign,
-  getCharacter,
-} from "../services/api";
+import { getCampaign, getCharacter } from "../services/api";
+import type { Campaign, Character } from "../types";
 
 const GamePage: React.FC = () => {
   const { id, characterId } = useParams<{ id: string; characterId: string }>();

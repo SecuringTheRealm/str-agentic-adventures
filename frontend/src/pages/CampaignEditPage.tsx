@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import CampaignEditor from "../components/CampaignEditor";
-import { type Campaign, getCampaign } from "../services/api";
+import { getCampaign } from "../services/api";
+import type { Campaign } from "../types";
 
 const CampaignEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();

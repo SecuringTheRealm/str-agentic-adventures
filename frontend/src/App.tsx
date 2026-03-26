@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import "./App.css";
 import CampaignEditPage from "./pages/CampaignEditPage";
@@ -8,13 +9,18 @@ import CharacterSelectionPage from "./pages/CharacterSelectionPage";
 import GamePage from "./pages/GamePage";
 
 function App() {
+  const mainId = useId();
+
   return (
     <div className="App">
+      <a href={`#${mainId}`} className="skip-link">
+        Skip to main content
+      </a>
       <header className="App-header">
         <h1>Securing the Realm - Agentic Adventures</h1>
       </header>
 
-      <main className="App-main">
+      <main id={mainId} className="App-main">
         <Routes>
           <Route path="/" element={<CampaignSelectionPage />} />
           <Route path="/campaigns/new" element={<CampaignNewPage />} />

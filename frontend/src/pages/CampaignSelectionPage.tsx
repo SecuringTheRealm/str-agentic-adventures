@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import type { Campaign } from "../services/api";
+import type { Campaign } from "../types";
 import CampaignSelection from "../components/CampaignSelection";
 
 const CampaignSelectionPage: React.FC = () => {

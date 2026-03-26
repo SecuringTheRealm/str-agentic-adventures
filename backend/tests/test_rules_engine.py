@@ -1,4 +1,4 @@
-"""Tests for backend/app/rules_engine.py — attack resolution, damage calculation, HP tracking, death saves, initiative."""
+"""Tests for rules_engine.py: attacks, damage, HP, death saves, initiative, level-up."""
 
 from unittest.mock import patch
 
@@ -7,7 +7,11 @@ from app.rules_engine import (
     apply_damage,
     apply_healing,
     calculate_damage,
+    calculate_level_up_hp,
+    check_level_up,
     death_saving_throw,
+    get_proficiency_bonus,
+    is_asi_level,
     resolve_attack,
     roll_initiative,
 )
@@ -396,3 +400,96 @@ class TestRollInitiative:
         results = roll_initiative(combatants)
         assert results[0]["name"] == "Paladin"
         assert results[0]["hp"] == 45
+
+
+# ---------------------------------------------------------------------------
+# Level-up mechanics
+# ---------------------------------------------------------------------------
+
+
+class TestCheckLevelUp:
+    """XP threshold checks for levelling up."""
+
+    def test_level_up_when_xp_meets_threshold(self) -> None:
+        # 300 XP is exactly the threshold for level 2
+        assert check_level_up(300, 1) is True
+
+    def test_level_up_when_xp_exceeds_threshold(self) -> None:
+        assert check_level_up(500, 1) is True
+
+    def test_no_level_up_when_xp_below_threshold(self) -> None:
+        assert check_level_up(299, 1) is False
+
+    def test_no_level_up_at_max_level(self) -> None:
+        # Already level 20 – can't go to 21
+        assert check_level_up(999999, 20) is False
+
+    def test_level_up_near_max(self) -> None:
+        # Level 19 → 20 requires 355 000 XP
+        assert check_level_up(355000, 19) is True
+
+    def test_no_level_up_just_below_high_threshold(self) -> None:
+        assert check_level_up(354999, 19) is False
+
+
+class TestCalculateLevelUpHp:
+    """HP gain on level-up per class."""
+
+    def test_average_wizard(self) -> None:
+        # d6 wizard: average = 6 // 2 + 1 = 4; +0 CON mod → 4
+        assert calculate_level_up_hp("wizard", 0) == 4
+
+    def test_average_fighter(self) -> None:
+        # d10 fighter: 10 // 2 + 1 = 6; +2 CON mod → 8
+        assert calculate_level_up_hp("fighter", 2) == 8
+
+    def test_average_barbarian(self) -> None:
+        # d12 barbarian: 12 // 2 + 1 = 7; +3 CON mod → 10
+        assert calculate_level_up_hp("barbarian", 3) == 10
+
+    def test_average_negative_con(self) -> None:
+        # d8 rogue: average = 5; -1 CON → 4
+        assert calculate_level_up_hp("rogue", -1) == 4
+
+    def test_average_unknown_class_defaults_d8(self) -> None:
+        # Unknown class defaults to d8: 8 // 2 + 1 = 5; +0 CON → 5
+        assert calculate_level_up_hp("artificer", 0) == 5
+
+    def test_rolled_result_at_least_1(self) -> None:
+        # Even with a terrible roll and severe negative CON, HP gain is at least 1
+        with patch("app.rules_engine.random.randint", return_value=1):
+            result = calculate_level_up_hp("wizard", -5, use_average=False)
+        assert result == 1
+
+    def test_rolled_result_uses_full_die(self) -> None:
+        with patch("app.rules_engine.random.randint", return_value=6):
+            result = calculate_level_up_hp("wizard", 2, use_average=False)
+        assert result == 8  # 6 + 2
+
+
+class TestGetProficiencyBonus:
+    """Proficiency bonus scales every 4 levels."""
+
+    @pytest.mark.parametrize("level,expected", [
+        (1, 2), (2, 2), (3, 2), (4, 2),
+        (5, 3), (6, 3), (7, 3), (8, 3),
+        (9, 4), (10, 4), (11, 4), (12, 4),
+        (13, 5), (14, 5), (15, 5), (16, 5),
+        (17, 6), (18, 6), (19, 6), (20, 6),
+    ])
+    def test_proficiency_by_level(self, level: int, expected: int) -> None:
+        assert get_proficiency_bonus(level) == expected
+
+
+class TestIsAsiLevel:
+    """ASI levels are 4, 8, 12, 16, 19 (fighter/rogue differ but base class rule)."""
+
+    @pytest.mark.parametrize("level", [4, 8, 12, 16, 19])
+    def test_asi_levels(self, level: int) -> None:
+        assert is_asi_level(level) is True
+
+    @pytest.mark.parametrize(
+        "level", [1, 2, 3, 5, 6, 7, 9, 10, 11, 13, 14, 15, 17, 18, 20]
+    )
+    def test_non_asi_levels(self, level: int) -> None:
+        assert is_asi_level(level) is False

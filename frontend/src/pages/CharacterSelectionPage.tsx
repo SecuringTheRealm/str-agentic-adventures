@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import CharacterSelection from "../components/CharacterSelection";
-import { type Campaign, type Character, getCampaign } from "../services/api";
+import { getCampaign } from "../services/api";
+import type { Campaign, Character } from "../types";
 
 const CharacterSelectionPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();

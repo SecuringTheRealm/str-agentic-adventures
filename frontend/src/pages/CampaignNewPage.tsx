@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import type { Campaign } from "../services/api";
+import type { Campaign } from "../types";
 import CampaignEditor from "../components/CampaignEditor";
 
 const CampaignNewPage: React.FC = () => {

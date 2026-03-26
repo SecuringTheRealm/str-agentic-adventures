@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import CharacterCreation from "../components/CharacterCreation";
-import { type Campaign, type Character, getCampaign } from "../services/api";
+import { getCampaign } from "../services/api";
+import type { Campaign, Character } from "../types";
 
 const CharacterNewPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();

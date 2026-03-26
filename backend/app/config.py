@@ -11,7 +11,7 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    model_config = ConfigDict(env_file=".env", env_file_encoding="utf-8")
+    model_config = ConfigDict(env_file=".env", env_file_encoding="utf-8", frozen=True)
 
     # Azure OpenAI Settings
     # Pydantic-settings automatically reads from environment variables
@@ -34,6 +34,10 @@ class Settings(BaseSettings):
     # Limits the number of DALL-E images generated per session to reduce spend.
     max_images_per_session: int = 3
     image_session_window_minutes: int = 30
+
+    # Azure AI Content Safety
+    content_safety_endpoint: str = ""
+    content_safety_api_key: str = ""
 
     # Storage Settings
     storage_connection_string: str = ""
