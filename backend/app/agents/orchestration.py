@@ -108,7 +108,12 @@ def detect_agent_triggers(dm_response: str, player_input: str) -> list[str]:
 async def _call_combat_mc(
     player_input: str, state: dict[str, Any]
 ) -> tuple[str, Any] | None:
-    """Invoke the Combat MC agent, returning a key-value pair or None on failure."""
+    """Invoke the Combat MC agent, returning a key-value pair or None on failure.
+
+    Passes the character's equipped weapon stats, attack bonus, and damage
+    modifier from the game context so that combat resolution uses the actual
+    character equipment rather than generic defaults.
+    """
     try:
         from app.agents.combat_mc_agent import get_combat_mc
 
@@ -118,6 +123,13 @@ async def _call_combat_mc(
             "description": player_input,
             "actor_id": state.get("character_id", "player"),
             "target_id": state.get("target_id", "enemy_1"),
+            # Carry over weapon/combat stats from game context (#416)
+            "attack_bonus": state.get("attack_bonus", 0),
+            "damage_dice": state.get("equipped_weapon_damage", "1d4"),
+            "damage_modifier": state.get("damage_modifier", 0),
+            "weapon_name": state.get("equipped_weapon_name", ""),
+            "weapon_properties": state.get("equipped_weapon_properties", []),
+            "proficiency_bonus": state.get("proficiency_bonus", 2),
         }
         combat_result = await combat_mc.process_combat_action(
             encounter_id=state.get("encounter_id", "auto"),

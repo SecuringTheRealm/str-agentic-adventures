@@ -442,14 +442,23 @@ class CombatMCAgent(BaseAgent):
 
         if action_type == "attack":
             # Simple attack resolution using fallback mechanics
-            attack_bonus = action_data.get("attack_bonus", 3)  # Default +3 attack
+            # Prefer attack_bonus from game context (populated by #416 wiring)
+            attack_bonus = action_data.get("attack_bonus", 3)
             target_ac = action_data.get("target_ac", 12)  # Default AC 12
 
             attack_roll = self._fallback_roll_d20(attack_bonus)
 
             if attack_roll["total"] >= target_ac:
-                # Hit - calculate damage
-                damage_dice = action_data.get("damage", "1d6+2")
+                # Hit - calculate damage.  Prefer damage_dice from game
+                # context; fall back to legacy "damage" key for compat.
+                damage_dice = action_data.get(
+                    "damage_dice", action_data.get("damage", "1d6+2")
+                )
+                # Append modifier if provided and not already in notation
+                damage_modifier = action_data.get("damage_modifier", 0)
+                if damage_modifier and "+" not in damage_dice and "-" not in damage_dice:
+                    sign = "+" if damage_modifier >= 0 else ""
+                    damage_dice = f"{damage_dice}{sign}{damage_modifier}"
                 damage_result = self._fallback_roll_damage(damage_dice)
 
                 result.update(
@@ -564,12 +573,20 @@ class CombatMCAgent(BaseAgent):
     ) -> dict[str, Any]:
         """Process an attack action using the rules engine plugin."""
         try:
-            # Get attack parameters
+            # Get attack parameters.  Prefer keys populated by game context
+            # (#416 wiring); fall back to legacy keys for backward compat.
             attack_bonus = action_data.get("attack_bonus", 3)
             target_ac = action_data.get("target_ac", 12)
             advantage = action_data.get("advantage", False)
             disadvantage = action_data.get("disadvantage", False)
-            damage_dice = action_data.get("damage", "1d6+2")
+            damage_dice = action_data.get(
+                "damage_dice", action_data.get("damage", "1d6+2")
+            )
+            # Append damage modifier from character stats if not in notation
+            damage_modifier = action_data.get("damage_modifier", 0)
+            if damage_modifier and "+" not in damage_dice and "-" not in damage_dice:
+                sign = "+" if damage_modifier >= 0 else ""
+                damage_dice = f"{damage_dice}{sign}{damage_modifier}"
 
             # Use the rules engine to resolve the attack
             attack_result = rules_plugin.resolve_attack(
