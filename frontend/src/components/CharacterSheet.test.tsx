@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import type { Character } from "../services/api";
+import type { Character } from "../types";
 import CharacterSheet from "./CharacterSheet";
 import styles from "./CharacterSheet.module.css";
 

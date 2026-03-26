@@ -1,12 +1,7 @@
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { ChatMessage } from "../types";
 import styles from "./ChatBox.module.css";
-
-interface ChatMessage {
-  text: string;
-  sender: "player" | "dm";
-  isStreaming?: boolean;
-}
 
 interface ChatBoxProps {
   messages: ChatMessage[];

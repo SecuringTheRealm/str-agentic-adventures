@@ -3,13 +3,12 @@ import { useEffect, useRef, useState } from "react";
 import { useWebSocketSDK } from "../hooks/useWebSocketSDK";
 import type { WebSocketMessage } from "../services/api";
 import {
-  type Campaign,
-  type Character,
   generateBattleMap,
   generateImage,
   getOpeningNarrative,
   sendPlayerInput,
 } from "../services/api";
+import type { Campaign, Character, DiceResult } from "../types";
 import BattleMap from "./BattleMap";
 import CharacterSheet from "./CharacterSheet";
 import ChatBox from "./ChatBox";
@@ -72,7 +71,8 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
   const [combatActive, setCombatActive] = useState<boolean>(false);
   const [streamingMessage, setStreamingMessage] = useState<string>("");
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
-  const [webSocketDiceResult, setWebSocketDiceResult] = useState<any>(null);
+  const [webSocketDiceResult, setWebSocketDiceResult] =
+    useState<DiceResult | null>(null);
   const [suggestedActions, setSuggestedActions] = useState<string[]>([]);
 
   // Stable session ID for image-generation budget tracking.
@@ -240,7 +240,10 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 
       setLoading(true);
       setMessages([
-        { text: `Setting the scene for ${character.name}'s adventure…`, sender: "dm" },
+        {
+          text: `Setting the scene for ${character.name}'s adventure…`,
+          sender: "dm",
+        },
       ]);
       try {
         const narrative = await getOpeningNarrative(campaign.id, {

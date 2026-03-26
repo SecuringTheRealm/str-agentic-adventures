@@ -3,7 +3,6 @@ import { useCallback, useEffect, useId, useState } from "react";
 import {
   type AIAssistanceRequest,
   type AIContentGenerationRequest,
-  type Campaign,
   type CampaignCreateRequest,
   type CampaignUpdateRequest,
   createCampaign,
@@ -11,6 +10,7 @@ import {
   getAIAssistance,
   updateCampaign,
 } from "../services/api";
+import type { Campaign } from "../types";
 import styles from "./CampaignEditor.module.css";
 
 interface CampaignEditorProps {
