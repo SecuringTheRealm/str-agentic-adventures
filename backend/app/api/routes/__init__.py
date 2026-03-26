@@ -7,6 +7,7 @@ from .combat_routes import router as combat_router
 from .dice_routes import router as dice_router
 from .item_routes import router as item_router
 from .npc_routes import router as npc_router
+from .rest_routes import router as rest_router
 from .session_routes import router as session_router
 from .spell_routes import router as spell_router
 
@@ -20,4 +21,5 @@ all_routers = [
     ai_router,
     session_router,
     item_router,
+    rest_router,
 ]

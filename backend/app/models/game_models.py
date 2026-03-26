@@ -219,6 +219,8 @@ class CharacterSheet(BaseModel):
     hit_dice: str = (
         "1d8"  # Class-specific hit dice (e.g., "1d8" for rogues, "1d10" for fighters)
     )
+    hit_dice_remaining: int | None = None  # Defaults to level if None
+    exhaustion_level: int = 0  # 0-6, 6 = death
 
 
 class CombatParticipant(BaseModel):
@@ -726,3 +728,23 @@ class NPCProfileWithRelationship(BaseModel):
 class NPCProfileListResponse(BaseModel):
     npcs: list[NPCProfile]
     total_count: int
+
+
+class RestType(str, Enum):
+    SHORT = "short"
+    LONG = "long"
+
+
+class RestRequest(BaseModel):
+    character_id: str
+    rest_type: RestType
+    hit_dice_to_spend: int = 0
+
+
+class RestResponse(BaseModel):
+    success: bool
+    message: str
+    hp_recovered: int = 0
+    spell_slots_recovered: list[int] = Field(default_factory=list)
+    hit_dice_remaining: int = 0
+    exhaustion_level: int = 0
