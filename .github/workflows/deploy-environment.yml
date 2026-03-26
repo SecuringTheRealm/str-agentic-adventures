@@ -258,22 +258,19 @@ jobs:
           IMAGE_SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
           DOCKER_IMAGE="${{ steps.infrastructure-deploy.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT }}/backend:sha-$IMAGE_SHORT_SHA"
 
-          # Retrieve ACR admin credentials for container app registry configuration
-          ACR_NAME="${{ steps.infrastructure-deploy.outputs.AZURE_CONTAINER_REGISTRY_NAME }}"
-          ACR_USERNAME=$(az acr credential show --name "$ACR_NAME" --query username --output tsv)
-          ACR_PASSWORD=$(az acr credential show --name "$ACR_NAME" --query passwords[0].value --output tsv)
-
           echo "Deploying image: $DOCKER_IMAGE"
 
-          # Create or update the container app using the pre-built image
+          # Use managed identity for registry auth (no admin credentials needed)
+          MANAGED_IDENTITY_ID="${{ steps.infrastructure-deploy.outputs.AZURE_MANAGED_IDENTITY_ID }}"
+
+          # Create or update the container app using managed identity for registry auth
           az containerapp up \
             --name "$CONTAINER_APP_NAME" \
             --resource-group "$RESOURCE_GROUP" \
             --environment "$CONTAINER_APP_ENVIRONMENT" \
             --image "$DOCKER_IMAGE" \
             --registry-server "${{ steps.infrastructure-deploy.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT }}" \
-            --registry-username "$ACR_USERNAME" \
-            --registry-password "$ACR_PASSWORD" \
+            --registry-identity "$MANAGED_IDENTITY_ID" \
             --target-port 8000 \
             --ingress external \
             --env-vars \
