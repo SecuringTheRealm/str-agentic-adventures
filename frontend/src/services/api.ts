@@ -1,6 +1,16 @@
-// API client using generated OpenAPI client
-import axios from "axios";
-import { Configuration, GameApi } from "../api-client";
+/**
+ * API service layer using openapi-fetch + openapi-typescript.
+ *
+ * All HTTP calls go through the typed `api` client exported from
+ * `../api-client/client.ts`. That client is configured from the generated
+ * schema types (`schema.d.ts`) produced by `bun run generate:api`.
+ *
+ * Migration note: this file previously used @openapitools/openapi-generator-cli
+ * runtime classes (GameApi, DefaultApi, Configuration) plus an axios instance.
+ * Those have been replaced by openapi-fetch which provides the same type safety
+ * without requiring Java or generated runtime code.
+ */
+import { api } from "../api-client/client";
 // Import WebSocket client for unified SDK
 import {
   WebSocketClient,
@@ -8,72 +18,109 @@ import {
   type WebSocketMessage,
   websocketClient,
 } from "../api-client/websocketClient";
-import { getRuntimeMode } from "../utils/environment";
-import { getApiBaseUrl } from "../utils/urls";
-
-// Create configuration for the generated API client
-const configuration = new Configuration({
-  basePath: getApiBaseUrl(),
-});
-
-// Create the API client instance
-export const gameApi = new GameApi(configuration);
 
 // Export WebSocket client for unified SDK access
 export const wsClient = websocketClient;
+export type { WebSocketConnectionOptions, WebSocketMessage };
 export { WebSocketClient };
-export type { WebSocketMessage, WebSocketConnectionOptions };
 
-// Create a compatible apiClient for existing code that uses direct axios calls
-export const apiClient = axios.create({
-  baseURL: getApiBaseUrl(),
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
+// ============================================================================
+// Type definitions
+//
+// These mirror the backend Pydantic models. Once schema.d.ts is generated
+// (`bun run generate:api`), openapi-fetch infers the exact request/response
+// types automatically. The interfaces below exist so that consuming components
+// can import named types without depending on the generated file at build time.
+// ============================================================================
 
-// Add response interceptor for better error handling in production
-try {
-  if (apiClient?.interceptors) {
-    apiClient.interceptors.response.use(
-      (response) => response,
-      (error) => {
-        // Add context to errors for better debugging
-        if (error.response) {
-          console.error("API Error Response:", {
-            status: error.response.status,
-            statusText: error.response.statusText,
-            url: error.config?.url,
-            data: error.response.data,
-          });
-        } else if (error.request) {
-          console.error("API Network Error:", {
-            url: error.config?.url,
-            message: error.message,
-            baseURL: apiClient.defaults?.baseURL,
-          });
-        }
-        return Promise.reject(error);
-      }
-    );
-  }
-} catch (error) {
-  // Ignore interceptor setup errors in test environment
-  if (getRuntimeMode() !== "test") {
-    console.warn("Failed to setup API interceptors:", error);
-  }
+export interface AbilityScores {
+  strength: number;
+  dexterity: number;
+  constitution: number;
+  intelligence: number;
+  wisdom: number;
+  charisma: number;
 }
 
-// Export compatibility aliases for types that have different names
-export type {
-  CharacterSheet as Character,
-  CreateCampaignRequest as CampaignCreateRequest,
-  CreateCharacterRequest as CharacterCreateRequest,
-} from "../api-client";
-// Export all types from the generated client
-export * from "../api-client";
+export interface HitPoints {
+  current: number;
+  maximum: number;
+}
 
-// Define legacy interface types for compatibility
+export interface Character {
+  id?: string;
+  name: string;
+  race: string;
+  character_class: string;
+  level?: number;
+  abilities: AbilityScores;
+  hitPoints?: HitPoints;
+  hit_points?: HitPoints;
+  inventory?: InventoryItem[];
+  backstory?: string;
+  [key: string]: unknown;
+}
+
+export interface Campaign {
+  id?: string;
+  name: string;
+  setting?: string;
+  tone?: string;
+  homebrew_rules?: string;
+  world_description?: string;
+  world_art?: { image_url?: string };
+  [key: string]: unknown;
+}
+
+export interface CharacterCreateRequest {
+  name: string;
+  race: string;
+  character_class: string;
+  abilities: AbilityScores;
+  backstory?: string;
+}
+
+export interface CampaignCreateRequest {
+  name: string;
+  setting?: string;
+  tone?: string;
+  homebrew_rules?: string;
+}
+
+export interface CampaignUpdateRequest {
+  name?: string;
+  setting?: string;
+  tone?: string;
+  homebrew_rules?: string;
+  [key: string]: unknown;
+}
+
+export interface CloneCampaignRequest {
+  template_id: string;
+  name?: string;
+  [key: string]: unknown;
+}
+
+export interface PlayerInput {
+  character_id: string;
+  campaign_id: string;
+  message: string;
+}
+
+export interface AIAssistanceRequest {
+  campaign_id?: string;
+  prompt: string;
+  context?: string;
+  [key: string]: unknown;
+}
+
+export interface AIContentGenerationRequest {
+  campaign_id?: string;
+  content_type: string;
+  parameters?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
 export interface InventoryItem {
   name: string;
   quantity: number;
@@ -81,85 +128,135 @@ export interface InventoryItem {
   description?: string;
 }
 
-// Wrapper functions to maintain compatibility with existing frontend code
-export const createCharacter = async (
-  characterData: import("../api-client").CreateCharacterRequest
-) => {
-  // Normalize race and character_class to lowercase as backend expects
-  const normalizedData = {
-    ...characterData,
-    race: characterData.race?.toLowerCase() as import("../api-client").Race,
-    character_class:
-      characterData.character_class?.toLowerCase() as import("../api-client").CharacterClass,
+export interface PlayerInputResponse {
+  message: string;
+  images?: string[];
+  combat_updates?: {
+    status?: string;
+    map_url?: string;
+    [key: string]: unknown;
   };
-  const response =
-    await gameApi.createCharacterGameCharacterPost(normalizedData);
-  return response.data;
+  state_updates?: {
+    auto_saved?: boolean;
+    last_auto_save?: string;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+export interface OpeningNarrativeResponse {
+  scene_description: string;
+  quest_hook: string;
+  suggested_actions: string[];
+  help_text: string;
+}
+
+// ============================================================================
+// API wrapper functions
+//
+// Each function calls the backend via the openapi-fetch `api` client.
+// The path strings match the FastAPI route definitions.
+// ============================================================================
+
+export const createCharacter = async (
+  characterData: CharacterCreateRequest
+): Promise<Character> => {
+  // Normalise race and character_class to lowercase as backend expects
+  const body = {
+    ...characterData,
+    race: characterData.race?.toLowerCase(),
+    character_class: characterData.character_class?.toLowerCase(),
+  };
+
+  const { data, error } = await api.POST("/game/character", {
+    body,
+  });
+  if (error) throw error;
+  return data as Character;
 };
 
-export const getCharacter = async (characterId: string) => {
-  const response =
-    await gameApi.getCharacterGameCharacterCharacterIdGet(characterId);
-  return response.data;
+export const getCharacter = async (characterId: string): Promise<Character> => {
+  const { data, error } = await api.GET("/game/character/{character_id}", {
+    params: { path: { character_id: characterId } },
+  });
+  if (error) throw error;
+  return data as Character;
 };
 
 export const sendPlayerInput = async (
-  input: import("../api-client").PlayerInput
-) => {
-  const response = await gameApi.processPlayerInputGameInputPost(input);
-  return response.data;
+  input: PlayerInput
+): Promise<PlayerInputResponse> => {
+  const { data, error } = await api.POST("/game/input", {
+    body: input,
+  });
+  if (error) throw error;
+  return data as PlayerInputResponse;
 };
 
 export const createCampaign = async (
-  campaignData: import("../api-client").CreateCampaignRequest
-) => {
-  const response = await gameApi.createCampaignGameCampaignPost(campaignData);
-  return response.data;
+  campaignData: CampaignCreateRequest
+): Promise<Campaign> => {
+  const { data, error } = await api.POST("/game/campaign", {
+    body: campaignData,
+  });
+  if (error) throw error;
+  return data as Campaign;
 };
 
-export const getCampaigns = async () => {
-  const response = await gameApi.listCampaignsGameCampaignsGet();
-  return response.data;
+export const getCampaigns = async (): Promise<Campaign[]> => {
+  const { data, error } = await api.GET("/game/campaigns");
+  if (error) throw error;
+  return (data ?? []) as Campaign[];
 };
 
-export const getCampaign = async (campaignId: string) => {
-  const response =
-    await gameApi.getCampaignGameCampaignCampaignIdGet(campaignId);
-  return response.data;
+export const getCampaign = async (campaignId: string): Promise<Campaign> => {
+  const { data, error } = await api.GET("/game/campaign/{campaign_id}", {
+    params: { path: { campaign_id: campaignId } },
+  });
+  if (error) throw error;
+  return data as Campaign;
 };
 
 export const updateCampaign = async (
   campaignId: string,
-  updates: import("../api-client").CampaignUpdateRequest
-) => {
-  const response = await gameApi.updateCampaignGameCampaignCampaignIdPut(
-    campaignId,
-    updates
-  );
-  return response.data;
+  updates: CampaignUpdateRequest
+): Promise<Campaign> => {
+  const { data, error } = await api.PUT("/game/campaign/{campaign_id}", {
+    params: { path: { campaign_id: campaignId } },
+    body: updates,
+  });
+  if (error) throw error;
+  return data as Campaign;
 };
 
 export const cloneCampaign = async (
-  cloneData: import("../api-client").CloneCampaignRequest
-) => {
-  const response = await gameApi.cloneCampaignGameCampaignClonePost(cloneData);
-  return response.data;
+  cloneData: CloneCampaignRequest
+): Promise<Campaign> => {
+  const { data, error } = await api.POST("/game/campaign/clone", {
+    body: cloneData,
+  });
+  if (error) throw error;
+  return data as Campaign;
 };
 
-export const deleteCampaign = async (campaignId: string) => {
-  const response =
-    await gameApi.deleteCampaignGameCampaignCampaignIdDelete(campaignId);
-  return response.data;
+export const deleteCampaign = async (campaignId: string): Promise<void> => {
+  const { error } = await api.DELETE("/game/campaign/{campaign_id}", {
+    params: { path: { campaign_id: campaignId } },
+  });
+  if (error) throw error;
 };
 
-export const getCampaignTemplates = async () => {
-  const response = await gameApi.getCampaignTemplatesGameCampaignTemplatesGet();
-  // The API returns {templates: [...]} but we need to return just the array
-  return response.data.templates || [];
+export const getCampaignTemplates = async (): Promise<Campaign[]> => {
+  const { data, error } = await api.GET("/game/campaign/templates");
+  if (error) throw error;
+  // The API returns {templates: [...]} but we need just the array
+  const payload = data as { templates?: Campaign[] } | Campaign[];
+  if (Array.isArray(payload)) return payload;
+  return payload?.templates ?? [];
 };
 
 /**
- * Retry wrapper for API calls to handle temporary failures
+ * Retry wrapper for API calls to handle temporary failures.
  */
 const retryApiCall = async <T>(
   apiCall: () => Promise<T>,
@@ -178,26 +275,17 @@ const retryApiCall = async <T>(
       lastError = error;
 
       // Don't retry on client errors (4xx), only server errors (5xx) and network errors
-      const errorWithResponse = error as {
-        response?: { status?: number };
-        message?: string;
-      };
-      if (
-        errorWithResponse.response?.status &&
-        errorWithResponse.response.status >= 400 &&
-        errorWithResponse.response.status < 500
-      ) {
+      const errorObj = error as { status?: number; message?: string };
+      if (errorObj.status && errorObj.status >= 400 && errorObj.status < 500) {
         throw error;
       }
 
-      if (attempt === retries) {
-        break;
-      }
+      if (attempt === retries) break;
 
       const delayMs = initialDelay * 2 ** (attempt - 1);
       console.warn(
         `API call failed (attempt ${attempt}/${retries}), retrying in ${delayMs}ms...`,
-        errorWithResponse.message
+        errorObj.message
       );
       await sleep(delayMs);
     }
@@ -206,48 +294,46 @@ const retryApiCall = async <T>(
   throw lastError || new Error("All retry attempts failed");
 };
 
-/**
- * Get campaign templates with retry logic for production reliability
- */
-export const getCampaignTemplatesWithRetry = async () => {
+/** Get campaign templates with retry logic for production reliability. */
+export const getCampaignTemplatesWithRetry = async (): Promise<Campaign[]> => {
   return retryApiCall(() => getCampaignTemplates(), 3, 1000);
 };
 
-export const getAIAssistance = async (
-  request: import("../api-client").AIAssistanceRequest
-) => {
-  const response =
-    await gameApi.getAiAssistanceGameCampaignAiAssistPost(request);
-  return response.data;
+export const getAIAssistance = async (request: AIAssistanceRequest) => {
+  const { data, error } = await api.POST("/game/campaign/ai-assist", {
+    body: request,
+  });
+  if (error) throw error;
+  return data;
 };
 
 export const generateAIContent = async (
-  request: import("../api-client").AIContentGenerationRequest
+  request: AIContentGenerationRequest
 ) => {
-  const response =
-    await gameApi.generateAiContentGameCampaignAiGeneratePost(request);
-  return response.data;
+  const { data, error } = await api.POST("/game/campaign/ai-generate", {
+    body: request,
+  });
+  if (error) throw error;
+  return data;
 };
 
 export const generateImage = async (imageRequest: Record<string, unknown>) => {
-  const response =
-    await gameApi.generateImageGameGenerateImagePost(imageRequest);
-  return response.data;
+  const { data, error } = await api.POST("/game/generate-image", {
+    body: imageRequest as never,
+  });
+  if (error) throw error;
+  return data;
 };
 
 export const generateBattleMap = async (
   mapRequest: Record<string, unknown>
 ) => {
-  const response = await gameApi.generateBattleMapGameBattleMapPost(mapRequest);
-  return response.data;
+  const { data, error } = await api.POST("/game/battle-map", {
+    body: mapRequest as never,
+  });
+  if (error) throw error;
+  return data;
 };
-
-export interface OpeningNarrativeResponse {
-  scene_description: string;
-  quest_hook: string;
-  suggested_actions: string[];
-  help_text: string;
-}
 
 export const getOpeningNarrative = async (
   campaignId: string,
@@ -258,9 +344,39 @@ export const getOpeningNarrative = async (
     backstory?: string;
   }
 ): Promise<OpeningNarrativeResponse> => {
-  const response = await apiClient.post<OpeningNarrativeResponse>(
-    `/game/campaign/${campaignId}/opening-narrative`,
-    { character }
+  const { data, error } = await api.POST(
+    "/game/campaign/{campaign_id}/opening-narrative",
+    {
+      params: { path: { campaign_id: campaignId } },
+      body: { character } as never,
+    }
   );
-  return response.data;
+  if (error) throw error;
+  return data as OpeningNarrativeResponse;
+};
+
+// ============================================================================
+// Dice roll helper
+//
+// Replaces the old `apiClient` (axios instance) that was used by DiceRoller.
+// ============================================================================
+
+export const rollDice = async (
+  notation: string,
+  characterId?: string,
+  skill?: string
+) => {
+  if (characterId && skill) {
+    const { data, error } = await api.POST("/game/dice/roll-with-character", {
+      body: { notation, character_id: characterId, skill } as never,
+    });
+    if (error) throw error;
+    return data;
+  }
+
+  const { data, error } = await api.POST("/game/dice/roll", {
+    body: { notation } as never,
+  });
+  if (error) throw error;
+  return data;
 };

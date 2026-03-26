@@ -1,86 +1,74 @@
 /**
- * Tests for OpenAPI Generated Client Integration
- * Validates that the generated client is properly integrated and functional.
+ * Tests for the openapi-fetch API client integration.
+ *
+ * Validates that the typed client is properly configured and that the
+ * service wrapper functions in api.ts work correctly.
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  CharacterClass,
-  type CharacterSheet,
-  Configuration,
-  type CreateCharacterRequest,
-  DefaultApi,
-  GameApi,
-  Race,
-} from "../api-client";
-import { createCampaign, createCharacter, wsClient } from "./api";
+  type Campaign,
+  type CampaignCreateRequest,
+  type Character,
+  type CharacterCreateRequest,
+  createCampaign,
+  createCharacter,
+  getCampaign,
+  getCampaigns,
+  getCharacter,
+  rollDice,
+  sendPlayerInput,
+  wsClient,
+} from "./api";
 
-// Mock axios to avoid actual HTTP calls in tests
-vi.mock("axios");
+// Mock the openapi-fetch client module
+vi.mock("../api-client/client", () => {
+  const mockGet = vi.fn();
+  const mockPost = vi.fn();
+  const mockPut = vi.fn();
+  const mockDelete = vi.fn();
+  return {
+    api: {
+      GET: mockGet,
+      POST: mockPost,
+      PUT: mockPut,
+      DELETE: mockDelete,
+    },
+  };
+});
 
-describe("OpenAPI Generated Client Integration", () => {
-  let defaultApiClient: DefaultApi;
-  let gameApiClient: GameApi;
+// Import the mocked client so we can set up return values
+import { api } from "../api-client/client";
 
+const mockApi = api as {
+  GET: ReturnType<typeof vi.fn>;
+  POST: ReturnType<typeof vi.fn>;
+  PUT: ReturnType<typeof vi.fn>;
+  DELETE: ReturnType<typeof vi.fn>;
+};
+
+describe("openapi-fetch API Client Integration", () => {
   beforeEach(() => {
-    // Create API client with test configuration
-    const config = new Configuration({
-      basePath: "http://localhost:8000",
-    });
-    defaultApiClient = new DefaultApi(config);
-    gameApiClient = new GameApi(config);
+    vi.clearAllMocks();
   });
 
   describe("API Client Setup", () => {
-    it("should create API client instance", () => {
-      expect(defaultApiClient).toBeDefined();
-      expect(defaultApiClient).toBeInstanceOf(DefaultApi);
-      expect(gameApiClient).toBeDefined();
-      expect(gameApiClient).toBeInstanceOf(GameApi);
-    });
-
-    it("should have configuration set", () => {
-      expect(defaultApiClient.configuration).toBeDefined();
-      expect(gameApiClient.configuration).toBeDefined();
-      expect(defaultApiClient.configuration.basePath).toBe(
-        "http://localhost:8000"
-      );
-      expect(gameApiClient.configuration.basePath).toBe(
-        "http://localhost:8000"
-      );
+    it("should have the typed API client available", () => {
+      expect(api).toBeDefined();
+      expect(api.GET).toBeDefined();
+      expect(api.POST).toBeDefined();
+      expect(api.PUT).toBeDefined();
+      expect(api.DELETE).toBeDefined();
     });
   });
 
-  describe("Generated Types Validation", () => {
-    it("should have CreateCharacterRequest type with correct fields", () => {
-      const characterRequest: CreateCharacterRequest = {
-        name: "Test Hero",
-        race: Race.Human,
-        characterClass: CharacterClass.Fighter,
-        abilities: {
-          strength: 16,
-          dexterity: 14,
-          constitution: 15,
-          intelligence: 12,
-          wisdom: 13,
-          charisma: 10,
-        },
-        backstory: "A brave warrior",
-      };
-
-      expect(characterRequest.name).toBe("Test Hero");
-      expect(characterRequest.race).toBe(Race.Human);
-      expect(characterRequest.characterClass).toBe(CharacterClass.Fighter);
-      expect(characterRequest.abilities).toBeDefined();
-      expect(characterRequest.abilities.strength).toBe(16);
-    });
-
-    it("should have CharacterSheet type with correct fields", () => {
-      const character: CharacterSheet = {
+  describe("Character API", () => {
+    it("should create a character via POST /game/character", async () => {
+      const mockCharacter: Character = {
         id: "test-id",
         name: "Test Hero",
-        race: Race.Human,
-        characterClass: CharacterClass.Fighter,
+        race: "human",
+        character_class: "fighter",
         level: 1,
         abilities: {
           strength: 16,
@@ -90,113 +78,14 @@ describe("OpenAPI Generated Client Integration", () => {
           wisdom: 13,
           charisma: 10,
         },
-        hitPoints: {
-          current: 20,
-          maximum: 20,
-        },
-        inventory: [],
       };
 
-      expect(character.id).toBe("test-id");
-      expect(character.name).toBe("Test Hero");
-      expect(character.race).toBe(Race.Human);
-      expect(character.characterClass).toBe(CharacterClass.Fighter);
-      expect(character.level).toBe(1);
-      expect(character.hitPoints).toBeDefined();
-      expect(character.hitPoints.current).toBe(20);
-      expect(character.hitPoints.maximum).toBe(20);
-      expect(character.inventory).toBeInstanceOf(Array);
-    });
+      mockApi.POST.mockResolvedValue({ data: mockCharacter, error: undefined });
 
-    it("should have correct enum values", () => {
-      // Test Race enum
-      expect(Race.Human).toBeDefined();
-      expect(Race.Elf).toBeDefined();
-      expect(Race.Dwarf).toBeDefined();
-      expect(Race.Halfling).toBeDefined();
-
-      // Test CharacterClass enum
-      expect(CharacterClass.Fighter).toBeDefined();
-      expect(CharacterClass.Wizard).toBeDefined();
-      expect(CharacterClass.Rogue).toBeDefined();
-      expect(CharacterClass.Cleric).toBeDefined();
-    });
-  });
-
-  describe("API Methods Availability", () => {
-    it("should have character creation method", () => {
-      expect(gameApiClient.createCharacterGameCharacterPost).toBeDefined();
-      expect(typeof gameApiClient.createCharacterGameCharacterPost).toBe(
-        "function"
-      );
-    });
-
-    it("should have character retrieval method", () => {
-      expect(
-        gameApiClient.getCharacterGameCharacterCharacterIdGet
-      ).toBeDefined();
-      expect(typeof gameApiClient.getCharacterGameCharacterCharacterIdGet).toBe(
-        "function"
-      );
-    });
-
-    it("should have campaign creation method", () => {
-      expect(gameApiClient.createCampaignGameCampaignPost).toBeDefined();
-      expect(typeof gameApiClient.createCampaignGameCampaignPost).toBe(
-        "function"
-      );
-    });
-
-    it("should have player input method", () => {
-      expect(gameApiClient.processPlayerInputGameInputPost).toBeDefined();
-      expect(typeof gameApiClient.processPlayerInputGameInputPost).toBe(
-        "function"
-      );
-    });
-
-    it("should have health check method", () => {
-      expect(defaultApiClient.healthCheckHealthGet).toBeDefined();
-      expect(typeof defaultApiClient.healthCheckHealthGet).toBe("function");
-    });
-  });
-
-  describe("Client Generation Validation", () => {
-    it("should have all exported types from api-client", () => {
-      // Import the main exports to ensure they exist
-      // Use ES modules instead of require for consistency
-      expect(DefaultApi).toBeDefined();
-      expect(GameApi).toBeDefined();
-      expect(Configuration).toBeDefined();
-
-      // Check that we can create instances
-      const config = new Configuration();
-      const defaultApi = new DefaultApi(config);
-      const gameApi = new GameApi(config);
-
-      expect(config).toBeInstanceOf(Configuration);
-      expect(defaultApi).toBeInstanceOf(DefaultApi);
-      expect(gameApi).toBeInstanceOf(GameApi);
-    });
-
-    it("should have type definitions for all models", () => {
-      // These imports should not throw if the types are properly generated
-      // Test that key enum types are available (interfaces are only available at compile time)
-
-      // These should be imported at the top of the file and be defined
-      expect(Race).toBeDefined();
-      expect(CharacterClass).toBeDefined();
-
-      // Test that enum values are correct
-      expect(Race.Human).toBeDefined();
-      expect(CharacterClass.Fighter).toBeDefined();
-    });
-
-    it("should have consistent field naming with backend", () => {
-      // Test that generated types use the field names expected by backend
-      const characterRequest: CreateCharacterRequest = {
-        name: "Test",
-        race: Race.Human,
-        characterClass: CharacterClass.Fighter, // Should be characterClass, not class
+      const request: CharacterCreateRequest = {
+        name: "Test Hero",
+        race: "Human",
+        character_class: "Fighter",
         abilities: {
           strength: 16,
           dexterity: 14,
@@ -207,39 +96,81 @@ describe("OpenAPI Generated Client Integration", () => {
         },
       };
 
-      // These field names should match the backend API exactly
-      expect(characterRequest).toHaveProperty("name");
-      expect(characterRequest).toHaveProperty("race");
-      expect(characterRequest).toHaveProperty("characterClass"); // Not 'class'
-      expect(characterRequest).toHaveProperty("abilities");
+      const result = await createCharacter(request);
+      expect(result).toEqual(mockCharacter);
+      expect(mockApi.POST).toHaveBeenCalledWith("/game/character", {
+        body: expect.objectContaining({
+          name: "Test Hero",
+          race: "human",
+          character_class: "fighter",
+        }),
+      });
     });
-  });
 
-  describe("Backward Compatibility", () => {
-    it("should maintain compatibility with legacy frontend code", () => {
-      // Test that the wrapper in api.ts maintains backward compatibility
-      expect(createCharacter).toBeDefined();
-      expect(typeof createCharacter).toBe("function");
+    it("should normalise race and class to lowercase", async () => {
+      mockApi.POST.mockResolvedValue({
+        data: { id: "1", name: "Hero" },
+        error: undefined,
+      });
 
-      expect(createCampaign).toBeDefined();
-      expect(typeof createCampaign).toBe("function");
+      await createCharacter({
+        name: "Hero",
+        race: "ELF",
+        character_class: "WIZARD",
+        abilities: {
+          strength: 10,
+          dexterity: 10,
+          constitution: 10,
+          intelligence: 10,
+          wisdom: 10,
+          charisma: 10,
+        },
+      });
+
+      const callBody = mockApi.POST.mock.calls[0][1].body;
+      expect(callBody.race).toBe("elf");
+      expect(callBody.character_class).toBe("wizard");
     });
-  });
 
-  describe("Error Handling", () => {
-    it("should handle API errors gracefully", async () => {
-      // Mock a failed response
-      const mockError = new Error("Network error");
-      vi.spyOn(
-        gameApiClient,
-        "createCharacterGameCharacterPost"
-      ).mockRejectedValue(mockError);
+    it("should retrieve a character via GET /game/character/{id}", async () => {
+      const mockCharacter: Character = {
+        id: "test-id",
+        name: "Test Hero",
+        race: "human",
+        character_class: "fighter",
+        abilities: {
+          strength: 16,
+          dexterity: 14,
+          constitution: 15,
+          intelligence: 12,
+          wisdom: 13,
+          charisma: 10,
+        },
+      };
 
-      try {
-        await gameApiClient.createCharacterGameCharacterPost({
+      mockApi.GET.mockResolvedValue({ data: mockCharacter, error: undefined });
+
+      const result = await getCharacter("test-id");
+      expect(result).toEqual(mockCharacter);
+      expect(mockApi.GET).toHaveBeenCalledWith(
+        "/game/character/{character_id}",
+        {
+          params: { path: { character_id: "test-id" } },
+        }
+      );
+    });
+
+    it("should throw on API error", async () => {
+      mockApi.POST.mockResolvedValue({
+        data: undefined,
+        error: { detail: "Validation error" },
+      });
+
+      await expect(
+        createCharacter({
           name: "Test",
-          race: Race.Human,
-          characterClass: CharacterClass.Fighter,
+          race: "Human",
+          character_class: "Fighter",
           abilities: {
             strength: 16,
             dexterity: 14,
@@ -248,60 +179,114 @@ describe("OpenAPI Generated Client Integration", () => {
             wisdom: 13,
             charisma: 10,
           },
-        });
-
-        // Should not reach here
-        expect(true).toBe(false);
-      } catch (error) {
-        expect(error).toBe(mockError);
-      }
+        })
+      ).rejects.toEqual({ detail: "Validation error" });
     });
   });
 
-  describe("Schema Validation", () => {
-    it("should validate required fields at compile time", () => {
-      // This test ensures TypeScript compilation catches missing required fields
-
-      // This should compile without errors
-      const validRequest: CreateCharacterRequest = {
-        name: "Test Hero",
-        race: Race.Human,
-        characterClass: CharacterClass.Fighter,
-        abilities: {
-          strength: 16,
-          dexterity: 14,
-          constitution: 15,
-          intelligence: 12,
-          wisdom: 13,
-          charisma: 10,
-        },
+  describe("Campaign API", () => {
+    it("should create a campaign via POST /game/campaign", async () => {
+      const mockCampaign: Campaign = {
+        id: "campaign-1",
+        name: "Test Campaign",
+        setting: "Fantasy",
       };
 
-      expect(validRequest).toBeDefined();
-      expect(validRequest.name).toBe("Test Hero");
+      mockApi.POST.mockResolvedValue({ data: mockCampaign, error: undefined });
 
-      // Note: Missing required fields would cause TypeScript compilation errors
-      // which is exactly what we want for type safety
+      const request: CampaignCreateRequest = {
+        name: "Test Campaign",
+        setting: "Fantasy",
+      };
+
+      const result = await createCampaign(request);
+      expect(result).toEqual(mockCampaign);
+      expect(mockApi.POST).toHaveBeenCalledWith("/game/campaign", {
+        body: request,
+      });
     });
 
-    it("should allow optional fields to be undefined", () => {
-      const requestWithoutOptionals: CreateCharacterRequest = {
-        name: "Test Hero",
-        race: Race.Human,
-        characterClass: CharacterClass.Fighter,
-        abilities: {
-          strength: 16,
-          dexterity: 14,
-          constitution: 15,
-          intelligence: 12,
-          wisdom: 13,
-          charisma: 10,
-        },
-        // backstory is optional and can be omitted
-      };
+    it("should list campaigns via GET /game/campaigns", async () => {
+      const mockCampaigns: Campaign[] = [
+        { id: "1", name: "Campaign One" },
+        { id: "2", name: "Campaign Two" },
+      ];
 
-      expect(requestWithoutOptionals).toBeDefined();
-      expect(requestWithoutOptionals.backstory).toBeUndefined();
+      mockApi.GET.mockResolvedValue({ data: mockCampaigns, error: undefined });
+
+      const result = await getCampaigns();
+      expect(result).toEqual(mockCampaigns);
+      expect(mockApi.GET).toHaveBeenCalledWith("/game/campaigns");
+    });
+
+    it("should retrieve a campaign via GET /game/campaign/{id}", async () => {
+      const mockCampaign: Campaign = { id: "1", name: "Test" };
+
+      mockApi.GET.mockResolvedValue({ data: mockCampaign, error: undefined });
+
+      const result = await getCampaign("1");
+      expect(result).toEqual(mockCampaign);
+      expect(mockApi.GET).toHaveBeenCalledWith("/game/campaign/{campaign_id}", {
+        params: { path: { campaign_id: "1" } },
+      });
+    });
+  });
+
+  describe("Player Input", () => {
+    it("should send player input via POST /game/input", async () => {
+      const mockResponse = { message: "The dragon attacks!", images: [] };
+      mockApi.POST.mockResolvedValue({ data: mockResponse, error: undefined });
+
+      const result = await sendPlayerInput({
+        character_id: "char-1",
+        campaign_id: "camp-1",
+        message: "I attack the dragon",
+      });
+
+      expect(result).toEqual(mockResponse);
+      expect(mockApi.POST).toHaveBeenCalledWith("/game/input", {
+        body: {
+          character_id: "char-1",
+          campaign_id: "camp-1",
+          message: "I attack the dragon",
+        },
+      });
+    });
+  });
+
+  describe("Dice Roll API", () => {
+    it("should roll dice via POST /game/dice/roll", async () => {
+      const mockResult = { notation: "1d20", rolls: [15], total: 15 };
+      mockApi.POST.mockResolvedValue({ data: mockResult, error: undefined });
+
+      const result = await rollDice("1d20");
+      expect(result).toEqual(mockResult);
+      expect(mockApi.POST).toHaveBeenCalledWith("/game/dice/roll", {
+        body: { notation: "1d20" },
+      });
+    });
+
+    it("should roll with character via POST /game/dice/roll-with-character", async () => {
+      const mockResult = {
+        notation: "1d20",
+        rolls: [15],
+        total: 17,
+        character_bonus: 2,
+      };
+      mockApi.POST.mockResolvedValue({ data: mockResult, error: undefined });
+
+      const result = await rollDice("1d20", "char-1", "athletics");
+      expect(result).toEqual(mockResult);
+      expect(mockApi.POST).toHaveBeenCalledWith(
+        "/game/dice/roll-with-character",
+        {
+          body: {
+            notation: "1d20",
+            character_id: "char-1",
+            skill: "athletics",
+          },
+        }
+      );
     });
   });
 
@@ -327,6 +312,96 @@ describe("OpenAPI Generated Client Integration", () => {
       expect(
         wsBaseUrl.startsWith("ws://") || wsBaseUrl.startsWith("wss://")
       ).toBe(true);
+    });
+  });
+
+  describe("Type Definitions", () => {
+    it("should define CharacterCreateRequest with required fields", () => {
+      const request: CharacterCreateRequest = {
+        name: "Test Hero",
+        race: "human",
+        character_class: "fighter",
+        abilities: {
+          strength: 16,
+          dexterity: 14,
+          constitution: 15,
+          intelligence: 12,
+          wisdom: 13,
+          charisma: 10,
+        },
+      };
+
+      expect(request.name).toBe("Test Hero");
+      expect(request.race).toBe("human");
+      expect(request.character_class).toBe("fighter");
+      expect(request.abilities).toBeDefined();
+      expect(request.abilities.strength).toBe(16);
+    });
+
+    it("should define Character with expected fields", () => {
+      const character: Character = {
+        id: "test-id",
+        name: "Test Hero",
+        race: "human",
+        character_class: "fighter",
+        level: 1,
+        abilities: {
+          strength: 16,
+          dexterity: 14,
+          constitution: 15,
+          intelligence: 12,
+          wisdom: 13,
+          charisma: 10,
+        },
+        hitPoints: { current: 20, maximum: 20 },
+        inventory: [],
+      };
+
+      expect(character.id).toBe("test-id");
+      expect(character.name).toBe("Test Hero");
+      expect(character.level).toBe(1);
+      expect(character.hitPoints?.current).toBe(20);
+      expect(character.hitPoints?.maximum).toBe(20);
+      expect(character.inventory).toBeInstanceOf(Array);
+    });
+
+    it("should allow optional fields to be undefined", () => {
+      const request: CharacterCreateRequest = {
+        name: "Test Hero",
+        race: "human",
+        character_class: "fighter",
+        abilities: {
+          strength: 16,
+          dexterity: 14,
+          constitution: 15,
+          intelligence: 12,
+          wisdom: 13,
+          charisma: 10,
+        },
+        // backstory is optional and can be omitted
+      };
+
+      expect(request).toBeDefined();
+      expect(request.backstory).toBeUndefined();
+    });
+  });
+
+  describe("Backward Compatibility", () => {
+    it("should maintain wrapper functions for existing frontend code", () => {
+      expect(createCharacter).toBeDefined();
+      expect(typeof createCharacter).toBe("function");
+
+      expect(createCampaign).toBeDefined();
+      expect(typeof createCampaign).toBe("function");
+
+      expect(getCampaign).toBeDefined();
+      expect(typeof getCampaign).toBe("function");
+
+      expect(getCampaigns).toBeDefined();
+      expect(typeof getCampaigns).toBe("function");
+
+      expect(sendPlayerInput).toBeDefined();
+      expect(typeof sendPlayerInput).toBe("function");
     });
   });
 });
