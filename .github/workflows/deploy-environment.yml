@@ -48,7 +48,7 @@ on:
       AZURE_OPENAI_ENDPOINT:
         required: true
       AZURE_OPENAI_API_KEY:
-        required: true
+        required: false
     outputs:
       backend-uri:
         description: "Backend URI"
@@ -169,8 +169,7 @@ jobs:
               environmentName="${{ inputs.environment-name }}" \
               location="${{ inputs.location }}" \
               resourceGroupName="${{ inputs.resource-group-name }}" \
-              azureOpenAiEndpoint="${{ secrets.AZURE_OPENAI_ENDPOINT }}" \
-              azureOpenAiApiKey="${{ secrets.AZURE_OPENAI_API_KEY }}"
+              azureOpenAiEndpoint="${{ secrets.AZURE_OPENAI_ENDPOINT }}"
         timeout-minutes: 5
 
       - name: Deploy Infrastructure with Bicep (Deployment Stack)
@@ -190,7 +189,6 @@ jobs:
               "location": "${{ inputs.location }}",
               "resourceGroupName": "${{ inputs.resource-group-name }}",
               "azureOpenAiEndpoint": "${{ secrets.AZURE_OPENAI_ENDPOINT }}",
-              "azureOpenAiApiKey": "${{ secrets.AZURE_OPENAI_API_KEY }}",
               "azureOpenAiChatDeployment": "${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT || 'gpt-4o-mini' }}",
               "azureOpenAiEmbeddingDeployment": "${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT || 'text-embedding-ada-002' }}",
               "azureOpenAiDalleDeployment": "${{ vars.AZURE_OPENAI_DALLE_DEPLOYMENT || 'gpt-image-1-mini' }}"
@@ -199,6 +197,18 @@ jobs:
           action-on-unmanage-resourcegroups: ${{ inputs.is-production && 'detach' || 'delete' }}
           deny-settings-mode: ${{ inputs.is-production && 'denyDelete' || 'none' }}
         timeout-minutes: 20
+
+      - name: Assign Cognitive Services OpenAI User role to managed identity
+        if: steps.infrastructure-deploy.outcome == 'success'
+        env:
+          MI_PRINCIPAL_ID: ${{ steps.infrastructure-deploy.outputs.AZURE_MANAGED_IDENTITY_PRINCIPAL_ID }}
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        run: |
+          az role assignment create \
+            --assignee-object-id "$MI_PRINCIPAL_ID" \
+            --assignee-principal-type ServicePrincipal \
+            --role "Cognitive Services OpenAI User" \
+            --scope "/subscriptions/$AZURE_SUBSCRIPTION_ID" || true
 
       - name: Set up Docker Buildx
         if: steps.infrastructure-deploy.outcome == 'success'
@@ -275,12 +285,13 @@ jobs:
             --ingress external \
             --env-vars \
               "AZURE_OPENAI_ENDPOINT=${{ secrets.AZURE_OPENAI_ENDPOINT }}" \
-              "AZURE_OPENAI_API_KEY=${{ secrets.AZURE_OPENAI_API_KEY }}" \
-              "AZURE_OPENAI_API_VERSION=2023-12-01-preview" \
+              "AZURE_OPENAI_API_VERSION=2025-05-01" \
               "AZURE_OPENAI_CHAT_DEPLOYMENT=${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT || 'gpt-4o-mini' }}" \
               "AZURE_OPENAI_EMBEDDING_DEPLOYMENT=${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT || 'text-embedding-ada-002' }}" \
               "AZURE_OPENAI_DALLE_DEPLOYMENT=${{ vars.AZURE_OPENAI_DALLE_DEPLOYMENT || 'gpt-image-1-mini' }}" \
               "AZURE_STORAGE_ACCOUNT_NAME=$STORAGE_ACCOUNT_NAME" \
+              "AZURE_CLIENT_ID=${{ steps.infrastructure-deploy.outputs.AZURE_MANAGED_IDENTITY_CLIENT_ID }}" \
+              "AZURE_KEY_VAULT_NAME=${{ steps.infrastructure-deploy.outputs.AZURE_KEY_VAULT_NAME }}" \
               "STORAGE_CONNECTION_STRING=$STORAGE_CONNECTION_STRING" \
               "APP_HOST=0.0.0.0" \
               "APP_PORT=8000" \

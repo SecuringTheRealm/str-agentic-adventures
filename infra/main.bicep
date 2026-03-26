@@ -12,7 +12,7 @@ param location string
 @description('Name of the resource group to create or use')
 param resourceGroupName string = '${environmentName}-rg'
 
-@description('Azure OpenAI API Key')
+@description('Azure OpenAI API Key (optional — managed identity is preferred)')
 @secure()
 param azureOpenAiApiKey string = ''
 
@@ -98,6 +98,18 @@ module managedIdentity 'modules/managed-identity.bicep' = {
   }
 }
 
+// Create Key Vault for secret storage
+module keyVault 'modules/key-vault.bicep' = {
+  name: 'key-vault'
+  scope: rg
+  params: {
+    name: '${environmentName}-kv-${resourceToken}'
+    location: location
+    tags: tags
+    managedIdentityPrincipalId: managedIdentity.outputs.principalId
+  }
+}
+
 // Assign roles to managed identity (AcrPull + Storage Blob Data Contributor)
 module roleAssignments 'modules/role-assignments.bicep' = {
   name: 'role-assignments'
@@ -139,3 +151,5 @@ output AZURE_STORAGE_ACCOUNT_NAME string = storage.outputs.name
 output AZURE_STATIC_WEB_APP_NAME string = frontend.outputs.name
 output AZURE_MANAGED_IDENTITY_ID string = managedIdentity.outputs.id
 output AZURE_MANAGED_IDENTITY_CLIENT_ID string = managedIdentity.outputs.clientId
+output AZURE_MANAGED_IDENTITY_PRINCIPAL_ID string = managedIdentity.outputs.principalId
+output AZURE_KEY_VAULT_NAME string = keyVault.outputs.name

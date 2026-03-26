@@ -1,10 +1,16 @@
 """Async service for Azure AI Content Safety Prompt Shields API."""
 
+from __future__ import annotations
+
 import logging
 import os
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 import aiohttp
+
+if TYPE_CHECKING:
+    from azure.identity.aio import DefaultAzureCredential as AsyncDefaultAzureCredential
 
 logger = logging.getLogger(__name__)
 
@@ -23,12 +29,17 @@ class ShieldResult:
 
 
 class PromptShieldService:
-    """Calls Azure AI Content Safety Prompt Shields API before messages reach LLM."""
+    """Calls Azure AI Content Safety Prompt Shields API before messages reach LLM.
+
+    Authenticates via API key when ``CONTENT_SAFETY_API_KEY`` is set, otherwise
+    falls back to managed identity (DefaultAzureCredential).
+    """
 
     def __init__(self) -> None:
         self._endpoint = os.getenv("CONTENT_SAFETY_ENDPOINT")
         self._api_key = os.getenv("CONTENT_SAFETY_API_KEY")
         self._is_configured = bool(self._endpoint)
+        self._credential: AsyncDefaultAzureCredential | None = None
         if not self._is_configured:
             logger.warning("CONTENT_SAFETY_ENDPOINT not set — Prompt Shields disabled.")
 
@@ -59,6 +70,20 @@ class PromptShieldService:
         headers = {"Content-Type": "application/json"}
         if self._api_key:
             headers["Ocp-Apim-Subscription-Key"] = self._api_key
+        else:
+            # Use managed identity when no API key is provided
+            try:
+                if self._credential is None:
+                    from azure.identity.aio import DefaultAzureCredential as _Cred
+
+                    self._credential = _Cred()
+                token = await self._credential.get_token(
+                    "https://cognitiveservices.azure.com/.default"
+                )
+                headers["Authorization"] = f"Bearer {token.token}"
+            except Exception as exc:
+                logger.error("Failed to acquire managed identity token: %s", exc)
+                return ShieldResult(False, False)  # fail open
 
         try:
             async with (
