@@ -113,7 +113,12 @@ class CombatCartographerAgent(BaseAgent):
                 prompt += f", including {', '.join(hazards)}"
 
             # Add tactical map specifics
-            prompt += ". Grid-based tactical map, D&D battle map style, clear terrain features, strategic positioning elements, top-down orthographic view, detailed but clear, suitable for tabletop RPG combat"
+            prompt += (
+                ". Grid-based tactical map, D&D battle map style,"
+                " clear terrain features, strategic positioning elements,"
+                " top-down orthographic view, detailed but clear,"
+                " suitable for tabletop RPG combat"
+            )
 
             # Generate the map using Azure OpenAI gpt-image-1
             image_result = await self.azure_client.generate_image(
@@ -331,7 +336,7 @@ class CombatCartographerAgent(BaseAgent):
 _combat_cartographer = None
 
 
-def get_combat_cartographer():
+def get_combat_cartographer() -> CombatCartographerAgent:
     """Get the combat cartographer instance, creating it if necessary."""
     global _combat_cartographer
     if _combat_cartographer is None:

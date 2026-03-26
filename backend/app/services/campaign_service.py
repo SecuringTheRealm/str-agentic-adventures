@@ -244,7 +244,12 @@ class CampaignService:
                 "setting": "The Sword Coast region of the Forgotten Realms, centered around the frontier town of Phandalin and the surrounding wilderness.",
                 "tone": "heroic",
                 "homebrew_rules": [],
-                "world_description": "The sleepy frontier town of Phandalin lies on the Triboar Trail, a trade route connecting the coastal city of Neverwinter to the inland settlements. Recently, goblins have been raiding merchant caravans, threatening the town's prosperity. Meanwhile, rumors speak of a lost mine filled with magical treasures, somewhere in the nearby hills.",
+                "world_description": (
+                    "The sleepy frontier town of Phandalin lies on the Triboar Trail, a trade route connecting"
+                    " the coastal city of Neverwinter to the inland settlements. Recently, goblins have been"
+                    " raiding merchant caravans, threatening the town's prosperity. Meanwhile, rumors speak of"
+                    " a lost mine filled with magical treasures, somewhere in the nearby hills."
+                ),
                 "plot_hooks": [
                     "Escort a supply wagon to Phandalin for Gundren Rockseeker",
                     "Investigate the goblin attacks on local merchants",
@@ -262,7 +267,12 @@ class CampaignService:
                 "setting": "Waterdeep, the bustling metropolis known as the City of Splendors, where noble houses scheme and hidden treasures await discovery.",
                 "tone": "mysterious",
                 "homebrew_rules": [],
-                "world_description": "Waterdeep is a city of grand towers and crowded streets, where merchant princes rub shoulders with spies and adventurers. The city is divided into wards, each with its own character - from the wealthy Sea Ward to the dangerous Dock Ward. Recently, a cache of dragons' gold has gone missing, and every faction in the city wants to claim it.",
+                "world_description": (
+                    "Waterdeep is a city of grand towers and crowded streets, where merchant princes rub"
+                    " shoulders with spies and adventurers. The city is divided into wards, each with its own"
+                    " character - from the wealthy Sea Ward to the dangerous Dock Ward. Recently, a cache of"
+                    " dragons' gold has gone missing, and every faction in the city wants to claim it."
+                ),
                 "plot_hooks": [
                     "Investigate a mysterious explosion at a local tavern",
                     "Navigate the complex politics of Waterdeep's noble houses",
@@ -284,7 +294,12 @@ class CampaignService:
                     "Death saves are made in secret by the DM",
                     "Resurrection magic has a chance to fail",
                 ],
-                "world_description": "Barovia is a land under a curse, shrouded in mist and ruled by the vampire Count Strahd von Zarovich. The sun rarely shines through the perpetual overcast sky, and the very land seems to work against those who would oppose its dark master. Villages huddle behind weak walls, their inhabitants living in fear of the creatures that emerge when darkness falls.",
+                "world_description": (
+                    "Barovia is a land under a curse, shrouded in mist and ruled by the vampire Count Strahd"
+                    " von Zarovich. The sun rarely shines through the perpetual overcast sky, and the very land"
+                    " seems to work against those who would oppose its dark master. Villages huddle behind weak"
+                    " walls, their inhabitants living in fear of the creatures that emerge when darkness falls."
+                ),
                 "plot_hooks": [
                     "Escape the mysterious mists that have transported you to this cursed land",
                     "Help the tormented souls trapped in Barovia find peace",
@@ -306,7 +321,13 @@ class CampaignService:
                     "Swimming and sailing checks are more common",
                     "Firearms are allowed and more prevalent",
                 ],
-                "world_description": "The warm waters of the Shining Sea are dotted with tropical islands, each harboring its own secrets. Port cities bustle with merchants, sailors, and rogues of every description. The line between privateer and pirate is often blurred, and fortunes can be made or lost with a single voyage. Ancient ruins hide treasures from lost civilizations, while sea monsters lurk in the depths.",
+                "world_description": (
+                    "The warm waters of the Shining Sea are dotted with tropical islands, each harboring its"
+                    " own secrets. Port cities bustle with merchants, sailors, and rogues of every description."
+                    " The line between privateer and pirate is often blurred, and fortunes can be made or lost"
+                    " with a single voyage. Ancient ruins hide treasures from lost civilizations, while sea"
+                    " monsters lurk in the depths."
+                ),
                 "plot_hooks": [
                     "Search for a legendary pirate's buried treasure",
                     "Defend merchant ships from pirate attacks",
@@ -328,7 +349,13 @@ class CampaignService:
                     "Cybernetic enhancements available for characters",
                     "Magic is rare and often suppressed by corporate interests",
                 ],
-                "world_description": "The year is 2087, and the world has changed. Massive corporations control every aspect of life in the sprawling megacities. Technology has advanced to incredible heights, but magic has also returned to the world, creating an uneasy balance. In the shadows between the gleaming corporate towers and the dark undercity, shadowrunners operate - freelance operatives who take on jobs that the corps can't or won't handle officially.",
+                "world_description": (
+                    "The year is 2087, and the world has changed. Massive corporations control every aspect of"
+                    " life in the sprawling megacities. Technology has advanced to incredible heights, but magic"
+                    " has also returned to the world, creating an uneasy balance. In the shadows between the"
+                    " gleaming corporate towers and the dark undercity, shadowrunners operate - freelance"
+                    " operatives who take on jobs that the corps can't or won't handle officially."
+                ),
                 "plot_hooks": [
                     "Infiltrate a corporate facility to steal valuable data",
                     "Investigate mysterious magical phenomena in the city",

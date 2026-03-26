@@ -192,10 +192,7 @@ class TestFrontendBackendAPICompatibility:
 
         for endpoint, method in progression_endpoints:
             full_endpoint = build_path(endpoint)
-            if method == "GET":
-                response = client.get(full_endpoint)
-            else:
-                response = client.post(full_endpoint, json={})
+            response = client.get(full_endpoint) if method == "GET" else client.post(full_endpoint, json={})
             assert response.status_code in [200, 400, 404, 422, 500], (
                 f"{method} {endpoint} should exist"
             )

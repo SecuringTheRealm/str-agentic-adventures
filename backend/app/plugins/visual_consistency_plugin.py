@@ -704,11 +704,7 @@ class VisualConsistencyPlugin:
                 return True
 
         # Check for feature consistency
-        if "feature" in rule_lower:
-            if "beard" in rule_lower and "beard" not in combined_text:
-                return True
-
-        return False
+        return "feature" in rule_lower and "beard" in rule_lower and "beard" not in combined_text
 
     def _generate_consistency_recommendations(
         self, profile: dict[str, Any], violations: list[dict[str, Any]]

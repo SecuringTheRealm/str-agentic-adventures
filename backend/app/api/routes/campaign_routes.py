@@ -1,6 +1,7 @@
 """Campaign CRUD routes."""
 
 import logging
+from typing import Any
 
 from fastapi import APIRouter, HTTPException, status
 
@@ -20,7 +21,7 @@ router = APIRouter(tags=["campaigns"])
 
 
 @router.post("/campaign", response_model=Campaign)
-async def create_campaign(campaign_data: CreateCampaignRequest, config: ConfigDep):
+async def create_campaign(campaign_data: CreateCampaignRequest, config: ConfigDep) -> dict[str, Any]:
     """Create a new campaign."""
     try:
         # Campaign creation doesn't require Azure OpenAI - it's just database operations
@@ -49,7 +50,7 @@ async def create_campaign(campaign_data: CreateCampaignRequest, config: ConfigDe
 
 
 @router.get("/campaigns", response_model=CampaignListResponse)
-async def list_campaigns():
+async def list_campaigns() -> dict[str, Any]:
     """List all campaigns including templates and custom campaigns."""
     try:
         all_campaigns = campaign_service.list_campaigns()
@@ -65,7 +66,7 @@ async def list_campaigns():
 
 
 @router.get("/campaign/templates")
-async def get_campaign_templates():
+async def get_campaign_templates() -> dict[str, Any]:
     """Get pre-built campaign templates."""
     try:
         templates = campaign_service.get_templates()
@@ -79,7 +80,7 @@ async def get_campaign_templates():
 
 
 @router.get("/campaign/{campaign_id}", response_model=Campaign)
-async def get_campaign(campaign_id: str):
+async def get_campaign(campaign_id: str) -> dict[str, Any]:
     """Get a specific campaign by ID."""
     try:
         campaign = campaign_service.get_campaign(campaign_id)
@@ -99,7 +100,7 @@ async def get_campaign(campaign_id: str):
 
 
 @router.put("/campaign/{campaign_id}", response_model=Campaign)
-async def update_campaign(campaign_id: str, updates: CampaignUpdateRequest):
+async def update_campaign(campaign_id: str, updates: CampaignUpdateRequest) -> dict[str, Any]:
     """Update an existing campaign."""
     try:
         # Convert to dict, excluding None values
@@ -129,7 +130,7 @@ async def update_campaign(campaign_id: str, updates: CampaignUpdateRequest):
 
 
 @router.post("/campaign/clone", response_model=Campaign)
-async def clone_campaign(clone_data: CloneCampaignRequest):
+async def clone_campaign(clone_data: CloneCampaignRequest) -> dict[str, Any]:
     """Clone a template campaign for customization."""
     try:
         cloned_campaign = campaign_service.clone_campaign(
@@ -153,7 +154,7 @@ async def clone_campaign(clone_data: CloneCampaignRequest):
 
 
 @router.delete("/campaign/{campaign_id}")
-async def delete_campaign(campaign_id: str):
+async def delete_campaign(campaign_id: str) -> dict[str, Any]:
     """Delete a custom campaign (templates cannot be deleted)."""
     try:
         success = campaign_service.delete_campaign(campaign_id)

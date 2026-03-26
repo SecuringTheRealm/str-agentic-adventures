@@ -2,13 +2,13 @@
 Pydantic models for structured battle map data.
 """
 
-from enum import Enum
+from enum import StrEnum
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
 
 
-class TerrainType(str, Enum):
+class TerrainType(StrEnum):
     STONE_FLOOR = "stone_floor"
     WOODEN_FLOOR = "wooden_floor"
     GRASS = "grass"
@@ -20,7 +20,7 @@ class TerrainType(str, Enum):
     STAIRS = "stairs"
 
 
-class TeamType(str, Enum):
+class TeamType(StrEnum):
     PLAYER = "player"
     ENEMY = "enemy"
     NEUTRAL = "neutral"

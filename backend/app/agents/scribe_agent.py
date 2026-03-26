@@ -1168,7 +1168,7 @@ class ScribeAgent(BaseAgent):
 _scribe = None
 
 
-def get_scribe():
+def get_scribe() -> ScribeAgent:
     """Get the scribe instance, creating it if necessary."""
     global _scribe
     if _scribe is None:

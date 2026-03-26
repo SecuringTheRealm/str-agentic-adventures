@@ -27,7 +27,7 @@ router = APIRouter(tags=["spells"])
 
 
 @router.post("/character/{character_id}/spells", response_model=dict[str, Any])
-async def manage_character_spells(character_id: str, request: ManageSpellsRequest):
+async def manage_character_spells(character_id: str, request: ManageSpellsRequest) -> dict[str, Any]:
     """Manage known spells for a character."""
     try:
         # This would integrate with a character storage system
@@ -47,7 +47,7 @@ async def manage_character_spells(character_id: str, request: ManageSpellsReques
 
 
 @router.post("/character/{character_id}/spell-slots", response_model=dict[str, Any])
-async def manage_spell_slots(character_id: str, request: ManageSpellSlotsRequest):
+async def manage_spell_slots(character_id: str, request: ManageSpellSlotsRequest) -> dict[str, Any]:
     """Manage spell slot usage and recovery for a character."""
     try:
         # This would integrate with a character storage system
@@ -68,7 +68,7 @@ async def manage_spell_slots(character_id: str, request: ManageSpellSlotsRequest
 
 
 @router.post("/combat/{combat_id}/cast-spell", response_model=SpellCastingResponse)
-async def cast_spell_in_combat(combat_id: str, request: CastSpellRequest, db: DbDep):
+async def cast_spell_in_combat(combat_id: str, request: CastSpellRequest, db: DbDep) -> dict[str, Any]:
     """Cast spells during combat with sophisticated effect resolution."""
     try:
         # Load spell from database if available, otherwise use default effects
@@ -136,8 +136,8 @@ async def _get_spell_data(spell_id: str, db: Session) -> dict[str, Any]:
                 "higher_levels": spell.higher_levels,
                 **spell.data,
             }
-    except Exception:
-        pass  # Fall back to basic spell data
+    except Exception:  # noqa: S110
+        pass  # SRD lookup failed; fall back to basic spell data below
 
     # Default spell data for unknown spells
     return _get_default_spell_data(spell_id)
@@ -299,7 +299,7 @@ async def get_spell_list(
     character_class: CharacterClass | None = None,
     spell_level: int | None = None,
     school: str | None = None,
-):
+) -> dict[str, Any]:
     """Get available spells by class and level."""
     try:
         from app.srd_data import load_spells
@@ -353,7 +353,7 @@ async def get_spell_list(
 @router.post("/spells/save-dc", response_model=dict[str, Any])
 async def calculate_spell_save_dc_endpoint(
     character_class: CharacterClass, level: int, spellcasting_ability_score: int
-):
+) -> dict[str, Any]:
     """Calculate spell save DC for a character."""
     try:
         # Map character classes to their spellcasting abilities
@@ -417,7 +417,7 @@ async def calculate_spell_save_dc_endpoint(
 @router.post(
     "/character/{character_id}/concentration", response_model=ConcentrationCheckResponse
 )
-async def manage_concentration(character_id: str, request: ConcentrationRequest):
+async def manage_concentration(character_id: str, request: ConcentrationRequest) -> dict[str, Any]:
     """Manage spell concentration tracking for a character."""
     try:
         if request.action == "start":
@@ -475,7 +475,7 @@ async def manage_concentration(character_id: str, request: ConcentrationRequest)
 
 
 @router.post("/spells/attack-bonus", response_model=dict[str, Any])
-async def calculate_spell_attack_bonus(request: SpellAttackBonusRequest):
+async def calculate_spell_attack_bonus(request: SpellAttackBonusRequest) -> dict[str, Any]:
     """Calculate spell attack bonus for a character."""
     try:
         # Map character classes to their spellcasting abilities

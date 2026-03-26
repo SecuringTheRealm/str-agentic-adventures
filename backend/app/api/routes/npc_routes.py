@@ -35,7 +35,7 @@ router = APIRouter(tags=["npcs"])
 
 
 @router.post("/campaign/{campaign_id}/npcs", response_model=NPC)
-async def create_campaign_npc(campaign_id: str, request: CreateNPCRequest):
+async def create_campaign_npc(campaign_id: str, request: CreateNPCRequest) -> dict[str, Any]:
     """Create and manage campaign NPCs."""
     try:
         # Generate basic personality traits if not provided
@@ -111,7 +111,7 @@ async def create_campaign_npc(campaign_id: str, request: CreateNPCRequest):
 
 
 @router.get("/npc/{npc_id}/personality", response_model=NPCPersonality)
-async def get_npc_personality(npc_id: str):
+async def get_npc_personality(npc_id: str) -> dict[str, Any]:
     """Get NPC personality traits and behaviors."""
     try:
         # This would normally retrieve from a database
@@ -134,7 +134,7 @@ async def get_npc_personality(npc_id: str):
 
 
 @router.post("/npc/{npc_id}/interaction", response_model=NPCInteractionResponse)
-async def log_npc_interaction(npc_id: str, request: NPCInteractionRequest):
+async def log_npc_interaction(npc_id: str, request: NPCInteractionRequest) -> dict[str, Any]:
     """Log and retrieve NPC interaction history."""
     try:
         # Create interaction record
@@ -171,7 +171,7 @@ async def log_npc_interaction(npc_id: str, request: NPCInteractionRequest):
 
 
 @router.post("/npc/{npc_id}/generate-stats", response_model=NPCStatsResponse)
-async def generate_npc_stats(npc_id: str, request: GenerateNPCStatsRequest):
+async def generate_npc_stats(npc_id: str, request: GenerateNPCStatsRequest) -> dict[str, Any]:
     """Generate combat stats for NPCs dynamically."""
     try:
         level = request.level or 1

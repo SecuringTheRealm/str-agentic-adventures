@@ -14,14 +14,14 @@ from app.agents.orchestration import (
 )
 from app.agents.scribe_agent import get_scribe
 from app.api.routes._shared import limiter
-from app.auto_save import check_and_schedule_auto_save
-from app.config import get_settings
 from app.api.routes.combat_routes import (
     process_combat_action,
     process_exploration_action,
     process_general_action,
     process_skill_check,
 )
+from app.auto_save import check_and_schedule_auto_save
+from app.config import get_settings
 from app.models.game_models import (
     GameResponse,
     PlayerInput,
@@ -36,7 +36,9 @@ router = APIRouter(tags=["sessions"])
 
 @router.post("/input", response_model=GameResponse)
 @limiter.limit("10/minute")
-async def process_player_input(request: Request, player_input: PlayerInput):  # noqa: ARG001
+async def process_player_input(  # noqa: ARG001
+    request: Request, player_input: PlayerInput,
+) -> GameResponse:
     """Process player input and get game response."""
     try:
         # Check for prompt injection attacks before processing
@@ -146,7 +148,9 @@ async def process_player_input(request: Request, player_input: PlayerInput):  # 
 
 @router.post("/campaign/generate-world", response_model=dict[str, Any])
 @limiter.limit("10/minute")
-async def generate_campaign_world(request: Request, campaign_data: dict[str, Any]):  # noqa: ARG001
+async def generate_campaign_world(  # noqa: ARG001
+    request: Request, campaign_data: dict[str, Any],
+) -> dict[str, Any]:
     """Generate world description and setting for a new campaign."""
     try:
         campaign_name = campaign_data.get("name", "Unnamed Campaign")
@@ -178,7 +182,7 @@ async def generate_campaign_world(request: Request, campaign_data: dict[str, Any
 
 
 @router.post("/campaign/{campaign_id}/start-session", response_model=dict[str, Any])
-async def start_game_session(campaign_id: str, session_data: dict[str, Any]):
+async def start_game_session(campaign_id: str, session_data: dict[str, Any]) -> dict[str, Any]:
     """Start a new game session for a campaign."""
     try:
         character_ids = session_data.get("character_ids", [])
@@ -207,7 +211,7 @@ async def start_game_session(campaign_id: str, session_data: dict[str, Any]):
 
 
 @router.post("/campaign/{campaign_id}/opening-narrative", response_model=dict[str, Any])
-async def get_opening_narrative(campaign_id: str, request_data: dict[str, Any]):
+async def get_opening_narrative(campaign_id: str, request_data: dict[str, Any]) -> dict[str, Any]:
     """Generate an atmospheric opening narrative for a new game session.
 
     Returns a scene description, quest hook, and 2-3 suggested actions based on
@@ -230,11 +234,10 @@ async def get_opening_narrative(campaign_id: str, request_data: dict[str, Any]):
         }
         character_context = request_data.get("character", {})
 
-        opening = await get_narrator().generate_opening_narrative(
+        return await get_narrator().generate_opening_narrative(
             campaign_context=campaign_context,
             character_context=character_context,
         )
-        return opening
 
     except HTTPException:
         raise
@@ -246,7 +249,7 @@ async def get_opening_narrative(campaign_id: str, request_data: dict[str, Any]):
 
 
 @router.post("/session/{session_id}/action", response_model=dict[str, Any])
-async def process_player_action(session_id: str, action_data: dict[str, Any]):
+async def process_player_action(session_id: str, action_data: dict[str, Any]) -> dict[str, Any]:
     """Process a player action within a game session."""
     try:
         action_type = action_data.get("type", "general")

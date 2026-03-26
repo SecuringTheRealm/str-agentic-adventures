@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 from collections.abc import Generator
 from contextlib import contextmanager
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import Depends
 from sqlalchemy import create_engine
@@ -34,7 +34,7 @@ def _resolve_database_url() -> str:
     return "sqlite:///./app.db"
 
 
-def get_engine():
+def get_engine() -> Any:  # noqa: ANN401
     """Get or create the SQLAlchemy engine (lazy singleton)."""
     global _engine
     if _engine is None:
@@ -44,7 +44,7 @@ def get_engine():
     return _engine
 
 
-def get_session_local():
+def get_session_local() -> Any:  # noqa: ANN401
     """Get or create the sessionmaker (lazy singleton)."""
     global _SessionLocal
     if _SessionLocal is None:
@@ -56,7 +56,7 @@ def get_session_local():
 # This is a property-like that defers to the lazy getter
 class _EngineProxy:
     """Proxy so that `database.engine` still works for migrations."""
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> Any:  # noqa: ANN401
         return getattr(get_engine(), name)
 
 engine = _EngineProxy()
@@ -76,7 +76,7 @@ def get_session() -> Generator:
 
 
 @contextmanager
-def get_session_context():
+def get_session_context() -> Generator:
     """Context manager for database sessions in non-route code.
 
     Use this instead of `with next(get_session()) as db:` which leaks sessions.

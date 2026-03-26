@@ -36,7 +36,7 @@ router = APIRouter(tags=["campaign"])
 
 
 @router.post("/campaign", response_model=Campaign)
-async def create_campaign(campaign_data: CreateCampaignRequest, config: ConfigDep):
+async def create_campaign(campaign_data: CreateCampaignRequest, config: ConfigDep) -> Campaign:
     """Create a new campaign."""
     try:
         return campaign_service.create_campaign(campaign_data)
@@ -62,7 +62,7 @@ async def create_campaign(campaign_data: CreateCampaignRequest, config: ConfigDe
 
 
 @router.get("/campaigns", response_model=CampaignListResponse)
-async def list_campaigns():
+async def list_campaigns() -> CampaignListResponse:
     """List all campaigns including templates and custom campaigns."""
     try:
         all_campaigns = campaign_service.list_campaigns()
@@ -78,7 +78,7 @@ async def list_campaigns():
 
 
 @router.get("/campaign/templates")
-async def get_campaign_templates():
+async def get_campaign_templates() -> dict[str, Any]:
     """Get pre-built campaign templates."""
     try:
         templates = campaign_service.get_templates()
@@ -92,7 +92,7 @@ async def get_campaign_templates():
 
 
 @router.get("/campaign/{campaign_id}", response_model=Campaign)
-async def get_campaign(campaign_id: str):
+async def get_campaign(campaign_id: str) -> Campaign:
     """Get a specific campaign by ID."""
     try:
         campaign = campaign_service.get_campaign(campaign_id)
@@ -112,7 +112,7 @@ async def get_campaign(campaign_id: str):
 
 
 @router.put("/campaign/{campaign_id}", response_model=Campaign)
-async def update_campaign(campaign_id: str, updates: CampaignUpdateRequest):
+async def update_campaign(campaign_id: str, updates: CampaignUpdateRequest) -> Campaign:
     """Update an existing campaign."""
     try:
         update_data = {k: v for k, v in updates.model_dump().items() if v is not None}
@@ -141,7 +141,7 @@ async def update_campaign(campaign_id: str, updates: CampaignUpdateRequest):
 
 
 @router.post("/campaign/clone", response_model=Campaign)
-async def clone_campaign(clone_data: CloneCampaignRequest):
+async def clone_campaign(clone_data: CloneCampaignRequest) -> Campaign:
     """Clone a template campaign for customization."""
     try:
         cloned_campaign = campaign_service.clone_campaign(
@@ -165,7 +165,7 @@ async def clone_campaign(clone_data: CloneCampaignRequest):
 
 
 @router.delete("/campaign/{campaign_id}")
-async def delete_campaign(campaign_id: str):
+async def delete_campaign(campaign_id: str) -> dict[str, str]:
     """Delete a custom campaign (templates cannot be deleted)."""
     try:
         success = campaign_service.delete_campaign(campaign_id)
@@ -186,7 +186,7 @@ async def delete_campaign(campaign_id: str):
 
 
 @router.post("/campaign/ai-assist", response_model=AIAssistanceResponse)
-async def get_ai_assistance(request: AIAssistanceRequest):
+async def get_ai_assistance(request: AIAssistanceRequest) -> AIAssistanceResponse:
     """Get AI assistance for campaign text enhancement."""
     try:
         suggestions = []
@@ -226,13 +226,29 @@ async def get_ai_assistance(request: AIAssistanceRequest):
             text = request.text.strip()
 
             if request.context_type == "setting":
-                enhanced_text = f"{text}\n\nThe air carries subtle hints of the environment's character, while distant sounds suggest the life and activity that defines this place."
+                enhanced_text = (
+                    f"{text}\n\nThe air carries subtle hints of the"
+                    " environment's character, while distant sounds suggest"
+                    " the life and activity that defines this place."
+                )
             elif request.context_type == "description":
-                enhanced_text = f"{text}\n\nBeneath the surface details lies a sense of deeper significance, as if each element serves a purpose in the larger tapestry of the story."
+                enhanced_text = (
+                    f"{text}\n\nBeneath the surface details lies a sense of"
+                    " deeper significance, as if each element serves a"
+                    " purpose in the larger tapestry of the story."
+                )
             elif request.context_type == "plot_hook":
-                enhanced_text = f"{text}\n\nTime seems to be of the essence, and the consequences of action—or inaction—weigh heavily on the minds of those involved."
+                enhanced_text = (
+                    f"{text}\n\nTime seems to be of the essence, and the"
+                    " consequences of action\u2014or inaction\u2014weigh heavily"
+                    " on the minds of those involved."
+                )
             else:
-                enhanced_text = f"{text}\n\nThis element resonates with potential, offering opportunities for creative development and meaningful narrative engagement."
+                enhanced_text = (
+                    f"{text}\n\nThis element resonates with potential,"
+                    " offering opportunities for creative development"
+                    " and meaningful narrative engagement."
+                )
 
         return AIAssistanceResponse(
             suggestions=suggestions, enhanced_text=enhanced_text
@@ -246,17 +262,24 @@ async def get_ai_assistance(request: AIAssistanceRequest):
 
 @router.post("/campaign/ai-generate", response_model=AIContentGenerationResponse)
 @limiter.limit("10/minute")
-async def generate_ai_content(request: Request, request_body: AIContentGenerationRequest):  # noqa: ARG001
+async def generate_ai_content(  # noqa: ARG001
+    request: Request,
+    request_body: AIContentGenerationRequest,
+) -> AIContentGenerationResponse:
     """Generate AI content based on a specific suggestion and current text."""
     try:
         from app.azure_openai_client import azure_openai_client
 
         system_prompt = (
-            "You are an expert D&D campaign writer helping to enhance campaign content.\n"
-            "Your task is to generate creative, contextual content based on a specific suggestion.\n\n"
+            "You are an expert D&D campaign writer helping"
+            " to enhance campaign content.\n"
+            "Your task is to generate creative, contextual"
+            " content based on a specific suggestion.\n\n"
             "Guidelines:\n"
-            "- Generate 2-4 sentences of high-quality content that fulfills the suggestion\n"
-            "- If there's existing text, build upon it naturally and coherently\n"
+            "- Generate 2-4 sentences of high-quality"
+            " content that fulfills the suggestion\n"
+            "- If there's existing text, build upon it"
+            " naturally and coherently\n"
             "- Match the campaign tone specified by the user\n"
             "- Be specific and evocative, not generic\n"
             "- Focus on details that enhance the game experience\n"
@@ -299,7 +322,7 @@ async def generate_ai_content(request: Request, request_body: AIContentGeneratio
 
 @router.post("/campaign/generate-world", response_model=dict[str, Any])
 @limiter.limit("10/minute")
-async def generate_campaign_world(request: Request, campaign_data: dict[str, Any]):  # noqa: ARG001
+async def generate_campaign_world(request: Request, campaign_data: dict[str, Any]) -> dict[str, Any]:  # noqa: ARG001
     """Generate world description and setting for a new campaign."""
     try:
         campaign_name = campaign_data.get("name", "Unnamed Campaign")
@@ -330,7 +353,7 @@ async def generate_campaign_world(request: Request, campaign_data: dict[str, Any
 
 
 @router.post("/campaign/{campaign_id}/start-session", response_model=dict[str, Any])
-async def start_game_session(campaign_id: str, session_data: dict[str, Any]):
+async def start_game_session(campaign_id: str, session_data: dict[str, Any]) -> dict[str, Any]:
     """Start a new game session for a campaign."""
     try:
         character_ids = session_data.get("character_ids", [])
@@ -356,7 +379,7 @@ async def start_game_session(campaign_id: str, session_data: dict[str, Any]):
 
 
 @router.post("/campaign/{campaign_id}/opening-narrative", response_model=dict[str, Any])
-async def get_opening_narrative(campaign_id: str, request_data: dict[str, Any]):
+async def get_opening_narrative(campaign_id: str, request_data: dict[str, Any]) -> dict[str, Any]:
     """Generate an atmospheric opening narrative for a new game session.
 
     Returns a scene description, quest hook, and 2-3 suggested actions based on
@@ -394,7 +417,7 @@ async def get_opening_narrative(campaign_id: str, request_data: dict[str, Any]):
 
 
 @router.post("/campaign/{campaign_id}/npcs", response_model=NPC)
-async def create_campaign_npc(campaign_id: str, request: CreateNPCRequest):
+async def create_campaign_npc(campaign_id: str, request: CreateNPCRequest) -> NPC:
     """Create and manage campaign NPCs."""
     try:
         import random

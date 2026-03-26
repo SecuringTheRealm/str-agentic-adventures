@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from typing import Any, Literal
 
 from openai import AsyncAzureOpenAI
@@ -27,7 +28,7 @@ class AzureOpenAIClient:
         self,
         messages: list[dict[str, str]],
         deployment: str | None = None,
-        **kwargs: Any,
+        **kwargs: Any,  # noqa: ANN401
     ) -> str:
         """Generate a chat completion from Azure OpenAI."""
         deployment_name = deployment or settings.azure_openai_chat_deployment
@@ -48,8 +49,8 @@ class AzureOpenAIClient:
         self,
         messages: list[dict[str, str]],
         deployment: str | None = None,
-        **kwargs: Any,
-    ):
+        **kwargs: Any,  # noqa: ANN401
+    ) -> AsyncIterator[str]:
         """Generate a streaming chat completion from Azure OpenAI."""
         deployment_name = deployment or settings.azure_openai_chat_deployment
 
@@ -80,7 +81,7 @@ class AzureOpenAIClient:
         size: Literal["1024x1024", "1792x1024", "1024x1792"] = "1024x1024",
         quality: Literal["low", "medium", "high"] = "medium",
         deployment: str | None = None,
-        **kwargs: Any,
+        **kwargs: Any,  # noqa: ANN401
     ) -> dict[str, Any]:
         """Generate an image using Azure OpenAI gpt-image-1.
 

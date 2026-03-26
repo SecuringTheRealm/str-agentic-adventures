@@ -105,7 +105,6 @@ class TestNarratorAgentOpeningNarrative:
     @pytest.mark.asyncio
     async def test_azure_failure_falls_back_gracefully(self) -> None:
         """When Azure fails partway, fallback narrative is returned with scene description."""
-        import json
 
         from app.agents.narrator_agent import NarratorAgent
 
@@ -161,7 +160,7 @@ class TestNarratorAgentOpeningNarrative:
         }
 
         # All tones should produce valid structure
-        for tone, result in results.items():
+        for _tone, result in results.items():
             assert "quest_hook" in result
             assert "suggested_actions" in result
             assert len(result["suggested_actions"]) >= 1

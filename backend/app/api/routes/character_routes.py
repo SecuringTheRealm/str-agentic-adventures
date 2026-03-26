@@ -22,7 +22,7 @@ router = APIRouter(tags=["characters"])
 
 
 @router.post("/character", response_model=CharacterSheet)
-async def create_character(character_data: CreateCharacterRequest, config: ConfigDep):
+async def create_character(character_data: CreateCharacterRequest, config: ConfigDep) -> dict[str, Any]:
     """Create a new player character."""
     try:
         # Convert Pydantic model to dictionary for the agent
@@ -57,7 +57,7 @@ async def create_character(character_data: CreateCharacterRequest, config: Confi
 
 
 @router.get("/character/{character_id}", response_model=dict[str, Any])
-async def get_character(character_id: str, config: ConfigDep):
+async def get_character(character_id: str, config: ConfigDep) -> dict[str, Any]:
     """Retrieve a character sheet by ID."""
     try:
         # Get character from Scribe agent (handles fallback mode internally)
@@ -87,7 +87,7 @@ async def get_character(character_id: str, config: ConfigDep):
 
 
 @router.post("/character/{character_id}/level-up", response_model=dict[str, Any])
-async def level_up_character(character_id: str, level_up_data: LevelUpRequest):
+async def level_up_character(character_id: str, level_up_data: LevelUpRequest) -> dict[str, Any]:
     """Level up a character."""
     try:
         # Level up the character via Scribe agent
@@ -115,7 +115,7 @@ async def level_up_character(character_id: str, level_up_data: LevelUpRequest):
 @router.post(
     "/character/{character_id}/award-experience", response_model=dict[str, Any]
 )
-async def award_experience(character_id: str, experience_data: dict[str, int]):
+async def award_experience(character_id: str, experience_data: dict[str, int]) -> dict[str, Any]:
     """Award experience points to a character."""
     try:
         experience_points = experience_data.get("experience_points", 0)
@@ -143,7 +143,7 @@ async def award_experience(character_id: str, experience_data: dict[str, int]):
 
 
 @router.get("/character/{character_id}/progression-info", response_model=dict[str, Any])
-async def get_progression_info(character_id: str):
+async def get_progression_info(character_id: str) -> dict[str, Any]:
     """Get progression information for a character."""
     try:
         character = await get_scribe().get_character(character_id)
@@ -182,7 +182,7 @@ async def get_progression_info(character_id: str):
 
 
 @router.post("/character/{character_id}/equipment", response_model=EquipmentResponse)
-async def manage_equipment(character_id: str, request: ManageEquipmentRequest):
+async def manage_equipment(character_id: str, request: ManageEquipmentRequest) -> dict[str, Any]:
     """Equip/unequip items with stat effects."""
     try:
         # This would integrate with a character storage system
@@ -226,7 +226,7 @@ async def manage_equipment(character_id: str, request: ManageEquipmentRequest):
 
 
 @router.get("/character/{character_id}/encumbrance", response_model=EncumbranceResponse)
-async def get_encumbrance(character_id: str):
+async def get_encumbrance(character_id: str) -> dict[str, Any]:
     """Calculate carrying capacity and weight."""
     try:
         # This would normally calculate from actual character data

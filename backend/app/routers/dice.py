@@ -13,7 +13,7 @@ router = APIRouter(tags=["dice"])
 
 
 @router.post("/dice/roll", response_model=dict[str, Any])
-async def roll_dice(dice_data: dict[str, str]):
+async def roll_dice(dice_data: dict[str, str]) -> dict[str, Any]:
     """Roll dice using D&D notation."""
     try:
         from app.plugins.rules_engine_plugin import RulesEnginePlugin
@@ -44,7 +44,7 @@ async def roll_dice(dice_data: dict[str, str]):
 
 
 @router.post("/dice/roll-with-character", response_model=dict[str, Any])
-async def roll_dice_with_character(roll_data: dict[str, Any]):
+async def roll_dice_with_character(roll_data: dict[str, Any]) -> dict[str, Any]:
     """Roll dice with character context for skill checks."""
     try:
         from app.plugins.rules_engine_plugin import RulesEnginePlugin
@@ -84,7 +84,7 @@ async def roll_dice_with_character(roll_data: dict[str, Any]):
 
 
 @router.post("/dice/manual-roll", response_model=dict[str, Any])
-async def input_manual_roll(manual_data: dict[str, Any]):
+async def input_manual_roll(manual_data: dict[str, Any]) -> dict[str, Any]:
     """Input a manual dice roll result."""
     try:
         from app.plugins.rules_engine_plugin import RulesEnginePlugin

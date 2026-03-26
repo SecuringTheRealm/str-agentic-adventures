@@ -273,7 +273,7 @@ class RulesEnginePlugin:
         # Spell slot tracking by character level and class
         self.spell_slots_by_class_level = SPELL_SLOTS_BY_CLASS_LEVEL
 
-    def _initialize_spell_slots(self):
+    def _initialize_spell_slots(self) -> dict[str, Any]:
         """Initialize spell slot progression tables for each spellcasting class."""
         # This method is no longer needed as the data is now a module-level constant
         # Kept for backward compatibility
@@ -557,8 +557,6 @@ class RulesEnginePlugin:
             logger.error("Error resolving saving throw: %s", str(e))
             return {"error": f"Error resolving saving throw: {str(e)}"}
 
-#         name="roll_dice",
-#     )
     def roll_dice(self, dice_notation: str) -> dict[str, Any]:
         """
         Roll dice based on the given notation with support for advanced D&D features.
@@ -819,8 +817,6 @@ class RulesEnginePlugin:
 
         return modifiers
 
-#         name="skill_check",
-#     )
     def skill_check(
         self,
         ability_score: int,
@@ -1435,8 +1431,6 @@ class RulesEnginePlugin:
                 "error": f"Error with concentration saving throw: {str(e)}",
             }
 
-#         name="advance_concentration_round",
-#     )
     def advance_concentration_round(self) -> dict[str, Any]:
         """
         Reduce spell duration for all concentrating characters by one round.

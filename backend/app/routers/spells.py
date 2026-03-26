@@ -22,7 +22,7 @@ async def get_spell_list(
     character_class: CharacterClass | None = None,
     spell_level: int | None = None,
     school: str | None = None,
-):
+) -> dict[str, Any]:
     """Get available spells by class and level."""
     try:
         from app.srd_data import load_spells
@@ -73,7 +73,7 @@ async def get_spell_list(
 @router.post("/spells/save-dc", response_model=dict[str, Any])
 async def calculate_spell_save_dc_endpoint(
     character_class: CharacterClass, level: int, spellcasting_ability_score: int
-):
+) -> dict[str, Any]:
     """Calculate spell save DC for a character."""
     try:
         spellcasting_abilities = {
@@ -129,7 +129,7 @@ async def calculate_spell_save_dc_endpoint(
 
 
 @router.post("/spells/attack-bonus", response_model=dict[str, Any])
-async def calculate_spell_attack_bonus(request: SpellAttackBonusRequest):
+async def calculate_spell_attack_bonus(request: SpellAttackBonusRequest) -> dict[str, Any]:
     """Calculate spell attack bonus for a character."""
     try:
         spellcasting_abilities = {

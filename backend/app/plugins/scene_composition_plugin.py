@@ -7,7 +7,6 @@ import logging
 from typing import Any
 
 # Note: Converted from Agent plugin to direct function calls
-
 from app.azure_openai_client import azure_openai_client
 
 logger = logging.getLogger(__name__)
@@ -511,12 +510,10 @@ class SceneCompositionPlugin:
             if description:
                 base_prompt += f". {description} mood and atmosphere"
 
-        elif var_type == "time":
-            # Update time references
-            if description:
-                base_prompt = base_prompt.replace(
-                    f"during {base_scene['time_of_day']}", f"during {description}"
-                )
+        elif var_type == "time" and description:
+            base_prompt = base_prompt.replace(
+                f"during {base_scene['time_of_day']}", f"during {description}"
+            )
 
         return base_prompt
 

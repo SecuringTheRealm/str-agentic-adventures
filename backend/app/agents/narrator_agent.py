@@ -729,7 +729,7 @@ class NarratorAgent(BaseAgent):
 _narrator = None
 
 
-def get_narrator():
+def get_narrator() -> NarratorAgent:
     """Get the narrator instance, creating it if necessary."""
     global _narrator
     if _narrator is None:

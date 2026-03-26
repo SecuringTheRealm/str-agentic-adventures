@@ -39,7 +39,9 @@ def _get_image_budget() -> ImageBudgetTracker:
 
 @router.post("/generate-image", response_model=dict[str, Any])
 @limiter.limit("10/minute")
-async def generate_image(request: Request, image_request: dict[str, Any]):  # noqa: ARG001
+async def generate_image(  # noqa: ARG001
+    request: Request, image_request: dict[str, Any],
+) -> dict[str, Any]:
     """Generate an image based on the request details.
 
     Accepts an optional ``session_id`` field in the request body.  Each session
@@ -89,7 +91,9 @@ async def generate_image(request: Request, image_request: dict[str, Any]):  # no
 
 @router.post("/battle-map", response_model=dict[str, Any])
 @limiter.limit("10/minute")
-async def generate_battle_map(request: Request, map_request: dict[str, Any]):  # noqa: ARG001
+async def generate_battle_map(  # noqa: ARG001
+    request: Request, map_request: dict[str, Any],
+) -> dict[str, Any]:
     """Generate a battle map based on environment details.
 
     Accepts an optional ``session_id`` field in the request body.  The same
