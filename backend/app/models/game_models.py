@@ -260,7 +260,7 @@ class NPCPersonality(BaseModel):
     motivations: list[str] = Field(default_factory=list)
 
 
-class NPCRelationship(BaseModel):
+class NPCCharacterRelationship(BaseModel):
     character_id: str
     relationship_type: str  # "friend", "enemy", "neutral", "ally", "rival"
     trust_level: int = 0  # -100 to 100
@@ -300,7 +300,7 @@ class NPC(BaseModel):
     skills: dict[str, int] = Field(default_factory=dict)  # Skill bonuses
 
     # Relationships and interactions
-    relationships: list[NPCRelationship] = Field(default_factory=list)
+    relationships: list[NPCCharacterRelationship] = Field(default_factory=list)
     interaction_history: list[str] = Field(default_factory=list)  # List of interaction IDs
 
     # Story relevance
@@ -680,3 +680,49 @@ class NPCStatsResponse(BaseModel):
     success: bool
     message: str
     generated_stats: dict[str, Any]
+
+
+# NPC Profile models for game-engine disposition tracking
+
+
+class NPCProfile(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    description: str = ""
+    personality_traits: list[str] = Field(default_factory=list)
+    disposition: Literal["friendly", "neutral", "hostile", "fearful"] = "neutral"
+    location: str = ""
+    is_alive: bool = True
+    conversation_notes: list[str] = Field(default_factory=list)
+
+
+class NPCRelationship(BaseModel):
+    npc_id: str
+    campaign_id: str
+    disposition_score: int = 0  # -100 to 100
+    interactions_count: int = 0
+    key_events: list[str] = Field(default_factory=list)
+    last_interaction: str = ""
+
+
+class CreateNPCProfileRequest(BaseModel):
+    name: str = Field(max_length=200)
+    description: str = Field(default="", max_length=2000)
+    personality_traits: list[str] = Field(default_factory=list)
+    disposition: Literal["friendly", "neutral", "hostile", "fearful"] = "neutral"
+    location: str = Field(default="", max_length=500)
+
+
+class UpdateDispositionRequest(BaseModel):
+    disposition_score: int
+    event_note: str | None = Field(default=None, max_length=500)
+
+
+class NPCProfileWithRelationship(BaseModel):
+    profile: NPCProfile
+    relationship: NPCRelationship | None = None
+
+
+class NPCProfileListResponse(BaseModel):
+    npcs: list[NPCProfile]
+    total_count: int

@@ -5,7 +5,9 @@ import random
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, status
+from sqlalchemy.orm import Session
 
+from app.database import DbDep
 from app.models.game_models import (
     CastSpellRequest,
     CharacterClass,
@@ -66,11 +68,11 @@ async def manage_spell_slots(character_id: str, request: ManageSpellSlotsRequest
 
 
 @router.post("/combat/{combat_id}/cast-spell", response_model=SpellCastingResponse)
-async def cast_spell_in_combat(combat_id: str, request: CastSpellRequest):
+async def cast_spell_in_combat(combat_id: str, request: CastSpellRequest, db: DbDep):
     """Cast spells during combat with sophisticated effect resolution."""
     try:
         # Load spell from database if available, otherwise use default effects
-        spell_data = await _get_spell_data(request.spell_id)
+        spell_data = await _get_spell_data(request.spell_id, db)
 
         # Calculate spell effects based on spell data and casting level
         spell_effects = await _calculate_spell_effects(
@@ -113,29 +115,27 @@ async def cast_spell_in_combat(combat_id: str, request: CastSpellRequest):
         )
 
 
-async def _get_spell_data(spell_id: str) -> dict[str, Any]:
+async def _get_spell_data(spell_id: str, db: Session) -> dict[str, Any]:
     """Get spell data from database or return default spell structure."""
-    from app.database import get_session_context
     from app.models.db_models import Spell as DBSpell
 
     try:
-        with get_session_context() as db:
-            spell = db.query(DBSpell).filter(DBSpell.id == spell_id).first()
-            if spell:
-                return {
-                    "id": spell.id,
-                    "name": spell.name,
-                    "level": spell.level,
-                    "school": spell.school,
-                    "damage_dice": spell.damage_dice,
-                    "save_type": spell.save_type,
-                    "concentration": spell.concentration,
-                    "ritual": spell.ritual,
-                    "components": spell.components,
-                    "description": spell.description,
-                    "higher_levels": spell.higher_levels,
-                    **spell.data,
-                }
+        spell = db.query(DBSpell).filter(DBSpell.id == spell_id).first()
+        if spell:
+            return {
+                "id": spell.id,
+                "name": spell.name,
+                "level": spell.level,
+                "school": spell.school,
+                "damage_dice": spell.damage_dice,
+                "save_type": spell.save_type,
+                "concentration": spell.concentration,
+                "ritual": spell.ritual,
+                "components": spell.components,
+                "description": spell.description,
+                "higher_levels": spell.higher_levels,
+                **spell.data,
+            }
     except Exception:
         pass  # Fall back to basic spell data
 

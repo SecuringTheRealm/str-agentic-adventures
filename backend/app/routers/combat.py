@@ -182,11 +182,11 @@ async def cast_spell_in_combat(combat_id: str, request: CastSpellRequest):
 
 async def _get_spell_data(spell_id: str) -> dict[str, Any]:
     """Get spell data from database or return default spell structure."""
-    from app.database import get_session
+    from app.database import get_session_context
     from app.models.db_models import Spell
 
     try:
-        with next(get_session()) as db:
+        with get_session_context() as db:
             spell = db.query(Spell).filter(Spell.id == spell_id).first()
             if spell:
                 return {
