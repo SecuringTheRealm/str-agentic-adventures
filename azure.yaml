@@ -7,6 +7,7 @@ metadata:
 infra:
   provider: bicep
   path: infra
+  module: main
 
 services:
   backend:
@@ -26,14 +27,26 @@ services:
     # Vite writes the production build to frontend/dist
     dist: dist
 
+pipeline:
+  provider: github
+
 hooks:
+  preprovision:
+    shell: sh
+    run: |
+      echo "Pre-provision: Validating environment configuration..."
+      if [ -z "${AZURE_LOCATION:-}" ]; then
+        echo "Hint: Set your preferred region with 'azd env set AZURE_LOCATION uksouth'"
+      fi
+    continueOnError: true
+
   # Generate the TypeScript API client from the running backend before packaging
   # the frontend.  Requires the backend to be reachable at localhost:8000.
   prepackage:
     shell: sh
     run: |
       echo "Pre-package: Generating TypeScript API client from backend OpenAPI schema..."
-      cd frontend && npm run generate:api || echo "Warning: API client generation skipped (backend must be running on localhost:8000)."
+      cd frontend && bun run generate:api || echo "Warning: API client generation skipped (backend must be running on localhost:8000)."
     continueOnError: true
 
   postprovision:
@@ -41,13 +54,13 @@ hooks:
     run: |
       echo "Post-provision: Infrastructure is ready."
       echo ""
+      echo "Bicep outputs have been saved to your azd environment."
+      echo "View them with: azd env get-values"
+      echo ""
       echo "Required environment variables – set these with 'azd env set <KEY> <VALUE>':"
-      echo "  AZURE_OPENAI_ENDPOINT          – Azure OpenAI resource endpoint"
-      echo "  AZURE_OPENAI_API_KEY           – Azure OpenAI API key"
-      echo "  AZURE_OPENAI_CHAT_DEPLOYMENT   – Primary chat model deployment (e.g. gpt-4o-mini)"
-      echo "  AZURE_OPENAI_MINI_DEPLOYMENT   – Cheaper model for structured tasks (e.g. gpt-4o-mini)"
+      echo "  AZURE_OPENAI_ENDPOINT            – Azure OpenAI resource endpoint"
+      echo "  AZURE_OPENAI_API_KEY             – Azure OpenAI API key (optional if using managed identity)"
+      echo "  AZURE_OPENAI_CHAT_DEPLOYMENT     – Primary chat model deployment (e.g. gpt-4o-mini)"
       echo "  AZURE_OPENAI_EMBEDDING_DEPLOYMENT – Embedding model deployment (e.g. text-embedding-ada-002)"
-      echo "  AZURE_OPENAI_DALLE_DEPLOYMENT  – Image-generation deployment (e.g. gpt-image-1-mini)"
-      echo "  AZURE_AI_PROJECT_ENDPOINT      – Azure AI Foundry project endpoint"
-      echo "  STORAGE_CONNECTION_STRING      – Azure Storage account connection string"
+      echo "  AZURE_OPENAI_DALLE_DEPLOYMENT    – Image-generation deployment (e.g. gpt-image-1-mini)"
     continueOnError: false
