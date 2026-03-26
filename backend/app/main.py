@@ -18,10 +18,12 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 from starlette.middleware.base import BaseHTTPMiddleware
 
+from app.api import websocket_routes
+
 # Local imports
 from app.api.routes import all_routers
-from app.api import websocket_routes
 from app.config import init_settings
+from app.middleware.prompt_shield_middleware import PromptShieldMiddleware
 from app.services.campaign_service import campaign_service
 
 # Load environment variables
@@ -97,6 +99,9 @@ app = FastAPI(
 # Rate limiter state
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# Prompt injection detection middleware
+app.add_middleware(PromptShieldMiddleware)
 
 # Security headers middleware
 app.add_middleware(SecurityHeadersMiddleware)
