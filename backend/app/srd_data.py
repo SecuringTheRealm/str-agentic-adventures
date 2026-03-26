@@ -45,6 +45,22 @@ XP_THRESHOLDS: dict[int, int] = {
     20: 355000,
 }
 
+# Hit die size per class (D&D 5e SRD)
+CLASS_HIT_DICE: dict[str, int] = {
+    "barbarian": 12,
+    "fighter": 10,
+    "paladin": 10,
+    "ranger": 10,
+    "bard": 8,
+    "cleric": 8,
+    "druid": 8,
+    "monk": 8,
+    "rogue": 8,
+    "warlock": 8,
+    "sorcerer": 6,
+    "wizard": 6,
+}
+
 
 def load_class_features() -> dict[str, Any]:
     """Load class features data from JSON file."""
@@ -104,6 +120,37 @@ def get_class_features(character_class: str, level: int) -> list[dict[str, Any]]
     class_info = class_data.get(character_class.lower(), {})
     features = class_info.get("features", {})
     return features.get(str(level), [])
+
+
+def get_features_at_level(char_class: str, level: int) -> list[str]:
+    """Get feature names gained by a class at a specific level.
+
+    Args:
+        char_class: The character class name (e.g. 'fighter', 'wizard').
+        level: The character level (1-20).
+
+    Returns:
+        A list of feature names gained at that level.
+    """
+    features = get_class_features(char_class, level)
+    return [f["name"] if isinstance(f, dict) else f for f in features]
+
+
+def get_all_features_up_to_level(char_class: str, level: int) -> list[str]:
+    """Get all feature names gained by a class from level 1 up to the given level.
+
+    Args:
+        char_class: The character class name (e.g. 'fighter', 'wizard').
+        level: The maximum character level (1-20).
+
+    Returns:
+        A flat list of all feature names accumulated from level 1 through the
+        given level.
+    """
+    features: list[str] = []
+    for lvl in range(1, level + 1):
+        features.extend(get_features_at_level(char_class, lvl))
+    return features
 
 
 def get_class_info(character_class: str) -> dict[str, Any]:
@@ -208,7 +255,7 @@ def load_monsters() -> list[dict[str, Any]]:
             with open(DATA_DIR / "monsters.json") as f:
                 _monsters_data = json.load(f)
         except Exception as e:
-            logger.error(f"Failed to load monsters data: {e}")
+            logger.error("Failed to load monsters data: %s", e)
             _monsters_data = []
     return _monsters_data
 
@@ -260,7 +307,7 @@ def load_weapons() -> dict[str, Any]:
             with open(DATA_DIR / "weapons.json") as f:
                 _weapons_data = json.load(f)
         except Exception as e:
-            logger.error(f"Failed to load weapons data: {e}")
+            logger.error("Failed to load weapons data: %s", e)
             _weapons_data = {}
     return _weapons_data
 
@@ -308,7 +355,7 @@ def load_armor() -> dict[str, Any]:
             with open(DATA_DIR / "armor.json") as f:
                 _armor_data = json.load(f)
         except Exception as e:
-            logger.error(f"Failed to load armor data: {e}")
+            logger.error("Failed to load armor data: %s", e)
             _armor_data = {}
     return _armor_data
 

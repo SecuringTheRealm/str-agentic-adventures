@@ -189,7 +189,7 @@ class TestFrontendBackendIntegration:
         if response.status_code == 503:
             assert "Azure OpenAI configuration" in response.json().get("detail", "")
 
-    @patch("app.api.game_routes.get_dungeon_master")
+    @patch("app.api.routes.session_routes.get_dungeon_master")
     def test_player_input_endpoint_compatibility(self, mock_dm, client) -> None:
         """Test player input endpoint matches frontend expectations."""
         # Mock dungeon master agent with proper async support
@@ -241,7 +241,7 @@ class TestFrontendBackendIntegration:
         response = client.post(build_path("/game/battle-map"), json=frontend_request)
 
         # Should handle the request (even if it fails due to missing config)
-        assert response.status_code in [200, 400, 500, 503], (
+        assert response.status_code in [200, 400, 429, 500, 503], (
             f"Battle map endpoint returned unexpected status: {response.status_code}"
         )
 

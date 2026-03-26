@@ -2,61 +2,39 @@
 Scribe Agent - Manages character sheets and game data.
 """
 
-import json
 import logging
 from typing import Any
 
-from azure.ai.inference import ChatCompletionsClient
-
-from app.agent_client_setup import agent_client_manager
-from app.database import get_session, init_db
+from app.agents.base_agent import BaseAgent
+from app.database import get_session_context, init_db
 from app.models.db_models import NPC, Character, NPCInteraction
 
 logger = logging.getLogger(__name__)
 
 
-class ScribeAgent:
+class ScribeAgent(BaseAgent):
     """
     Scribe Agent that manages character sheets, inventory, equipment, and game data.
     This agent is responsible for tracking and updating structured game data.
     """
 
-    def __init__(self) -> None:
-        """Initialize the Scribe agent with Azure AI SDK."""
-        self.chat_client: ChatCompletionsClient | None = None
-        self._fallback_mode = False
+    agent_name = "Scribe"
 
-        # Try to get the shared chat client from agent client manager
-        try:
-            self.chat_client = agent_client_manager.get_chat_client()
-            if self.chat_client is None:
-                self._fallback_mode = True
-                logger.warning(
-                    "Scribe agent operating in fallback mode - Azure OpenAI not configured"
-                )
-            else:
-                logger.info("Scribe agent initialized with Azure AI SDK")
-        except Exception as e:
-            logger.warning(
-                "Failed to initialize Scribe agent with Azure AI SDK: %s. "
-                "Operating in fallback mode.",
-                e,
-            )
-            self._fallback_mode = True
-
+    def _post_init(self) -> None:
+        """Initialize Scribe-specific components after base client setup."""
         init_db()
         self._register_skills()
 
     @property
     def characters(self) -> dict[str, Any]:
         """Return all characters from the database."""
-        with next(get_session()) as db:
+        with get_session_context() as db:
             return {c.id: c.data for c in db.query(Character).all()}
 
     @property
     def npcs(self) -> dict[str, Any]:
         """Return NPCs from the database."""
-        with next(get_session()) as db:
+        with get_session_context() as db:
             npcs = db.query(NPC).all()
             return {npc.id: npc.data for npc in npcs}
 
@@ -138,7 +116,7 @@ class ScribeAgent:
         self, npc_id: str, character_id: str, change: int
     ) -> dict[str, Any]:
         """Update relationship between NPC and character."""
-        with next(get_session()) as db:
+        with get_session_context() as db:
             # Get current NPC and relationship data
             npc = db.query(NPC).filter(NPC.id == npc_id).first()
             if not npc:
@@ -175,7 +153,7 @@ class ScribeAgent:
         interaction_id = str(uuid.uuid4())
 
         # Store interaction in database
-        with next(get_session()) as db:
+        with get_session_context() as db:
             interaction_record = NPCInteraction(
                 id=interaction_id,
                 npc_id=interaction_data.get("npc_id"),
@@ -240,7 +218,7 @@ class ScribeAgent:
     def inventory(self) -> dict[str, Any]:
         """Return all inventories from all characters."""
         try:
-            with next(get_session()) as db:
+            with get_session_context() as db:
                 characters = db.query(Character).all()
                 return {c.id: c.data.get("inventory", []) for c in characters}
         except Exception as e:
@@ -396,7 +374,7 @@ class ScribeAgent:
                 )
 
             # Store character in database
-            with next(get_session()) as db:
+            with get_session_context() as db:
                 db_character = Character(
                     id=character_id, name=character_sheet["name"], data=character_sheet
                 )
@@ -423,7 +401,7 @@ class ScribeAgent:
             Dict[str, Any]: The updated character sheet
         """
         try:
-            with next(get_session()) as db:
+            with get_session_context() as db:
                 db_character = db.get(Character, character_id)
                 if not db_character:
                     return {"error": f"Character {character_id} not found"}
@@ -452,7 +430,7 @@ class ScribeAgent:
         Returns:
             Optional[Dict[str, Any]]: The character sheet if found, None otherwise
         """
-        with next(get_session()) as db:
+        with get_session_context() as db:
             db_character = db.get(Character, character_id)
             return db_character.data if db_character else None
 
@@ -472,7 +450,7 @@ class ScribeAgent:
         try:
             import uuid
 
-            with next(get_session()) as db:
+            with get_session_context() as db:
                 db_character = db.get(Character, character_id)
                 if not db_character:
                     return {"error": f"Character {character_id} not found"}
@@ -536,7 +514,7 @@ class ScribeAgent:
             Dict[str, Any]: The character's inventory data
         """
         try:
-            with next(get_session()) as db:
+            with get_session_context() as db:
                 db_character = db.get(Character, character_id)
                 if not db_character:
                     return {"error": f"Character {character_id} not found"}
@@ -577,7 +555,7 @@ class ScribeAgent:
             Dict[str, Any]: The result of the removal operation
         """
         try:
-            with next(get_session()) as db:
+            with get_session_context() as db:
                 db_character = db.get(Character, character_id)
                 if not db_character:
                     return {"error": f"Character {character_id} not found"}
@@ -639,7 +617,7 @@ class ScribeAgent:
             Dict[str, Any]: The result of the update operation
         """
         try:
-            with next(get_session()) as db:
+            with get_session_context() as db:
                 db_character = db.get(Character, character_id)
                 if not db_character:
                     return {"error": f"Character {character_id} not found"}
@@ -689,7 +667,7 @@ class ScribeAgent:
             Dict[str, Any]: The result of the equip operation
         """
         try:
-            with next(get_session()) as db:
+            with get_session_context() as db:
                 db_character = db.get(Character, character_id)
                 if not db_character:
                     return {"error": f"Character {character_id} not found"}
@@ -777,7 +755,7 @@ class ScribeAgent:
             Dict[str, Any]: The result of the unequip operation
         """
         try:
-            with next(get_session()) as db:
+            with get_session_context() as db:
                 db_character = db.get(Character, character_id)
                 if not db_character:
                     return {"error": f"Character {character_id} not found"}
@@ -825,7 +803,7 @@ class ScribeAgent:
             Dict[str, Any]: Encumbrance data including weight limits and penalties
         """
         try:
-            with next(get_session()) as db:
+            with get_session_context() as db:
                 db_character = db.get(Character, character_id)
                 if not db_character:
                     return {"error": f"Character {character_id} not found"}
@@ -891,7 +869,7 @@ class ScribeAgent:
             Dict[str, Any]: The total stat modifications from equipped items
         """
         try:
-            with next(get_session()) as db:
+            with get_session_context() as db:
                 db_character = db.get(Character, character_id)
                 if not db_character:
                     return {"error": f"Character {character_id} not found"}
@@ -962,7 +940,7 @@ class ScribeAgent:
 
             rules_engine = RulesEnginePlugin()
 
-            with get_session() as db:
+            with get_session_context() as db:
                 db_character = db.get(Character, character_id)
                 if not db_character:
                     return {"error": f"Character {character_id} not found"}
@@ -1106,7 +1084,7 @@ class ScribeAgent:
 
             character["ability_score_improvements_used"] = asi_used
 
-            with get_session() as db:
+            with get_session_context() as db:
                 db_character = db.get(Character, character_id)
                 if db_character:
                     db_character.data = character
@@ -1155,7 +1133,7 @@ class ScribeAgent:
             Dict[str, Any]: The result of awarding experience
         """
         try:
-            with next(get_session()) as db:
+            with get_session_context() as db:
                 db_character = db.get(Character, character_id)
                 if not db_character:
                     return {"error": f"Character {character_id} not found"}

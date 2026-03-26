@@ -3,16 +3,17 @@
   flex-direction: column;
   height: 100%;
   overflow: hidden;
-  background: rgba(15, 64, 79, 0.1); /* Subtle primary color background */
+  background: var(--color-fantasy-primary-10); /* Subtle primary color background */
 }
 
 .messagesContainer {
   flex: 1;
   padding: 15px;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
-  background: rgba(26, 47, 58, 0.3); /* Fantasy background */
+  background: var(--color-fantasy-bg-30); /* Fantasy background */
 }
 
 .message {
@@ -39,23 +40,23 @@
   align-self: flex-end;
   background: linear-gradient(
     135deg,
-    #0f404f,
-    #1a5a6b
+    var(--color-fantasy-primary),
+    var(--color-fantasy-bright)
   ); /* Primary color gradient */
-  color: #f4f1e8; /* Warm off-white text */
+  color: var(--color-text-warm); /* Warm off-white text */
   margin-left: auto;
   border-bottom-right-radius: 0;
-  border: 1px solid #e4bb1e; /* Gold border */
+  border: 1px solid var(--color-accent-gold); /* Gold border */
   font-family: "Cinzel", serif;
 }
 
 .dmMessage {
   align-self: flex-start;
-  background: linear-gradient(135deg, #b15005, #8b4513); /* Wood gradient */
-  color: #f4f1e8; /* Warm off-white text */
+  background: linear-gradient(135deg, var(--color-wood-dark), var(--color-wood-saddle)); /* Wood gradient */
+  color: var(--color-text-warm); /* Warm off-white text */
   margin-right: auto;
   border-bottom-left-radius: 0;
-  border: 1px solid #908c6b; /* Stone border */
+  border: 1px solid var(--color-stone); /* Stone border */
   font-family: "Cinzel", serif;
 }
 
@@ -64,7 +65,7 @@
   margin-bottom: 5px;
   font-weight: bold;
   opacity: 0.9;
-  color: #e4bb1e; /* Gold color for sender names */
+  color: var(--color-accent-gold); /* Gold color for sender names */
   font-family: "Cinzel", serif;
 }
 
@@ -76,23 +77,28 @@
 .inputForm {
   display: flex;
   padding: 10px;
-  background: linear-gradient(135deg, #0f404f, #1a2f3a); /* Fantasy gradient */
-  border-top: 2px solid #e4bb1e; /* Gold border */
+  background: linear-gradient(135deg, var(--color-fantasy-primary), var(--color-fantasy-bg)); /* Fantasy gradient */
+  border-top: 2px solid var(--color-accent-gold); /* Gold border */
 }
 
 .inputForm input {
   flex: 1;
   padding: 10px;
-  border: 1px solid #908c6b; /* Stone color border */
+  border: 1px solid var(--color-stone); /* Stone color border */
   border-radius: 4px;
   font-size: 14px;
-  background: rgba(26, 47, 58, 0.8); /* Dark fantasy background */
-  color: #f4f1e8; /* Light text */
+  background: var(--color-fantasy-bg-80); /* Dark fantasy background */
+  color: var(--color-text-warm); /* Light text */
   font-family: "Cinzel", serif;
 }
 
 .inputForm input:focus {
   outline: none;
+  border-color: var(--color-accent-gold); /* Gold focus border */
+  box-shadow: 0 0 0 2px var(--color-gold-glow-20);
+
+  outline: 2px solid #e4bb1e;
+  outline-offset: 2px;
   border-color: #e4bb1e; /* Gold focus border */
   box-shadow: 0 0 0 2px rgba(228, 187, 30, 0.2);
 }
@@ -100,9 +106,10 @@
 .inputForm button {
   margin-left: 10px;
   padding: 10px 16px;
-  background: linear-gradient(135deg, #b15005, #d67c2d); /* Wood gradient */
+  min-height: 44px;
+  background: linear-gradient(135deg, var(--color-wood-dark), var(--color-wood-light)); /* Wood gradient */
   color: white;
-  border: 1px solid #e4bb1e; /* Gold border */
+  border: 1px solid var(--color-accent-gold); /* Gold border */
   border-radius: 4px;
   cursor: pointer;
   font-weight: bold;
@@ -113,20 +120,20 @@
 .inputForm button:hover {
   background: linear-gradient(
     135deg,
-    #d67c2d,
-    #e4953f
+    var(--color-wood-light),
+    var(--color-gold-warm)
   ); /* Lighter wood on hover */
-  box-shadow: 0 2px 4px rgba(228, 187, 30, 0.3);
+  box-shadow: 0 2px 4px var(--color-gold-glow-30);
 }
 
 .inputForm button:disabled {
   background: linear-gradient(
     135deg,
-    #788070,
-    #98a090
+    var(--color-steel),
+    var(--color-steel-light)
   ); /* Steel colors when disabled */
   cursor: not-allowed;
-  border-color: #788070;
+  border-color: var(--color-steel);
 }
 
 /* Loading animation */
@@ -139,7 +146,7 @@
   width: 10px;
   float: left;
   margin: 0 1px;
-  background-color: #9e9ea1;
+  background-color: var(--color-text-muted-alt);
   display: block;
   border-radius: 50%;
   opacity: 0.4;
@@ -174,7 +181,7 @@
 .streamingCursor {
   display: inline-block;
   animation: cursor-blink 1s infinite;
-  color: #e4bb1e; /* Gold cursor */
+  color: var(--color-accent-gold); /* Gold cursor */
   font-weight: bold;
   margin-left: 2px;
 }
@@ -193,8 +200,8 @@
 /* Suggested actions section */
 .suggestedActions {
   padding: 8px 10px;
-  background: linear-gradient(135deg, #0a2a36, #112233);
-  border-top: 1px solid #e4bb1e;
+  background: linear-gradient(135deg, var(--color-fantasy-deep), var(--color-fantasy-navy));
+  border-top: 1px solid var(--color-accent-gold);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -202,7 +209,7 @@
 
 .suggestedActionsLabel {
   font-size: 0.75em;
-  color: #e4bb1e;
+  color: var(--color-accent-gold);
   font-family: "Cinzel", serif;
   opacity: 0.85;
   text-transform: uppercase;
@@ -217,9 +224,11 @@
 
 .actionButton {
   padding: 5px 10px;
-  background: rgba(228, 187, 30, 0.1);
-  color: #e4bb1e;
-  border: 1px solid #e4bb1e;
+  min-height: 44px;
+  min-width: 44px;
+  background: var(--color-gold-glow-10);
+  color: var(--color-accent-gold);
+  border: 1px solid var(--color-accent-gold);
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.8em;
@@ -229,8 +238,8 @@
 }
 
 .actionButton:hover:not(:disabled) {
-  background: rgba(228, 187, 30, 0.25);
-  box-shadow: 0 0 6px rgba(228, 187, 30, 0.3);
+  background: var(--color-gold-glow-25);
+  box-shadow: 0 0 6px var(--color-gold-glow-30);
 }
 
 .actionButton:disabled {
@@ -242,24 +251,57 @@
 .helpButton {
   margin-left: 6px;
   padding: 10px 12px;
-  background: rgba(228, 187, 30, 0.15);
-  color: #e4bb1e;
-  border: 1px solid #e4bb1e;
+  min-height: 44px;
+  min-width: 44px;
+  background: var(--color-gold-glow-15);
+  color: var(--color-accent-gold);
+  border: 1px solid var(--color-accent-gold);
   border-radius: 4px;
   cursor: pointer;
   font-weight: bold;
   font-family: "Cinzel", serif;
   font-size: 14px;
   transition: all 0.3s ease;
-  min-width: 36px;
 }
 
 .helpButton:hover:not(:disabled) {
-  background: rgba(228, 187, 30, 0.3);
-  box-shadow: 0 2px 4px rgba(228, 187, 30, 0.3);
+  background: var(--color-gold-glow-30);
+  box-shadow: 0 2px 4px var(--color-gold-glow-30);
 }
 
 .helpButton:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 480px) {
+  .messagesContainer {
+    padding: 10px;
+  }
+
+  .messageSender {
+    font-size: 1rem; /* Prevent iOS zoom - min 16px */
+  }
+
+  .actionButton {
+    font-size: 1rem; /* Prevent iOS zoom - min 16px */
+  }
+
+  .suggestedActionsLabel {
+    font-size: 0.875rem;
+  }
+
+  .inputForm input {
+    font-size: 16px; /* Prevent iOS zoom */
+  }
+
+  .helpButton {
+    font-size: 16px; /* Prevent iOS zoom */
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

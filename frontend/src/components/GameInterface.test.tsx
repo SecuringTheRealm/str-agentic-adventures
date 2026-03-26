@@ -1,6 +1,6 @@
 import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import type { Campaign, Character } from "../services/api";
+import type { Campaign, Character } from "../types";
 import * as api from "../services/api";
 import GameInterface from "./GameInterface";
 import styles from "./GameInterface.module.css";

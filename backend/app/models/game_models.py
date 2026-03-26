@@ -179,6 +179,11 @@ class SpellCasting(BaseModel):
     concentration_spell: str | None = None  # Currently concentrating spell ID
 
 
+class SpellSlotState(BaseModel):
+    max_slots: dict[int, int] = Field(default_factory=dict)  # {spell_level: count}
+    used_slots: dict[int, int] = Field(default_factory=dict)  # {spell_level: count}
+
+
 class ConcentrationSpell(BaseModel):
     spell_id: str
     character_id: str

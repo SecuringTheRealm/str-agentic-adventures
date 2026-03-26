@@ -15,7 +15,7 @@ class TestSRDCharacterCreation:
         with (
             patch("app.agents.scribe_agent.init_db"),
             patch(
-                "app.agents.scribe_agent.agent_client_manager.get_chat_client"
+                "app.agents.base_agent.agent_client_manager.get_chat_client"
             ) as mock_kernel,
             patch("app.agents.scribe_agent.ScribeAgent._register_skills"),
         ):
@@ -39,7 +39,7 @@ class TestSRDCharacterCreation:
             "charisma": 8,
         }
 
-        with patch("app.agents.scribe_agent.get_session") as mock_session:
+        with patch("app.agents.scribe_agent.get_session_context") as mock_session:
             mock_db = MagicMock()
             mock_session.return_value.__enter__.return_value = mock_db
 
@@ -56,7 +56,7 @@ class TestSRDCharacterCreation:
         """Test that character creation sets racial speed correctly."""
         dwarf_data = {"name": "Test Dwarf", "race": "dwarf", "class": "fighter"}
 
-        with patch("app.agents.scribe_agent.get_session") as mock_session:
+        with patch("app.agents.scribe_agent.get_session_context") as mock_session:
             mock_db = MagicMock()
             mock_session.return_value.__enter__.return_value = mock_db
 
@@ -70,7 +70,7 @@ class TestSRDCharacterCreation:
         """Test that character creation adds level 1 class features."""
         fighter_data = {"name": "Test Fighter", "race": "human", "class": "fighter"}
 
-        with patch("app.agents.scribe_agent.get_session") as mock_session:
+        with patch("app.agents.scribe_agent.get_session_context") as mock_session:
             mock_db = MagicMock()
             mock_session.return_value.__enter__.return_value = mock_db
 
@@ -88,7 +88,7 @@ class TestSRDCharacterCreation:
         """Test that character creation adds racial traits as features."""
         elf_data = {"name": "Test Elf", "race": "elf", "class": "rogue"}
 
-        with patch("app.agents.scribe_agent.get_session") as mock_session:
+        with patch("app.agents.scribe_agent.get_session_context") as mock_session:
             mock_db = MagicMock()
             mock_session.return_value.__enter__.return_value = mock_db
 
@@ -107,7 +107,7 @@ class TestSRDCharacterCreation:
         """Test that character creation sets class saving throw proficiencies."""
         wizard_data = {"name": "Test Wizard", "race": "human", "class": "wizard"}
 
-        with patch("app.agents.scribe_agent.get_session") as mock_session:
+        with patch("app.agents.scribe_agent.get_session_context") as mock_session:
             mock_db = MagicMock()
             mock_session.return_value.__enter__.return_value = mock_db
 
@@ -130,7 +130,7 @@ class TestSRDCharacterCreation:
             "constitution": 16,  # +3 modifier
         }
 
-        with patch("app.agents.scribe_agent.get_session") as mock_session:
+        with patch("app.agents.scribe_agent.get_session_context") as mock_session:
             mock_db = MagicMock()
             mock_session.return_value.__enter__.return_value = mock_db
 
@@ -152,7 +152,7 @@ class TestSRDCharacterCreation:
             "background": "acolyte",
         }
 
-        with patch("app.agents.scribe_agent.get_session") as mock_session:
+        with patch("app.agents.scribe_agent.get_session_context") as mock_session:
             mock_db = MagicMock()
             mock_session.return_value.__enter__.return_value = mock_db
 

@@ -1,11 +1,11 @@
 import type React from "react";
 import { useEffect, useState } from "react";
 import {
-  type Campaign,
   cloneCampaign,
   getCampaignTemplates,
   getCampaignTemplatesWithRetry,
 } from "../services/api";
+import type { Campaign } from "../types";
 import { getRuntimeMode } from "../utils/environment";
 import styles from "./CampaignGallery.module.css";
 

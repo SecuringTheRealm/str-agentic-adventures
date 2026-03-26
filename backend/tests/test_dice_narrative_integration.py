@@ -19,7 +19,7 @@ import pytest
 
 def _make_dm_agent(fallback: bool = True):
     """Return a DungeonMasterAgent instance with Azure dependencies mocked out."""
-    with patch("app.agents.dungeon_master_agent.agent_client_manager"):
+    with patch("app.agents.base_agent.agent_client_manager"):
         from app.agents.dungeon_master_agent import DungeonMasterAgent
 
         agent = DungeonMasterAgent.__new__(DungeonMasterAgent)

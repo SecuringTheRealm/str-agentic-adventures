@@ -1,3 +1,155 @@
+:root {
+  /* ── Design-system tokens ── */
+  --color-primary: #8b5cf6;
+  --color-primary-light: #c4b5fd;
+  --color-primary-dark: #6d28d9;
+  --color-accent-gold: #e4bb1e;
+  --color-accent-green: #4ade80;
+  --color-danger: #ef4444;
+  --color-danger-light: #fca5a5;
+  --color-bg-dark: #0a0a0a;
+  --color-bg-card: #1a0a2e;
+  --color-bg-surface: #1e1e3a;
+  --color-text-primary: #e0e0e0;
+  --color-text-secondary: #c0c0c0;
+  --color-text-muted: #b0b0b0; /* replaces #999 — passes WCAG AA on dark backgrounds */
+  --color-border: rgba(139, 92, 246, 0.3);
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* ── Fantasy theme — primary teal ── */
+  --color-fantasy-primary: #0f404f;
+  --color-fantasy-bg: #1a2f3a;
+  --color-fantasy-deep: #0a2a36;
+  --color-fantasy-navy: #112233;
+  --color-fantasy-mid: #2a3c47;
+  --color-fantasy-bright: #1a5a6b;
+  --color-bg-deepest: #0d1117;
+  --color-bg-darker: #1a1a1a;
+  --color-bg-surface-dark: #2c2c2c;
+  --color-bg-card-dark: #212529;
+
+  /* ── Fantasy theme — gold / warm accents ── */
+  --color-gold-alt: #d4af37;
+  --color-gold-warm: #e4953f;
+  --color-gold-stone: #c8b870;
+
+  /* ── Fantasy theme — wood palette ── */
+  --color-wood-dark: #b15005;
+  --color-wood-light: #d67c2d;
+  --color-wood-medium: #a0522d;
+  --color-wood-saddle: #8b4513;
+  --color-wood-peru: #cd853f;
+
+  /* ── Fantasy theme — stone & steel ── */
+  --color-stone: #908c6b;
+  --color-steel: #788070;
+  --color-steel-light: #98a090;
+  --color-steel-gray: #868e96;
+
+  /* ── Text ── */
+  --color-text-warm: #f4f1e8;
+  --color-text-muted-warm: #d0c8b8;
+  --color-text-muted-alt: #9e9ea1;
+  --color-text-light: #e6e6e6;
+  --color-text-secondary-warm: #6c757d;
+
+  /* ── Status — danger ── */
+  --color-danger-red: #dc3545;
+  --color-danger-vivid: #dc2626;
+  --color-danger-hover: #c82333;
+  --color-danger-dark: #c53030;
+  --color-danger-medium: #e53e3e;
+  --color-danger-pale: #ffcccb;
+  --color-danger-bg: #fef2f2;
+  --color-danger-bg-tint: #fff5f5;
+  --color-danger-border: #fecaca;
+  --color-danger-border-light: #fed7d7;
+
+  /* ── Status — success ── */
+  --color-success: #28a745;
+  --color-success-dark: #3d7c47;
+  --color-success-deeper: #2c5530;
+  --color-success-bright: #1e7e34;
+  --color-success-light: #4a9c54;
+
+  /* ── Status — info / warning ── */
+  --color-info: #17a2b8;
+  --color-info-dark: #138496;
+  --color-warning: #ffc107;
+  --color-warning-light: #f4d03f;
+  --color-warning-dark: #e0a800;
+
+  /* ── Spell / action colours (GameStateDisplay) ── */
+  --color-spell: #6f42c1;
+  --color-spell-dark: #5a2d91;
+
+  /* ── Campaign-tone badge colours ── */
+  --color-tone-heroic: #3b82f6;
+  --color-tone-heroic-alt: #3498db;
+  --color-tone-dark: #374151;
+  --color-tone-dark-alt: #34495e;
+  --color-tone-lighthearted: #f59e0b;
+  --color-tone-lighthearted-alt: #f39c12;
+  --color-tone-gritty-alt: #e74c3c;
+  --color-tone-mysterious-alt: #9b59b6;
+
+  /* ── Clone badge ── */
+  --color-clone-bg: #f3f4f6;
+  --color-clone-text: #6b7280;
+  --color-clone-border: #d1d5db;
+
+  /* ── Neutral grays ── */
+  --color-gray-300: #ccc;
+  --color-gray-500: #666;
+  --color-gray-600: #555;
+  --color-gray-700: #444;
+  --color-gray-800: #333;
+
+  /* ── Named rgba composites — gold glow ── */
+  --color-gold-glow-10: rgba(228, 187, 30, 0.1);
+  --color-gold-glow-15: rgba(228, 187, 30, 0.15);
+  --color-gold-glow-20: rgba(228, 187, 30, 0.2);
+  --color-gold-glow-25: rgba(228, 187, 30, 0.25);
+  --color-gold-glow-30: rgba(228, 187, 30, 0.3);
+  --color-gold-glow-60: rgba(228, 187, 30, 0.6);
+  --color-gold-alt-glow-30: rgba(212, 175, 55, 0.3);
+
+  /* ── Named rgba composites — fantasy primary ── */
+  --color-fantasy-primary-10: rgba(15, 64, 79, 0.1);
+  --color-fantasy-primary-30: rgba(15, 64, 79, 0.3);
+  --color-fantasy-primary-40: rgba(15, 64, 79, 0.4);
+  --color-fantasy-primary-60: rgba(15, 64, 79, 0.6);
+  --color-fantasy-primary-80: rgba(15, 64, 79, 0.8);
+  --color-fantasy-primary-90: rgba(15, 64, 79, 0.9);
+  --color-fantasy-primary-95: rgba(15, 64, 79, 0.95);
+
+  /* ── Named rgba composites — fantasy background ── */
+  --color-fantasy-bg-30: rgba(26, 47, 58, 0.3);
+  --color-fantasy-bg-60: rgba(26, 47, 58, 0.6);
+  --color-fantasy-bg-70: rgba(26, 47, 58, 0.7);
+  --color-fantasy-bg-80: rgba(26, 47, 58, 0.8);
+
+  /* ── Named rgba composites — stone / steel ── */
+  --color-stone-20: rgba(144, 140, 107, 0.2);
+  --color-stone-30: rgba(144, 140, 107, 0.3);
+  --color-stone-40: rgba(144, 140, 107, 0.4);
+  --color-stone-90: rgba(144, 140, 107, 0.9);
+  --color-steel-30: rgba(120, 128, 112, 0.3);
+  --color-steel-40: rgba(120, 128, 112, 0.4);
+  --color-steel-60: rgba(120, 128, 112, 0.6);
+  --color-steel-80: rgba(120, 128, 112, 0.8);
+
+  /* ── Named rgba composites — danger / success ── */
+  --color-danger-20: rgba(220, 53, 69, 0.2);
+  --color-danger-30: rgba(220, 53, 69, 0.3);
+  --color-wood-dark-20: rgba(177, 80, 5, 0.2);
+  --color-wood-dark-30: rgba(177, 80, 5, 0.3);
+  --color-fantasy-mid-90: rgba(42, 60, 71, 0.9);
+  --color-success-10: rgba(40, 167, 69, 0.1);
+}
+
 body {
   margin: 0;
   font-family:
@@ -8,10 +160,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background: linear-gradient(
     135deg,
-    #0a0a0a 0%,
-    #1a2f3a 100%
+    var(--color-bg-dark) 0%,
+    var(--color-fantasy-bg) 100%
   ); /* Global fantasy background */
-  color: #f4f1e8; /* Default light text */
+  color: var(--color-text-warm); /* Default light text */
 }
 
 code {
