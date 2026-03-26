@@ -48,6 +48,7 @@
 
 .viewToggle {
   padding: 0.5rem 1rem;
+  min-height: 44px;
   border: 2px solid var(--color-steel); /* Steel color border */
   background: var(--color-fantasy-primary-60); /* Semi-transparent primary */
   color: var(--color-text-warm); /* Light text for contrast */
@@ -161,8 +162,8 @@
   font-size: 1.25rem;
   cursor: pointer;
   padding: 0;
-  width: 24px;
-  height: 24px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -351,5 +352,24 @@
 
   .headerContent h1 {
     font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .campaignManager {
+    padding: 0.75rem;
+  }
+
+  .headerContent h1 {
+    font-size: 1.5rem;
+  }
+
+  .actionButton {
+    min-height: 44px;
+  }
+
+  .viewToggle {
+    min-height: 44px;
+    font-size: 1rem; /* Prevent iOS zoom */
   }
 }

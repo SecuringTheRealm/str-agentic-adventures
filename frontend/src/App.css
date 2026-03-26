@@ -29,8 +29,8 @@
   position: absolute;
   top: -100%;
   left: 0;
-  background: #e4bb1e;
-  color: #0a0a0a;
+  background: var(--color-accent-gold);
+  color: var(--color-bg-dark);
   padding: 0.5rem 1rem;
   font-family: "Cinzel", serif;
   font-weight: 600;

@@ -158,6 +158,7 @@
   color: white;
   border: 2px solid var(--color-accent-gold); /* Gold border */
   padding: 12px 30px;
+  min-height: 44px;
   border-radius: 6px;
   font-size: 1.1rem;
   font-weight: 600;
@@ -180,6 +181,8 @@
 
 .backButton {
   padding: 8px 16px;
+  min-height: 44px;
+  min-width: 44px;
   border: 1px solid var(--color-accent-gold); /* Gold border */
   border-radius: 4px;
   background-color: var(--color-steel-80); /* Steel color */
@@ -212,5 +215,47 @@
   .abilitiesGrid {
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .characterCreation {
+    padding: 10px;
+  }
+
+  .characterForm {
+    padding: 15px;
+  }
+
+  .characterCreationHeader h2 {
+    font-size: 1.5rem;
+  }
+
+  .characterCreationHeader p {
+    font-size: 1rem; /* Prevent iOS zoom */
+  }
+
+  .formGroup label {
+    font-size: 1rem; /* Prevent iOS zoom */
+  }
+
+  .formGroup input,
+  .formGroup select,
+  .formGroup textarea {
+    font-size: 16px; /* Prevent iOS zoom */
+  }
+
+  .abilitiesGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .createButton {
+    min-height: 44px;
+    font-size: 1rem; /* Prevent iOS zoom */
+  }
+
+  .backButton {
+    min-height: 44px;
+    font-size: 1rem; /* Prevent iOS zoom */
   }
 }

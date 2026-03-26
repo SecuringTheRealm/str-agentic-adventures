@@ -3,6 +3,7 @@
   background: linear-gradient(135deg, var(--color-fantasy-primary), var(--color-fantasy-bg)); /* Fantasy gradient */
   height: 100%;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   color: var(--color-text-warm); /* Warm off-white */
   border: 2px solid var(--color-accent-gold); /* Gold border */
 }
@@ -138,4 +139,38 @@
   font-style: italic;
   padding: 10px;
   font-family: "Cinzel", serif;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .abilitiesGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .characterSheet {
+    padding: 10px;
+  }
+
+  .characterBasics {
+    font-size: 1rem; /* Prevent iOS zoom - min 16px */
+  }
+
+  .statLabel {
+    font-size: 1rem; /* Prevent iOS zoom - min 16px */
+  }
+
+  .abilityName {
+    font-size: 1rem; /* Prevent iOS zoom - min 16px */
+  }
+
+  .abilityMod {
+    font-size: 1rem; /* Prevent iOS zoom - min 16px */
+  }
+
+  .abilitiesGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
 }

@@ -44,6 +44,8 @@
   color: white;
   border: 1px solid var(--color-accent-gold); /* Gold border */
   padding: 5px 10px;
+  min-height: 44px;
+  min-width: 44px;
   border-radius: 3px;
   cursor: pointer;
   font-size: 0.8rem;
@@ -92,4 +94,20 @@
 .emptyMapState p {
   margin: 0;
   font-style: italic;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 480px) {
+  .battleMapHeader {
+    padding: 8px 10px;
+  }
+
+  .battleMapHeader h3 {
+    font-size: 1rem; /* Prevent iOS zoom */
+  }
+
+  .toggleButton {
+    min-height: 44px;
+    font-size: 1rem; /* Prevent iOS zoom */
+  }
 }

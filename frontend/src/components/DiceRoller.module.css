@@ -52,6 +52,7 @@
 .rollButton {
   width: 100%;
   padding: 0.75rem;
+  min-height: 44px;
   background: linear-gradient(135deg, var(--color-wood-saddle), var(--color-wood-medium));
   color: white;
   border: none;
@@ -97,6 +98,8 @@
 
 .quickRollButton {
   padding: 0.5rem;
+  min-height: 44px;
+  min-width: 44px;
   background: linear-gradient(135deg, var(--color-success-deeper), var(--color-success-dark));
   color: white;
   border: none;
@@ -259,5 +262,26 @@
   .historyItem {
     padding: 0.4rem;
     font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .notationInput input,
+  .skillInput select {
+    font-size: 16px; /* Prevent iOS zoom */
+  }
+
+  .rollButton {
+    font-size: 1rem; /* Prevent iOS zoom */
+    min-height: 44px;
+  }
+
+  .quickRollButton {
+    min-height: 44px;
+    font-size: 1rem; /* Prevent iOS zoom */
+  }
+
+  .historyItem {
+    font-size: 1rem; /* Prevent iOS zoom */
   }
 }
