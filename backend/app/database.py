@@ -5,9 +5,11 @@ from __future__ import annotations
 import os
 from collections.abc import Generator
 from contextlib import contextmanager
+from typing import Annotated
 
+from fastapi import Depends
 from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 Base = declarative_base()
 
@@ -82,6 +84,17 @@ def get_session_context():
         yield db
     finally:
         db.close()
+
+
+DbDep = Annotated[Session, Depends(get_session)]
+"""FastAPI dependency for injecting a SQLAlchemy database session.
+
+Follows the same pattern as ``ConfigDep``. Use as a type annotation in route
+parameters::
+
+    async def my_route(db: DbDep) -> ...:
+        ...
+"""
 
 
 def init_db() -> None:

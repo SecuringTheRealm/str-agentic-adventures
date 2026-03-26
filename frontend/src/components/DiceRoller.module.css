@@ -47,6 +47,11 @@
   outline: none;
   border-color: var(--color-gold-alt);
   box-shadow: 0 0 5px var(--color-gold-alt-glow-30);
+
+  outline: 2px solid #e4bb1e;
+  outline-offset: 2px;
+  border-color: #d4af37;
+  box-shadow: 0 0 5px rgba(212, 175, 55, 0.3);
 }
 
 .rollButton {
@@ -283,5 +288,10 @@
 
   .historyItem {
     font-size: 1rem; /* Prevent iOS zoom */
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
 }
