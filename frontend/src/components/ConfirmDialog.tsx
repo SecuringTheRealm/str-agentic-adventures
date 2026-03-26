@@ -1,5 +1,5 @@
 import type React from "react";
-import { useCallback, useEffect, useId, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import styles from "./ConfirmDialog.module.css";
 
 interface ConfirmDialogProps {
@@ -23,9 +23,8 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 }) => {
   const dialogRef = useRef<HTMLDivElement>(null);
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
-  const uid = useId();
-  const titleId = `${uid}-title`;
-  const messageId = `${uid}-message`;
+  const titleId = "confirm-dialog-title";
+  const messageId = "confirm-dialog-message";
 
   // Close on Escape key
   const handleKeyDown = useCallback(
