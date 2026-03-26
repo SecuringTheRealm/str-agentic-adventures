@@ -14,6 +14,8 @@
 ## Agent Framework
 - Use the singleton `azure_openai_client` from `backend/app/azure_openai_client.py` — never instantiate clients directly.
 - All agents MUST handle Azure OpenAI unavailability: when `is_configured()` returns False, use deterministic fallback logic.
+- Microsoft Agent Framework SDK (azure-ai-agents) lifecycle: `create_agent` → `create_thread` → `add_message` → `create_and_process_run`. See `agent_client_setup.py`.
+- Circuit breaker (pybreaker) guards Azure calls — 3 failures trips open, 60s auto-reset. Check `/health/dependencies`.
 - See ADR-0018 for architectural decisions.
 
 ## Testing
@@ -38,11 +40,12 @@
 - **Labels:** `priority:critical`, `priority:high`, `priority:medium`, `bug`, `security`, `cleanup`, `architecture`, `game-engine`, `frontend`, `infra`, `cost`.
 
 ## Sprint Plan
-Work is organised in sprints tracked via GitHub issues:
-- **Sprint 1 (foundation):** #408, #409, #411 — Azure SDK, DALL-E migration, security
-- **Sprint 2 (game engine):** #436-#441 — conversation history, agent orchestration, rules engine, dice, spells, opening experience
-- **Sprint 3 (modernisation):** #414 architecture, #415 infra/Bicep, #418 frontend/shadcn, #419 battle maps
-- **Backlog:** #407 FLUX investigation, #421 OpenAPI generator, #404 diarisation
+Work is organised in sprints tracked via GitHub issues (#567 is the master tracking issue):
+- **Sprint 1-4 (complete):** Foundation, game engine basics, modernisation
+- **Sprint 5 (complete):** Security & infrastructure hardening — #558 MI, #557 Key Vault, #559 PostgreSQL, #564 blob lockdown, #563 deploy safety, #568 Agent Framework, #569 thread persistence
+- **Sprint 6 (complete):** Observability & reliability — #560 OpenTelemetry, #561 circuit breakers, #562 rate limiter, #570 parallel agents, #480 health probes, #565 Bicep params, #566 cost budget
+- **Sprint 7 (active):** Game engine depth — #416 game wiring, #418 shadcn/ui, #419 battle maps, #421 openapi-typescript
+- **Backlog:** #511 multiplayer WebSockets, #512 mobile redesign, #513 azd integration, #407 FLUX, #404 diarisation
 
 ## Commits
 - Use Conventional Commits (`feat:`, `fix:`, `docs:`, `chore:`).
