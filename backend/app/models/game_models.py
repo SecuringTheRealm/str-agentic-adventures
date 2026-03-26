@@ -91,6 +91,9 @@ class ItemType(str, Enum):
     WEAPON = "weapon"
     ARMOR = "armor"
     SHIELD = "shield"
+    POTION = "potion"
+    SCROLL = "scroll"
+    GEAR = "gear"
     TOOL = "tool"
     CONSUMABLE = "consumable"
     TREASURE = "treasure"
@@ -142,6 +145,37 @@ class InventorySlot(BaseModel):
     item_id: str
     quantity: int
     equipped_slots: list[EquipmentSlot] = Field(default_factory=list)  # Which slots this item is equipped in
+
+
+class InventoryItem(BaseModel):
+    """A single item in a character's inventory with equipment state."""
+
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    item_type: ItemType
+    weight: float = 0.0
+    quantity: int = 1
+    equipped: bool = False
+    requires_attunement: bool = False
+    attuned: bool = False
+    description: str = ""
+
+
+class InventoryEquipmentSlots(BaseModel):
+    """Tracks which item IDs are equipped in each core slot."""
+
+    main_hand: str | None = None
+    off_hand: str | None = None
+    armor: str | None = None
+
+
+class Inventory(BaseModel):
+    """Full inventory container for a character."""
+
+    items: list[InventoryItem] = Field(default_factory=list)
+    equipment: InventoryEquipmentSlots = Field(default_factory=InventoryEquipmentSlots)
+    gold: int = 0
+    max_attunements: int = 3
 
 
 class Spell(BaseModel):
@@ -208,6 +242,7 @@ class CharacterSheet(BaseModel):
     proficiency_bonus: int = 2
     skills: dict[str, bool] = Field(default_factory=dict)
     inventory: list[InventorySlot] = Field(default_factory=list)
+    structured_inventory: Inventory = Field(default_factory=Inventory)
     equipped_items: list[EquippedItem] = Field(default_factory=list)
     carrying_capacity: float | None = None
     spells: list[Spell] = Field(default_factory=list)
@@ -624,6 +659,21 @@ class MagicalEffectsResponse(BaseModel):
     message: str
     active_effects: list[str]
     stat_modifiers: dict[str, int]
+
+
+class AddInventoryItemRequest(BaseModel):
+    name: str
+    item_type: ItemType
+    weight: float = 0.0
+    quantity: int = 1
+    requires_attunement: bool = False
+    description: str = ""
+
+
+class InventoryActionResponse(BaseModel):
+    success: bool
+    message: str
+    inventory: Inventory | None = None
 
 
 # NPC-related request and response models
