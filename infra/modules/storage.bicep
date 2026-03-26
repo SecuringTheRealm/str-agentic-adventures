@@ -17,14 +17,14 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
   kind: 'StorageV2'
   properties: {
     accessTier: 'Hot'
-    allowBlobPublicAccess: true
+    allowBlobPublicAccess: false
     allowCrossTenantReplication: false
     allowSharedKeyAccess: true
-    defaultToOAuthAuthentication: false
+    defaultToOAuthAuthentication: true
     minimumTlsVersion: 'TLS1_2'
     networkAcls: {
+      defaultAction: 'Deny'
       bypass: 'AzureServices'
-      defaultAction: 'Allow'
     }
     publicNetworkAccess: 'Enabled'
     supportsHttpsTrafficOnly: true
@@ -61,7 +61,7 @@ resource imagesContainer 'Microsoft.Storage/storageAccounts/blobServices/contain
   parent: blobService
   name: 'images'
   properties: {
-    publicAccess: 'Blob'
+    publicAccess: 'None'
   }
 }
 

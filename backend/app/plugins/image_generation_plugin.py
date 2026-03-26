@@ -3,11 +3,14 @@ Image Generation Plugin for the Agent Framework.
 This plugin provides core image generation capabilities using Azure OpenAI gpt-image-1.
 """
 
+import base64
 import logging
+import uuid
 from typing import Any
 
 # Note: Converted from Agent plugin to direct function calls
 from app.azure_openai_client import azure_openai_client
+from app.services.blob_storage_service import get_blob_storage_service
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +53,11 @@ class ImageGenerationPlugin:
                 prompt=optimized_prompt, size=size, quality=quality
             )
 
+            # Try uploading to blob storage for a SAS URL instead of a data URI
+            image_url = result.get("image_url")
+            if result.get("success") and result.get("b64_json"):
+                image_url = self._try_upload_to_blob(result["b64_json"]) or image_url
+
             # Store in generation history
             generation_record = {
                 "original_prompt": prompt,
@@ -62,7 +70,7 @@ class ImageGenerationPlugin:
 
             return {
                 "status": "success" if result.get("success") else "error",
-                "image_url": result.get("image_url"),
+                "image_url": image_url,
                 "revised_prompt": result.get("revised_prompt", optimized_prompt),
                 "original_prompt": prompt,
                 "generation_parameters": {
@@ -144,6 +152,25 @@ class ImageGenerationPlugin:
                 "status": "error",
                 "error": f"Failed to get generation history: {str(e)}",
             }
+
+    def _try_upload_to_blob(self, b64_json: str) -> str | None:
+        """Attempt to upload base64 image data to blob storage and return a SAS URL.
+
+        Returns None if blob storage is unavailable, keeping the data URI fallback.
+        """
+        try:
+            blob_service = get_blob_storage_service()
+            image_bytes = base64.b64decode(b64_json)
+            blob_name = f"{uuid.uuid4()}.png"
+            return blob_service.upload_image(
+                container="images",
+                blob_name=blob_name,
+                data=image_bytes,
+                content_type="image/png",
+            )
+        except Exception as e:
+            logger.warning("Blob upload failed, falling back to data URI: %s", e)
+            return None
 
     def _optimize_prompt(
         self, prompt: str, art_style: str = "fantasy", context: str = "RPG"
