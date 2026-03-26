@@ -13,6 +13,7 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
+    UniqueConstraint,
 )
 
 from app.database import Base
@@ -166,6 +167,24 @@ class NPCRelationshipDB(Base):
     interactions_count = Column(Integer, nullable=False, default=0)
     key_events = Column(JSON, nullable=False, default=list)
     last_interaction = Column(String, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=_utcnow)
+    updated_at = Column(DateTime, nullable=False, default=_utcnow, onupdate=_utcnow)
+
+
+class ConversationThread(Base):
+    """Persistent conversation thread for agent interactions."""
+
+    __tablename__ = "conversation_threads"
+    __table_args__ = (
+        UniqueConstraint("session_id", "agent_name", name="uq_thread_session_agent"),
+    )
+
+    id = Column(String, primary_key=True, index=True)
+    session_id = Column(String, nullable=False, index=True)
+    campaign_id = Column(String, ForeignKey("campaigns.id"), nullable=True, index=True)
+    agent_name = Column(String, nullable=False, default="DM")
+    messages = Column(JSON, nullable=False, default=list)
+    sdk_thread_id = Column(String, nullable=True)
     created_at = Column(DateTime, nullable=False, default=_utcnow)
     updated_at = Column(DateTime, nullable=False, default=_utcnow, onupdate=_utcnow)
 
