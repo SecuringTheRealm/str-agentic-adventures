@@ -27,6 +27,7 @@ from app.models.game_models import (
     PlayerInput,
 )
 from app.services.campaign_service import campaign_service
+from app.services.game_context_service import build_game_context, build_state_updates
 from app.services.prompt_shield_service import prompt_shield_service
 
 logger = logging.getLogger(__name__)
@@ -70,14 +71,13 @@ async def process_player_input(  # noqa: ARG001
                 "level": 1,
             }
 
-        # Create context for the Dungeon Master agent
-        context = {
-            "character_id": player_input.character_id,
-            "campaign_id": player_input.campaign_id,
-            "character_name": character.get("name", "Adventurer"),
-            "character_class": character.get("class", "Fighter"),
-            "character_level": str(character.get("level", 1)),
-        }
+        # Build rich game context from campaign state, character stats,
+        # equipment, and combat-derived values (Step 1 of #416).
+        context = build_game_context(
+            character_id=player_input.character_id,
+            campaign_id=player_input.campaign_id,
+            character_data=character,
+        )
 
         # Process the input through the Dungeon Master agent
         dm_response = await get_dungeon_master().process_input(
@@ -99,9 +99,9 @@ async def process_player_input(  # noqa: ARG001
             )
             logger.info("Specialist agent results: %s", list(specialist_results.keys()))
 
-        # Merge specialist outputs into state_updates so the frontend
-        # receives them alongside the DM narrative.
-        merged_state = dm_response.get("state_updates", {})
+        # Build enriched state_updates with character HP, conditions,
+        # equipped weapon, and spell slots (Step 5 of #416).
+        merged_state = build_state_updates(context, dm_response)
         merged_state.update(specialist_results)
 
         # If combat was triggered by orchestration, surface it as combat_updates

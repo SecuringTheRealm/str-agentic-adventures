@@ -142,11 +142,15 @@ class DungeonMasterAgent(BaseAgent):
             "the single point of coordination for the entire game experience."
         )
 
-    def _get_or_create_thread(self, session_id: str) -> list[dict[str, str]]:
+    def _get_or_create_thread(
+        self, session_id: str, campaign_id: str | None = None
+    ) -> list[dict[str, str]]:
         """Return the message thread for a session, creating one if needed.
 
         Checks the in-memory cache first, then the database. Creates a new
-        DB record if neither contains an existing thread.
+        DB record if neither contains an existing thread.  When *campaign_id*
+        is provided the thread row is associated with the campaign so that
+        conversation history can be resumed when the campaign is loaded later.
         """
         if session_id in self._threads:
             return self._threads[session_id]
@@ -163,6 +167,10 @@ class DungeonMasterAgent(BaseAgent):
                     .first()
                 )
                 if thread_row:
+                    # Ensure campaign_id is set on existing threads
+                    if campaign_id and not thread_row.campaign_id:
+                        thread_row.campaign_id = campaign_id
+                        db.commit()
                     self._threads[session_id] = list(thread_row.messages or [])
                     return self._threads[session_id]
 
@@ -170,6 +178,7 @@ class DungeonMasterAgent(BaseAgent):
                 new_thread = ConversationThread(
                     id=str(uuid.uuid4()),
                     session_id=session_id,
+                    campaign_id=campaign_id,
                     agent_name="DM",
                     messages=[],
                 )
@@ -284,7 +293,8 @@ class DungeonMasterAgent(BaseAgent):
         session_id = context.get("session_id") or context.get(
             "campaign_id", "default"
         )
-        thread = self._get_or_create_thread(session_id)
+        campaign_id = context.get("campaign_id")
+        thread = self._get_or_create_thread(session_id, campaign_id=campaign_id)
 
         # Build the user message (may include character name prefix)
         user_message = user_input
@@ -384,7 +394,8 @@ class DungeonMasterAgent(BaseAgent):
         session_id = context.get("session_id") or context.get(
             "campaign_id", "default"
         )
-        thread = self._get_or_create_thread(session_id)
+        campaign_id = context.get("campaign_id")
+        thread = self._get_or_create_thread(session_id, campaign_id=campaign_id)
 
         # Build the user message (may include character name prefix)
         user_message = user_input
