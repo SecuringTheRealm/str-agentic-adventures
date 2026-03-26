@@ -264,6 +264,9 @@ jobs:
           # Get storage connection string
           STORAGE_CONNECTION_STRING=$(az storage account show-connection-string --name "$STORAGE_ACCOUNT_NAME" --resource-group "$RESOURCE_GROUP" --query "connectionString" --output tsv)
 
+          # Retrieve database password from Key Vault
+          DB_PASSWORD=$(az keyvault secret show --vault-name "${{ steps.infrastructure-deploy.outputs.AZURE_KEY_VAULT_NAME }}" --name "database-password" --query value --output tsv)
+
           # Use the SHA-tagged image built and pushed in the build-push step
           IMAGE_SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
           DOCKER_IMAGE="${{ steps.infrastructure-deploy.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT }}/backend:sha-$IMAGE_SHORT_SHA"
@@ -293,6 +296,10 @@ jobs:
               "AZURE_CLIENT_ID=${{ steps.infrastructure-deploy.outputs.AZURE_MANAGED_IDENTITY_CLIENT_ID }}" \
               "AZURE_KEY_VAULT_NAME=${{ steps.infrastructure-deploy.outputs.AZURE_KEY_VAULT_NAME }}" \
               "STORAGE_CONNECTION_STRING=$STORAGE_CONNECTION_STRING" \
+              "DATABASE_HOST=${{ steps.infrastructure-deploy.outputs.DATABASE_HOST }}" \
+              "DATABASE_NAME=${{ steps.infrastructure-deploy.outputs.DATABASE_NAME }}" \
+              "DATABASE_USER=adminuser" \
+              "DATABASE_PASSWORD=$DB_PASSWORD" \
               "APP_HOST=0.0.0.0" \
               "APP_PORT=8000" \
               "APP_DEBUG=false" \
