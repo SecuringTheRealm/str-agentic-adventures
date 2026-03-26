@@ -32,6 +32,15 @@ param azureOpenAiDalleDeployment string = 'gpt-image-1-mini'
 @description('Administrator password for the PostgreSQL server (auto-generated if not provided)')
 param databasePassword string = newGuid()
 
+@description('Monthly cost budget amount in billing currency')
+param budgetAmount int = 50
+
+@description('Email addresses for cost budget alert notifications')
+param budgetContactEmails array = []
+
+@description('Budget start date in yyyy-MM-ddT00:00:00Z format. Defaults to the first of the current month.')
+param budgetStartDate string = '${utcNow('yyyy-MM')}-01T00:00:00Z'
+
 // This template should be deployed at the subscription level to create the resource group
 targetScope = 'subscription'
 
@@ -140,6 +149,18 @@ module roleAssignments 'modules/role-assignments.bicep' = {
 
 // Backend Container App will be deployed separately via GitHub Actions workflow
 // This ensures the latest code is always deployed without requiring Bicep updates
+
+// Create cost budget with alert notifications
+module budget 'modules/budget.bicep' = {
+  name: 'budget'
+  scope: rg
+  params: {
+    name: '${environmentName}-monthly-budget'
+    amount: budgetAmount
+    contactEmails: budgetContactEmails
+    startDate: budgetStartDate
+  }
+}
 
 // Create Frontend Static Web App
 module frontend 'modules/frontend.bicep' = {

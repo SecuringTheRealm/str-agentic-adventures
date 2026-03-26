@@ -108,6 +108,22 @@ jobs:
           python-version: "3.12"
           enable-cache: true
 
+      - name: Select parameter file
+        id: params
+        run: |
+          # Select environment-specific Bicep parameter file for infrastructure defaults.
+          # Note: The deploy step currently passes all parameters inline. These parameter
+          # files define environment-specific defaults (region, naming) and can be used
+          # with 'az deployment sub create --parameters @<file>' if migrating away from
+          # inline parameters in future.
+          if [ "${{ inputs.is-production }}" = "true" ]; then
+            echo "param_file=infra/parameters/prod.bicepparam" >> $GITHUB_OUTPUT
+            echo "Selected production parameter file"
+          else
+            echo "param_file=infra/parameters/dev.bicepparam" >> $GITHUB_OUTPUT
+            echo "Selected development parameter file"
+          fi
+
       - name: Log in with Azure (Federated Credentials)
         if: steps.check-secrets.outputs.use-federated-auth == 'true'
         uses: azure/login@v2
@@ -326,6 +342,71 @@ jobs:
             sleep 10
           done
           exit 1
+
+      - name: Configure health probes
+        if: steps.backend-deploy.outputs.backend-status == 'success'
+        env:
+          CONTAINER_APP_NAME: ${{ steps.backend-deploy.outputs.container-app-name }}
+          RESOURCE_GROUP: ${{ steps.infrastructure-deploy.outputs.AZURE_RESOURCE_GROUP }}
+        run: |
+          echo "Configuring health probes for $CONTAINER_APP_NAME"
+
+          # Export current app config, inject probes, and apply
+          az containerapp show \
+            --name "$CONTAINER_APP_NAME" \
+            --resource-group "$RESOURCE_GROUP" \
+            -o yaml > /tmp/containerapp.yaml
+
+          # Use Python to patch the YAML with health probe configuration
+          python3 - <<'PYEOF'
+          import yaml, sys
+
+          with open("/tmp/containerapp.yaml") as f:
+              app = yaml.safe_load(f)
+
+          probes = [
+              {
+                  "type": "Liveness",
+                  "httpGet": {"path": "/health", "port": 8000},
+                  "initialDelaySeconds": 30,
+                  "periodSeconds": 30,
+                  "failureThreshold": 3,
+                  "timeoutSeconds": 3,
+              },
+              {
+                  "type": "Readiness",
+                  "httpGet": {"path": "/health", "port": 8000},
+                  "initialDelaySeconds": 5,
+                  "periodSeconds": 10,
+                  "failureThreshold": 3,
+                  "timeoutSeconds": 3,
+              },
+              {
+                  "type": "Startup",
+                  "httpGet": {"path": "/health", "port": 8000},
+                  "initialDelaySeconds": 10,
+                  "periodSeconds": 10,
+                  "failureThreshold": 30,
+                  "timeoutSeconds": 3,
+              },
+          ]
+
+          containers = app["properties"]["template"]["containers"]
+          containers[0]["probes"] = probes
+
+          with open("/tmp/containerapp.yaml", "w") as f:
+              yaml.dump(app, f, default_flow_style=False)
+
+          print("Health probes injected successfully")
+          PYEOF
+
+          az containerapp update \
+            --name "$CONTAINER_APP_NAME" \
+            --resource-group "$RESOURCE_GROUP" \
+            --yaml /tmp/containerapp.yaml
+
+          echo "Health probes configured for $CONTAINER_APP_NAME"
+        timeout-minutes: 5
 
       - name: Build frontend for Static Web App
         id: frontend-build
