@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from collections.abc import AsyncIterator
 from typing import Any, Literal
 
@@ -10,16 +11,40 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 
 from app.config import settings
 
+logger = logging.getLogger(__name__)
+
 
 class AzureOpenAIClient:
-    """Client wrapper around openai for Azure OpenAI Service."""
+    """Client wrapper around openai for Azure OpenAI Service.
+
+    Uses managed identity (DefaultAzureCredential) as the primary auth method.
+    Falls back to API key when ``AZURE_OPENAI_API_KEY`` is explicitly provided,
+    which is useful for local development.
+    """
 
     def __init__(self) -> None:
-        self.client = AsyncAzureOpenAI(
-            api_key=settings.azure_openai_api_key,
-            api_version=settings.azure_openai_api_version,
-            azure_endpoint=settings.azure_openai_endpoint,
-        )
+        if settings.azure_openai_api_key:
+            # Fallback: use API key if explicitly provided (local dev)
+            logger.info("Initialising Azure OpenAI client with API key auth")
+            self.client = AsyncAzureOpenAI(
+                api_key=settings.azure_openai_api_key,
+                api_version=settings.azure_openai_api_version,
+                azure_endpoint=settings.azure_openai_endpoint,
+            )
+        else:
+            # Production: use managed identity via DefaultAzureCredential
+            logger.info("Initialising Azure OpenAI client with managed identity auth")
+            from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
+
+            credential = DefaultAzureCredential()
+            token_provider = get_bearer_token_provider(
+                credential, "https://cognitiveservices.azure.com/.default"
+            )
+            self.client = AsyncAzureOpenAI(
+                azure_ad_token_provider=token_provider,
+                api_version=settings.azure_openai_api_version,
+                azure_endpoint=settings.azure_openai_endpoint,
+            )
 
     @retry(
         wait=wait_exponential(multiplier=2, min=2, max=10), stop=stop_after_attempt(3)
@@ -119,11 +144,12 @@ class AzureOpenAIClient:
             return {"success": False, "error": f"Failed to generate image: {str(e)}"}
 
     def is_configured(self) -> bool:
-        """Return True if Azure OpenAI credentials are present."""
-        return (
-            bool(settings.azure_openai_endpoint)
-            and bool(settings.azure_openai_api_key)
-            and bool(settings.azure_openai_chat_deployment)
+        """Return True if Azure OpenAI is configured.
+
+        An API key is not required when using managed identity auth.
+        """
+        return bool(settings.azure_openai_endpoint) and bool(
+            settings.azure_openai_chat_deployment
         )
 
 

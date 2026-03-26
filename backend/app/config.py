@@ -94,8 +94,10 @@ def init_settings() -> Settings:
                 "Azure OpenAI configuration is missing or invalid. "
                 "This agentic demo requires proper Azure OpenAI setup. "
                 "Please ensure the following environment variables are set: "
-                "AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_API_KEY, "
-                "AZURE_OPENAI_CHAT_DEPLOYMENT, AZURE_OPENAI_EMBEDDING_DEPLOYMENT"
+                "AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_CHAT_DEPLOYMENT, "
+                "AZURE_OPENAI_EMBEDDING_DEPLOYMENT. "
+                "Authentication uses DefaultAzureCredential (managed identity) "
+                "by default; set AZURE_OPENAI_API_KEY only for local development."
             ) from e
         # Re-raise original error for non-Azure OpenAI issues
         raise
