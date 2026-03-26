@@ -11,7 +11,7 @@
 
 .characterCreationHeader h2 {
   margin: 0 0 10px 0;
-  color: #e4bb1e; /* Gold accent color */
+  color: var(--color-accent-gold); /* Gold accent color */
   font-size: 2rem;
   font-family: "Cinzel", serif;
   font-weight: 600;
@@ -20,17 +20,17 @@
 
 .characterCreationHeader p {
   margin: 10px 0 20px 0;
-  color: #f4f1e8; /* Warm off-white text */
+  color: var(--color-text-warm); /* Warm off-white text */
   font-size: 1.1rem;
   font-family: "Cinzel", serif;
 }
 
 .characterForm {
-  background: rgba(15, 64, 79, 0.8); /* Fantasy theme background */
+  background: var(--color-fantasy-primary-80); /* Fantasy theme background */
   border-radius: 12px;
   padding: 30px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-  border: 2px solid #e4bb1e; /* Gold border */
+  border: 2px solid var(--color-accent-gold); /* Gold border */
 }
 
 .formSection {
@@ -39,12 +39,12 @@
 }
 
 .formSection:not(:last-child) {
-  border-bottom: 1px solid #908c6b; /* Stone color border */
+  border-bottom: 1px solid var(--color-stone); /* Stone color border */
 }
 
 .formSection h3 {
   margin: 0 0 20px 0;
-  color: #e4bb1e; /* Gold color for headings */
+  color: var(--color-accent-gold); /* Gold color for headings */
   font-size: 1.3rem;
   font-family: "Cinzel", serif;
   font-weight: 600;
@@ -63,7 +63,7 @@
 .formGroup label {
   display: block;
   margin-bottom: 5px;
-  color: #e4bb1e; /* Gold color for labels */
+  color: var(--color-accent-gold); /* Gold color for labels */
   font-weight: 600;
   font-size: 0.9rem;
   font-family: "Cinzel", serif;
@@ -74,13 +74,13 @@
 .formGroup textarea {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #908c6b; /* Stone color border */
+  border: 1px solid var(--color-stone); /* Stone color border */
   border-radius: 4px;
   font-size: 1rem;
   transition: border-color 0.2s ease;
   box-sizing: border-box;
-  background: rgba(26, 47, 58, 0.6); /* Darker fantasy background */
-  color: #f4f1e8; /* Light text */
+  background: var(--color-fantasy-bg-60); /* Darker fantasy background */
+  color: var(--color-text-warm); /* Light text */
   font-family: "Cinzel", serif;
 }
 
@@ -88,8 +88,8 @@
 .formGroup select:focus,
 .formGroup textarea:focus {
   outline: none;
-  border-color: #e4bb1e; /* Gold focus border */
-  box-shadow: 0 0 0 2px rgba(228, 187, 30, 0.2);
+  border-color: var(--color-accent-gold); /* Gold focus border */
+  box-shadow: 0 0 0 2px var(--color-gold-glow-20);
 }
 
 .abilitiesGrid {
@@ -104,7 +104,7 @@
 
 .abilityInput label {
   font-size: 0.8rem;
-  color: #e4bb1e; /* Gold color for labels */
+  color: var(--color-accent-gold); /* Gold color for labels */
   margin-bottom: 5px;
   font-family: "Cinzel", serif;
 }
@@ -119,32 +119,32 @@
 .modifier {
   display: block;
   font-size: 0.8rem;
-  color: #d0c8b8; /* Light fantasy text */
+  color: var(--color-text-muted-warm); /* Light fantasy text */
   font-weight: 500;
   font-family: "Cinzel", serif;
 }
 
 .abilityPointsInfo {
-  background: rgba(144, 140, 107, 0.3); /* Stone color background */
+  background: var(--color-stone-30); /* Stone color background */
   padding: 10px 15px;
   border-radius: 6px;
   margin-bottom: 20px;
   font-size: 0.9rem;
-  color: #f4f1e8; /* Light text */
+  color: var(--color-text-warm); /* Light text */
   text-align: center;
   font-weight: 500;
-  border: 1px solid #908c6b; /* Stone border */
+  border: 1px solid var(--color-stone); /* Stone border */
   font-family: "Cinzel", serif;
 }
 
 .errorMessage {
-  background: rgba(220, 53, 69, 0.2); /* Dark red background */
-  color: #ffcccb; /* Light red text */
+  background: var(--color-danger-20); /* Dark red background */
+  color: var(--color-danger-pale); /* Light red text */
   padding: 12px 15px;
   border-radius: 6px;
   margin: 20px 0;
   font-size: 0.9rem;
-  border: 1px solid #dc3545;
+  border: 1px solid var(--color-danger-red);
   font-family: "Cinzel", serif;
 }
 
@@ -154,9 +154,9 @@
 }
 
 .createButton {
-  background: linear-gradient(135deg, #b15005, #d67c2d); /* Wood gradient */
+  background: linear-gradient(135deg, var(--color-wood-dark), var(--color-wood-light)); /* Wood gradient */
   color: white;
-  border: 2px solid #e4bb1e; /* Gold border */
+  border: 2px solid var(--color-accent-gold); /* Gold border */
   padding: 12px 30px;
   min-height: 44px;
   border-radius: 6px;
@@ -169,24 +169,24 @@
 }
 
 .createButton:hover:not(:disabled) {
-  background: linear-gradient(135deg, #d67c2d, #e4953f); /* Lighter wood on hover */
-  box-shadow: 0 2px 4px rgba(228, 187, 30, 0.3);
+  background: linear-gradient(135deg, var(--color-wood-light), var(--color-gold-warm)); /* Lighter wood on hover */
+  box-shadow: 0 2px 4px var(--color-gold-glow-30);
 }
 
 .createButton:disabled {
-  background: linear-gradient(135deg, #788070, #98a090); /* Steel colors when disabled */
+  background: linear-gradient(135deg, var(--color-steel), var(--color-steel-light)); /* Steel colors when disabled */
   cursor: not-allowed;
-  border-color: #788070;
+  border-color: var(--color-steel);
 }
 
 .backButton {
   padding: 8px 16px;
   min-height: 44px;
   min-width: 44px;
-  border: 1px solid #e4bb1e; /* Gold border */
+  border: 1px solid var(--color-accent-gold); /* Gold border */
   border-radius: 4px;
-  background-color: rgba(120, 128, 112, 0.8); /* Steel color */
-  color: #f4f1e8; /* Light text */
+  background-color: var(--color-steel-80); /* Steel color */
+  color: var(--color-text-warm); /* Light text */
   cursor: pointer;
   font-size: 0.9rem;
   transition: all 0.2s ease;
@@ -194,8 +194,8 @@
 }
 
 .backButton:hover {
-  background-color: rgba(144, 140, 107, 0.9); /* Stone color on hover */
-  border-color: #e4bb1e;
+  background-color: var(--color-stone-90); /* Stone color on hover */
+  border-color: var(--color-accent-gold);
 }
 
 @media (max-width: 768px) {

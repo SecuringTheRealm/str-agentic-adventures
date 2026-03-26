@@ -6,58 +6,37 @@ import json
 import logging
 from typing import Any
 
-from app.agent_client_setup import agent_client_manager
-from app.azure_openai_client import AzureOpenAIClient, azure_openai_client
+from app.agents.base_agent import BaseAgent
+from app.azure_openai_client import azure_openai_client
 from app.config import settings
 
 logger = logging.getLogger(__name__)
 
 
-class NarratorAgent:
+class NarratorAgent(BaseAgent):
     """
     Narrator Agent that manages campaign narrative and story elements.
     Uses Azure AI SDK for narrative generation.
     """
 
-    def __init__(self) -> None:
-        """Initialize the Narrator agent with Azure AI SDK."""
-        # Initialize basic attributes first
-        self._fallback_mode = False
-        self.azure_client: AzureOpenAIClient | None = None
+    agent_name = "Narrator"
 
-        try:
-            # Try to get the shared chat client from agent client manager
-            chat_client = agent_client_manager.get_chat_client()
-            if chat_client is None:
-                # Agent client manager is in fallback mode
-                self._fallback_mode = True
-                logger.warning(
-                    "Narrator agent operating in fallback mode - "
-                    "Azure OpenAI not configured"
-                )
-                self._initialize_fallback_components()
-            else:
-                self._register_skills()
-                logger.info("Narrator agent initialized with Azure AI SDK")
-                try:
-                    self.azure_client = azure_openai_client
-                except Exception as azure_error:
-                    logger.error(
-                        "Failed to initialize Azure OpenAI client for Narrator agent: %s",
-                        azure_error,
-                    )
-                    logger.warning("Narrator agent switching to fallback mode.")
-                    self._fallback_mode = True
-                    self._initialize_fallback_components()
-
-        except Exception as e:
-            logger.warning(
-                "Failed to initialize Narrator agent with Azure AI SDK: %s. "
-                "Operating in fallback mode.",
-                e,
-            )
-            self._fallback_mode = True
+    def _post_init(self) -> None:
+        """Initialize Narrator-specific components after base client setup."""
+        if self._fallback_mode:
             self._initialize_fallback_components()
+        else:
+            self._register_skills()
+            try:
+                self.azure_client = azure_openai_client
+            except Exception as azure_error:
+                logger.error(
+                    "Failed to initialize Azure OpenAI client for Narrator agent: %s",
+                    azure_error,
+                )
+                logger.warning("Narrator agent switching to fallback mode.")
+                self._fallback_mode = True
+                self._initialize_fallback_components()
 
     def _initialize_fallback_components(self) -> None:
         """Initialize fallback components when Azure OpenAI is not available."""

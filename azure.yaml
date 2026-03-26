@@ -3,26 +3,51 @@
 name: str-agentic-adventures
 metadata:
   template: str-agentic-adventures@0.0.1-beta
-  
+
 infra:
   provider: bicep
   path: infra
 
 services:
   backend:
-    project: backend
+    # Dockerfile is at the repository root; build context must include
+    # pyproject.toml, uv.lock, README.md, and the backend/ directory.
+    project: .
     language: python
     host: containerapp
-    
+    docker:
+      path: ./Dockerfile
+      context: .
+
   frontend:
     project: frontend
     language: js
     host: staticwebapp
+    # Vite writes the production build to frontend/dist
+    dist: dist
 
 hooks:
+  # Generate the TypeScript API client from the running backend before packaging
+  # the frontend.  Requires the backend to be reachable at localhost:8000.
+  prepackage:
+    shell: sh
+    run: |
+      echo "Pre-package: Generating TypeScript API client from backend OpenAPI schema..."
+      cd frontend && npm run generate:api || echo "Warning: API client generation skipped (backend must be running on localhost:8000)."
+    continueOnError: true
+
   postprovision:
     shell: sh
     run: |
-      echo "Post-provision hook: Setting up application configuration..."
-      # The backend will be configured with environment variables from the infrastructure
+      echo "Post-provision: Infrastructure is ready."
+      echo ""
+      echo "Required environment variables – set these with 'azd env set <KEY> <VALUE>':"
+      echo "  AZURE_OPENAI_ENDPOINT          – Azure OpenAI resource endpoint"
+      echo "  AZURE_OPENAI_API_KEY           – Azure OpenAI API key"
+      echo "  AZURE_OPENAI_CHAT_DEPLOYMENT   – Primary chat model deployment (e.g. gpt-4o-mini)"
+      echo "  AZURE_OPENAI_MINI_DEPLOYMENT   – Cheaper model for structured tasks (e.g. gpt-4o-mini)"
+      echo "  AZURE_OPENAI_EMBEDDING_DEPLOYMENT – Embedding model deployment (e.g. text-embedding-ada-002)"
+      echo "  AZURE_OPENAI_DALLE_DEPLOYMENT  – Image-generation deployment (e.g. gpt-image-1-mini)"
+      echo "  AZURE_AI_PROJECT_ENDPOINT      – Azure AI Foundry project endpoint"
+      echo "  STORAGE_CONNECTION_STRING      – Azure Storage account connection string"
     continueOnError: false

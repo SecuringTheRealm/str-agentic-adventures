@@ -221,15 +221,18 @@ class TestComponentIntegration:
     @pytest.mark.unit
     def test_api_route_coverage(self) -> None:
         """Test that all frontend API calls have corresponding backend routes."""
-        # Read the game routes file with correct path
-        routes_file = os.path.join(
+        # Read all domain route files from the routes package
+        routes_dir = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
             "app",
             "api",
-            "game_routes.py",
+            "routes",
         )
-        with open(routes_file) as f:
-            routes_content = f.read()
+        routes_content = ""
+        for fname in sorted(os.listdir(routes_dir)):
+            if fname.endswith(".py"):
+                with open(os.path.join(routes_dir, fname)) as f:
+                    routes_content += f.read()
 
         # Check that all critical routes are present
         critical_routes = [
@@ -247,7 +250,7 @@ class TestComponentIntegration:
                 missing_routes.append(route)
 
         assert len(missing_routes) == 0, f"Missing critical routes: {missing_routes}"
-        print("✅ All critical API routes are present")
+        print("All critical API routes are present")
 
     @pytest.mark.unit
     def test_model_field_consistency(self) -> None:
@@ -289,15 +292,18 @@ class TestComponentIntegration:
     @pytest.mark.integration
     def test_agent_integration_points(self) -> None:
         """Test that agents are properly integrated with the API layer."""
-        # Read the game routes file with correct path
-        routes_file = os.path.join(
+        # Read all domain route files from the routes package
+        routes_dir = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
             "app",
             "api",
-            "game_routes.py",
+            "routes",
         )
-        with open(routes_file) as f:
-            routes_content = f.read()
+        routes_content = ""
+        for fname in sorted(os.listdir(routes_dir)):
+            if fname.endswith(".py"):
+                with open(os.path.join(routes_dir, fname)) as f:
+                    routes_content += f.read()
 
         # Check that agents are imported and used
         agent_imports = [
