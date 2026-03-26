@@ -35,6 +35,10 @@ class Settings(BaseSettings):
     max_images_per_session: int = 3
     image_session_window_minutes: int = 30
 
+    # Azure AI Content Safety
+    content_safety_endpoint: str = ""
+    content_safety_api_key: str = ""
+
     # Storage Settings
     storage_connection_string: str = ""
 

@@ -25,6 +25,7 @@ from app.models.game_models import (
     PlayerInput,
 )
 from app.services.campaign_service import campaign_service
+from app.services.prompt_shield_service import prompt_shield_service
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +37,17 @@ router = APIRouter(tags=["sessions"])
 async def process_player_input(request: Request, player_input: PlayerInput):  # noqa: ARG001
     """Process player input and get game response."""
     try:
+        # Check for prompt injection attacks before processing
+        shield_result = await prompt_shield_service.check_user_input(
+            player_input.message
+        )
+        if shield_result.attack_detected:
+            logger.warning("Prompt injection attack detected in player input.")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Input blocked: potential prompt injection attack detected.",
+            )
+
         # Try to get character and campaign context, but fallback gracefully
         character = None
         try:
