@@ -289,6 +289,11 @@
   outline: none;
   border-color: var(--color-gold-alt);
   box-shadow: 0 0 5px var(--color-gold-alt-glow-30);
+
+  outline: 2px solid #e4bb1e;
+  outline-offset: 2px;
+  border-color: #d4af37;
+  box-shadow: 0 0 5px rgba(212, 175, 55, 0.3);
 }
 
 .actionDetails {
@@ -312,6 +317,11 @@
   outline: none;
   border-color: var(--color-gold-alt);
   box-shadow: 0 0 5px var(--color-gold-alt-glow-30);
+
+  outline: 2px solid #e4bb1e;
+  outline-offset: 2px;
+  border-color: #d4af37;
+  box-shadow: 0 0 5px rgba(212, 175, 55, 0.3);
 }
 
 .targetSelect {
@@ -329,6 +339,11 @@
   outline: none;
   border-color: var(--color-danger-red);
   box-shadow: 0 0 5px var(--color-danger-30);
+
+  outline: 2px solid #e4bb1e;
+  outline-offset: 2px;
+  border-color: #dc3545;
+  box-shadow: 0 0 5px rgba(220, 53, 69, 0.3);
 }
 
 .submitActionButton {
@@ -485,5 +500,10 @@
   .submitActionButton {
     min-height: 44px;
     font-size: 1rem; /* Prevent iOS zoom */
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
 }

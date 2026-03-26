@@ -86,6 +86,11 @@
   outline: none;
   border-color: var(--color-accent-gold); /* Gold focus border */
   box-shadow: 0 0 0 3px var(--color-gold-glow-20);
+
+  outline: 2px solid #e4bb1e;
+  outline-offset: 2px;
+  border-color: #e4bb1e; /* Gold focus border */
+  box-shadow: 0 0 0 3px rgba(228, 187, 30, 0.2);
 }
 
 .formGroup input.error,
@@ -457,5 +462,10 @@
   .applySuggestion {
     min-height: 44px;
     font-size: 1rem; /* Prevent iOS zoom */
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
 }
