@@ -291,7 +291,8 @@ class TestProcessPlayerInputShieldIntegration:
             )
         )
         with patch(
-            "app.api.game_routes.prompt_shield_service.check_user_input", shield_mock
+            "app.api.routes.session_routes.prompt_shield_service.check_user_input",
+            shield_mock,
         ):
             response = client.post(
                 "/game/input",
@@ -325,11 +326,11 @@ class TestProcessPlayerInputShieldIntegration:
         )
         with (
             patch(
-                "app.api.game_routes.prompt_shield_service.check_user_input",
+                "app.api.routes.session_routes.prompt_shield_service.check_user_input",
                 shield_mock,
             ),
-            patch("app.api.game_routes.get_dungeon_master") as mock_dm,
-            patch("app.api.game_routes.get_scribe") as mock_scribe,
+            patch("app.api.routes.session_routes.get_dungeon_master") as mock_dm,
+            patch("app.api.routes.session_routes.get_scribe") as mock_scribe,
             patch(
                 "app.agents.orchestration.detect_agent_triggers", return_value=[]
             ),

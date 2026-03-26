@@ -11,7 +11,7 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    model_config = ConfigDict(env_file=".env", env_file_encoding="utf-8")
+    model_config = ConfigDict(env_file=".env", env_file_encoding="utf-8", frozen=True)
 
     # Azure OpenAI Settings
     # Pydantic-settings automatically reads from environment variables

@@ -589,7 +589,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
   return (
     <div className={styles.gameInterface} data-testid="game-interface">
       <div className={styles.gameContainer}>
-        <div className={styles.leftPanel}>
+        <aside aria-label="Character sheet" className={styles.leftPanel}>
           <CharacterSheet character={character} />
           <DiceRoller
             characterId={character.id}
@@ -607,9 +607,9 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
               }
             }}
           />
-        </div>
+        </aside>
 
-        <div className={styles.centerPanel}>
+        <main aria-label="Game chat" className={styles.centerPanel}>
           <ChatBox
             messages={messages}
             onSendMessage={handlePlayerInput}
@@ -618,9 +618,9 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
             suggestedActions={suggestedActions}
             onSuggestedAction={handlePlayerInput}
           />
-        </div>
+        </main>
 
-        <div className={styles.rightPanel}>
+        <aside aria-label="Visuals and battle map" className={styles.rightPanel}>
           <div className={styles.visualControls}>
             <h4>Generate Visuals</h4>
             {imagesRemaining !== null && (
@@ -667,7 +667,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
               <BattleMap mapUrl={battleMapUrl} />
             </div>
           )}
-        </div>
+        </aside>
       </div>
     </div>
   );
