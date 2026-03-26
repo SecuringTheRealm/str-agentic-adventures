@@ -5,10 +5,9 @@ from datetime import datetime
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, Request, status
-from slowapi import Limiter
-from slowapi.util import get_remote_address
 
 from app.agents.narrator_agent import get_narrator
+from app.api.routes._shared import limiter
 from app.config import ConfigDep
 from app.models.game_models import (
     NPC,
@@ -29,8 +28,6 @@ from app.models.game_models import (
 from app.services.campaign_service import campaign_service
 
 logger = logging.getLogger(__name__)
-
-limiter = Limiter(key_func=get_remote_address)
 
 router = APIRouter(tags=["campaign"])
 
@@ -261,7 +258,7 @@ async def get_ai_assistance(request: AIAssistanceRequest) -> AIAssistanceRespons
 
 
 @router.post("/campaign/ai-generate", response_model=AIContentGenerationResponse)
-@limiter.limit("10/minute")
+@limiter.limit("30/minute")
 async def generate_ai_content(  # noqa: ARG001
     request: Request,
     request_body: AIContentGenerationRequest,
@@ -321,7 +318,7 @@ async def generate_ai_content(  # noqa: ARG001
 
 
 @router.post("/campaign/generate-world", response_model=dict[str, Any])
-@limiter.limit("10/minute")
+@limiter.limit("30/minute")
 async def generate_campaign_world(request: Request, campaign_data: dict[str, Any]) -> dict[str, Any]:  # noqa: ARG001
     """Generate world description and setting for a new campaign."""
     try:

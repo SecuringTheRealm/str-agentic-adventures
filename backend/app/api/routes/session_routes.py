@@ -35,7 +35,7 @@ router = APIRouter(tags=["sessions"])
 
 
 @router.post("/input", response_model=GameResponse)
-@limiter.limit("10/minute")
+@limiter.limit("30/minute")
 async def process_player_input(  # noqa: ARG001
     request: Request, player_input: PlayerInput,
 ) -> GameResponse:
@@ -147,7 +147,7 @@ async def process_player_input(  # noqa: ARG001
 
 
 @router.post("/campaign/generate-world", response_model=dict[str, Any])
-@limiter.limit("10/minute")
+@limiter.limit("30/minute")
 async def generate_campaign_world(  # noqa: ARG001
     request: Request, campaign_data: dict[str, Any],
 ) -> dict[str, Any]:

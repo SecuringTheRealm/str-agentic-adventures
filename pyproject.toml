@@ -42,6 +42,8 @@ dependencies = [
     "psycopg2-binary>=2.9.0",
     # Security & Rate Limiting
     "slowapi>=0.1.9",
+    # Circuit breaker for Azure OpenAI resilience
+    "pybreaker>=1.0.0",
     # HTTP client for external services
     "aiohttp>=3.9.0",
     # Utilities

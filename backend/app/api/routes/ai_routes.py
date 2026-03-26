@@ -88,7 +88,7 @@ async def get_ai_assistance(request: AIAssistanceRequest) -> dict[str, Any]:
 
 
 @router.post("/campaign/ai-generate", response_model=AIContentGenerationResponse)
-@limiter.limit("10/minute")
+@limiter.limit("30/minute")
 async def generate_ai_content(  # noqa: ARG001
     request: Request,
     request_body: AIContentGenerationRequest,
@@ -146,7 +146,7 @@ async def generate_ai_content(  # noqa: ARG001
 
 
 @router.post("/generate-image", response_model=dict[str, Any])
-@limiter.limit("10/minute")
+@limiter.limit("5/minute")
 async def generate_image(  # noqa: ARG001
     request: Request, image_request: dict[str, Any],
 ) -> dict[str, Any]:
@@ -199,7 +199,7 @@ async def generate_image(  # noqa: ARG001
 
 
 @router.post("/battle-map", response_model=dict[str, Any])
-@limiter.limit("10/minute")
+@limiter.limit("5/minute")
 async def generate_battle_map(  # noqa: ARG001
     request: Request, map_request: dict[str, Any],
 ) -> dict[str, Any]:

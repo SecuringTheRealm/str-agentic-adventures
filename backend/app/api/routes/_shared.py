@@ -1,12 +1,26 @@
 """Shared utilities for domain route modules."""
 
 from slowapi import Limiter
-from slowapi.util import get_remote_address
+from starlette.requests import Request
 
 from app.image_budget import ImageBudgetTracker
 
-# Rate limiter for AI-calling endpoints
-limiter = Limiter(key_func=get_remote_address)
+
+def _get_real_client_ip(request: Request) -> str:
+    """Extract the real client IP, respecting X-Forwarded-For for Container Apps."""
+    forwarded = request.headers.get("X-Forwarded-For")
+    if forwarded:
+        # X-Forwarded-For may contain a comma-separated chain; leftmost is the client
+        return forwarded.split(",")[0].strip()
+    if request.client:
+        return request.client.host
+    return "127.0.0.1"
+
+
+# Singleton rate limiter — all route modules MUST import this instance
+# instead of creating their own Limiter().
+# Default limit: 60 requests/minute per IP.
+limiter = Limiter(key_func=_get_real_client_ip, default_limits=["60/minute"])
 
 # ---------------------------------------------------------------------------
 # Per-session image budget – initialised from config on first use
