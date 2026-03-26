@@ -71,14 +71,14 @@ class TestJsonLoggingFormatter:
         assert "exc_info" in record
         assert "ValueError" in record["exc_info"]
 
-    def test_root_logger_uses_json_formatter(self):
-        """The root logger configured in main.py must use the JSON formatter."""
-        # Import main to trigger logging configuration
-        import app.main  # noqa: F401
+    def test_main_module_configures_json_formatter(self):
+        """The handler created in main.py must use JsonFormatter."""
+        # Access the module-level handler built by app.main rather than
+        # checking root logger state, which pytest's own logging plugin
+        # may have altered by the time this assertion runs.
+        import app.main as main_module
 
-        root_logger = logging.getLogger()
-        assert root_logger.handlers, "Root logger must have at least one handler"
-        handler = root_logger.handlers[0]
+        handler = main_module._handler
         assert isinstance(
             handler.formatter, JsonFormatter
-        ), "Root logger handler formatter must be JsonFormatter"
+        ), "main._handler formatter must be JsonFormatter"
