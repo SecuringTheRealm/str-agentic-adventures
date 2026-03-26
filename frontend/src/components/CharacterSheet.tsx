@@ -1,6 +1,6 @@
 import type React from "react";
 import { useMemo } from "react";
-import type { Character } from "../services/api";
+import type { Character } from "../types";
 import styles from "./CharacterSheet.module.css";
 
 interface CharacterSheetProps {

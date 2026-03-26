@@ -3,7 +3,7 @@ import "./App.css";
 import CampaignSelection from "./components/CampaignSelection";
 import CharacterSelection from "./components/CharacterSelection";
 import GameInterface from "./components/GameInterface";
-import type { Campaign, Character } from "./services/api";
+import type { Campaign, Character } from "./types";
 
 function App() {
   const [currentCampaign, setCurrentCampaign] = useState<Campaign | null>(null);

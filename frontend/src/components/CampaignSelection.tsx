@@ -1,6 +1,7 @@
 import type React from "react";
 import { useCallback, useEffect, useState } from "react";
-import { type Campaign, deleteCampaign, getCampaigns } from "../services/api";
+import { deleteCampaign, getCampaigns } from "../services/api";
+import type { Campaign } from "../types";
 import CampaignEditor from "./CampaignEditor";
 import CampaignGallery from "./CampaignGallery";
 import styles from "./CampaignSelection.module.css";

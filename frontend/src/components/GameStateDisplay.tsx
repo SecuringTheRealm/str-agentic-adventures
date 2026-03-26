@@ -1,31 +1,7 @@
 import type React from "react";
 import { useEffect, useState } from "react";
+import type { CombatState, GameSession } from "../types";
 import styles from "./GameStateDisplay.module.css";
-
-interface GameSession {
-  session_id: string;
-  campaign_id: string;
-  type: string;
-  status: string;
-  current_scene: string;
-  available_actions: string[];
-  scene_count: number;
-  started_at: string;
-}
-
-interface CombatState {
-  combat_id: string;
-  status: string;
-  round: number;
-  current_turn: number;
-  initiative_order: Array<{
-    type: string;
-    id: string;
-    name: string;
-    initiative: number;
-  }>;
-  environment: string;
-}
 
 interface GameStateDisplayProps {
   session?: GameSession | null;

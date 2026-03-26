@@ -1,6 +1,6 @@
 import type React from "react";
 import { useState } from "react";
-import type { Campaign, Character } from "../services/api";
+import type { Campaign, Character } from "../types";
 import CharacterCreation from "./CharacterCreation";
 import styles from "./CharacterSelection.module.css";
 import PredefinedCharacters from "./PredefinedCharacters";
