@@ -92,6 +92,24 @@ class NPCInteraction(Base):
     data = Column(JSON, nullable=False)  # Full interaction data
 
 
+class SaveSlot(Base):
+    """Save slot table for storing campaign save states."""
+
+    __tablename__ = "save_slots"
+
+    id = Column(String, primary_key=True, index=True)
+    campaign_id = Column(String, ForeignKey("campaigns.id"), nullable=False, index=True)
+    slot_number = Column(Integer, nullable=False)  # 1-5
+    name = Column(String, nullable=False, default="")
+    created_at = Column(DateTime, nullable=False, default=_utcnow)
+    updated_at = Column(DateTime, nullable=False, default=_utcnow, onupdate=_utcnow)
+    play_time_seconds = Column(Integer, nullable=False, default=0)
+    interaction_count = Column(Integer, nullable=False, default=0)
+    character_level = Column(Integer, nullable=False, default=1)
+    current_location = Column(String, nullable=False, default="")
+    save_data = Column(JSON, nullable=False, default=dict)  # full state blob
+
+
 class Spell(Base):
     """Spell table for storing spell definitions and effects."""
 

@@ -8,6 +8,7 @@ from .dice_routes import router as dice_router
 from .item_routes import router as item_router
 from .npc_routes import router as npc_router
 from .rest_routes import router as rest_router
+from .save_routes import router as save_router
 from .session_routes import router as session_router
 from .spell_routes import router as spell_router
 
@@ -22,4 +23,5 @@ all_routers = [
     session_router,
     item_router,
     rest_router,
+    save_router,
 ]

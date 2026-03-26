@@ -61,6 +61,9 @@ class _EngineProxy:
 
 engine = _EngineProxy()
 
+# Backward-compatible module-level name used by migration_runner and alembic env
+DATABASE_URL = _resolve_database_url()
+
 
 def get_session() -> Generator:
     """Yield a database session. Use with FastAPI Depends()."""
