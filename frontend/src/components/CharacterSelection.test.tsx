@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import type { Campaign } from "../services/api";
+import type { Campaign } from "../types";
 import CharacterSelection from "./CharacterSelection";
 
 describe("CharacterSelection", () => {

@@ -18,7 +18,7 @@ class TestNarratorAgentOpeningNarrative:
         """generate_opening_narrative returns a valid structure in fallback mode."""
         from app.agents.narrator_agent import NarratorAgent
 
-        with patch("app.agents.narrator_agent.agent_client_manager") as mock_manager:
+        with patch("app.agents.base_agent.agent_client_manager") as mock_manager:
             mock_manager.get_chat_client.return_value = None
 
             agent = NarratorAgent()
@@ -71,7 +71,7 @@ class TestNarratorAgentOpeningNarrative:
             ),
         ]
 
-        with patch("app.agents.narrator_agent.agent_client_manager") as mock_manager:
+        with patch("app.agents.base_agent.agent_client_manager") as mock_manager:
             mock_chat = MagicMock()
             mock_manager.get_chat_client.return_value = mock_chat
 
@@ -116,7 +116,7 @@ class TestNarratorAgentOpeningNarrative:
             Exception("Azure quota exceeded"),
         ]
 
-        with patch("app.agents.narrator_agent.agent_client_manager") as mock_manager:
+        with patch("app.agents.base_agent.agent_client_manager") as mock_manager:
             mock_chat = MagicMock()
             mock_manager.get_chat_client.return_value = mock_chat
 
@@ -150,7 +150,7 @@ class TestNarratorAgentOpeningNarrative:
         """_fallback_opening_narrative returns different hooks for each tone."""
         from app.agents.narrator_agent import NarratorAgent
 
-        with patch("app.agents.narrator_agent.agent_client_manager") as mock_manager:
+        with patch("app.agents.base_agent.agent_client_manager") as mock_manager:
             mock_manager.get_chat_client.return_value = None
             agent = NarratorAgent()
 
@@ -193,7 +193,7 @@ class TestNarratorAgentOpeningNarrative:
             ),
         ]
 
-        with patch("app.agents.narrator_agent.agent_client_manager") as mock_manager:
+        with patch("app.agents.base_agent.agent_client_manager") as mock_manager:
             mock_manager.get_chat_client.return_value = MagicMock()
             agent = NarratorAgent()
             agent._fallback_mode = False
@@ -239,7 +239,7 @@ class TestOpeningNarrativeEndpoint:
                 return_value=mock_campaign,
             ),
             patch(
-                "app.api.game_routes.get_narrator"
+                "app.api.routes.session_routes.get_narrator"
             ) as mock_get_narrator,
         ):
             mock_narrator = AsyncMock()
@@ -301,7 +301,7 @@ class TestOpeningNarrativeEndpoint:
                 return_value=mock_campaign,
             ),
             patch(
-                "app.api.game_routes.get_narrator"
+                "app.api.routes.session_routes.get_narrator"
             ) as mock_get_narrator,
         ):
             mock_narrator = AsyncMock()
@@ -343,7 +343,7 @@ class TestOpeningNarrativeEndpoint:
                 return_value=mock_campaign,
             ),
             patch(
-                "app.api.game_routes.get_narrator"
+                "app.api.routes.session_routes.get_narrator"
             ) as mock_get_narrator,
         ):
             mock_narrator = AsyncMock()

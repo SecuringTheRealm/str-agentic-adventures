@@ -1,22 +1,8 @@
 import type React from "react";
 import { useCallback, useEffect, useId, useState } from "react";
 import { apiClient } from "../services/api";
+import type { DiceResult } from "../types";
 import styles from "./DiceRoller.module.css";
-
-interface DiceResult {
-  notation: string;
-  rolls: number[];
-  total: number;
-  modifier?: number;
-  dropped?: number[];
-  rerolls?: Array<{
-    original: number;
-    new: number;
-    index: number;
-  }>;
-  character_bonus?: number;
-  timestamp: string;
-}
 
 interface DiceRollerProps {
   onRoll?: (result: DiceResult) => void;
@@ -267,7 +253,7 @@ const DiceRoller: React.FC<DiceRollerProps> = ({
       </div>
 
       {lastResult && (
-        <div className={styles.lastResult}>
+        <div className={styles.lastResult} aria-live="assertive" role="status">
           <h4>Last Roll:</h4>
           <div className={styles.resultDisplay}>
             <div className={styles.resultNotation}>{lastResult.notation}</div>
@@ -293,7 +279,9 @@ const DiceRoller: React.FC<DiceRollerProps> = ({
                 </span>
                 <span className={styles.historyTotal}>{result.total}</span>
                 <span className={styles.historyTime}>
-                  {new Date(result.timestamp).toLocaleTimeString()}
+                  {result.timestamp
+                    ? new Date(result.timestamp).toLocaleTimeString()
+                    : ""}
                 </span>
               </div>
             ))}

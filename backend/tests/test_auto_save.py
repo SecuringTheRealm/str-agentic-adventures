@@ -322,11 +322,22 @@ class TestProcessPlayerInputAutoSave:
                 "combat_updates": None,
             }
 
+            mock_shield = AsyncMock()
+            mock_shield.return_value = MagicMock(attack_detected=False)
+
             with (
                 patch(
-                    "app.api.game_routes.get_dungeon_master"
+                    "app.api.routes.session_routes.get_dungeon_master"
                 ) as mock_get_dm,
                 patch("app.auto_save._write_snapshot_to_campaign", new_callable=AsyncMock),
+                patch(
+                    "app.api.routes.session_routes.prompt_shield_service.check_user_input",
+                    mock_shield,
+                ),
+                patch(
+                    "app.api.routes.session_routes.get_scribe",
+                    return_value=MagicMock(get_character=AsyncMock(return_value=None)),
+                ),
             ):
                 mock_dm = MagicMock()
                 mock_dm.process_input = AsyncMock(return_value=mock_dm_response)
@@ -391,11 +402,22 @@ class TestProcessPlayerInputAutoSave:
             async def slow_write(*args, **kwargs):
                 await asyncio.sleep(10)
 
+            mock_shield = AsyncMock()
+            mock_shield.return_value = MagicMock(attack_detected=False)
+
             with (
-                patch("app.api.game_routes.get_dungeon_master") as mock_get_dm,
+                patch("app.api.routes.session_routes.get_dungeon_master") as mock_get_dm,
                 patch(
                     "app.auto_save._write_snapshot_to_campaign",
                     side_effect=slow_write,
+                ),
+                patch(
+                    "app.api.routes.session_routes.prompt_shield_service.check_user_input",
+                    mock_shield,
+                ),
+                patch(
+                    "app.api.routes.session_routes.get_scribe",
+                    return_value=MagicMock(get_character=AsyncMock(return_value=None)),
                 ),
             ):
                 mock_dm = MagicMock()

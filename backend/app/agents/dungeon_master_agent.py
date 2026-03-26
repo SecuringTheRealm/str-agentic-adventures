@@ -11,8 +11,8 @@ import random
 import re
 from typing import TYPE_CHECKING, Any
 
-from app.agent_client_setup import agent_client_manager
-from app.azure_openai_client import AzureOpenAIClient, azure_openai_client
+from app.agents.base_agent import BaseAgent
+from app.azure_openai_client import azure_openai_client
 from app.utils.dice import DiceRoller
 
 if TYPE_CHECKING:
@@ -24,47 +24,28 @@ logger = logging.getLogger(__name__)
 MAX_HISTORY_MESSAGES = 20
 
 
-class DungeonMasterAgent:
+class DungeonMasterAgent(BaseAgent):
     """
     Dungeon Master Agent using Azure AI Agents SDK to fulfill the role
     of orchestrating the D&D experience through AI guidance.
     """
 
-    def __init__(self) -> None:
-        """Initialize the Dungeon Master agent."""
-        self._fallback_mode = False
-        self.chat_client = None
-        self.azure_client: AzureOpenAIClient | None = None
+    agent_name = "DM"
+
+    def _post_init(self) -> None:
+        """Initialize DM-specific components after base client setup."""
         self._threads: dict[str, list[dict[str, str]]] = {}
 
-        # Try to get the shared chat client from agent client manager
-        try:
-            self.chat_client = agent_client_manager.get_chat_client()
-            if self.chat_client is None:
-                # Agent client manager is in fallback mode
-                self._fallback_mode = True
-                logger.warning(
-                    "DM Agent operating in fallback mode - Azure OpenAI not configured"
+        if not self._fallback_mode:
+            try:
+                self.azure_client = azure_openai_client
+            except Exception as azure_error:
+                logger.error(
+                    "Failed to initialize Azure OpenAI client for DM agent: %s. "
+                    "Operating in fallback mode.",
+                    azure_error,
                 )
-            else:
-                logger.info("DM Agent initialized with Azure AI Agents SDK")
-                try:
-                    self.azure_client = azure_openai_client
-                except Exception as azure_error:
-                    logger.error(
-                        "Failed to initialize Azure OpenAI client for DM agent: %s. "
-                        "Operating in fallback mode.",
-                        azure_error,
-                    )
-                    self._fallback_mode = True
-
-        except Exception as e:
-            logger.warning(
-                "Failed to initialize DM Agent with Azure AI SDK: %s. "
-                "Operating in fallback mode.",
-                e,
-            )
-            self._fallback_mode = True
+                self._fallback_mode = True
 
         # Fallback components are initialized lazily
         self._fallback_initialized = False

@@ -11,7 +11,7 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    model_config = ConfigDict(env_file=".env", env_file_encoding="utf-8")
+    model_config = ConfigDict(env_file=".env", env_file_encoding="utf-8", frozen=True)
 
     # Azure OpenAI Settings
     # Pydantic-settings automatically reads from environment variables
@@ -37,6 +37,10 @@ class Settings(BaseSettings):
 
     # Auto-save interval: persist game state every N player interactions.
     auto_save_interval: int = 5
+
+    # Azure AI Content Safety
+    content_safety_endpoint: str = ""
+    content_safety_api_key: str = ""
 
     # Storage Settings
     storage_connection_string: str = ""

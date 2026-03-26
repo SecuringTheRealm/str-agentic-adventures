@@ -108,10 +108,13 @@ class TestProjectStructure:
     @pytest.mark.unit
     def test_api_endpoints_defined(self) -> None:
         """Test that required API endpoints are defined in route files."""
-        route_file = self._resolve_backend_path("app/api/game_routes.py")
+        routes_dir = self._resolve_backend_path("app/api/routes")
 
-        with open(route_file) as f:
-            content = f.read()
+        content = ""
+        for fname in sorted(os.listdir(routes_dir)):
+            if fname.endswith(".py"):
+                with open(os.path.join(routes_dir, fname)) as f:
+                    content += f.read()
 
         # Required endpoints based on frontend API calls
         required_endpoints = [
@@ -250,11 +253,17 @@ class TestFrontendBackendAPIMapping:
         with open(frontend_api_file) as f:
             frontend_content = f.read()
 
-        # Read backend routes file
-        backend_routes_file = "app/api/game_routes.py"
-
-        with open(backend_routes_file) as f:
-            backend_content = f.read()
+        # Read backend routes from domain route modules
+        backend_routes_dir = os.path.join(
+            os.path.dirname(__file__), "..", "app", "api", "routes"
+        )
+        if not os.path.isdir(backend_routes_dir):
+            backend_routes_dir = "app/api/routes"
+        backend_content = ""
+        for fname in sorted(os.listdir(backend_routes_dir)):
+            if fname.endswith(".py"):
+                with open(os.path.join(backend_routes_dir, fname)) as f:
+                    backend_content += f.read()
 
         # Map frontend calls to backend endpoints
         mappings = [
