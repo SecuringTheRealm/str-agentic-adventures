@@ -721,3 +721,161 @@ def apply_level_up(
         "message": f"Levelled up to level {new_level}!",
         "updated_character": updated,
     }
+
+
+# ---------------------------------------------------------------------------
+# Armor & Weapon SRD tables
+# ---------------------------------------------------------------------------
+
+# Each entry: (base_ac, add_dex: bool, max_dex_bonus: int | None)
+# max_dex_bonus=None means unlimited DEX bonus
+ARMOR_TABLE: dict[str, tuple[int, bool, int | None]] = {
+    "padded": (11, True, None),
+    "leather": (11, True, None),
+    "studded leather": (12, True, None),
+    "hide": (12, True, 2),
+    "chain shirt": (13, True, 2),
+    "scale mail": (14, True, 2),
+    "breastplate": (14, True, 2),
+    "half plate": (15, True, 2),
+    "ring mail": (14, False, 0),
+    "chain mail": (16, False, 0),
+    "splint": (17, False, 0),
+    "plate": (18, False, 0),
+}
+
+# Each entry: {damage_dice, damage_type, properties, weight}
+WEAPON_TABLE: dict[str, dict] = {
+    "club": {
+        "damage_dice": "1d4",
+        "damage_type": "bludgeoning",
+        "properties": ["light"],
+        "weight": 2.0,
+    },
+    "dagger": {
+        "damage_dice": "1d4",
+        "damage_type": "piercing",
+        "properties": ["finesse", "light", "thrown"],
+        "weight": 1.0,
+    },
+    "handaxe": {
+        "damage_dice": "1d6",
+        "damage_type": "slashing",
+        "properties": ["light", "thrown"],
+        "weight": 2.0,
+    },
+    "mace": {
+        "damage_dice": "1d6",
+        "damage_type": "bludgeoning",
+        "properties": [],
+        "weight": 4.0,
+    },
+    "quarterstaff": {
+        "damage_dice": "1d6",
+        "damage_type": "bludgeoning",
+        "properties": ["versatile"],
+        "weight": 4.0,
+    },
+    "shortsword": {
+        "damage_dice": "1d6",
+        "damage_type": "piercing",
+        "properties": ["finesse", "light"],
+        "weight": 2.0,
+    },
+    "longsword": {
+        "damage_dice": "1d8",
+        "damage_type": "slashing",
+        "properties": ["versatile"],
+        "weight": 3.0,
+    },
+    "greataxe": {
+        "damage_dice": "1d12",
+        "damage_type": "slashing",
+        "properties": ["heavy", "two-handed"],
+        "weight": 7.0,
+    },
+    "greatsword": {
+        "damage_dice": "2d6",
+        "damage_type": "slashing",
+        "properties": ["heavy", "two-handed"],
+        "weight": 6.0,
+    },
+    "shortbow": {
+        "damage_dice": "1d6",
+        "damage_type": "piercing",
+        "properties": ["ammunition", "two-handed"],
+        "weight": 2.0,
+    },
+    "longbow": {
+        "damage_dice": "1d8",
+        "damage_type": "piercing",
+        "properties": ["ammunition", "heavy", "two-handed"],
+        "weight": 2.0,
+    },
+    "rapier": {
+        "damage_dice": "1d8",
+        "damage_type": "piercing",
+        "properties": ["finesse"],
+        "weight": 2.0,
+    },
+}
+
+
+def calculate_ac(
+    armor_name: str | None, shield_equipped: bool, dex_modifier: int
+) -> int:
+    """Calculate AC from equipped armor + shield + DEX.
+
+    Args:
+        armor_name: Lowercase armor name (e.g. "chain mail"), or None for no armor.
+        shield_equipped: Whether a shield is equipped (+2 AC).
+        dex_modifier: The character's Dexterity modifier.
+
+    Returns:
+        Calculated armour class value.
+    """
+    if armor_name is None:
+        # No armor: 10 + DEX
+        ac = 10 + dex_modifier
+    else:
+        entry = ARMOR_TABLE.get(armor_name.lower())
+        if entry is None:
+            # Unknown armor falls back to no-armor calculation
+            ac = 10 + dex_modifier
+        else:
+            base_ac, adds_dex, max_dex = entry
+            if adds_dex:
+                if max_dex is None:
+                    dex_bonus = dex_modifier
+                else:
+                    dex_bonus = min(dex_modifier, max_dex)
+                ac = base_ac + dex_bonus
+            else:
+                ac = base_ac
+
+    if shield_equipped:
+        ac += 2
+
+    return ac
+
+
+def get_weapon_stats(weapon_name: str) -> dict:
+    """Look up weapon damage dice and properties from the SRD table.
+
+    Args:
+        weapon_name: Case-insensitive weapon name (e.g. "longsword").
+
+    Returns:
+        Dict with damage_dice, damage_type, properties, and weight.
+        Returns a default entry for unknown weapons.
+    """
+    entry = WEAPON_TABLE.get(weapon_name.lower())
+    if entry is not None:
+        return dict(entry)
+    # Fallback for unknown weapons
+    return {
+        "damage_dice": "1d4",
+        "damage_type": "bludgeoning",
+        "properties": [],
+        "weight": 1.0,
+    }
