@@ -8,7 +8,6 @@ import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
 
-
 # ---------------------------------------------------------------------------
 # Unit tests – ShieldResult
 # ---------------------------------------------------------------------------
@@ -152,7 +151,9 @@ class TestPromptShieldServiceCheckUserInput:
             mock_session.__aexit__ = AsyncMock(return_value=False)
 
             with patch("aiohttp.ClientSession", return_value=mock_session):
-                result = await svc.check_user_input("legit question", documents=["bad doc"])
+                result = await svc.check_user_input(
+                    "legit question", documents=["bad doc"]
+                )
         assert result.document_attack_detected is True
 
     @pytest.mark.asyncio
@@ -250,7 +251,13 @@ class TestPromptShieldServiceCheckUserInput:
 
             mock_session = MagicMock()
 
-            def capture_post(url, *, json, headers, timeout):  # noqa: ARG001
+            def capture_post(
+                url: str,  # noqa: ARG001
+                *,
+                json: dict,  # noqa: ARG001
+                headers: dict,
+                timeout: object,  # noqa: ARG001
+            ) -> MagicMock:
                 captured_headers.update(headers)
                 return mock_resp
 
@@ -329,7 +336,12 @@ class TestProcessPlayerInputShieldIntegration:
         ):
             mock_dm.return_value.process_input = dm_mock
             mock_scribe.return_value.get_character = AsyncMock(
-                return_value={"id": "char-1", "name": "Hero", "class": "Fighter", "level": 1}
+                return_value={
+                    "id": "char-1",
+                    "name": "Hero",
+                    "class": "Fighter",
+                    "level": 1,
+                }
             )
             response = client.post(
                 "/game/input",
