@@ -35,6 +35,9 @@ class Settings(BaseSettings):
     max_images_per_session: int = 3
     image_session_window_minutes: int = 30
 
+    # Auto-save interval: persist game state every N player interactions.
+    auto_save_interval: int = 5
+
     # Azure AI Content Safety
     content_safety_endpoint: str = ""
     content_safety_api_key: str = ""

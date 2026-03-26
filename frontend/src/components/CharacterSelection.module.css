@@ -171,6 +171,8 @@
   .backButton {
     min-height: 44px;
     font-size: 1rem; /* Prevent iOS zoom */
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
   * {

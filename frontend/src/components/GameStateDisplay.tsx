@@ -194,24 +194,26 @@ const GameStateDisplay: React.FC<GameStateDisplayProps> = ({
                 {combatState &&
                   (selectedAction.toLowerCase().includes("attack") ||
                     selectedAction.toLowerCase().includes("target")) && (
-                    <label htmlFor="target-select" className={styles.srOnly}>
-                      Select target
-                    </label>
-                    <select
-                      id="target-select"
-                      value={targetId}
-                      onChange={(e) => setTargetId(e.target.value)}
-                      className={styles.targetSelect}
-                    >
-                      <option value="">Select target...</option>
-                      {combatState.initiative_order
-                        .filter((p) => p.type === "npc")
-                        .map((target) => (
-                          <option key={target.id} value={target.id}>
-                            {target.name}
-                          </option>
-                        ))}
-                    </select>
+                    <>
+                      <label htmlFor="target-select" className={styles.srOnly}>
+                        Select target
+                      </label>
+                      <select
+                        id="target-select"
+                        value={targetId}
+                        onChange={(e) => setTargetId(e.target.value)}
+                        className={styles.targetSelect}
+                      >
+                        <option value="">Select target...</option>
+                        {combatState.initiative_order
+                          .filter((p) => p.type === "npc")
+                          .map((target) => (
+                            <option key={target.id} value={target.id}>
+                              {target.name}
+                            </option>
+                          ))}
+                      </select>
+                    </>
                   )}
 
                 <button

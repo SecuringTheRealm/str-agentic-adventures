@@ -14,6 +14,8 @@ from app.agents.orchestration import (
 )
 from app.agents.scribe_agent import get_scribe
 from app.api.routes._shared import limiter
+from app.auto_save import check_and_schedule_auto_save
+from app.config import get_settings
 from app.api.routes.combat_routes import (
     process_combat_action,
     process_exploration_action,
@@ -104,6 +106,21 @@ async def process_player_input(request: Request, player_input: PlayerInput):  # 
         combat_updates = dm_response.get("combat_updates")
         if "combat_update" in specialist_results and combat_updates is None:
             combat_updates = specialist_results["combat_update"]
+
+        # Auto-save: persist game state every N player interactions
+        settings = get_settings()
+        conversation_history = dm_response.get("conversation_history", [])
+        auto_saved, interaction_count = check_and_schedule_auto_save(
+            campaign_id=player_input.campaign_id or "",
+            auto_save_interval=settings.auto_save_interval,
+            conversation_history=conversation_history,
+            character_data=character,
+        )
+        if auto_saved:
+            from datetime import UTC, datetime
+
+            merged_state["auto_saved"] = True
+            merged_state["last_auto_save"] = datetime.now(UTC).isoformat()
 
         # Transform the DM response to the GameResponse format
         images = []
