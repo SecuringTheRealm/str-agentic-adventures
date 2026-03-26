@@ -9,7 +9,7 @@ import re
 from enum import Enum
 from typing import TypedDict
 
-from app.srd_data import CLASS_HIT_DICE, XP_THRESHOLDS
+from app.srd_data import CLASS_HIT_DICE, XP_THRESHOLDS, get_features_at_level
 
 
 class AttackResult(TypedDict):
@@ -555,3 +555,169 @@ def get_proficiency_bonus(level: int) -> int:
 def is_asi_level(level: int) -> bool:
     """Check if this level grants an Ability Score Improvement."""
     return level in (4, 8, 12, 16, 19)
+
+
+# Maximum value for any single ability score (D&D 5e SRD)
+_ABILITY_SCORE_CAP = 20
+
+_VALID_ABILITIES = frozenset(
+    ("strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma")
+)
+
+
+def _ability_modifier(score: int) -> int:
+    """Calculate the ability modifier for a given score."""
+    return (score - 10) // 2
+
+
+def apply_level_up(
+    character_data: dict,
+    choices: dict | None = None,
+    use_average_hp: bool = True,
+) -> dict:
+    """Apply a level up to a character, returning the updated data.
+
+    Performs the following steps:
+    1. Validates that the character has enough XP and is not already level 20.
+    2. Increments level.
+    3. Recalculates proficiency bonus.
+    4. Increases HP (average or rolled, plus CON modifier).
+    5. Applies Ability Score Improvement if this is an ASI level and choices
+       are provided (``{"asi": {"strength": 2}}`` or
+       ``{"asi": {"dexterity": 1, "wisdom": 1}}``).
+    6. Looks up class features gained at the new level.
+
+    Args:
+        character_data: A dict representation of the character sheet.
+        choices: Optional dict with an ``"asi"`` key mapping ability names
+            to point increases (must total exactly 2).
+        use_average_hp: If ``True`` use the fixed average HP gain; otherwise
+            roll the hit die.
+
+    Returns:
+        A dict with keys:
+            success (bool), new_level (int), hp_gained (int),
+            new_proficiency_bonus (int), ability_improvements (dict),
+            features_gained (list[str]), message (str), updated_character (dict).
+
+    Raises:
+        ValueError: If the level-up is not valid or ASI choices are invalid.
+    """
+    current_level: int = character_data.get("level", 1)
+    experience: int = character_data.get("experience", 0)
+
+    # --- guard: max level ---
+    if current_level >= 20:
+        raise ValueError("Character is already at the maximum level (20).")
+
+    # --- guard: insufficient XP ---
+    if not check_level_up(experience, current_level):
+        next_threshold = XP_THRESHOLDS.get(current_level + 1, 0)
+        raise ValueError(
+            f"Not enough XP to level up. Current: {experience}, "
+            f"required for level {current_level + 1}: {next_threshold}."
+        )
+
+    new_level = current_level + 1
+
+    # --- proficiency bonus ---
+    new_proficiency = get_proficiency_bonus(new_level)
+
+    # --- HP increase ---
+    char_class: str = character_data.get("character_class", "fighter")
+    abilities: dict = character_data.get("abilities", {})
+    con_score: int = (
+        abilities.get("constitution", 10)
+        if isinstance(abilities, dict)
+        else 10
+    )
+    con_mod = _ability_modifier(con_score)
+    hp_gained = calculate_level_up_hp(char_class, con_mod, use_average=use_average_hp)
+
+    # --- ASI handling ---
+    ability_improvements: dict[str, int] = {}
+    if is_asi_level(new_level) and choices and "asi" in choices:
+        asi = choices["asi"]
+        if not isinstance(asi, dict):
+            raise ValueError(
+                "ASI choices must be a dict mapping ability names "
+                "to increases."
+            )
+        total = sum(asi.values())
+        if total != 2:
+            raise ValueError(
+                f"ASI points must total exactly 2, got {total}."
+            )
+        for ability_name, increase in asi.items():
+            if ability_name not in _VALID_ABILITIES:
+                raise ValueError(
+                    f"Invalid ability name: {ability_name!r}."
+                )
+            if increase not in (1, 2):
+                raise ValueError(
+                    f"Each ability increase must be 1 or 2, "
+                    f"got {increase} for {ability_name}."
+                )
+            current_score = (
+                abilities.get(ability_name, 10)
+                if isinstance(abilities, dict)
+                else 10
+            )
+            if current_score + increase > _ABILITY_SCORE_CAP:
+                raise ValueError(
+                    f"Cannot increase {ability_name} above "
+                    f"{_ABILITY_SCORE_CAP} "
+                    f"(current {current_score} + {increase})."
+                )
+        ability_improvements = dict(asi)
+
+    # --- class features at new level ---
+    features_gained = get_features_at_level(char_class, new_level)
+
+    # --- build updated character dict ---
+    updated = dict(character_data)
+    updated["level"] = new_level
+    updated["proficiency_bonus"] = new_proficiency
+
+    # Update HP
+    hp = updated.get("hit_points", {})
+    if isinstance(hp, dict):
+        hp["maximum"] = hp.get("maximum", 0) + hp_gained
+        hp["current"] = hp.get("current", 0) + hp_gained
+        updated["hit_points"] = hp
+
+    # Apply ASI
+    if ability_improvements:
+        if not isinstance(updated.get("abilities"), dict):
+            updated["abilities"] = {}
+        for ability_name, increase in ability_improvements.items():
+            current_val = updated["abilities"].get(ability_name, 10)
+            updated["abilities"][ability_name] = min(
+                current_val + increase, _ABILITY_SCORE_CAP
+            )
+        updated["ability_score_improvements_used"] = (
+            updated.get("ability_score_improvements_used", 0) + 1
+        )
+
+    # Record features
+    existing_features: list = updated.get("features", [])
+    for feat_name in features_gained:
+        existing_features.append(
+            {
+                "name": feat_name,
+                "source": "class",
+                "level_gained": new_level,
+            }
+        )
+    updated["features"] = existing_features
+
+    return {
+        "success": True,
+        "new_level": new_level,
+        "hp_gained": hp_gained,
+        "new_proficiency_bonus": new_proficiency,
+        "ability_improvements": ability_improvements,
+        "features_gained": features_gained,
+        "message": f"Levelled up to level {new_level}!",
+        "updated_character": updated,
+    }
