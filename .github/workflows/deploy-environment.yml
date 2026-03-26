@@ -99,31 +99,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js for frontend build
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: "npm"
-          cache-dependency-path: frontend/package-lock.json
+      - name: Setup Bun for frontend build
+        uses: oven-sh/setup-bun@v2
 
       - name: Setup Python for backend
-        uses: actions/setup-python@v4
+        uses: astral-sh/setup-uv@v5
         with:
           python-version: "3.12"
-
-      - name: Install UV
-        run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
-          export PATH="/home/runner/.local/bin:$PATH"
-          echo "/home/runner/.local/bin" >> $GITHUB_PATH
-
-      - name: Cache UV dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/uv
-          key: ${{ runner.os }}-uv-${{ hashFiles('**/pyproject.toml', '**/uv.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-uv-
+          enable-cache: true
 
       - name: Log in with Azure (Federated Credentials)
         if: steps.check-secrets.outputs.use-federated-auth == 'true'
@@ -341,7 +324,7 @@ jobs:
 
           # Build frontend with backend URL
           cd frontend
-          npm ci
+          bun install
 
           # Generate OpenAPI client from backend API
           # CRITICAL: Frontend TypeScript client must be generated before build
@@ -361,7 +344,7 @@ jobs:
           done
 
           # Generate the client using the backend's OpenAPI schema
-          npx @openapitools/openapi-generator-cli generate \
+          bunx @openapitools/openapi-generator-cli generate \
             -i "$BACKEND_URL/openapi.json" \
             -g typescript-axios \
             -o src/api-client \
@@ -369,7 +352,7 @@ jobs:
 
           # Set backend URL for build (Vite embeds VITE_* prefixed env vars at build time)
           export VITE_API_URL="$BACKEND_URL"
-          npm run build
+          bun run build
 
           # Get deployment token from the Static Web App (if it exists)
           if az staticwebapp show --name "$SWA_NAME" --resource-group "$RESOURCE_GROUP" >/dev/null 2>&1; then

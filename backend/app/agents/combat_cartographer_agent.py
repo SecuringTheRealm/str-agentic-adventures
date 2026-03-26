@@ -5,56 +5,22 @@ Combat Cartographer Agent - Generates tactical battle maps for combat encounters
 import logging
 from typing import Any
 
-from azure.ai.inference import ChatCompletionsClient
-
-from app.agent_client_setup import agent_client_manager
-from app.azure_openai_client import AzureOpenAIClient, azure_openai_client
+from app.agents.base_agent import BaseAgent
 
 logger = logging.getLogger(__name__)
 
 
-class CombatCartographerAgent:
+class CombatCartographerAgent(BaseAgent):
     """
     Combat Cartographer Agent that creates tactical battle maps based on narrative context.
     This agent is responsible for generating visual representations of combat environments.
     """
 
-    def __init__(self) -> None:
-        """Initialize the Combat Cartographer agent with Azure AI SDK."""
-        self.chat_client: ChatCompletionsClient | None = None
-        self.azure_client: AzureOpenAIClient | None = None
-        self._fallback_mode = False
+    agent_name = "Combat Cartographer"
 
-        # Try to get the shared chat client from agent client manager
-        try:
-            self.chat_client = agent_client_manager.get_chat_client()
-            if self.chat_client is None:
-                self._fallback_mode = True
-                logger.warning(
-                    "Combat Cartographer agent operating in fallback mode - Azure OpenAI not configured"
-                )
-            else:
-                logger.info(
-                    "Combat Cartographer agent initialized with Azure AI SDK"
-                )
-        except Exception as e:
-            logger.warning(
-                "Failed to initialize Combat Cartographer agent with Azure AI SDK: %s. "
-                "Operating in fallback mode.",
-                e,
-            )
-            self._fallback_mode = True
-
-        # Image generation uses AzureOpenAIClient (for gpt-image-1 support)
-        if not self._fallback_mode:
-            try:
-                self.azure_client = azure_openai_client
-            except Exception as e:
-                logger.warning(
-                    "Failed to initialize Azure OpenAI client for image generation: %s", e
-                )
-                self._fallback_mode = True
-
+    def _post_init(self) -> None:
+        """Initialize Combat Cartographer-specific components after base client setup."""
+        self._init_azure_client()
         self._register_skills()
 
         # Store map references

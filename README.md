@@ -9,6 +9,14 @@
 [![Azure](https://custom-icon-badges.demolab.com/badge/Microsoft%20Azure-0089D6?logo=msazure&logoColor=white)](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/?WT.mc_id=AI-MVP-5004204)
 [![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=fff)](#)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=fff)](#)
+<img src="https://img.shields.io/badge/python-3.12+-blue">
+<img src="https://img.shields.io/badge/uv-package%20manager-blueviolet">
+<img src="https://img.shields.io/badge/ruff-linter-orange">
+<img src="https://img.shields.io/badge/bun-runtime-black">
+<img src="https://img.shields.io/badge/biome-linter-blue">
+<img src="https://img.shields.io/badge/FastAPI-0.115+-green">
+<img src="https://img.shields.io/badge/React-19-61DAFB">
+<img src="https://img.shields.io/badge/Azure-Container%20Apps-0078D4">
 
 ## Overview
 

@@ -267,7 +267,7 @@ const DiceRoller: React.FC<DiceRollerProps> = ({
       </div>
 
       {lastResult && (
-        <div className={styles.lastResult}>
+        <div className={styles.lastResult} aria-live="assertive" role="status">
           <h4>Last Roll:</h4>
           <div className={styles.resultDisplay}>
             <div className={styles.resultNotation}>{lastResult.notation}</div>

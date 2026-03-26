@@ -15,7 +15,7 @@ class TestSRDLevelUp:
         with (
             patch("app.agents.scribe_agent.init_db"),
             patch(
-                "app.agents.scribe_agent.agent_client_manager.get_chat_client"
+                "app.agents.base_agent.agent_client_manager.get_chat_client"
             ) as mock_kernel,
             patch("app.agents.scribe_agent.ScribeAgent._register_skills"),
         ):
@@ -61,7 +61,7 @@ class TestSRDLevelUp:
             ],
         }
 
-        with patch("app.agents.scribe_agent.get_session") as mock_session:
+        with patch("app.agents.scribe_agent.get_session_context") as mock_session:
             mock_db = MagicMock()
             mock_character = MagicMock()
             mock_character.data = fighter_data
@@ -150,7 +150,7 @@ class TestSRDLevelUp:
             ],
         }
 
-        with patch("app.agents.scribe_agent.get_session") as mock_session:
+        with patch("app.agents.scribe_agent.get_session_context") as mock_session:
             mock_db = MagicMock()
             mock_character = MagicMock()
             mock_character.data = wizard_data
@@ -215,7 +215,7 @@ class TestSRDLevelUp:
             ],
         }
 
-        with patch("app.agents.scribe_agent.get_session") as mock_session:
+        with patch("app.agents.scribe_agent.get_session_context") as mock_session:
             mock_db = MagicMock()
             mock_character = MagicMock()
             mock_character.data = rogue_data
