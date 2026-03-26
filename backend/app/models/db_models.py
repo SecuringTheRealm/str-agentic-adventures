@@ -149,6 +149,7 @@ class NPCProfileDB(Base):
     location = Column(String, nullable=True)
     is_alive = Column(Boolean, nullable=False, default=True)
     conversation_notes = Column(JSON, nullable=False, default=list)
+    conversation_history = Column(JSON, nullable=False, default=list)
     created_at = Column(DateTime, nullable=False, default=_utcnow)
     updated_at = Column(DateTime, nullable=False, default=_utcnow, onupdate=_utcnow)
 
