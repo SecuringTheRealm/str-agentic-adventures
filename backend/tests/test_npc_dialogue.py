@@ -1,14 +1,13 @@
 """Tests for the NPC dialogue system with conversation memory."""
 
 import pytest
+from app.database import Base, get_session
+from app.main import app
+from app.services.npc_dialogue_service import NPCDialogueService
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
-
-from app.database import Base, get_session
-from app.main import app
-from app.services.npc_dialogue_service import NPCDialogueService
 
 
 def _make_test_db():

@@ -1,10 +1,15 @@
 """
 Combat MC Agent - Manages combat encounters, tactics, and battle flow.
+
+Uses the Microsoft Agent Framework SDK for combat resolution when available,
+falling back to direct plugin-based or deterministic mechanics otherwise.
 """
 
 import logging
 import random
 from typing import Any
+
+from azure.ai.agents.models import FunctionDefinition, FunctionToolDefinition
 
 from app.agents.base_agent import BaseAgent
 from app.utils.dice import DiceRoller
@@ -12,10 +17,101 @@ from app.utils.dice import DiceRoller
 logger = logging.getLogger(__name__)
 
 
+def _build_combat_tool_definitions() -> list[FunctionToolDefinition]:
+    """Build FunctionToolDefinition instances for combat resolution."""
+    return [
+        FunctionToolDefinition(
+            function=FunctionDefinition(
+                name="resolve_attack",
+                description=(
+                    "Resolve a melee or ranged attack roll against a target's "
+                    "armour class, determining hit or miss and calculating damage."
+                ),
+                parameters={
+                    "type": "object",
+                    "properties": {
+                        "attack_bonus": {
+                            "type": "integer",
+                            "description": "The attacker's total attack bonus",
+                        },
+                        "target_ac": {
+                            "type": "integer",
+                            "description": "The target's armour class",
+                        },
+                        "damage_dice": {
+                            "type": "string",
+                            "description": "Damage dice notation (e.g., 1d8+3)",
+                        },
+                        "advantage": {
+                            "type": "boolean",
+                            "description": "Whether the attack has advantage",
+                        },
+                        "disadvantage": {
+                            "type": "boolean",
+                            "description": "Whether the attack has disadvantage",
+                        },
+                    },
+                    "required": ["attack_bonus", "target_ac", "damage_dice"],
+                },
+            )
+        ),
+        FunctionToolDefinition(
+            function=FunctionDefinition(
+                name="skill_check",
+                description=(
+                    "Perform a D&D 5e skill check against a difficulty class."
+                ),
+                parameters={
+                    "type": "object",
+                    "properties": {
+                        "ability_score": {
+                            "type": "integer",
+                            "description": "The relevant ability score (e.g., 14 for STR)",
+                        },
+                        "proficient": {
+                            "type": "boolean",
+                            "description": "Whether the character is proficient",
+                        },
+                        "dc": {
+                            "type": "integer",
+                            "description": "Difficulty class for the check",
+                        },
+                    },
+                    "required": ["ability_score", "dc"],
+                },
+            )
+        ),
+        FunctionToolDefinition(
+            function=FunctionDefinition(
+                name="calculate_damage",
+                description=(
+                    "Calculate damage from a dice notation, optionally doubling "
+                    "dice for critical hits."
+                ),
+                parameters={
+                    "type": "object",
+                    "properties": {
+                        "damage_dice": {
+                            "type": "string",
+                            "description": "Dice notation like 2d6+3",
+                        },
+                        "is_critical": {
+                            "type": "boolean",
+                            "description": "Whether this is a critical hit (doubles dice)",
+                        },
+                    },
+                    "required": ["damage_dice"],
+                },
+            )
+        ),
+    ]
+
+
 class CombatMCAgent(BaseAgent):
-    """
-    Combat MC Agent that creates and manages combat encounters.
-    This agent is responsible for enemy tactics, initiative tracking, and combat state.
+    """Combat MC Agent that creates and manages combat encounters.
+
+    Uses the Microsoft Agent Framework SDK for combat-related AI decisions
+    when available, with automatic fallback to deterministic mechanics.
     """
 
     agent_name = "Combat MC"
@@ -31,6 +127,19 @@ class CombatMCAgent(BaseAgent):
 
         # Active combat tracking
         self.active_combats = {}
+
+    def _get_sdk_instructions(self) -> str:
+        """Return system instructions for the SDK Combat MC agent."""
+        return (
+            "You are the Combat Master for a D&D 5e game. You manage combat "
+            "encounters, resolve attacks, track initiative, and adjudicate "
+            "combat mechanics. Use the provided tools to resolve attacks, "
+            "skill checks, and damage calculations according to D&D 5e rules."
+        )
+
+    def _get_sdk_tools(self) -> list[FunctionToolDefinition]:
+        """Return combat resolution tool definitions for the SDK agent."""
+        return _build_combat_tool_definitions()
 
     def _register_skills(self) -> None:
         """Register necessary skills for the Combat MC agent."""

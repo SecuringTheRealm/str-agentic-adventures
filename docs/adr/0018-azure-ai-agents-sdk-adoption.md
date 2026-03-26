@@ -99,11 +99,35 @@ Justification:
 - `NarratorAgent` continues to leverage `AzureOpenAIClient` for narrative completions, while `ScribeAgent` and `CombatMCAgent` rely on deterministic subsystems and required no OpenAI updates after this audit.
 - Remaining gap: the multi-agent flow still needs deeper integration testing (Azure AI Agents orchestration with real threads/tools using Framework). Plan follow-up instrumentation before declaring the migration fully complete. Unclear if framework is in use.
 
+## Status Update — 2026-03-26
+
+### Microsoft Agent Framework Migration Complete
+
+The SDK formerly known as "Azure AI Agents SDK" has been rebranded to **Microsoft Agent Framework**.
+
+**Changes implemented:**
+- Fixed async import (`azure.ai.agents.aio.AgentsClient`) — the previous sync import was incorrect for this async FastAPI application
+- Added full agent lifecycle methods to `AgentClientManager`: `create_agent()`, `create_thread()`, `add_message()`, `create_and_process_run()`, `create_thread_and_process_run()`
+- Registered game mechanics as `FunctionToolDefinition` instances:
+  - **DM Agent:** dice rolling (`roll_dice`, `roll_ability_check`)
+  - **Narrator Agent:** narrative generation (`describe_scene`, `advance_narrative`)
+  - **Combat MC Agent:** combat resolution (`resolve_attack`, `skill_check`, `calculate_damage`)
+  - **Scribe Agent:** character/NPC queries (`get_character`, `get_npc`, `get_inventory`)
+- All agents now use SDK threads for conversation management when available
+- Fallback to direct `AzureOpenAIClient` wrapper preserved for when SDK is unavailable
+
+**Architecture:**
+- SDK agent creation is lazy (created on first use, cached per agent type via `_ensure_agent_created()`)
+- SDK threads are created per session, mapped via `_sdk_thread_ids` on `BaseAgent`
+- `FunctionToolDefinition` registrations make game mechanics visible to the LLM as callable tools
+- Fallback mode activates automatically when `azure_ai_project_endpoint` is not configured
+- `BaseAgent._sdk_chat()` provides the full SDK lifecycle (agent + thread + message + run) with None-based failure signalling for clean fallback
+
 ## Links
 
 * Supersedes: [ADR-0001 - Use Microsoft Semantic Kernel for Multi-Agent Architecture](0001-semantic-kernel-multi-agent-framework.md)
 * References:
-  * [Azure AI Agents SDK Documentation](https://learn.microsoft.com/en-us/python/api/overview/azure/ai-agents-readme)
-  * [Azure AI Projects SDK Documentation](https://learn.microsoft.com/en-us/python/api/overview/azure/ai-projects-readme)
-  * [Azure AI Foundry Overview](https://learn.microsoft.com/en-us/azure/ai-services/agents/overview)
+  * [Azure AI Agents SDK Documentation](https://learn.microsoft.com/en-us/python/api/overview/azure/ai-agents-readme?WT.mc_id=AI-MVP-5004204)
+  * [Azure AI Projects SDK Documentation](https://learn.microsoft.com/en-us/python/api/overview/azure/ai-projects-readme?WT.mc_id=AI-MVP-5004204)
+  * [Azure AI Foundry Overview](https://learn.microsoft.com/en-us/azure/ai-services/agents/overview?WT.mc_id=AI-MVP-5004204)
   * [OpenTelemetry Integration](https://opentelemetry.io/docs/languages/python/)

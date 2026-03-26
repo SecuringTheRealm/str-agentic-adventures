@@ -23,8 +23,6 @@ from starlette.responses import Response
 
 from app.api import websocket_routes
 
-from app.api import websocket_routes
-
 # Local imports
 from app.api.routes import all_routers
 from app.config import init_settings
