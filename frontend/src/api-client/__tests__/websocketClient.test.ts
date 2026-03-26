@@ -163,9 +163,7 @@ describe("WebSocket Client SDK", () => {
       await new Promise((resolve) => setTimeout(resolve, 10));
 
       const socket = connection.getSocket();
-      expect(socket?.url).toBe(
-        "ws://localhost:8000/ws/chat/test-campaign-id"
-      );
+      expect(socket?.url).toBe("ws://localhost:8000/ws/chat/test-campaign-id");
     });
   });
 

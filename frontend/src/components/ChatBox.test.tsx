@@ -158,7 +158,11 @@ describe("ChatBox", () => {
   });
 
   it("renders suggested action buttons when provided", () => {
-    const actions = ["Explore the dungeon", "Talk to the innkeeper", "Check your map"];
+    const actions = [
+      "Explore the dungeon",
+      "Talk to the innkeeper",
+      "Check your map",
+    ];
     render(
       <ChatBox
         {...defaultProps}
@@ -201,9 +205,7 @@ describe("ChatBox", () => {
 
   it("falls back to onSendMessage when onSuggestedAction is not provided", async () => {
     const actions = ["Look around"];
-    render(
-      <ChatBox {...defaultProps} suggestedActions={actions} />
-    );
+    render(<ChatBox {...defaultProps} suggestedActions={actions} />);
 
     const actionBtn = screen.getByText("Look around");
     await userEvent.click(actionBtn);

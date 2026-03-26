@@ -72,9 +72,9 @@ test.describe("Campaign Creation Flow", () => {
       await submitButton.click();
 
       // Should proceed to character selection
-      await expect(
-        page.locator('text="Choose Your Character"')
-      ).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('text="Choose Your Character"')).toBeVisible({
+        timeout: 10000,
+      });
 
       await page.screenshot({
         path: "screenshots/campaign-created.png",
