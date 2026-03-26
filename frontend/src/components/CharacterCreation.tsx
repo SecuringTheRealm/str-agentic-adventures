@@ -23,7 +23,7 @@ const CharacterCreation: React.FC<CharacterCreationProps> = ({
   const raceId = useId();
   const classId = useId();
   const backstoryId = useId();
-  
+
   const [formData, setFormData] = useState<CharacterCreateRequest>({
     name: "",
     race: "human",
@@ -226,26 +226,28 @@ const CharacterCreation: React.FC<CharacterCreationProps> = ({
           </p>
 
           <div className={styles.abilitiesGrid}>
-            {Object.entries(formData.abilities).map(([ability, value]: [string, number]) => (
-              <div key={ability} className={styles.abilityInput}>
-                <label htmlFor={`abilities.${ability}`}>
-                  {ability.charAt(0).toUpperCase() + ability.slice(1)}
-                </label>
-                <input
-                  type="number"
-                  id={`abilities.${ability}`}
-                  name={`abilities.${ability}`}
-                  value={value}
-                  onChange={handleInputChange}
-                  min="8"
-                  max="18"
-                  data-testid={`ability-${ability}`}
-                />
-                <span className={styles.modifier}>
-                  {getAbilityModifier(value)}
-                </span>
-              </div>
-            ))}
+            {Object.entries(formData.abilities).map(
+              ([ability, value]: [string, number]) => (
+                <div key={ability} className={styles.abilityInput}>
+                  <label htmlFor={`abilities.${ability}`}>
+                    {ability.charAt(0).toUpperCase() + ability.slice(1)}
+                  </label>
+                  <input
+                    type="number"
+                    id={`abilities.${ability}`}
+                    name={`abilities.${ability}`}
+                    value={value}
+                    onChange={handleInputChange}
+                    min="8"
+                    max="18"
+                    data-testid={`ability-${ability}`}
+                  />
+                  <span className={styles.modifier}>
+                    {getAbilityModifier(value)}
+                  </span>
+                </div>
+              )
+            )}
           </div>
         </div>
 

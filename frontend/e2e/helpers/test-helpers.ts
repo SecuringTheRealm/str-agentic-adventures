@@ -1,5 +1,5 @@
-import type { Page } from '@playwright/test';
-import { TEST_CAMPAIGNS, TEST_CHARACTERS } from '../constants/srd-data';
+import type { Page } from "@playwright/test";
+import { TEST_CAMPAIGNS, TEST_CHARACTERS } from "../constants/srd-data";
 
 /**
  * Helper function to create a test campaign
@@ -19,12 +19,12 @@ export async function createTestCampaign(
 
   // Navigate to home if not already there
   const url = page.url();
-  if (!url.includes('localhost') && !url.includes('127.0.0.1')) {
-    await page.goto('/');
+  if (!url.includes("localhost") && !url.includes("127.0.0.1")) {
+    await page.goto("/");
   }
 
   // Click create campaign button (if visible)
-  const createBtn = page.getByTestId('create-campaign-btn');
+  const createBtn = page.getByTestId("create-campaign-btn");
   const createBtnCount = await createBtn.count();
   if (createBtnCount > 0) {
     await createBtn.click();
@@ -32,18 +32,18 @@ export async function createTestCampaign(
   }
 
   // Fill campaign form
-  await page.getByTestId('campaign-name-input').fill(campaign.name);
-  await page.getByTestId('campaign-setting-input').fill(campaign.setting);
-  await page.getByTestId('campaign-tone-select').selectOption(campaign.tone);
+  await page.getByTestId("campaign-name-input").fill(campaign.name);
+  await page.getByTestId("campaign-setting-input").fill(campaign.setting);
+  await page.getByTestId("campaign-tone-select").selectOption(campaign.tone);
 
   if (campaignData?.homebrewRules) {
     await page
-      .getByTestId('campaign-homebrew-input')
+      .getByTestId("campaign-homebrew-input")
       .fill(campaignData.homebrewRules);
   }
 
   // Submit the form
-  await page.getByTestId('submit-campaign-btn').click();
+  await page.getByTestId("submit-campaign-btn").click();
 
   // Wait for character selection screen
   await page.waitForTimeout(2000);
@@ -56,19 +56,19 @@ export async function createTestCampaign(
  */
 export async function createTestCharacter(
   page: Page,
-  characterType: keyof typeof TEST_CHARACTERS = 'elf_ranger'
+  characterType: keyof typeof TEST_CHARACTERS = "elf_ranger"
 ): Promise<void> {
   const character = TEST_CHARACTERS[characterType];
 
   // Click create character button
-  await page.getByTestId('create-character-btn').click();
+  await page.getByTestId("create-character-btn").click();
   await page.waitForTimeout(1000);
 
   // Fill basic information
-  await page.getByTestId('character-name-input').fill(character.name);
-  await page.getByTestId('character-race-select').selectOption(character.race);
+  await page.getByTestId("character-name-input").fill(character.name);
+  await page.getByTestId("character-race-select").selectOption(character.race);
   await page
-    .getByTestId('character-class-select')
+    .getByTestId("character-class-select")
     .selectOption(character.character_class);
 
   // Fill ability scores
@@ -77,12 +77,10 @@ export async function createTestCharacter(
   }
 
   // Fill backstory
-  await page
-    .getByTestId('character-backstory-input')
-    .fill(character.backstory);
+  await page.getByTestId("character-backstory-input").fill(character.backstory);
 
   // Submit the form
-  await page.getByTestId('submit-character-btn').click();
+  await page.getByTestId("submit-character-btn").click();
 
   // Wait for game interface
   await page.waitForTimeout(3000);
@@ -101,10 +99,10 @@ export async function setupGameSession(
     characterType?: keyof typeof TEST_CHARACTERS;
   }
 ): Promise<void> {
-  const campaignType = options?.campaignType || 'heroic_fantasy';
-  const characterType = options?.characterType || 'elf_ranger';
+  const campaignType = options?.campaignType || "heroic_fantasy";
+  const characterType = options?.characterType || "elf_ranger";
 
-  await page.goto('/');
+  await page.goto("/");
   await createTestCampaign(page, TEST_CAMPAIGNS[campaignType]);
   await createTestCharacter(page, characterType);
 }
@@ -118,8 +116,8 @@ export async function sendChatMessage(
   page: Page,
   message: string
 ): Promise<void> {
-  await page.getByTestId('chat-input').fill(message);
-  await page.getByTestId('chat-send-btn').click();
+  await page.getByTestId("chat-input").fill(message);
+  await page.getByTestId("chat-send-btn").click();
 }
 
 /**
@@ -141,7 +139,7 @@ export async function waitForDMResponse(
  */
 export async function isAzureConfigured(page: Page): Promise<boolean> {
   try {
-    const response = await page.request.get('http://localhost:8000/health');
+    const response = await page.request.get("http://localhost:8000/health");
     const data = await response.json();
     return data.azure_configured === true;
   } catch {

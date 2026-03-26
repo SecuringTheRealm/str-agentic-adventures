@@ -58,8 +58,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
     }
   };
 
-  const hasSuggestedActions =
-    suggestedActions && suggestedActions.length > 0;
+  const hasSuggestedActions = suggestedActions && suggestedActions.length > 0;
 
   return (
     <div className={styles.chatBox}>
@@ -103,8 +102,13 @@ const ChatBox: React.FC<ChatBoxProps> = ({
       </div>
 
       {hasSuggestedActions && (
-        <div className={styles.suggestedActions} data-testid="suggested-actions">
-          <span className={styles.suggestedActionsLabel}>Suggested actions:</span>
+        <div
+          className={styles.suggestedActions}
+          data-testid="suggested-actions"
+        >
+          <span className={styles.suggestedActionsLabel}>
+            Suggested actions:
+          </span>
           <div className={styles.actionButtons}>
             {suggestedActions.map((action) => (
               <button
@@ -132,7 +136,11 @@ const ChatBox: React.FC<ChatBoxProps> = ({
           disabled={isLoading}
           data-testid="chat-input"
         />
-        <button type="submit" disabled={isLoading || !input.trim()} data-testid="chat-send-btn">
+        <button
+          type="submit"
+          disabled={isLoading || !input.trim()}
+          data-testid="chat-send-btn"
+        >
           Send
         </button>
         <button

@@ -32,9 +32,9 @@ test.describe("Character Creation Flow", () => {
       await submitButton.click();
 
       // Should now be in character selection
-      await expect(
-        page.locator('text="Choose Your Character"')
-      ).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('text="Choose Your Character"')).toBeVisible({
+        timeout: 10000,
+      });
 
       // Should show character creation options
       await expect(
@@ -148,9 +148,9 @@ test.describe("Character Creation Flow", () => {
       await submitCharacterBtn.click();
 
       // Should proceed to game interface
-      await expect(
-        page.locator('[data-testid="game-interface"]')
-      ).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('[data-testid="game-interface"]')).toBeVisible({
+        timeout: 10000,
+      });
 
       await page.screenshot({
         path: "screenshots/character-created.png",
@@ -201,9 +201,7 @@ test.describe("Character Creation Flow", () => {
 
           // Should proceed to game interface
           await expect(
-            page.locator(
-              '[data-testid="game-interface"]'
-            )
+            page.locator('[data-testid="game-interface"]')
           ).toBeVisible({ timeout: 10000 });
 
           await page.screenshot({

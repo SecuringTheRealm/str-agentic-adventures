@@ -89,7 +89,8 @@ export const createCharacter = async (
   const normalizedData = {
     ...characterData,
     race: characterData.race?.toLowerCase() as import("../api-client").Race,
-    character_class: characterData.character_class?.toLowerCase() as import("../api-client").CharacterClass,
+    character_class:
+      characterData.character_class?.toLowerCase() as import("../api-client").CharacterClass,
   };
   const response =
     await gameApi.createCharacterGameCharacterPost(normalizedData);
@@ -112,8 +113,7 @@ export const sendPlayerInput = async (
 export const createCampaign = async (
   campaignData: import("../api-client").CreateCampaignRequest
 ) => {
-  const response =
-    await gameApi.createCampaignGameCampaignPost(campaignData);
+  const response = await gameApi.createCampaignGameCampaignPost(campaignData);
   return response.data;
 };
 
@@ -142,8 +142,7 @@ export const updateCampaign = async (
 export const cloneCampaign = async (
   cloneData: import("../api-client").CloneCampaignRequest
 ) => {
-  const response =
-    await gameApi.cloneCampaignGameCampaignClonePost(cloneData);
+  const response = await gameApi.cloneCampaignGameCampaignClonePost(cloneData);
   return response.data;
 };
 
@@ -154,8 +153,7 @@ export const deleteCampaign = async (campaignId: string) => {
 };
 
 export const getCampaignTemplates = async () => {
-  const response =
-    await gameApi.getCampaignTemplatesGameCampaignTemplatesGet();
+  const response = await gameApi.getCampaignTemplatesGameCampaignTemplatesGet();
   // The API returns {templates: [...]} but we need to return just the array
   return response.data.templates || [];
 };
@@ -240,8 +238,7 @@ export const generateImage = async (imageRequest: Record<string, unknown>) => {
 export const generateBattleMap = async (
   mapRequest: Record<string, unknown>
 ) => {
-  const response =
-    await gameApi.generateBattleMapGameBattleMapPost(mapRequest);
+  const response = await gameApi.generateBattleMapGameBattleMapPost(mapRequest);
   return response.data;
 };
 

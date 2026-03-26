@@ -38,10 +38,7 @@ const PredefinedCharacters: React.FC<PredefinedCharactersProps> = ({
 
       <div className={styles.charactersGrid}>
         {predefinedCharacters.map((character) => (
-          <div
-            key={character.name}
-            className={styles.characterCard}
-          >
+          <div key={character.name} className={styles.characterCard}>
             <div className={styles.characterHeader}>
               <h3>{character.name}</h3>
               <div className={styles.characterBasics}>

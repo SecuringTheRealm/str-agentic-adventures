@@ -6,40 +6,40 @@
 
 // Valid D&D 5e SRD races (lowercase for API)
 export const VALID_RACES = [
-  'human',
-  'elf',
-  'dwarf',
-  'halfling',
-  'dragonborn',
-  'gnome',
-  'half-elf',
-  'half-orc',
-  'tiefling',
+  "human",
+  "elf",
+  "dwarf",
+  "halfling",
+  "dragonborn",
+  "gnome",
+  "half-elf",
+  "half-orc",
+  "tiefling",
 ] as const;
 
 // Valid D&D 5e SRD classes (lowercase for API)
 export const VALID_CLASSES = [
-  'barbarian',
-  'bard',
-  'cleric',
-  'druid',
-  'fighter',
-  'monk',
-  'paladin',
-  'ranger',
-  'rogue',
-  'sorcerer',
-  'warlock',
-  'wizard',
+  "barbarian",
+  "bard",
+  "cleric",
+  "druid",
+  "fighter",
+  "monk",
+  "paladin",
+  "ranger",
+  "rogue",
+  "sorcerer",
+  "warlock",
+  "wizard",
 ] as const;
 
 // Valid campaign tones
 export const VALID_TONES = [
-  'heroic',
-  'dark',
-  'lighthearted',
-  'gritty',
-  'mysterious',
+  "heroic",
+  "dark",
+  "lighthearted",
+  "gritty",
+  "mysterious",
 ] as const;
 
 // Ability score constraints
@@ -53,9 +53,9 @@ export const ABILITY_SCORE_RULES = {
 // Test character templates
 export const TEST_CHARACTERS = {
   elf_ranger: {
-    name: 'Eldrin Shadowblade',
-    race: 'elf' as const,
-    character_class: 'ranger' as const,
+    name: "Eldrin Shadowblade",
+    race: "elf" as const,
+    character_class: "ranger" as const,
     abilities: {
       strength: 13,
       dexterity: 16,
@@ -65,12 +65,12 @@ export const TEST_CHARACTERS = {
       charisma: 10,
     },
     backstory:
-      'A skilled ranger from the Moonwood, trained in tracking and survival. Seeks to protect the forest realm from encroaching darkness.',
+      "A skilled ranger from the Moonwood, trained in tracking and survival. Seeks to protect the forest realm from encroaching darkness.",
   },
   dwarf_fighter: {
-    name: 'Thorin Ironbeard',
-    race: 'dwarf' as const,
-    character_class: 'fighter' as const,
+    name: "Thorin Ironbeard",
+    race: "dwarf" as const,
+    character_class: "fighter" as const,
     abilities: {
       strength: 16,
       dexterity: 12,
@@ -80,12 +80,12 @@ export const TEST_CHARACTERS = {
       charisma: 12,
     },
     backstory:
-      'A veteran warrior from the mountain clans, skilled in combat and loyal to his companions.',
+      "A veteran warrior from the mountain clans, skilled in combat and loyal to his companions.",
   },
   human_wizard: {
-    name: 'Aria Spellweaver',
-    race: 'human' as const,
-    character_class: 'wizard' as const,
+    name: "Aria Spellweaver",
+    race: "human" as const,
+    character_class: "wizard" as const,
     abilities: {
       strength: 10,
       dexterity: 13,
@@ -95,30 +95,30 @@ export const TEST_CHARACTERS = {
       charisma: 12,
     },
     backstory:
-      'A talented mage from the Academy of Arcane Arts, dedicated to mastering the mystical forces.',
+      "A talented mage from the Academy of Arcane Arts, dedicated to mastering the mystical forces.",
   },
 } as const;
 
 // Test campaign templates
 export const TEST_CAMPAIGNS = {
   heroic_fantasy: {
-    name: 'Test Campaign - Heroic Quest',
+    name: "Test Campaign - Heroic Quest",
     setting:
-      'A mysterious forest realm filled with ancient magic and hidden dangers',
-    tone: 'heroic' as const,
+      "A mysterious forest realm filled with ancient magic and hidden dangers",
+    tone: "heroic" as const,
     homebrew_rules: [],
   },
   dark_adventure: {
-    name: 'Test Campaign - Dark Shadows',
-    setting: 'A gothic realm where darkness threatens to consume all light',
-    tone: 'dark' as const,
-    homebrew_rules: ['Critical hits deal maximum damage', 'No death saves'],
+    name: "Test Campaign - Dark Shadows",
+    setting: "A gothic realm where darkness threatens to consume all light",
+    tone: "dark" as const,
+    homebrew_rules: ["Critical hits deal maximum damage", "No death saves"],
   },
   mystery_investigation: {
-    name: 'Test Campaign - Mystery Manor',
-    setting: 'An investigation into strange occurrences at an old estate',
-    tone: 'mysterious' as const,
-    homebrew_rules: ['Advantage on investigation checks'],
+    name: "Test Campaign - Mystery Manor",
+    setting: "An investigation into strange occurrences at an old estate",
+    tone: "mysterious" as const,
+    homebrew_rules: ["Advantage on investigation checks"],
   },
 } as const;
 

@@ -135,9 +135,9 @@ describe("OpenAPI Generated Client Integration", () => {
       expect(
         gameApiClient.getCharacterGameCharacterCharacterIdGet
       ).toBeDefined();
-      expect(
-        typeof gameApiClient.getCharacterGameCharacterCharacterIdGet
-      ).toBe("function");
+      expect(typeof gameApiClient.getCharacterGameCharacterCharacterIdGet).toBe(
+        "function"
+      );
     });
 
     it("should have campaign creation method", () => {
