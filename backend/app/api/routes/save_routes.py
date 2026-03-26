@@ -16,6 +16,7 @@ from app.models.game_models import (
     SaveSlot,
     SaveSlotListResponse,
 )
+from app.services.game_state_service import game_state_service
 
 logger = logging.getLogger(__name__)
 
@@ -203,3 +204,158 @@ async def load_save_slot(campaign_id: str, slot_number: int, db: DbDep):
         "interaction_count": db_slot.interaction_count,
         "save_data": db_slot.save_data or {},
     }
+
+
+# ---------------------------------------------------------------------------
+# Full state capture / restore endpoints
+# ---------------------------------------------------------------------------
+
+
+@router.post(
+    "/campaign/{campaign_id}/saves/capture",
+    response_model=SaveSlot,
+    status_code=status.HTTP_201_CREATED,
+)
+async def capture_game_state(campaign_id: str, db: DbDep):
+    """Capture the current game state into a new save slot.
+
+    Serialises all campaign data, characters, NPCs, NPC profiles,
+    relationships, and conversation history, then writes the blob into the
+    next available save slot.
+    """
+    campaign = db.query(CampaignDB).filter(CampaignDB.id == campaign_id).first()
+    if not campaign:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Campaign {campaign_id} not found",
+        )
+
+    # Capture the full state
+    try:
+        state_data = game_state_service.capture_state(campaign_id, db)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc),
+        ) from exc
+
+    # Find next available slot
+    existing = (
+        db.query(SaveSlotDB.slot_number)
+        .filter(SaveSlotDB.campaign_id == campaign_id)
+        .all()
+    )
+    occupied = {row.slot_number for row in existing}
+    next_slot = next(
+        (n for n in range(1, MAX_SAVE_SLOTS + 1) if n not in occupied), None
+    )
+    if next_slot is None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                f"All {MAX_SAVE_SLOTS} save slots are occupied"
+                f" for campaign {campaign_id}"
+            ),
+        )
+
+    summary = game_state_service.get_save_summary(state_data)
+
+    now = datetime.now(UTC)
+    slot_id = str(_uuid.uuid4())
+    db_slot = SaveSlotDB(
+        id=slot_id,
+        campaign_id=campaign_id,
+        slot_number=next_slot,
+        name=summary.get("campaign_name", ""),
+        created_at=now,
+        updated_at=now,
+        play_time_seconds=0,
+        interaction_count=summary.get("conversation_entries", 0),
+        character_level=1,
+        current_location=summary.get("current_location", ""),
+        save_data=state_data,
+    )
+    db.add(db_slot)
+    db.commit()
+    db.refresh(db_slot)
+    return _save_slot_from_db(db_slot)
+
+
+@router.post("/campaign/{campaign_id}/saves/{slot_number}/restore")
+async def restore_game_state(campaign_id: str, slot_number: int, db: DbDep):
+    """Restore game state from a save slot.
+
+    Reads the state blob from the specified save slot and recreates campaign
+    data, characters, NPCs, profiles, and relationships in the database.
+    """
+    campaign = db.query(CampaignDB).filter(CampaignDB.id == campaign_id).first()
+    if not campaign:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Campaign {campaign_id} not found",
+        )
+
+    db_slot = (
+        db.query(SaveSlotDB)
+        .filter(
+            SaveSlotDB.campaign_id == campaign_id,
+            SaveSlotDB.slot_number == slot_number,
+        )
+        .first()
+    )
+    if not db_slot:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Save slot {slot_number} not found for campaign {campaign_id}",
+        )
+
+    state_data = db_slot.save_data or {}
+    if not state_data:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Save slot contains no state data to restore",
+        )
+
+    try:
+        restored = game_state_service.restore_state(campaign_id, state_data, db)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc),
+        ) from exc
+
+    return {
+        "status": "restored",
+        "slot_number": db_slot.slot_number,
+        "name": db_slot.name,
+        "restored_summary": restored,
+    }
+
+
+@router.get("/campaign/{campaign_id}/saves/{slot_number}/summary")
+async def get_save_summary(campaign_id: str, slot_number: int, db: DbDep):
+    """Return a human-readable summary of the state in a save slot."""
+    campaign = db.query(CampaignDB).filter(CampaignDB.id == campaign_id).first()
+    if not campaign:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Campaign {campaign_id} not found",
+        )
+
+    db_slot = (
+        db.query(SaveSlotDB)
+        .filter(
+            SaveSlotDB.campaign_id == campaign_id,
+            SaveSlotDB.slot_number == slot_number,
+        )
+        .first()
+    )
+    if not db_slot:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Save slot {slot_number} not found for campaign {campaign_id}",
+        )
+
+    state_data = db_slot.save_data or {}
+    summary = game_state_service.get_save_summary(state_data)
+    return summary
