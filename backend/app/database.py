@@ -27,8 +27,10 @@ def _resolve_database_url() -> str:
 
     if database_host:
         if not database_user or not database_password:
-            return f"postgresql://{database_host}/{database_name}"
-        return f"postgresql://{database_user}:{database_password}@{database_host}/{database_name}"
+            url = f"postgresql://{database_host}/{database_name}"
+        else:
+            url = f"postgresql://{database_user}:{database_password}@{database_host}/{database_name}"
+        return f"{url}?sslmode=require"
     if os.getenv("DATABASE_URL"):
         return os.getenv("DATABASE_URL")
     return "sqlite:///./app.db"

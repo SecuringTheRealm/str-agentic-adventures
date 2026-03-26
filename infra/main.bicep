@@ -28,6 +28,10 @@ param azureOpenAiEmbeddingDeployment string = 'text-embedding-ada-002'
 @description('Azure OpenAI Image Generation Deployment Name')
 param azureOpenAiDalleDeployment string = 'gpt-image-1-mini'
 
+@secure()
+@description('Administrator password for the PostgreSQL server (auto-generated if not provided)')
+param databasePassword string = newGuid()
+
 // This template should be deployed at the subscription level to create the resource group
 targetScope = 'subscription'
 
@@ -110,6 +114,19 @@ module keyVault 'modules/key-vault.bicep' = {
   }
 }
 
+// Create PostgreSQL Flexible Server for persistent database storage
+module postgresql 'modules/postgresql.bicep' = {
+  name: 'postgresql'
+  scope: rg
+  params: {
+    name: '${environmentName}-pg-${resourceToken}'
+    location: location
+    tags: tags
+    administratorLoginPassword: databasePassword
+    keyVaultName: keyVault.outputs.name
+  }
+}
+
 // Assign roles to managed identity (AcrPull + Storage Blob Data Contributor)
 module roleAssignments 'modules/role-assignments.bicep' = {
   name: 'role-assignments'
@@ -153,3 +170,5 @@ output AZURE_MANAGED_IDENTITY_ID string = managedIdentity.outputs.id
 output AZURE_MANAGED_IDENTITY_CLIENT_ID string = managedIdentity.outputs.clientId
 output AZURE_MANAGED_IDENTITY_PRINCIPAL_ID string = managedIdentity.outputs.principalId
 output AZURE_KEY_VAULT_NAME string = keyVault.outputs.name
+output DATABASE_HOST string = postgresql.outputs.host
+output DATABASE_NAME string = postgresql.outputs.databaseName
