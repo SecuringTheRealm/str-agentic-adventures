@@ -9,10 +9,14 @@ import json
 import logging
 import random
 import re
+import uuid
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
 from app.agents.base_agent import BaseAgent
 from app.azure_openai_client import azure_openai_client
+from app.database import get_session_context
+from app.models.db_models import ConversationThread
 from app.utils.dice import DiceRoller
 
 if TYPE_CHECKING:
@@ -76,10 +80,84 @@ class DungeonMasterAgent(BaseAgent):
         )
 
     def _get_or_create_thread(self, session_id: str) -> list[dict[str, str]]:
-        """Return the message thread for a session, creating one if needed."""
-        if session_id not in self._threads:
-            self._threads[session_id] = []
+        """Return the message thread for a session, creating one if needed.
+
+        Checks the in-memory cache first, then the database. Creates a new
+        DB record if neither contains an existing thread.
+        """
+        if session_id in self._threads:
+            return self._threads[session_id]
+
+        # Try loading from database
+        try:
+            with get_session_context() as db:
+                thread_row = (
+                    db.query(ConversationThread)
+                    .filter(
+                        ConversationThread.session_id == session_id,
+                        ConversationThread.agent_name == "DM",
+                    )
+                    .first()
+                )
+                if thread_row:
+                    self._threads[session_id] = list(thread_row.messages or [])
+                    return self._threads[session_id]
+
+                # Not in DB either -- create a new record
+                new_thread = ConversationThread(
+                    id=str(uuid.uuid4()),
+                    session_id=session_id,
+                    agent_name="DM",
+                    messages=[],
+                )
+                db.add(new_thread)
+                db.commit()
+        except Exception as e:
+            logger.warning(
+                "Failed to load/create thread from DB for session %s: %s",
+                session_id,
+                e,
+            )
+
+        self._threads[session_id] = []
         return self._threads[session_id]
+
+    def _persist_thread(self, session_id: str) -> None:
+        """Persist the current thread messages to the database."""
+        if session_id not in self._threads:
+            return
+        try:
+            with get_session_context() as db:
+                thread = (
+                    db.query(ConversationThread)
+                    .filter(
+                        ConversationThread.session_id == session_id,
+                        ConversationThread.agent_name == "DM",
+                    )
+                    .first()
+                )
+                if thread:
+                    thread.messages = list(self._threads[session_id])
+                    db.commit()
+                else:
+                    # Row was deleted externally — recreate it
+                    new_thread = ConversationThread(
+                        id=str(uuid.uuid4()),
+                        session_id=session_id,
+                        agent_name="DM",
+                        messages=list(self._threads[session_id]),
+                        created_at=datetime.now(UTC),
+                        updated_at=datetime.now(UTC),
+                    )
+                    db.add(new_thread)
+                    db.commit()
+                    logger.info(
+                        "Recreated deleted thread for session %s", session_id
+                    )
+        except Exception as e:
+            logger.warning(
+                "Failed to persist thread for session %s: %s", session_id, e
+            )
 
     def _summarise_history(self, messages: list[dict[str, str]]) -> str:
         """Create a brief summary of older conversation messages."""
@@ -160,6 +238,7 @@ class DungeonMasterAgent(BaseAgent):
             thread.append(
                 {"role": "assistant", "content": result.get("message", "")}
             )
+            self._persist_thread(session_id)
             return result
 
         try:
@@ -191,6 +270,7 @@ class DungeonMasterAgent(BaseAgent):
             thread.append({"role": "assistant", "content": ai_response})
 
             logger.info("DM received Azure OpenAI response successfully.")
+            self._persist_thread(session_id)
             # Structure the response in the expected format
             return {
                 "message": ai_response,
@@ -209,6 +289,7 @@ class DungeonMasterAgent(BaseAgent):
             thread.append(
                 {"role": "assistant", "content": result.get("message", "")}
             )
+            self._persist_thread(session_id)
             return result
 
     async def process_input_stream(
@@ -269,6 +350,8 @@ class DungeonMasterAgent(BaseAgent):
             thread.append({"role": "user", "content": user_message})
             if full_response:
                 thread.append({"role": "assistant", "content": full_response})
+
+            self._persist_thread(session_id)
 
         except Exception as e:
             logger.error("Error in streaming processing: %s", str(e))

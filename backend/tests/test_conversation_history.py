@@ -6,16 +6,22 @@ Verifies that:
 - Sliding window limits messages sent to the API
 - Session summary is generated when history exceeds the limit
 - Different session IDs get different threads
+- Threads persist to and restore from the database
 """
 
 from __future__ import annotations
 
 from collections.abc import Generator
+from contextlib import contextmanager
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from app.agents.dungeon_master_agent import DungeonMasterAgent
+from app.database import Base
+from app.models.db_models import ConversationThread
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 
 @pytest.fixture
@@ -38,16 +44,19 @@ def _mock_azure_deps() -> Generator[tuple[Any, Any], None, None]:
 @pytest.fixture
 def dm_agent(
     _mock_azure_deps: tuple[Any, Any],
-) -> DungeonMasterAgent:
+) -> Generator[DungeonMasterAgent, None, None]:
     """Create a DungeonMasterAgent with mocked Azure clients."""
     _, mock_azure = _mock_azure_deps
     import app.agents.dungeon_master_agent as dm_mod
 
     dm_mod._dungeon_master = None
-    agent = dm_mod.DungeonMasterAgent()
-    agent._fallback_mode = False
-    agent.azure_client = mock_azure
-    return agent
+    # Patch get_session_context for the agent's entire lifetime so that
+    # _get_or_create_thread and _persist_thread never touch a real database.
+    with patch("app.agents.dungeon_master_agent.get_session_context"):
+        agent = dm_mod.DungeonMasterAgent()
+        agent._fallback_mode = False
+        agent.azure_client = mock_azure
+        yield agent
 
 
 class TestThreadPersistence:
@@ -254,3 +263,166 @@ class TestFallbackModeHistory:
 
         thread = dm_agent._get_or_create_thread("fallback-test")
         assert len(thread) == 4
+
+
+# ---------------------------------------------------------------------------
+# Database persistence tests
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture
+def _in_memory_db() -> Generator[sessionmaker, None, None]:
+    """Create an in-memory SQLite database with all tables."""
+    engine = create_engine("sqlite:///:memory:")
+    Base.metadata.create_all(bind=engine)
+    session_factory = sessionmaker(bind=engine)
+    yield session_factory
+    engine.dispose()
+
+
+@pytest.fixture
+def _patch_db_session(
+    _in_memory_db: sessionmaker,
+) -> Generator[None, None, None]:
+    """Patch get_session_context to use the in-memory database."""
+
+    @contextmanager
+    def _fake_session_context() -> Generator:
+        session = _in_memory_db()
+        try:
+            yield session
+        finally:
+            session.close()
+
+    with patch(
+        "app.agents.dungeon_master_agent.get_session_context",
+        _fake_session_context,
+    ):
+        yield
+
+
+@pytest.fixture
+def dm_agent_with_db(
+    _mock_azure_deps: tuple[Any, Any],
+    _patch_db_session: None,
+) -> DungeonMasterAgent:
+    """Create a DungeonMasterAgent backed by the in-memory DB."""
+    _, mock_azure = _mock_azure_deps
+    import app.agents.dungeon_master_agent as dm_mod
+
+    dm_mod._dungeon_master = None
+    agent = dm_mod.DungeonMasterAgent()
+    agent._fallback_mode = False
+    agent.azure_client = mock_azure
+    return agent
+
+
+class TestDatabaseThreadPersistence:
+    """Test that conversation threads persist to the database."""
+
+    def test_get_or_create_thread_creates_db_record(
+        self,
+        dm_agent_with_db: DungeonMasterAgent,
+        _in_memory_db: sessionmaker,
+    ) -> None:
+        """Creating a thread should insert a row in conversation_threads."""
+        dm_agent_with_db._get_or_create_thread("db-session-1")
+
+        session = _in_memory_db()
+        row = (
+            session.query(ConversationThread)
+            .filter(ConversationThread.session_id == "db-session-1")
+            .first()
+        )
+        session.close()
+        assert row is not None
+        assert row.agent_name == "DM"
+        assert row.messages == []
+
+    @pytest.mark.asyncio
+    async def test_persist_thread_writes_messages_to_db(
+        self,
+        dm_agent_with_db: DungeonMasterAgent,
+        _in_memory_db: sessionmaker,
+    ) -> None:
+        """After process_input, messages should be persisted to the DB."""
+        context = {"session_id": "persist-test"}
+        await dm_agent_with_db.process_input("Hello DM", context)
+
+        session = _in_memory_db()
+        row = (
+            session.query(ConversationThread)
+            .filter(ConversationThread.session_id == "persist-test")
+            .first()
+        )
+        session.close()
+
+        assert row is not None
+        assert len(row.messages) == 2
+        assert row.messages[0]["role"] == "user"
+        assert row.messages[1]["role"] == "assistant"
+
+    @pytest.mark.asyncio
+    async def test_thread_survives_agent_re_instantiation(
+        self,
+        _mock_azure_deps: tuple[Any, Any],
+        _patch_db_session: None,
+        _in_memory_db: sessionmaker,
+    ) -> None:
+        """Threads should survive agent re-instantiation."""
+        import app.agents.dungeon_master_agent as dm_mod
+
+        _, mock_azure = _mock_azure_deps
+
+        # Create first agent and process input
+        dm_mod._dungeon_master = None
+        agent1 = dm_mod.DungeonMasterAgent()
+        agent1._fallback_mode = False
+        agent1.azure_client = mock_azure
+
+        context = {"session_id": "survive-test"}
+        await agent1.process_input("I enter the dungeon", context)
+
+        # Destroy the agent, wiping its in-memory cache
+        del agent1
+
+        # Create a second agent — it should recover the thread from DB
+        dm_mod._dungeon_master = None
+        agent2 = dm_mod.DungeonMasterAgent()
+        agent2._fallback_mode = False
+        agent2.azure_client = mock_azure
+
+        thread = agent2._get_or_create_thread("survive-test")
+        assert len(thread) == 2
+        assert "dungeon" in thread[0]["content"].lower()
+
+    def test_persist_thread_is_noop_when_session_missing(
+        self,
+        dm_agent_with_db: DungeonMasterAgent,
+    ) -> None:
+        """_persist_thread should not raise for an unknown session."""
+        # Should not raise
+        dm_agent_with_db._persist_thread("nonexistent-session")
+
+    @pytest.mark.asyncio
+    async def test_fallback_mode_also_persists(
+        self,
+        dm_agent_with_db: DungeonMasterAgent,
+        _in_memory_db: sessionmaker,
+    ) -> None:
+        """Fallback-mode responses should also be persisted."""
+        dm_agent_with_db._fallback_mode = True
+        context = {"session_id": "fallback-persist"}
+
+        await dm_agent_with_db.process_input("I explore", context)
+
+        session = _in_memory_db()
+        row = (
+            session.query(ConversationThread)
+            .filter(ConversationThread.session_id == "fallback-persist")
+            .first()
+        )
+        session.close()
+
+        assert row is not None
+        assert len(row.messages) == 2
