@@ -280,6 +280,7 @@ jobs:
               "AZURE_OPENAI_CHAT_DEPLOYMENT=${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT || 'gpt-4o-mini' }}" \
               "AZURE_OPENAI_EMBEDDING_DEPLOYMENT=${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT || 'text-embedding-ada-002' }}" \
               "AZURE_OPENAI_DALLE_DEPLOYMENT=${{ vars.AZURE_OPENAI_DALLE_DEPLOYMENT || 'gpt-image-1-mini' }}" \
+              "AZURE_STORAGE_ACCOUNT_NAME=$STORAGE_ACCOUNT_NAME" \
               "STORAGE_CONNECTION_STRING=$STORAGE_CONNECTION_STRING" \
               "APP_HOST=0.0.0.0" \
               "APP_PORT=8000" \

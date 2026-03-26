@@ -123,7 +123,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/d2/29/6533c317b74f707ea28f8d633734dbda2119bbadfc61b2f3640ba835d0f7/alembic-1.18.4-py3-none-any.whl", hash = "sha256:a5ed4adcf6d8a4cb575f3d759f071b03cd6e5c7618eb796cb52497be25bfe19a", size = 263893, upload-time = "2026-02-10T16:00:49.997Z" },
 ]
 
-
 [[package]]
 name = "annotated-doc"
 version = "0.0.4"
@@ -1633,6 +1632,7 @@ dependencies = [
     { name = "azure-ai-inference" },
     { name = "azure-ai-projects" },
     { name = "azure-identity" },
+    { name = "azure-storage-blob" },
     { name = "cryptography" },
     { name = "fastapi" },
     { name = "openai" },
@@ -1674,6 +1674,7 @@ requires-dist = [
     { name = "azure-ai-inference", specifier = ">=1.0.0b1" },
     { name = "azure-ai-projects", specifier = ">=1.0.0,<2.0.0" },
     { name = "azure-identity", specifier = ">=1.13.0" },
+    { name = "azure-storage-blob", specifier = ">=12.0.0" },
     { name = "cryptography", specifier = ">=46.0.5" },
     { name = "fastapi", specifier = ">=0.100.0" },
     { name = "openai", specifier = ">=1.0,<2.0" },

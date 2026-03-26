@@ -43,6 +43,7 @@ class Settings(BaseSettings):
     content_safety_api_key: str = ""
 
     # Storage Settings
+    azure_storage_account_name: str = ""
     storage_connection_string: str = ""
 
     # CORS Settings
