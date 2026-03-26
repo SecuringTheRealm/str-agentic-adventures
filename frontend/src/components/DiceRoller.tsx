@@ -1,6 +1,6 @@
 import type React from "react";
 import { useCallback, useEffect, useId, useState } from "react";
-import { apiClient } from "../services/api";
+import { rollDice as rollDiceApi } from "../services/api";
 import type { DiceResult } from "../types";
 import styles from "./DiceRoller.module.css";
 
@@ -106,25 +106,9 @@ const DiceRoller: React.FC<DiceRollerProps> = ({
           websocket.send(JSON.stringify(message));
           return; // WebSocket will handle the response
         }
-        // Fallback to direct API call
-        const endpoint =
-          characterId && skill
-            ? "/game/dice/roll-with-character"
-            : "/game/dice/roll";
-
-        const requestBody =
-          characterId && skill
-            ? {
-                notation: diceNotation,
-                character_id: characterId,
-                skill: skill,
-              }
-            : {
-                notation: diceNotation,
-              };
-
-        const response = await apiClient.post(endpoint, requestBody);
-        result = response.data;
+        // Fallback to direct API call via openapi-fetch client
+        const response = await rollDiceApi(diceNotation, characterId, skill);
+        result = response as DiceResult;
 
         // Add timestamp if not present
         if (!result.timestamp) {

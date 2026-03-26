@@ -6,8 +6,8 @@
 - Real credentials: local `.env` (gitignored), GitHub secrets, or Azure Key Vault only.
 
 ## Critical Gotchas
-- `src/api-client/` is auto-generated and NOT in git. Run `cd frontend && bun run generate:api` after cloning (requires Java + running backend).
-- After backend API schema changes, regenerate the client and restart the frontend dev server.
+- `src/api-client/schema.d.ts` is auto-generated and NOT in git. Run `cd frontend && bun run generate:api` after cloning (requires running backend). No Java needed — uses `openapi-typescript`.
+- After backend API schema changes, regenerate the client (`bun run generate:api`) and restart the frontend dev server.
 - Use SQLAlchemy ORM for all DB interactions — never raw sqlite3/psycopg2.
 - Alembic migrations run automatically on startup.
 
