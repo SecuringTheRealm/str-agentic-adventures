@@ -1,0 +1,131 @@
+.mobileLayout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.tabBar {
+  display: flex;
+  gap: 0;
+  background: var(--color-fantasy-primary-95);
+  border-bottom: 1px solid var(--color-accent-gold);
+  flex-shrink: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tabButton {
+  flex: 1;
+  min-height: 44px;
+  min-width: 44px;
+  font-family: "Cinzel", serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--color-text-muted-warm);
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease;
+  padding: 8px 4px;
+}
+
+.tabButton:hover {
+  color: var(--color-text-warm);
+}
+
+.tabButtonActive {
+  color: var(--color-accent-gold);
+  border-bottom-color: var(--color-accent-gold);
+}
+
+.tabContent {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+}
+
+.tabPanel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.fab {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg,
+    var(--color-wood-dark),
+    var(--color-wood-light)
+  );
+  color: white;
+  border: 2px solid var(--color-accent-gold);
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  z-index: 50;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.fab:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+}
+
+.fab:active {
+  transform: scale(0.95);
+}
+
+.visualsPanel {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.visualsPanel h4 {
+  color: var(--color-accent-gold);
+  font-family: "Cinzel", serif;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tabButton {
+    transition: none;
+  }
+
+  .fab {
+    transition: none;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+  .tabBar {
+    padding: 0 env(safe-area-inset-left) 0 env(safe-area-inset-right);
+  }
+
+  .tabButton {
+    min-height: 36px;
+    font-size: 0.75rem;
+  }
+
+  .fab {
+    bottom: 12px;
+    right: 12px;
+    width: 44px;
+    height: 44px;
+    font-size: 1.2rem;
+  }
+}

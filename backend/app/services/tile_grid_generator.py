@@ -120,7 +120,7 @@ class TileGridGenerator:
         seed:
             Optional RNG seed for deterministic generation.
         """
-        rng = random.Random(seed)
+        rng = random.Random(seed)  # noqa: S311
         terrain = str(environment_context.get("terrain", "dungeon")).lower()
         features: list[str] = environment_context.get("features", [])
         hazards: list[str] = environment_context.get("hazards", [])

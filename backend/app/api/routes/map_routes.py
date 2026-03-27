@@ -72,13 +72,12 @@ async def generate_structured_battle_map(
         if body.combat_context:
             context["combat"] = body.combat_context
 
-        map_data = _generator.generate_grid(
+        return _generator.generate_grid(
             width=width,
             height=height,
             environment_context=context,
             seed=body.seed,
         )
-        return map_data
 
     except Exception as e:
         logger.exception("Failed to generate structured battle map: %s", e)
