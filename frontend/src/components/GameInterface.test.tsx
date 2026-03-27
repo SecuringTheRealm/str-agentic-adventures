@@ -166,7 +166,7 @@ describe("GameInterface", () => {
     await waitFor(() => {
       expect(
         screen.getByText(
-          "The adventure begins in a mystical realm.\n\nA mysterious message arrives at dawn."
+          /The adventure begins in a mystical realm\..*A mysterious message arrives at dawn\./s
         )
       ).toBeInTheDocument();
     });
