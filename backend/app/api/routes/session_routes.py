@@ -453,3 +453,99 @@ def generate_available_actions(session_type: str) -> list[str]:
         ],
     }
     return actions.get(session_type, ["Take an action"])
+
+
+# ---------------------------------------------------------------------------
+# Multiplayer Session Management Endpoints
+# ---------------------------------------------------------------------------
+
+
+@router.post("/session/create", response_model=dict[str, Any])
+async def create_multiplayer_session(body: dict[str, Any]) -> dict[str, Any]:
+    """Create a new multiplayer game session for a campaign."""
+    from app.services.session_manager import session_manager
+
+    campaign_id = body.get("campaign_id")
+    if not campaign_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="campaign_id is required",
+        )
+    try:
+        return session_manager.create_session(campaign_id)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create session: {e}",
+        ) from e
+
+
+@router.get("/session/{session_id}", response_model=dict[str, Any])
+async def get_multiplayer_session(session_id: str) -> dict[str, Any]:
+    """Get session details including participants."""
+    from app.services.session_manager import session_manager
+
+    result = session_manager.get_session(session_id)
+    if not result:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Session {session_id} not found",
+        )
+    return result
+
+
+@router.get("/session/{session_id}/participants", response_model=list[dict[str, Any]])
+async def list_session_participants(session_id: str) -> list[dict[str, Any]]:
+    """List participants in a session."""
+    from app.services.session_manager import session_manager
+
+    return session_manager.get_participants(session_id)
+
+
+@router.post("/session/{session_id}/turn/advance", response_model=dict[str, Any])
+async def advance_session_turn(session_id: str) -> dict[str, Any]:
+    """Advance to the next turn in a session."""
+    from app.api.websocket_routes import broadcast_turn_advance
+    from app.services.session_manager import session_manager
+
+    try:
+        next_character_id = session_manager.advance_turn(session_id)
+        # Look up participant name for the broadcast
+        participants = session_manager.get_participants(session_id)
+        player_name = "Unknown"
+        campaign_id: str | None = None
+        for p in participants:
+            if p["character_id"] == next_character_id:
+                player_name = p["player_name"]
+                break
+
+        session_data = session_manager.get_session(session_id)
+        if session_data:
+            campaign_id = session_data.get("campaign_id")
+
+        if campaign_id:
+            await broadcast_turn_advance(campaign_id, next_character_id, player_name)
+
+        return {
+            "character_id": next_character_id,
+            "player_name": player_name,
+        }
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        ) from e
+
+
+@router.post("/session/{session_id}/end", response_model=dict[str, Any])
+async def end_multiplayer_session(session_id: str) -> dict[str, Any]:
+    """End a multiplayer game session."""
+    from app.services.session_manager import session_manager
+
+    try:
+        return session_manager.end_session(session_id)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
+        ) from e
