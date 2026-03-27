@@ -88,7 +88,7 @@ beforeEach(() => {
 });
 
 const createMockMapData = (
-  overrides?: Partial<BattleMapData>,
+  overrides?: Partial<BattleMapData>
 ): BattleMapData => ({
   id: "test-map",
   width: 3,
@@ -195,9 +195,7 @@ describe("TileGridRenderer", () => {
     const onTokenMove = vi.fn();
     const mapData = createMockMapData();
 
-    render(
-      <TileGridRenderer mapData={mapData} onTokenMove={onTokenMove} />,
-    );
+    render(<TileGridRenderer mapData={mapData} onTokenMove={onTokenMove} />);
 
     const canvas = screen.getByTestId("tile-grid-canvas");
 
@@ -227,9 +225,7 @@ describe("TileGridRenderer", () => {
     const onTokenMove = vi.fn();
     const mapData = createMockMapData();
 
-    render(
-      <TileGridRenderer mapData={mapData} onTokenMove={onTokenMove} />,
-    );
+    render(<TileGridRenderer mapData={mapData} onTokenMove={onTokenMove} />);
 
     const canvas = screen.getByTestId("tile-grid-canvas");
 

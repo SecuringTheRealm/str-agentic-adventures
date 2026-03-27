@@ -365,6 +365,8 @@ async def handle_websocket_message(
             await handle_token_move(message, websocket, campaign_id)
         elif message_type == "map_update":
             await handle_map_update(message, websocket, campaign_id)
+        elif message_type == "action_request":
+            await handle_action_request(message, websocket, campaign_id)
         elif message_type == "ping":
             await manager.send_personal_message(
                 json.dumps({"type": "pong", "timestamp": message.get("timestamp")}),
@@ -569,6 +571,52 @@ async def broadcast_character_update(
         "character_id": character_id,
         "data": update_data,
         "timestamp": datetime.datetime.now().isoformat(),
+    }
+    await manager.send_campaign_message(json.dumps(response), campaign_id)
+
+
+async def handle_action_request(
+    message: dict[str, Any], websocket: WebSocket, campaign_id: str | None = None
+) -> None:
+    """Handle a player action request during their turn."""
+    try:
+        player_info = manager.get_player_info(websocket)
+        player_name = (
+            player_info.player_name if player_info else message.get("player_name", "Player")
+        )
+        character_id = (
+            player_info.character_id if player_info else message.get("character_id")
+        )
+        action = message.get("action", "")
+
+        response: dict[str, Any] = {
+            "type": "action_request",
+            "player_name": player_name,
+            "character_id": character_id,
+            "action": action,
+        }
+
+        if campaign_id:
+            await manager.send_campaign_message(json.dumps(response), campaign_id)
+        else:
+            await manager.send_personal_message(json.dumps(response), websocket)
+
+    except Exception as e:
+        logger.error("Error handling action request: %s", str(e))
+        await manager.send_personal_message(
+            json.dumps({"type": "error", "message": "Failed to process action request"}),
+            websocket,
+        )
+
+
+async def broadcast_turn_advance(
+    campaign_id: str, character_id: str, player_name: str
+) -> None:
+    """Broadcast a turn advance notification to all players in a campaign."""
+    response: dict[str, Any] = {
+        "type": "turn_advance",
+        "character_id": character_id,
+        "player_name": player_name,
     }
     await manager.send_campaign_message(json.dumps(response), campaign_id)
 

@@ -19,6 +19,7 @@ import ChatBox from "./ChatBox";
 import DiceRoller from "./DiceRoller";
 import styles from "./GameInterface.module.css";
 import ImageDisplay from "./ImageDisplay";
+import MobileGameLayout from "./MobileGameLayout";
 
 interface GameInterfaceProps {
   character: Character;
@@ -65,6 +66,8 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
   character,
   campaign,
 }) => {
+  const isMobile = useMediaQuery("(max-width: 768px)");
+
   const [messages, setMessages] = useState<
     Array<{ text: string; sender: "player" | "dm" }>
   >([]);
@@ -678,6 +681,52 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
     }
   };
 
+  const handleDiceRoll = useCallback(
+    (result: DiceResult) => {
+      if (!isConnected) {
+        const diceMessage = `You rolled ${result.notation}: ${result.total}`;
+        setMessages((prev) => [
+          ...prev,
+          { text: diceMessage, sender: "player" },
+        ]);
+      }
+    },
+    [isConnected],
+  );
+
+  if (isMobile) {
+    return (
+      <div className={styles.gameInterface} data-testid="game-interface">
+        <AutoSaveToast lastAutoSave={lastAutoSave} />
+        <MobileGameLayout
+          character={character}
+          campaign={campaign}
+          messages={messages}
+          onSendMessage={handlePlayerInput}
+          isLoading={loading}
+          streamingMessage={isStreaming ? streamingMessage : undefined}
+          suggestedActions={suggestedActions}
+          onSuggestedAction={handlePlayerInput}
+          currentImage={currentImage}
+          battleMapUrl={battleMapUrl}
+          combatActive={combatActive}
+          imageLoading={imageLoading}
+          imagesRemaining={imagesRemaining}
+          onGeneratePortrait={handleGenerateCharacterPortrait}
+          onGenerateScene={handleGenerateSceneIllustration}
+          onGenerateBattleMap={handleGenerateBattleMap}
+          diceRollerProps={{
+            characterId: character.id,
+            playerName: character.name,
+            websocket: socket,
+            webSocketDiceResult: webSocketDiceResult,
+            onRoll: handleDiceRoll,
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className={styles.gameInterface} data-testid="game-interface">
       <AutoSaveToast lastAutoSave={lastAutoSave} />
@@ -689,16 +738,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
             playerName={character.name}
             websocket={socket}
             webSocketDiceResult={webSocketDiceResult}
-            onRoll={(result) => {
-              // Add dice roll to local chat if not using WebSocket
-              if (!isConnected) {
-                const diceMessage = `You rolled ${result.notation}: ${result.total}`;
-                setMessages((prev) => [
-                  ...prev,
-                  { text: diceMessage, sender: "player" },
-                ]);
-              }
-            }}
+            onRoll={handleDiceRoll}
           />
         </aside>
 

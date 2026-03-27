@@ -1,7 +1,7 @@
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getTileAsset, TILE_RENDER_SIZE } from "@/data/tileMapping";
-import type { BattleMapData, MapToken, TeamType } from "@/types/battleMap";
+import type { BattleMapData, TeamType } from "@/types/battleMap";
 
 interface TileGridRendererProps {
   mapData: BattleMapData;
@@ -107,7 +107,7 @@ const TileGridRenderer: React.FC<TileGridRendererProps> = ({
               // Fallback: draw a colored rect
               ctx.fillStyle = tile.passable ? "#4a4a5e" : "#2a2a3e";
               ctx.fillRect(x, y, tileSize, tileSize);
-            }),
+            })
         );
       }
     }
@@ -127,7 +127,7 @@ const TileGridRenderer: React.FC<TileGridRendererProps> = ({
           .catch(() => {
             ctx.fillStyle = "#8b5e3c";
             ctx.fillRect(x + 4, y + 4, tileSize - 8, tileSize - 8);
-          }),
+          })
       );
     }
     await Promise.all(entityPromises);
@@ -157,7 +157,7 @@ const TileGridRenderer: React.FC<TileGridRendererProps> = ({
           centerY,
           radius * tileSize,
           dir - halfAngle,
-          dir + halfAngle,
+          dir + halfAngle
         );
         ctx.closePath();
         ctx.fillStyle = colour;
@@ -191,7 +191,8 @@ const TileGridRenderer: React.FC<TileGridRendererProps> = ({
       const cy = token.y * tileSize + tileSize / 2;
       const tokenRadius = tileSize * 0.38;
       const teamColor = TEAM_COLORS[token.team] ?? TEAM_COLORS.neutral;
-      const fillColor = TEAM_FILL_COLORS[token.team] ?? TEAM_FILL_COLORS.neutral;
+      const fillColor =
+        TEAM_FILL_COLORS[token.team] ?? TEAM_FILL_COLORS.neutral;
 
       // Selected highlight ring
       if (token.id === selectedTokenId) {
@@ -257,7 +258,7 @@ const TileGridRenderer: React.FC<TileGridRendererProps> = ({
       ctx.lineTo(mapPixelWidth, y);
       ctx.stroke();
     }
-  }, [mapData, mapPixelWidth, mapPixelHeight, tileSize, selectedTokenId]);
+  }, [mapData, mapPixelWidth, mapPixelHeight, selectedTokenId]);
 
   useEffect(() => {
     renderCanvas();
@@ -276,7 +277,7 @@ const TileGridRenderer: React.FC<TileGridRendererProps> = ({
 
       // Check if a token was clicked
       const clickedToken = mapData.tokens.find(
-        (t) => t.x === gridX && t.y === gridY,
+        (t) => t.x === gridX && t.y === gridY
       );
 
       if (clickedToken) {
@@ -289,7 +290,7 @@ const TileGridRenderer: React.FC<TileGridRendererProps> = ({
         setSelectedTokenId(null);
       }
     },
-    [mapData.tokens, onTokenMove, scale, selectedTokenId, tileSize],
+    [mapData.tokens, onTokenMove, scale, selectedTokenId]
   );
 
   return (

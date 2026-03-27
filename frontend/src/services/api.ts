@@ -11,7 +11,6 @@
  * without requiring Java or generated runtime code.
  */
 import { api } from "../api-client/client";
-import type { BattleMapData } from "../types/battleMap";
 // Import WebSocket client for unified SDK
 import {
   WebSocketClient,
@@ -19,6 +18,7 @@ import {
   type WebSocketMessage,
   websocketClient,
 } from "../api-client/websocketClient";
+import type { BattleMapData } from "../types/battleMap";
 
 // Export WebSocket client for unified SDK access
 export const wsClient = websocketClient;
@@ -327,7 +327,7 @@ export const generateImage = async (imageRequest: Record<string, unknown>) => {
 };
 
 export const generateBattleMap = async (
-  mapRequest: Record<string, unknown>,
+  mapRequest: Record<string, unknown>
 ) => {
   const { data, error } = await api.POST("/game/battle-map", {
     body: mapRequest as never,
@@ -338,11 +338,14 @@ export const generateBattleMap = async (
 
 export const generateStructuredBattleMap = async (
   environment: object,
-  combatContext?: object,
+  combatContext?: object
 ): Promise<BattleMapData> => {
-  const { data, error } = await api.POST("/game/battle-map/structured" as never, {
-    body: { environment, combat_context: combatContext } as never,
-  });
+  const { data, error } = await api.POST(
+    "/game/battle-map/structured" as never,
+    {
+      body: { environment, combat_context: combatContext } as never,
+    }
+  );
   if (error) throw error;
   return data as BattleMapData;
 };

@@ -80,7 +80,7 @@ describe("BattleMap", () => {
     // Click to expand
     await userEvent.click(button);
     expect(
-      screen.getByRole("button", { name: "Minimize" }),
+      screen.getByRole("button", { name: "Minimize" })
     ).toBeInTheDocument();
 
     // Click to minimize
@@ -120,13 +120,13 @@ describe("BattleMap", () => {
 
     expect(container.querySelector(`.${styles.battleMap}`)).toBeInTheDocument();
     expect(
-      container.querySelector(`.${styles.battleMapHeader}`),
+      container.querySelector(`.${styles.battleMapHeader}`)
     ).toBeInTheDocument();
     expect(
-      container.querySelector(`.${styles.mapContainer}`),
+      container.querySelector(`.${styles.mapContainer}`)
     ).toBeInTheDocument();
     expect(
-      container.querySelector(`.${styles.toggleButton}`),
+      container.querySelector(`.${styles.toggleButton}`)
     ).toBeInTheDocument();
   });
 
@@ -135,10 +135,10 @@ describe("BattleMap", () => {
 
     expect(container.querySelector(`.${styles.battleMap}`)).toBeInTheDocument();
     expect(
-      container.querySelector(`.${styles.mapContainer}`),
+      container.querySelector(`.${styles.mapContainer}`)
     ).toBeInTheDocument();
     expect(
-      container.querySelector(`.${styles.emptyMapState}`),
+      container.querySelector(`.${styles.emptyMapState}`)
     ).toBeInTheDocument();
   });
 
@@ -170,7 +170,7 @@ describe("BattleMap", () => {
     render(<BattleMap mapUrl="test.jpg" mapData={mockMapData} />);
 
     expect(
-      screen.getByRole("button", { name: "Image View" }),
+      screen.getByRole("button", { name: "Image View" })
     ).toBeInTheDocument();
   });
 
@@ -178,10 +178,10 @@ describe("BattleMap", () => {
     render(<BattleMap mapUrl="test.jpg" />);
 
     expect(
-      screen.queryByRole("button", { name: "Image View" }),
+      screen.queryByRole("button", { name: "Image View" })
     ).not.toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: "Tile View" }),
+      screen.queryByRole("button", { name: "Tile View" })
     ).not.toBeInTheDocument();
   });
 
@@ -192,16 +192,12 @@ describe("BattleMap", () => {
     expect(screen.getByTestId("tile-grid-renderer")).toBeInTheDocument();
 
     // Switch to image view
-    await userEvent.click(
-      screen.getByRole("button", { name: "Image View" }),
-    );
+    await userEvent.click(screen.getByRole("button", { name: "Image View" }));
     expect(screen.queryByTestId("tile-grid-renderer")).not.toBeInTheDocument();
     expect(screen.getByRole("img")).toBeInTheDocument();
 
     // Switch back to tile view
-    await userEvent.click(
-      screen.getByRole("button", { name: "Tile View" }),
-    );
+    await userEvent.click(screen.getByRole("button", { name: "Tile View" }));
     expect(screen.getByTestId("tile-grid-renderer")).toBeInTheDocument();
     expect(screen.queryByRole("img")).not.toBeInTheDocument();
   });
