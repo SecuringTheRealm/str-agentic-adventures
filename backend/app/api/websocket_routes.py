@@ -15,15 +15,45 @@ from fastapi.websockets import WebSocketState
 logger = logging.getLogger(__name__)
 
 
+# Player info associated with a WebSocket connection
+class PlayerConnection:
+    """Metadata for a connected player."""
+
+    def __init__(
+        self,
+        websocket: WebSocket,
+        player_name: str | None = None,
+        character_id: str | None = None,
+    ) -> None:
+        self.websocket = websocket
+        self.player_name = player_name
+        self.character_id = character_id
+
+
 # WebSocket connection manager
 class ConnectionManager:
     def __init__(self) -> None:
         self.active_connections: list[WebSocket] = []
         self.campaign_connections: dict[str, list[WebSocket]] = {}
+        # Player tracking: websocket -> PlayerConnection
+        self.player_connections: dict[WebSocket, PlayerConnection] = {}
 
-    async def connect(self, websocket: WebSocket, campaign_id: str = None) -> None:
+    async def connect(
+        self,
+        websocket: WebSocket,
+        campaign_id: str | None = None,
+        player_name: str | None = None,
+        character_id: str | None = None,
+    ) -> None:
         await websocket.accept()
         self.active_connections.append(websocket)
+
+        # Track player info
+        self.player_connections[websocket] = PlayerConnection(
+            websocket=websocket,
+            player_name=player_name,
+            character_id=character_id,
+        )
 
         if campaign_id:
             if campaign_id not in self.campaign_connections:
@@ -31,13 +61,18 @@ class ConnectionManager:
             self.campaign_connections[campaign_id].append(websocket)
 
         logger.info(
-            "WebSocket connected. Total connections: %d",
+            "WebSocket connected (player=%s, character=%s). Total connections: %d",
+            player_name,
+            character_id,
             len(self.active_connections),
         )
 
-    def disconnect(self, websocket: WebSocket, campaign_id: str = None) -> None:
+    def disconnect(self, websocket: WebSocket, campaign_id: str | None = None) -> None:
         if websocket in self.active_connections:
             self.active_connections.remove(websocket)
+
+        # Clean up player tracking
+        self.player_connections.pop(websocket, None)
 
         if campaign_id and campaign_id in self.campaign_connections:
             if websocket in self.campaign_connections[campaign_id]:
@@ -51,6 +86,20 @@ class ConnectionManager:
             "WebSocket disconnected. Total connections: %d",
             len(self.active_connections),
         )
+
+    def get_player_info(self, websocket: WebSocket) -> PlayerConnection | None:
+        """Get the player info for a WebSocket connection."""
+        return self.player_connections.get(websocket)
+
+    def get_campaign_players(self, campaign_id: str) -> list[PlayerConnection]:
+        """Get all player connections for a campaign."""
+        if campaign_id not in self.campaign_connections:
+            return []
+        return [
+            self.player_connections[ws]
+            for ws in self.campaign_connections[campaign_id]
+            if ws in self.player_connections
+        ]
 
     async def send_personal_message(self, message: str, websocket: WebSocket) -> None:
         if websocket.client_state == WebSocketState.CONNECTED:
