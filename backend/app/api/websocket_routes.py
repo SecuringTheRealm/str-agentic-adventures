@@ -171,9 +171,43 @@ async def chat_websocket(websocket: WebSocket, campaign_id: str) -> None:
 
 
 @router.websocket("/ws/{campaign_id}")
-async def campaign_websocket(websocket: WebSocket, campaign_id: str) -> None:
-    """WebSocket endpoint for campaign-specific real-time updates (non-chat)."""
-    await manager.connect(websocket, campaign_id)
+async def campaign_websocket(
+    websocket: WebSocket,
+    campaign_id: str,
+    player_name: str | None = None,
+    character_id: str | None = None,
+) -> None:
+    """WebSocket endpoint for campaign-specific real-time updates (non-chat).
+
+    Query params ``player_name`` and ``character_id`` are used for multiplayer
+    player tracking.
+    """
+    await manager.connect(
+        websocket, campaign_id, player_name=player_name, character_id=character_id
+    )
+
+    # Broadcast player_join to campaign and send current player_list to the newcomer
+    if player_name:
+        await manager.send_campaign_message(
+            json.dumps({
+                "type": "player_join",
+                "player_name": player_name,
+                "character_id": character_id,
+            }),
+            campaign_id,
+        )
+
+    # Send current player list to the newly connected client
+    players = [
+        {"player_name": pc.player_name, "character_id": pc.character_id}
+        for pc in manager.get_campaign_players(campaign_id)
+        if pc.player_name
+    ]
+    await manager.send_personal_message(
+        json.dumps({"type": "player_list", "players": players}),
+        websocket,
+    )
+
     try:
         while True:
             # Listen for messages from client
@@ -187,7 +221,20 @@ async def campaign_websocket(websocket: WebSocket, campaign_id: str) -> None:
                     websocket,
                 )
     except WebSocketDisconnect:
-        manager.disconnect(websocket, campaign_id)
+        # Broadcast player_leave before cleaning up
+        if player_name:
+            # Disconnect first so the leaving player doesn't get their own leave msg
+            manager.disconnect(websocket, campaign_id)
+            await manager.send_campaign_message(
+                json.dumps({
+                    "type": "player_leave",
+                    "player_name": player_name,
+                    "character_id": character_id,
+                }),
+                campaign_id,
+            )
+        else:
+            manager.disconnect(websocket, campaign_id)
         logger.info("Client disconnected from campaign %s", campaign_id)
 
 

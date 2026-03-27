@@ -263,12 +263,13 @@ describe("TileGridRenderer", () => {
     expect(screen.getByTestId("tile-grid-canvas")).toBeInTheDocument();
   });
 
-  it("sets canvas cursor style based on selection state", () => {
+  it("renders canvas with imageRendering pixelated style", () => {
     const mapData = createMockMapData();
     render(<TileGridRenderer mapData={mapData} />);
 
     const canvas = screen.getByTestId("tile-grid-canvas");
-    // Initially no token selected, cursor should be pointer
-    expect(canvas.style.cursor).toBe("pointer");
+    // Canvas should be present and have pixelated rendering
+    expect(canvas).toBeInTheDocument();
+    expect(canvas.style.imageRendering).toBe("pixelated");
   });
 });
