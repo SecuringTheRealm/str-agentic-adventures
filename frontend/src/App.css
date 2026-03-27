@@ -71,37 +71,3 @@
   ); /* Fantasy gradient background */
   min-height: calc(100vh - 80px);
 }
-
-.campaign-setup {
-  max-width: 1400px; /* Allow more space for campaign grid, but prevent excessive width on large screens */
-  margin: 0 auto;
-  background: rgba(15, 64, 79, 0.8); /* Semi-transparent primary color */
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-  border: 2px solid #e4bb1e; /* Gold border */
-}
-
-.campaign-setup h2 {
-  text-align: center;
-  color: #e4bb1e; /* Gold color for headings */
-  margin-bottom: 2rem;
-  font-family: "Cinzel", serif;
-  font-weight: 600;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-}
-
-/* Responsive adjustments for campaign setup */
-@media (max-width: 768px) {
-  .campaign-setup {
-    margin: 0 1rem;
-    padding: 1rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .campaign-setup {
-    margin: 0 0.5rem;
-    padding: 0.75rem;
-  }
-}
