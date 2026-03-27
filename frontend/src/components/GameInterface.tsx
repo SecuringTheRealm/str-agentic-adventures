@@ -75,7 +75,9 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
   const [imageLoading, setImageLoading] = useState<boolean>(false);
   const [currentImage, setCurrentImage] = useState<string | null>(null);
   const [battleMapUrl, setBattleMapUrl] = useState<string | null>(null);
-  const [battleMapData, setBattleMapData] = useState<BattleMapData | null>(null);
+  const [battleMapData, setBattleMapData] = useState<BattleMapData | null>(
+    null
+  );
   const [combatActive, setCombatActive] = useState<boolean>(false);
   const [streamingMessage, setStreamingMessage] = useState<string>("");
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
@@ -195,11 +197,11 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
           // Attempt to load structured battle map data
           generateStructuredBattleMap(
             { location: "dungeon", terrain: "stone", size: "medium" },
-            message.combat_context as object | undefined,
+            message.combat_context as object | undefined
           )
             .then((data) => setBattleMapData(data))
             .catch((err) =>
-              console.warn("Structured battle map unavailable:", err),
+              console.warn("Structured battle map unavailable:", err)
             );
         } else if (message.update_type === "combat_end") {
           setCombatActive(false);
@@ -209,7 +211,12 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 
       case "token_move":
         // Update token position from server
-        if (battleMapData && message.token_id && message.x != null && message.y != null) {
+        if (
+          battleMapData &&
+          message.token_id &&
+          message.x != null &&
+          message.y != null
+        ) {
           setBattleMapData((prev) => {
             if (!prev) return prev;
             return {
@@ -217,7 +224,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
               tokens: prev.tokens.map((t) =>
                 t.id === message.token_id
                   ? { ...t, x: message.x as number, y: message.y as number }
-                  : t,
+                  : t
               ),
             };
           });
@@ -493,7 +500,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
       console.error("Error generating battle map:", error);
       const errorMessage = extractErrorMessage(
         error,
-        "Failed to generate battle map. Please try again.",
+        "Failed to generate battle map. Please try again."
       );
       setMessages((prev) => [
         ...prev,
@@ -515,7 +522,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
         return {
           ...prev,
           tokens: prev.tokens.map((t) =>
-            t.id === tokenId ? { ...t, x, y } : t,
+            t.id === tokenId ? { ...t, x, y } : t
           ),
         };
       });
@@ -530,14 +537,14 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
               x,
               y,
               campaign_id: campaign.id,
-            }),
+            })
           );
         } catch (err) {
           console.error("Failed to send token move:", err);
         }
       }
     },
-    [campaign.id, isConnected, socket],
+    [campaign.id, isConnected, socket]
   );
 
   const handlePlayerInput = async (message: string) => {
@@ -691,7 +698,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
         ]);
       }
     },
-    [isConnected],
+    [isConnected]
   );
 
   if (isMobile) {

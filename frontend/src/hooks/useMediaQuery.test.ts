@@ -32,25 +32,19 @@ describe("useMediaQuery", () => {
 
   it("returns false by default when media query does not match", () => {
     currentMatches = false;
-    const { result } = renderHook(() =>
-      useMediaQuery("(max-width: 768px)")
-    );
+    const { result } = renderHook(() => useMediaQuery("(max-width: 768px)"));
     expect(result.current).toBe(false);
   });
 
   it("returns true when media query matches", () => {
     currentMatches = true;
-    const { result } = renderHook(() =>
-      useMediaQuery("(max-width: 768px)")
-    );
+    const { result } = renderHook(() => useMediaQuery("(max-width: 768px)"));
     expect(result.current).toBe(true);
   });
 
   it("responds to matchMedia changes", () => {
     currentMatches = false;
-    const { result } = renderHook(() =>
-      useMediaQuery("(max-width: 768px)")
-    );
+    const { result } = renderHook(() => useMediaQuery("(max-width: 768px)"));
     expect(result.current).toBe(false);
 
     act(() => {
@@ -63,9 +57,7 @@ describe("useMediaQuery", () => {
   });
 
   it("cleans up listener on unmount", () => {
-    const { unmount } = renderHook(() =>
-      useMediaQuery("(max-width: 768px)")
-    );
+    const { unmount } = renderHook(() => useMediaQuery("(max-width: 768px)"));
     expect(listeners.length).toBe(1);
 
     unmount();

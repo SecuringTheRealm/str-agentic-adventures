@@ -1,7 +1,7 @@
 import type { SessionParticipant } from "@/types";
+import styles from "./PlayerList.module.css";
 import { Badge } from "./ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import styles from "./PlayerList.module.css";
 
 export interface PlayerListProps {
   /** List of session participants to display. */

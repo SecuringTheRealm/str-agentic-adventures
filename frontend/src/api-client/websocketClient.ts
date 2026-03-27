@@ -430,8 +430,10 @@ export class WebSocketClient {
   ): WebSocketConnection {
     let url = `${this.wsBaseUrl}/ws/${campaignId}`;
     const qp = new URLSearchParams();
-    if (playerParams?.playerName) qp.set("player_name", playerParams.playerName);
-    if (playerParams?.characterId) qp.set("character_id", playerParams.characterId);
+    if (playerParams?.playerName)
+      qp.set("player_name", playerParams.playerName);
+    if (playerParams?.characterId)
+      qp.set("character_id", playerParams.characterId);
     const qs = qp.toString();
     if (qs) url += `?${qs}`;
     const connection = new WebSocketConnection(url, options, this.config);

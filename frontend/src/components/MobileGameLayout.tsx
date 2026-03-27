@@ -1,8 +1,7 @@
 import type React from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import type { Character, DiceResult } from "../types";
-import type { Campaign } from "../types";
+import type { Campaign, Character, DiceResult } from "../types";
 import BattleMap from "./BattleMap";
 import CharacterSheet from "./CharacterSheet";
 import ChatBox from "./ChatBox";
@@ -95,11 +94,7 @@ const MobileGameLayout: React.FC<MobileGameLayoutProps> = ({
 
       <div className={styles.tabContent}>
         {activeTab === "chat" && (
-          <div
-            id="panel-chat"
-            role="tabpanel"
-            className={styles.tabPanel}
-          >
+          <div id="panel-chat" role="tabpanel" className={styles.tabPanel}>
             <ChatBox
               messages={messages}
               onSendMessage={onSendMessage}
@@ -112,25 +107,23 @@ const MobileGameLayout: React.FC<MobileGameLayoutProps> = ({
         )}
 
         {activeTab === "character" && (
-          <div
-            id="panel-character"
-            role="tabpanel"
-            className={styles.tabPanel}
-          >
+          <div id="panel-character" role="tabpanel" className={styles.tabPanel}>
             <CharacterSheet character={character} />
           </div>
         )}
 
         {activeTab === "gamestate" && (
-          <div
-            id="panel-gamestate"
-            role="tabpanel"
-            className={styles.tabPanel}
-          >
+          <div id="panel-gamestate" role="tabpanel" className={styles.tabPanel}>
             <div className={styles.visualsPanel}>
               <h4>Generate Visuals</h4>
               {imagesRemaining !== null && (
-                <p style={{ fontSize: "0.75rem", color: "var(--color-gold-stone)", margin: 0 }}>
+                <p
+                  style={{
+                    fontSize: "0.75rem",
+                    color: "var(--color-gold-stone)",
+                    margin: 0,
+                  }}
+                >
                   {imagesRemaining > 0
                     ? `${imagesRemaining} illustration${imagesRemaining === 1 ? "" : "s"} remaining`
                     : "Image limit reached"}
@@ -166,15 +159,17 @@ const MobileGameLayout: React.FC<MobileGameLayoutProps> = ({
         )}
 
         {activeTab === "map" && (
-          <div
-            id="panel-map"
-            role="tabpanel"
-            className={styles.tabPanel}
-          >
+          <div id="panel-map" role="tabpanel" className={styles.tabPanel}>
             {combatActive ? (
               <BattleMap mapUrl={battleMapUrl} />
             ) : (
-              <div style={{ padding: 16, color: "var(--color-text-muted-warm)", fontFamily: "Cinzel, serif" }}>
+              <div
+                style={{
+                  padding: 16,
+                  color: "var(--color-text-muted-warm)",
+                  fontFamily: "Cinzel, serif",
+                }}
+              >
                 No active battle map. Start combat to see the tactical map.
               </div>
             )}

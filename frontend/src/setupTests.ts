@@ -6,6 +6,21 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup } from "@testing-library/react";
 import { afterEach } from "vitest";
 
+// Polyfill matchMedia missing in jsdom (needed by useMediaQuery)
+if (!window.matchMedia) {
+  Object.defineProperty(window, "matchMedia", {
+    writable: true,
+    value: (query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    }),
+  });
+}
+
 // Polyfill pointer capture methods missing in jsdom (needed by Radix UI)
 if (!Element.prototype.hasPointerCapture) {
   Element.prototype.hasPointerCapture = () => false;

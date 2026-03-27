@@ -4,12 +4,7 @@ import CompactStatusBar from "./CompactStatusBar";
 describe("CompactStatusBar", () => {
   it("renders HP and AC correctly", () => {
     render(
-      <CompactStatusBar
-        currentHp={30}
-        maxHp={50}
-        armorClass={15}
-        level={5}
-      />
+      <CompactStatusBar currentHp={30} maxHp={50} armorClass={15} level={5} />
     );
 
     expect(screen.getByText("30/50")).toBeInTheDocument();
@@ -19,12 +14,7 @@ describe("CompactStatusBar", () => {
 
   it("shows green HP bar when above 50%", () => {
     const { container } = render(
-      <CompactStatusBar
-        currentHp={40}
-        maxHp={50}
-        armorClass={10}
-        level={1}
-      />
+      <CompactStatusBar currentHp={40} maxHp={50} armorClass={10} level={1} />
     );
 
     const progressbar = screen.getByRole("progressbar");
@@ -38,12 +28,7 @@ describe("CompactStatusBar", () => {
 
   it("shows yellow HP bar when between 25% and 50%", () => {
     render(
-      <CompactStatusBar
-        currentHp={20}
-        maxHp={50}
-        armorClass={10}
-        level={1}
-      />
+      <CompactStatusBar currentHp={20} maxHp={50} armorClass={10} level={1} />
     );
 
     const progressbar = screen.getByRole("progressbar");
@@ -53,12 +38,7 @@ describe("CompactStatusBar", () => {
 
   it("shows red HP bar when below 25%", () => {
     render(
-      <CompactStatusBar
-        currentHp={10}
-        maxHp={50}
-        armorClass={10}
-        level={1}
-      />
+      <CompactStatusBar currentHp={10} maxHp={50} armorClass={10} level={1} />
     );
 
     const progressbar = screen.getByRole("progressbar");
@@ -83,12 +63,7 @@ describe("CompactStatusBar", () => {
 
   it("handles zero max HP without crashing", () => {
     render(
-      <CompactStatusBar
-        currentHp={0}
-        maxHp={0}
-        armorClass={10}
-        level={1}
-      />
+      <CompactStatusBar currentHp={0} maxHp={0} armorClass={10} level={1} />
     );
 
     expect(screen.getByText("0/0")).toBeInTheDocument();

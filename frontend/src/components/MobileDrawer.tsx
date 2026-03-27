@@ -24,11 +24,10 @@ const MobileDrawer: React.FC<MobileDrawerProps> = ({
         <Dialog.Content
           className={`${styles.drawer} ${side === "right" ? styles.drawerRight : ""}`}
           aria-label={title}
+          aria-describedby={undefined}
         >
           <div className={styles.drawerHeader}>
-            <Dialog.Title className={styles.drawerTitle}>
-              {title}
-            </Dialog.Title>
+            <Dialog.Title className={styles.drawerTitle}>{title}</Dialog.Title>
             <Dialog.Close asChild>
               <button
                 type="button"
