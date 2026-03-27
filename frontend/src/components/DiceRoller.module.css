@@ -264,16 +264,20 @@
   .diceRoller {
     padding: 0.75rem;
     margin: 0.5rem 0;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
   }
 
   .quickRollButtons {
-    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-    gap: 0.25rem;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
   }
 
   .quickRollButton {
-    padding: 0.4rem;
-    font-size: 0.8rem;
+    padding: 12px 8px;
+    font-size: 0.9rem;
+    min-height: 48px;
   }
 
   .resultTotal {
@@ -283,6 +287,10 @@
   .historyItem {
     padding: 0.4rem;
     font-size: 0.8rem;
+  }
+
+  .historyList {
+    max-height: 150px;
   }
 }
 

@@ -293,9 +293,31 @@
 }
 
 /* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .message {
+    max-width: 95%;
+  }
+
+  .inputForm {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+  }
+
+  .inputForm button {
+    min-width: 60px;
+    min-height: 48px;
+    padding: 10px 20px;
+  }
+}
+
 @media (max-width: 480px) {
   .messagesContainer {
     padding: 10px;
+  }
+
+  .message {
+    max-width: 100%;
   }
 
   .messageSender {
