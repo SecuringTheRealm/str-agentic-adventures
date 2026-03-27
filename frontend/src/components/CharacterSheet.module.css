@@ -1,6 +1,10 @@
 .characterSheet {
   padding: 15px;
-  background: linear-gradient(135deg, var(--color-fantasy-primary), var(--color-fantasy-bg)); /* Fantasy gradient */
+  background: linear-gradient(
+    135deg,
+    var(--color-fantasy-primary),
+    var(--color-fantasy-bg)
+  ); /* Fantasy gradient */
   height: 100%;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;

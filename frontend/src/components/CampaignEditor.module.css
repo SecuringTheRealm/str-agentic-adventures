@@ -141,14 +141,22 @@
 }
 
 .aiAssistBtn {
-  background: linear-gradient(135deg, var(--color-wood-dark), var(--color-wood-light)); /* Wood gradient */
+  background: linear-gradient(
+    135deg,
+    var(--color-wood-dark),
+    var(--color-wood-light)
+  ); /* Wood gradient */
   color: white;
   border-color: var(--color-accent-gold); /* Gold border */
   font-weight: 600;
 }
 
 .aiAssistBtn:hover {
-  background: linear-gradient(135deg, var(--color-wood-light), var(--color-gold-warm)); /* Lighter wood on hover */
+  background: linear-gradient(
+    135deg,
+    var(--color-wood-light),
+    var(--color-gold-warm)
+  ); /* Lighter wood on hover */
 }
 
 .validationError {
@@ -213,13 +221,21 @@
 }
 
 .saveButton {
-  background: linear-gradient(135deg, var(--color-wood-dark), var(--color-wood-light)); /* Wood gradient */
+  background: linear-gradient(
+    135deg,
+    var(--color-wood-dark),
+    var(--color-wood-light)
+  ); /* Wood gradient */
   color: white;
   border: 2px solid var(--color-accent-gold); /* Gold border */
 }
 
 .saveButton:hover:not(:disabled) {
-  background: linear-gradient(135deg, var(--color-wood-light), var(--color-gold-warm)); /* Lighter wood on hover */
+  background: linear-gradient(
+    135deg,
+    var(--color-wood-light),
+    var(--color-gold-warm)
+  ); /* Lighter wood on hover */
   box-shadow: 0 2px 4px var(--color-gold-glow-30);
 }
 
@@ -296,7 +312,11 @@
   align-items: center;
   padding: 1.5rem;
   border-bottom: 1px solid var(--color-stone); /* Stone color border */
-  background: linear-gradient(135deg, var(--color-wood-dark), var(--color-wood-light)); /* Wood gradient */
+  background: linear-gradient(
+    135deg,
+    var(--color-wood-dark),
+    var(--color-wood-light)
+  ); /* Wood gradient */
   color: white;
 }
 
@@ -374,7 +394,11 @@
 }
 
 .applySuggestion {
-  background: linear-gradient(135deg, var(--color-wood-dark), var(--color-wood-light)); /* Wood gradient */
+  background: linear-gradient(
+    135deg,
+    var(--color-wood-dark),
+    var(--color-wood-light)
+  ); /* Wood gradient */
   color: white;
   border: 1px solid var(--color-accent-gold); /* Gold border */
   padding: 0.5rem 1rem;
@@ -388,7 +412,11 @@
 }
 
 .applySuggestion:hover {
-  background: linear-gradient(135deg, var(--color-wood-light), var(--color-gold-warm)); /* Lighter wood on hover */
+  background: linear-gradient(
+    135deg,
+    var(--color-wood-light),
+    var(--color-gold-warm)
+  ); /* Lighter wood on hover */
   box-shadow: 0 2px 4px var(--color-gold-glow-30);
 }
 

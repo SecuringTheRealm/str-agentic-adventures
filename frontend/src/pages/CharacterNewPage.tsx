@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import type React from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import CharacterCreation from "../components/CharacterCreation";
 import { getCampaign } from "../services/api";

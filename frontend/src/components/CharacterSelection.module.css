@@ -93,12 +93,20 @@
 }
 
 .characterOptionButton.primary {
-  background: linear-gradient(135deg, var(--color-wood-dark), var(--color-wood-light)); /* Wood gradient */
+  background: linear-gradient(
+    135deg,
+    var(--color-wood-dark),
+    var(--color-wood-light)
+  ); /* Wood gradient */
   color: white;
 }
 
 .characterOptionButton.primary:hover {
-  background: linear-gradient(135deg, var(--color-wood-light), var(--color-gold-warm)); /* Lighter wood on hover */
+  background: linear-gradient(
+    135deg,
+    var(--color-wood-light),
+    var(--color-gold-warm)
+  ); /* Lighter wood on hover */
   box-shadow: 0 2px 4px var(--color-gold-glow-30);
 }
 

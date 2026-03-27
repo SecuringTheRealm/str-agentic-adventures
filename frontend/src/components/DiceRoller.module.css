@@ -58,7 +58,11 @@
   width: 100%;
   padding: 0.75rem;
   min-height: 44px;
-  background: linear-gradient(135deg, var(--color-wood-saddle), var(--color-wood-medium));
+  background: linear-gradient(
+    135deg,
+    var(--color-wood-saddle),
+    var(--color-wood-medium)
+  );
   color: white;
   border: none;
   border-radius: 4px;
@@ -70,7 +74,11 @@
 }
 
 .rollButton:hover:not(:disabled) {
-  background: linear-gradient(135deg, var(--color-wood-medium), var(--color-wood-peru));
+  background: linear-gradient(
+    135deg,
+    var(--color-wood-medium),
+    var(--color-wood-peru)
+  );
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
@@ -105,7 +113,11 @@
   padding: 0.5rem;
   min-height: 44px;
   min-width: 44px;
-  background: linear-gradient(135deg, var(--color-success-deeper), var(--color-success-dark));
+  background: linear-gradient(
+    135deg,
+    var(--color-success-deeper),
+    var(--color-success-dark)
+  );
   color: white;
   border: none;
   border-radius: 4px;
@@ -115,7 +127,11 @@
 }
 
 .quickRollButton:hover:not(:disabled) {
-  background: linear-gradient(135deg, var(--color-success-dark), var(--color-success-light));
+  background: linear-gradient(
+    135deg,
+    var(--color-success-dark),
+    var(--color-success-light)
+  );
   transform: translateY(-1px);
 }
 

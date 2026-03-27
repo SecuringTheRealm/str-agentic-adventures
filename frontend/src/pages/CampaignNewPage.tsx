@@ -1,7 +1,7 @@
-import React from "react";
+import type React from "react";
 import { useNavigate } from "react-router-dom";
-import type { Campaign } from "../types";
 import CampaignEditor from "../components/CampaignEditor";
+import type { Campaign } from "../types";
 
 const CampaignNewPage: React.FC = () => {
   const navigate = useNavigate();
@@ -15,7 +15,10 @@ const CampaignNewPage: React.FC = () => {
   };
 
   return (
-    <CampaignEditor onCampaignSaved={handleCampaignSaved} onCancel={handleCancel} />
+    <CampaignEditor
+      onCampaignSaved={handleCampaignSaved}
+      onCancel={handleCancel}
+    />
   );
 };
 

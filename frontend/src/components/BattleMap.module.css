@@ -27,7 +27,11 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px 15px;
-  background: linear-gradient(135deg, var(--color-fantasy-primary), var(--color-fantasy-bg)); /* Fantasy gradient */
+  background: linear-gradient(
+    135deg,
+    var(--color-fantasy-primary),
+    var(--color-fantasy-bg)
+  ); /* Fantasy gradient */
   border-bottom: 2px solid var(--color-accent-gold); /* Gold border */
 }
 
@@ -40,7 +44,11 @@
 }
 
 .toggleButton {
-  background: linear-gradient(135deg, var(--color-wood-dark), var(--color-wood-light)); /* Wood gradient */
+  background: linear-gradient(
+    135deg,
+    var(--color-wood-dark),
+    var(--color-wood-light)
+  ); /* Wood gradient */
   color: white;
   border: 1px solid var(--color-accent-gold); /* Gold border */
   padding: 5px 10px;

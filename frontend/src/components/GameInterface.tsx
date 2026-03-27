@@ -577,7 +577,10 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
       }
 
       // Show auto-save notification when the backend reports a save
-      if (response.state_updates?.auto_saved && response.state_updates?.last_auto_save) {
+      if (
+        response.state_updates?.auto_saved &&
+        response.state_updates?.last_auto_save
+      ) {
         setLastAutoSave(response.state_updates.last_auto_save as string);
       }
     } catch (error) {
@@ -633,7 +636,10 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
           />
         </main>
 
-        <aside aria-label="Visuals and battle map" className={styles.rightPanel}>
+        <aside
+          aria-label="Visuals and battle map"
+          className={styles.rightPanel}
+        >
           <div className={styles.visualControls}>
             <h4>Generate Visuals</h4>
             {imagesRemaining !== null && (

@@ -2,7 +2,9 @@
   max-width: 600px;
   margin: 0 auto;
   padding: 20px;
-  background: var(--color-fantasy-primary-90); /* Primary fantasy color with transparency */
+  background: var(
+    --color-fantasy-primary-90
+  ); /* Primary fantasy color with transparency */
   color: var(--color-text-warm); /* Warm off-white for readability */
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
@@ -174,7 +176,11 @@
   padding: 12px;
   min-height: 44px;
   border-radius: 4px;
-  background: linear-gradient(135deg, var(--color-wood-dark), var(--color-wood-light)); /* Wood gradient */
+  background: linear-gradient(
+    135deg,
+    var(--color-wood-dark),
+    var(--color-wood-light)
+  ); /* Wood gradient */
   color: white;
   font-size: 16px;
   font-weight: bold;
@@ -236,7 +242,11 @@
 }
 
 .createButton.submitting {
-  background: linear-gradient(135deg, var(--color-text-secondary-warm), var(--color-steel-gray));
+  background: linear-gradient(
+    135deg,
+    var(--color-text-secondary-warm),
+    var(--color-steel-gray)
+  );
   animation: pulse 2s infinite;
 }
 
@@ -309,7 +319,6 @@
   .createButton {
     min-height: 44px;
     font-size: 16px; /* Prevent iOS zoom */
-
   }
 }
 

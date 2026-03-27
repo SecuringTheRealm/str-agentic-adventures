@@ -17,7 +17,9 @@
 
 .leftPanel {
   width: 250px;
-  background: var(--color-fantasy-primary-80); /* Primary color with transparency */
+  background: var(
+    --color-fantasy-primary-80
+  ); /* Primary color with transparency */
   color: var(--color-text-warm); /* Warm off-white */
   overflow-y: auto;
   transition: width 0.3s ease;
@@ -72,7 +74,11 @@
 .visualButton {
   padding: 8px 12px;
   min-height: 44px;
-  background: linear-gradient(135deg, var(--color-wood-dark), var(--color-wood-light)); /* Wood gradient */
+  background: linear-gradient(
+    135deg,
+    var(--color-wood-dark),
+    var(--color-wood-light)
+  ); /* Wood gradient */
   color: white;
   border: 1px solid var(--color-accent-gold); /* Gold border */
   border-radius: 4px;
