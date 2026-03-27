@@ -214,3 +214,11 @@ code {
     scroll-behavior: auto !important;
   }
 }
+
+/* Compact layout for landscape phones */
+@media (orientation: landscape) and (max-height: 500px) {
+  body {
+    font-size: 14px;
+  }
+}
+
