@@ -1,14 +1,16 @@
 import type React from "react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useWebSocketSDK } from "../hooks/useWebSocketSDK";
 import type { WebSocketMessage } from "../services/api";
 import {
   generateBattleMap,
   generateImage,
+  generateStructuredBattleMap,
   getOpeningNarrative,
   sendPlayerInput,
 } from "../services/api";
 import type { Campaign, Character, DiceResult } from "../types";
+import type { BattleMapData } from "../types/battleMap";
 import AutoSaveToast from "./AutoSaveToast";
 import BattleMap from "./BattleMap";
 import CharacterSheet from "./CharacterSheet";
@@ -69,6 +71,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
   const [imageLoading, setImageLoading] = useState<boolean>(false);
   const [currentImage, setCurrentImage] = useState<string | null>(null);
   const [battleMapUrl, setBattleMapUrl] = useState<string | null>(null);
+  const [battleMapData, setBattleMapData] = useState<BattleMapData | null>(null);
   const [combatActive, setCombatActive] = useState<boolean>(false);
   const [streamingMessage, setStreamingMessage] = useState<string>("");
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
@@ -185,8 +188,35 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
         // Handle game state updates
         if (message.update_type === "combat_start") {
           setCombatActive(true);
+          // Attempt to load structured battle map data
+          generateStructuredBattleMap(
+            { location: "dungeon", terrain: "stone", size: "medium" },
+            message.combat_context as object | undefined,
+          )
+            .then((data) => setBattleMapData(data))
+            .catch((err) =>
+              console.warn("Structured battle map unavailable:", err),
+            );
         } else if (message.update_type === "combat_end") {
           setCombatActive(false);
+          setBattleMapData(null);
+        }
+        break;
+
+      case "token_move":
+        // Update token position from server
+        if (battleMapData && message.token_id && message.x != null && message.y != null) {
+          setBattleMapData((prev) => {
+            if (!prev) return prev;
+            return {
+              ...prev,
+              tokens: prev.tokens.map((t) =>
+                t.id === message.token_id
+                  ? { ...t, x: message.x as number, y: message.y as number }
+                  : t,
+              ),
+            };
+          });
         }
         break;
 
@@ -442,11 +472,24 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
       } else {
         throw new Error("No map data received from server");
       }
+
+      // Also attempt to load structured tile map data
+      try {
+        const structuredData = await generateStructuredBattleMap({
+          location: "dungeon corridor",
+          terrain: "stone",
+          size: "medium",
+          features: ["pillars", "doorways", "torches"],
+        });
+        setBattleMapData(structuredData);
+      } catch (structuredError) {
+        console.warn("Structured battle map unavailable:", structuredError);
+      }
     } catch (error) {
       console.error("Error generating battle map:", error);
       const errorMessage = extractErrorMessage(
         error,
-        "Failed to generate battle map. Please try again."
+        "Failed to generate battle map. Please try again.",
       );
       setMessages((prev) => [
         ...prev,
@@ -459,6 +502,39 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
       setImageLoading(false);
     }
   };
+
+  const handleTokenMove = useCallback(
+    (tokenId: string, x: number, y: number) => {
+      // Optimistic local update
+      setBattleMapData((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          tokens: prev.tokens.map((t) =>
+            t.id === tokenId ? { ...t, x, y } : t,
+          ),
+        };
+      });
+
+      // Send move via WebSocket
+      if (isConnected && socket) {
+        try {
+          socket.send(
+            JSON.stringify({
+              type: "token_move",
+              token_id: tokenId,
+              x,
+              y,
+              campaign_id: campaign.id,
+            }),
+          );
+        } catch (err) {
+          console.error("Failed to send token move:", err);
+        }
+      }
+    },
+    [campaign.id, isConnected, socket],
+  );
 
   const handlePlayerInput = async (message: string) => {
     // Validate input before processing
@@ -683,7 +759,11 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 
           {combatActive && (
             <div className={styles.battleMapSection}>
-              <BattleMap mapUrl={battleMapUrl} />
+              <BattleMap
+                mapUrl={battleMapUrl}
+                mapData={battleMapData}
+                onTokenMove={handleTokenMove}
+              />
             </div>
           )}
         </aside>

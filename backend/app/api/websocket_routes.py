@@ -265,6 +265,10 @@ async def handle_websocket_message(
             await handle_game_update(message, websocket, campaign_id)
         elif message_type == "character_update":
             await handle_character_update(message, websocket, campaign_id)
+        elif message_type == "token_move":
+            await handle_token_move(message, websocket, campaign_id)
+        elif message_type == "map_update":
+            await handle_map_update(message, websocket, campaign_id)
         elif message_type == "ping":
             await manager.send_personal_message(
                 json.dumps({"type": "pong", "timestamp": message.get("timestamp")}),
@@ -469,5 +473,90 @@ async def broadcast_character_update(
         "character_id": character_id,
         "data": update_data,
         "timestamp": datetime.datetime.now().isoformat(),
+    }
+    await manager.send_campaign_message(json.dumps(response), campaign_id)
+
+
+# ---------------------------------------------------------------------------
+# Battle-map helpers
+# ---------------------------------------------------------------------------
+
+
+async def handle_token_move(
+    message: dict[str, Any], websocket: WebSocket, campaign_id: str | None = None
+) -> None:
+    """Handle a token_move message and broadcast to the campaign."""
+    import datetime
+
+    try:
+        token_id = message.get("token_id")
+        x = message.get("x")
+        y = message.get("y")
+
+        if token_id is None or x is None or y is None:
+            await manager.send_personal_message(
+                json.dumps({
+                    "type": "error",
+                    "message": "token_move requires token_id, x, and y",
+                }),
+                websocket,
+            )
+            return
+
+        response: dict[str, Any] = {
+            "type": "token_move",
+            "token_id": token_id,
+            "x": int(x),
+            "y": int(y),
+            "timestamp": datetime.datetime.now(tz=datetime.UTC).isoformat(),
+        }
+
+        if campaign_id:
+            await manager.send_campaign_message(json.dumps(response), campaign_id)
+        else:
+            await manager.send_personal_message(json.dumps(response), websocket)
+
+    except Exception as e:
+        logger.error("Error handling token move: %s", str(e))
+        await manager.send_personal_message(
+            json.dumps({"type": "error", "message": "Failed to process token move"}),
+            websocket,
+        )
+
+
+async def handle_map_update(
+    message: dict[str, Any], websocket: WebSocket, campaign_id: str | None = None
+) -> None:
+    """Handle a map_update message and broadcast to the campaign."""
+    import datetime
+
+    try:
+        map_data = message.get("data", {})
+
+        response: dict[str, Any] = {
+            "type": "map_update",
+            "data": map_data,
+            "timestamp": datetime.datetime.now(tz=datetime.UTC).isoformat(),
+        }
+
+        if campaign_id:
+            await manager.send_campaign_message(json.dumps(response), campaign_id)
+        else:
+            await manager.broadcast(json.dumps(response))
+
+    except Exception as e:
+        logger.error("Error handling map update: %s", str(e))
+
+
+async def broadcast_map_update(
+    campaign_id: str, map_data: dict[str, Any]
+) -> None:
+    """Broadcast a full map state update to all players in a campaign."""
+    import datetime
+
+    response: dict[str, Any] = {
+        "type": "map_update",
+        "data": map_data,
+        "timestamp": datetime.datetime.now(tz=datetime.UTC).isoformat(),
     }
     await manager.send_campaign_message(json.dumps(response), campaign_id)
