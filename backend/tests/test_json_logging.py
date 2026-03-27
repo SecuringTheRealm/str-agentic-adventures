@@ -73,8 +73,9 @@ class TestJsonLoggingFormatter:
 
     def test_root_logger_uses_json_formatter(self):
         """The root logger configured in main.py must use the JSON formatter."""
-        # Import main to trigger logging configuration
-        import app.main  # noqa: F401
+        from app.main import configure_logging
+
+        configure_logging()
 
         root_logger = logging.getLogger()
         assert root_logger.handlers, "Root logger must have at least one handler"

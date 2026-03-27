@@ -134,6 +134,7 @@ class TestPromptShieldServiceCheckUserInput:
         }
         env = {
             "CONTENT_SAFETY_ENDPOINT": "https://example.cognitiveservices.azure.com",
+            "CONTENT_SAFETY_API_KEY": "fake-key",
         }
         with patch.dict("os.environ", env):
             from app.services.prompt_shield_service import PromptShieldService
@@ -165,6 +166,7 @@ class TestPromptShieldServiceCheckUserInput:
         }
         env = {
             "CONTENT_SAFETY_ENDPOINT": "https://example.cognitiveservices.azure.com",
+            "CONTENT_SAFETY_API_KEY": "fake-key",
         }
         with patch.dict("os.environ", env):
             from app.services.prompt_shield_service import PromptShieldService
@@ -191,6 +193,7 @@ class TestPromptShieldServiceCheckUserInput:
         """Returns False/False (fail open) when API returns non-200 status."""
         env = {
             "CONTENT_SAFETY_ENDPOINT": "https://example.cognitiveservices.azure.com",
+            "CONTENT_SAFETY_API_KEY": "fake-key",
         }
         with patch.dict("os.environ", env):
             from app.services.prompt_shield_service import PromptShieldService
@@ -215,6 +218,7 @@ class TestPromptShieldServiceCheckUserInput:
         """Returns False/False (fail open) when aiohttp raises an exception."""
         env = {
             "CONTENT_SAFETY_ENDPOINT": "https://example.cognitiveservices.azure.com",
+            "CONTENT_SAFETY_API_KEY": "fake-key",
         }
         with patch.dict("os.environ", env):
             from app.services.prompt_shield_service import PromptShieldService

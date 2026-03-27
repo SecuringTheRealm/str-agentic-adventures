@@ -33,15 +33,22 @@ from app.services.campaign_service import campaign_service
 load_dotenv()
 
 # Configure structured JSON logging
-_log_level = getattr(logging, os.getenv("APP_LOG_LEVEL", "INFO").upper())
-_handler = logging.StreamHandler(sys.stdout)
-_handler.setFormatter(
-    JsonFormatter(
-        fmt="%(asctime)s %(name)s %(levelname)s %(message)s %(module)s %(funcName)s"
+
+
+def configure_logging() -> None:
+    """Set up structured JSON logging on the root logger."""
+    log_level = getattr(logging, os.getenv("APP_LOG_LEVEL", "INFO").upper())
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setFormatter(
+        JsonFormatter(
+            fmt="%(asctime)s %(name)s %(levelname)s %(message)s %(module)s %(funcName)s"
+        )
     )
-)
-logging.root.handlers = [_handler]
-logging.root.setLevel(_log_level)
+    logging.root.handlers = [handler]
+    logging.root.setLevel(log_level)
+
+
+configure_logging()
 
 logger = logging.getLogger(__name__)
 
