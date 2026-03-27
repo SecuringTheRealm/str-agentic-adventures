@@ -1,5 +1,7 @@
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import type { ChatMessage } from "../types";
 import styles from "./ChatBox.module.css";
 
@@ -62,7 +64,12 @@ const ChatBox: React.FC<ChatBoxProps> = ({
 
   return (
     <div className={styles.chatBox}>
-      <div className={styles.messagesContainer} role="log" aria-live="polite" aria-label="Chat messages">
+      <div
+        className={styles.messagesContainer}
+        role="log"
+        aria-live="polite"
+        aria-label="Chat messages"
+      >
         {messages.map((message, index) => (
           <div
             key={`${message.text}-${index}`}
@@ -111,23 +118,25 @@ const ChatBox: React.FC<ChatBoxProps> = ({
           </span>
           <div className={styles.actionButtons}>
             {suggestedActions.map((action) => (
-              <button
+              <Button
                 key={action}
                 type="button"
+                variant="secondary"
+                size="sm"
                 className={styles.actionButton}
                 onClick={() => handleActionClick(action)}
                 disabled={isLoading}
                 data-testid="suggested-action-btn"
               >
                 {action}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
       )}
 
       <form className={styles.inputForm} onSubmit={handleSubmit}>
-        <input
+        <Input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -136,15 +145,17 @@ const ChatBox: React.FC<ChatBoxProps> = ({
           disabled={isLoading}
           data-testid="chat-input"
         />
-        <button
+        <Button
           type="submit"
           disabled={isLoading || !input.trim()}
           data-testid="chat-send-btn"
         >
           Send
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
+          variant="outline"
+          size="icon"
           className={styles.helpButton}
           onClick={handleHelpClick}
           disabled={isLoading}
@@ -152,7 +163,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
           title="What can I do?"
         >
           ?
-        </button>
+        </Button>
       </form>
     </div>
   );

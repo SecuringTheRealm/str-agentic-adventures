@@ -33,3 +33,11 @@
     transform: translateY(-4px);
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}

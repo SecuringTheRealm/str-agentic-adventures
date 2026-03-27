@@ -1,5 +1,16 @@
 import type React from "react";
 import { useId, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import {
   type Campaign,
   type CampaignCreateRequest,
@@ -106,8 +117,8 @@ const CampaignCreation: React.FC<CampaignCreationProps> = ({
 
       <form onSubmit={handleSubmit}>
         <div className={styles.formGroup}>
-          <label htmlFor={campaignNameId}>Campaign Name</label>
-          <input
+          <Label htmlFor={campaignNameId}>Campaign Name</Label>
+          <Input
             id={campaignNameId}
             name="campaign-name"
             type="text"
@@ -129,9 +140,11 @@ const CampaignCreation: React.FC<CampaignCreationProps> = ({
 
         <div className={styles.formGroup}>
           <div className={styles.labelWithHelp}>
-            <label htmlFor={settingId}>Campaign Setting</label>
-            <button
+            <Label htmlFor={settingId}>Campaign Setting</Label>
+            <Button
               type="button"
+              variant="ghost"
+              size="icon"
               className={styles.helpIcon}
               onMouseEnter={() => setShowTooltip(true)}
               onMouseLeave={() => setShowTooltip(false)}
@@ -143,10 +156,10 @@ const CampaignCreation: React.FC<CampaignCreationProps> = ({
                   Example: 'Medieval fantasy city threatened by dragons'
                 </div>
               )}
-            </button>
+            </Button>
           </div>
           <div className={styles.textareaContainer}>
-            <textarea
+            <Textarea
               id={settingId}
               name="setting"
               value={setting}
@@ -171,28 +184,30 @@ const CampaignCreation: React.FC<CampaignCreationProps> = ({
         </div>
 
         <div className={styles.formGroup}>
-          <label htmlFor={toneId}>Campaign Tone</label>
+          <Label htmlFor={toneId}>Campaign Tone</Label>
           <div className={styles.customSelect}>
-            <select
-              id={toneId}
-              name="tone"
+            <Select
               value={tone}
-              onChange={(e) => setTone(e.target.value)}
+              onValueChange={setTone}
               disabled={isSubmitting}
-              data-testid="campaign-tone-select"
             >
-              <option value="heroic">🛡️ Heroic</option>
-              <option value="dark">💀 Dark</option>
-              <option value="lighthearted">🃏 Humorous</option>
-              <option value="gritty">⚔️ Gritty</option>
-              <option value="mysterious">🔍 Mystery</option>
-            </select>
+              <SelectTrigger id={toneId} data-testid="campaign-tone-select">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="heroic">🛡️ Heroic</SelectItem>
+                <SelectItem value="dark">💀 Dark</SelectItem>
+                <SelectItem value="lighthearted">🃏 Humorous</SelectItem>
+                <SelectItem value="gritty">⚔️ Gritty</SelectItem>
+                <SelectItem value="mysterious">🔍 Mystery</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
         <div className="form-group optional">
-          <label htmlFor={homebrewRulesId}>Homebrew Rules (Optional)</label>
-          <textarea
+          <Label htmlFor={homebrewRulesId}>Homebrew Rules (Optional)</Label>
+          <Textarea
             id={homebrewRulesId}
             name="homebrew-rules"
             value={homebrewRules}
@@ -205,7 +220,7 @@ const CampaignCreation: React.FC<CampaignCreationProps> = ({
           />
         </div>
 
-        <button
+        <Button
           type="submit"
           className={`create-button ${isSubmitting ? "submitting" : ""}`}
           disabled={isSubmitting}
@@ -222,7 +237,7 @@ const CampaignCreation: React.FC<CampaignCreationProps> = ({
               <span className={styles.buttonCheckmark}>✓</span>
             </span>
           )}
-        </button>
+        </Button>
       </form>
     </div>
   );

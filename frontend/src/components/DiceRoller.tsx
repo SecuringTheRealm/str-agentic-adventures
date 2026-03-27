@@ -1,5 +1,14 @@
 import type React from "react";
 import { useCallback, useEffect, useId, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { rollDice as rollDiceApi } from "../services/api";
 import type { DiceResult } from "../types";
 import styles from "./DiceRoller.module.css";
@@ -178,7 +187,7 @@ const DiceRoller: React.FC<DiceRollerProps> = ({
       <div className={styles.diceInputSection}>
         <div className={styles.notationInput}>
           <label htmlFor={notationId}>Dice Notation:</label>
-          <input
+          <Input
             id={notationId}
             type="text"
             value={notation}
@@ -191,47 +200,53 @@ const DiceRoller: React.FC<DiceRollerProps> = ({
         {characterId && (
           <div className={styles.skillInput}>
             <label htmlFor={skillId}>Skill (optional):</label>
-            <select
-              id={skillId}
-              value={skill}
-              onChange={(e) => setSkill(e.target.value)}
+            <Select
+              value={skill || "none"}
+              onValueChange={(value) => setSkill(value === "none" ? "" : value)}
               disabled={isRolling}
             >
-              <option value="">No skill</option>
-              {skillOptions.map((skillOption) => (
-                <option key={skillOption} value={skillOption}>
-                  {skillOption
-                    .replace("_", " ")
-                    .replace(/\b\w/g, (l) => l.toUpperCase())}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger id={skillId}>
+                <SelectValue placeholder="No skill" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No skill</SelectItem>
+                {skillOptions.map((skillOption) => (
+                  <SelectItem key={skillOption} value={skillOption}>
+                    {skillOption
+                      .replace("_", " ")
+                      .replace(/\b\w/g, (l) => l.toUpperCase())}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         )}
 
-        <button
+        <Button
           type="button"
           className={styles.rollButton}
           onClick={() => rollDice()}
           disabled={isRolling || !notation.trim()}
         >
           {isRolling ? "Rolling..." : "Roll Dice"}
-        </button>
+        </Button>
       </div>
 
       <div className={styles.commonRolls}>
         <h4>Quick Rolls:</h4>
         <div className={styles.quickRollButtons}>
           {commonRolls.map((roll) => (
-            <button
+            <Button
               key={roll.notation}
               type="button"
+              variant="outline"
+              size="sm"
               className={styles.quickRollButton}
               onClick={() => rollDice(roll.notation)}
               disabled={isRolling}
             >
               {roll.label}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
