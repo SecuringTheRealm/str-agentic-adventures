@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, status
+from sqlalchemy.exc import IntegrityError
 
 from app.database import DbDep
 from app.models.db_models import Campaign as CampaignDB
@@ -117,7 +118,22 @@ async def create_save_slot(campaign_id: str, request: CreateSaveSlotRequest, db:
         save_data=request.save_data,
     )
     db.add(db_slot)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        logger.warning(
+            "Duplicate save slot race: campaign=%s slot=%d",
+            campaign_id,
+            next_slot,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                f"Save slot {next_slot} was just claimed by another request. "
+                "Please try again."
+            ),
+        ) from None
     db.refresh(db_slot)
     return _save_slot_from_db(db_slot)
 
@@ -276,7 +292,22 @@ async def capture_game_state(campaign_id: str, db: DbDep):
         save_data=state_data,
     )
     db.add(db_slot)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        logger.warning(
+            "Duplicate save slot race on capture: campaign=%s slot=%d",
+            campaign_id,
+            next_slot,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                f"Save slot {next_slot} was just claimed by another request. "
+                "Please try again."
+            ),
+        ) from None
     db.refresh(db_slot)
     return _save_slot_from_db(db_slot)
 

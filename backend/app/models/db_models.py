@@ -97,6 +97,11 @@ class SaveSlot(Base):
     """Save slot table for storing campaign save states."""
 
     __tablename__ = "save_slots"
+    __table_args__ = (
+        UniqueConstraint(
+            "campaign_id", "slot_number", name="uq_save_slot_campaign_slot"
+        ),
+    )
 
     id = Column(String, primary_key=True, index=True)
     campaign_id = Column(String, ForeignKey("campaigns.id"), nullable=False, index=True)
