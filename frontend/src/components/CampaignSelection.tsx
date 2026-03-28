@@ -152,7 +152,8 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({
                                 variant="outline"
                                 className={`tone-badge ${campaign.tone}`}
                               >
-                                {campaign.tone}
+                                {campaign.tone.charAt(0).toUpperCase() +
+                                  campaign.tone.slice(1)}
                               </Badge>
                             )}
                             {campaign.template_id && (

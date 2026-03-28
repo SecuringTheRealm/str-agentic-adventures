@@ -212,7 +212,10 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
                 className={`${styles.toneBadge} ${template.tone ? styles[template.tone] : ""}`}
                 variant="secondary"
               >
-                {template.tone}
+                {template.tone
+                  ? template.tone.charAt(0).toUpperCase() +
+                    template.tone.slice(1)
+                  : ""}
               </Badge>
             </CardHeader>
 
