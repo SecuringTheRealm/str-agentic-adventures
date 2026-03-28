@@ -52,6 +52,13 @@
   font-family: "Inter", system-ui, sans-serif;
 }
 
+.savedIndicator {
+  color: #4ade80;
+  font-size: 0.9rem;
+  font-weight: 500;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
 .formGroup {
   margin-bottom: 1.5rem;
 }

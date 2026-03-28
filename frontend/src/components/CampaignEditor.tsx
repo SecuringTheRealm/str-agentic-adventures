@@ -1,5 +1,5 @@
 import type React from "react";
-import { useCallback, useEffect, useId, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import {
   type AIAssistanceRequest,
   type AIContentGenerationRequest,
@@ -31,6 +31,8 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
   const toneId = useId();
   const homebrewRulesId = useId();
 
+  const textareaRefs = useRef<Record<string, HTMLTextAreaElement | null>>({});
+
   const [formData, setFormData] = useState({
     name: campaign?.name || "",
     description: campaign?.description || "",
@@ -52,6 +54,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
   const [aiGenerating, setAIGenerating] = useState(false);
   const [autoSave, setAutoSave] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [showSavedFlash, setShowSavedFlash] = useState(false);
 
   const isEditing = !!campaign;
 
@@ -80,7 +83,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
     field: string,
     format: "bold" | "italic" | "header" | "list"
   ) => {
-    const textarea = document.getElementById(field) as HTMLTextAreaElement;
+    const textarea = textareaRefs.current[field];
     if (!textarea) return;
 
     const start = textarea.selectionStart;
@@ -236,19 +239,11 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
         handleInputChange(activeField, enhancedValue);
       } else {
         console.error("AI content generation failed:", response.error);
-        // Fallback to the old behavior if generation fails
-        const enhancedValue = currentValue
-          ? `${currentValue}\n\n${suggestion}`
-          : suggestion;
-        handleInputChange(activeField, enhancedValue);
+        setError("AI content generation failed. Please try again.");
       }
     } catch (error) {
       console.error("Error generating AI content:", error);
-      // Fallback to the old behavior if request fails
-      const enhancedValue = currentValue
-        ? `${currentValue}\n\n${suggestion}`
-        : suggestion;
-      handleInputChange(activeField, enhancedValue);
+      setError("AI content generation failed. Please try again.");
     } finally {
       setAIGenerating(false);
       setShowAIAssistant(false);
@@ -312,13 +307,9 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
           setHasUnsavedChanges(false);
 
           if (!silent) {
-            // Show success message briefly
-            const originalName = formData.name;
-            setFormData((prev) => ({ ...prev, name: "✓ Saved!" }));
-            setTimeout(
-              () => setFormData((prev) => ({ ...prev, name: originalName })),
-              1000
-            );
+            // Show success indicator briefly
+            setShowSavedFlash(true);
+            setTimeout(() => setShowSavedFlash(false), 1500);
           }
         } else {
           const campaignData: CampaignCreateRequest = {
@@ -368,7 +359,10 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
               />
               Auto-save
             </label>
-            {hasUnsavedChanges && (
+            {showSavedFlash && (
+              <span className={styles.savedIndicator}>✓ Saved!</span>
+            )}
+            {hasUnsavedChanges && !showSavedFlash && (
               <span className={styles.unsavedIndicator}>● Unsaved changes</span>
             )}
           </div>
@@ -443,6 +437,9 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
           </div>
           <textarea
             id={descriptionId}
+            ref={(el) => {
+              textareaRefs.current.description = el;
+            }}
             value={formData.description}
             onChange={(e) => handleInputChange("description", e.target.value)}
             placeholder="Brief description of your campaign..."
@@ -493,6 +490,9 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
           </div>
           <textarea
             id={settingId}
+            ref={(el) => {
+              textareaRefs.current.setting = el;
+            }}
             value={formData.setting}
             onChange={(e) => handleInputChange("setting", e.target.value)}
             placeholder="Describe the world and setting for your campaign..."
@@ -549,6 +549,9 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
           </div>
           <textarea
             id={worldDescriptionId}
+            ref={(el) => {
+              textareaRefs.current.world_description = el;
+            }}
             value={formData.world_description}
             onChange={(e) =>
               handleInputChange("world_description", e.target.value)

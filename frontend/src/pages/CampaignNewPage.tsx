@@ -11,7 +11,7 @@ const CampaignNewPage: React.FC = () => {
   };
 
   const handleCancel = () => {
-    navigate("/");
+    navigate("/?tab=my-campaigns");
   };
 
   return (

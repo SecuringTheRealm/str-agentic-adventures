@@ -93,7 +93,7 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
       setCloning(template.id);
       const clonedCampaign = await cloneCampaign({
         template_id: template.id,
-        new_name: `${template.name} (My Campaign)`,
+        name: `${template.name} (My Campaign)`,
       });
       onCampaignSelected(clonedCampaign);
     } catch (err) {
@@ -212,7 +212,10 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
                 className={`${styles.toneBadge} ${template.tone ? styles[template.tone] : ""}`}
                 variant="secondary"
               >
-                {template.tone}
+                {template.tone
+                  ? template.tone.charAt(0).toUpperCase() +
+                    template.tone.slice(1)
+                  : ""}
               </Badge>
             </CardHeader>
 

@@ -242,6 +242,10 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
         console.log("Character update received:", message);
         break;
 
+      case "dm_floor_request":
+        setDmWantsFloor(true);
+        break;
+
       default:
         console.log("Unknown WebSocket message:", message);
     }
@@ -249,7 +253,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 
   const { socket, isConnected } = useWebSocketSDK({
     connectionType: "campaign",
-    campaignId: campaign.id!,
+    campaignId: campaign.id ?? "",
     onMessage: handleWebSocketMessage,
     onConnect: () => console.log("Connected to campaign WebSocket"),
     onDisconnect: () => console.log("Disconnected from campaign WebSocket"),
@@ -258,9 +262,12 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 
   const { socket: chatSocket, isConnected: chatConnected } = useWebSocketSDK({
     connectionType: "chat",
-    campaignId: campaign.id!,
+    campaignId: campaign.id ?? "",
     onMessage: handleChatWebSocketMessage,
-    onConnect: () => console.log("Connected to chat WebSocket"),
+    onConnect: () => {
+      console.log("Connected to chat WebSocket");
+      setUseWebSocketFallback(false);
+    },
     onDisconnect: () => {
       console.log("Disconnected from chat WebSocket");
       setUseWebSocketFallback(true);
@@ -638,8 +645,8 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
       setLoading(true);
 
       const response = await sendPlayerInput({
-        character_id: character.id!,
-        campaign_id: campaign.id!,
+        character_id: character.id ?? "",
+        campaign_id: campaign.id ?? "",
         message: message.trim(),
       });
 

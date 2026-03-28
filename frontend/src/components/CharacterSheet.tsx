@@ -280,60 +280,43 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
       <div className={styles.inventory}>
         <h3>Inventory</h3>
 
-        {/* Equipment Slots */}
-        <div className={styles.equipmentSlots}>
-          <h4>Equipment</h4>
-          <div className={styles.equipmentGrid}>
-            <div className={styles.equipmentSlot}>
-              <div className={styles.slotLabel}>Main Hand:</div>
-              <span>
-                {(character as any).equipment?.mainHand?.name || "Empty"}
-              </span>
+        {/* Equipment Slots — only show occupied slots */}
+        {(() => {
+          const eq = (character as any).equipment;
+          const slots: Array<{ label: string; name: string }> = [];
+          if (eq?.mainHand?.name)
+            slots.push({ label: "Main Hand", name: eq.mainHand.name });
+          if (eq?.offHand?.name)
+            slots.push({ label: "Off Hand", name: eq.offHand.name });
+          if (eq?.armor?.name)
+            slots.push({ label: "Armor", name: eq.armor.name });
+          if (eq?.shield?.name)
+            slots.push({ label: "Shield", name: eq.shield.name });
+          if (eq?.ring1?.name)
+            slots.push({ label: "Ring 1", name: eq.ring1.name });
+          if (eq?.ring2?.name)
+            slots.push({ label: "Ring 2", name: eq.ring2.name });
+          if (eq?.amulet?.name)
+            slots.push({ label: "Amulet", name: eq.amulet.name });
+          if (eq?.cloak?.name)
+            slots.push({ label: "Cloak", name: eq.cloak.name });
+
+          if (slots.length === 0) return null;
+
+          return (
+            <div className={styles.equipmentSlots}>
+              <h4>Equipment</h4>
+              <div className={styles.equipmentGrid}>
+                {slots.map((slot) => (
+                  <div key={slot.label} className={styles.equipmentSlot}>
+                    <div className={styles.slotLabel}>{slot.label}:</div>
+                    <span>{slot.name}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className={styles.equipmentSlot}>
-              <div className={styles.slotLabel}>Off Hand:</div>
-              <span>
-                {(character as any).equipment?.offHand?.name || "Empty"}
-              </span>
-            </div>
-            <div className={styles.equipmentSlot}>
-              <div className={styles.slotLabel}>Armor:</div>
-              <span>
-                {(character as any).equipment?.armor?.name || "Unarmored"}
-              </span>
-            </div>
-            <div className={styles.equipmentSlot}>
-              <div className={styles.slotLabel}>Shield:</div>
-              <span>
-                {(character as any).equipment?.shield?.name || "None"}
-              </span>
-            </div>
-            <div className={styles.equipmentSlot}>
-              <div className={styles.slotLabel}>Ring 1:</div>
-              <span>
-                {(character as any).equipment?.ring1?.name || "Empty"}
-              </span>
-            </div>
-            <div className={styles.equipmentSlot}>
-              <div className={styles.slotLabel}>Ring 2:</div>
-              <span>
-                {(character as any).equipment?.ring2?.name || "Empty"}
-              </span>
-            </div>
-            <div className={styles.equipmentSlot}>
-              <div className={styles.slotLabel}>Amulet:</div>
-              <span>
-                {(character as any).equipment?.amulet?.name || "Empty"}
-              </span>
-            </div>
-            <div className={styles.equipmentSlot}>
-              <div className={styles.slotLabel}>Cloak:</div>
-              <span>
-                {(character as any).equipment?.cloak?.name || "Empty"}
-              </span>
-            </div>
-          </div>
-        </div>
+          );
+        })()}
 
         {/* Inventory Items */}
         <div className={styles.inventoryItems}>

@@ -84,7 +84,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
         <div role="log" aria-live="polite" aria-label="Chat messages">
           {messages.map((message, index) => (
             <div
-              key={`${message.text}-${index}`}
+              key={`msg-${index}`}
               className={`${styles.message} ${message.sender === "player" ? styles.playerMessage : styles.dmMessage}`}
             >
               <div className={styles.messageSender}>
