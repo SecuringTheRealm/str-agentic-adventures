@@ -184,8 +184,7 @@ jobs:
             --parameters \
               environmentName="${{ inputs.environment-name }}" \
               location="${{ inputs.location }}" \
-              resourceGroupName="${{ inputs.resource-group-name }}" \
-              azureOpenAiEndpoint="${{ secrets.AZURE_OPENAI_ENDPOINT }}"
+              resourceGroupName="${{ inputs.resource-group-name }}"
         timeout-minutes: 5
 
       - name: Deploy Infrastructure with Bicep (Deployment Stack)
@@ -203,11 +202,7 @@ jobs:
             {
               "environmentName": "${{ inputs.environment-name }}",
               "location": "${{ inputs.location }}",
-              "resourceGroupName": "${{ inputs.resource-group-name }}",
-              "azureOpenAiEndpoint": "${{ secrets.AZURE_OPENAI_ENDPOINT }}",
-              "azureOpenAiChatDeployment": "${{ vars.AZURE_OPENAI_CHAT_DEPLOYMENT || 'gpt-4o-mini' }}",
-              "azureOpenAiEmbeddingDeployment": "${{ vars.AZURE_OPENAI_EMBEDDING_DEPLOYMENT || 'text-embedding-ada-002' }}",
-              "azureOpenAiDalleDeployment": "${{ vars.AZURE_OPENAI_DALLE_DEPLOYMENT || 'gpt-image-1-mini' }}"
+              "resourceGroupName": "${{ inputs.resource-group-name }}"
             }
           action-on-unmanage-resources: ${{ inputs.is-production && 'detach' || 'delete' }}
           action-on-unmanage-resourcegroups: ${{ inputs.is-production && 'detach' || 'delete' }}
