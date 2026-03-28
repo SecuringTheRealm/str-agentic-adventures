@@ -311,24 +311,17 @@ class CombatMCAgent(BaseAgent):
 
             encounter = self.active_combats[encounter_id]
 
-            # Roll initiative for all participants
+            # Roll initiative for all participants using DiceRoller
+            # for consistent d20 + DEX modifier rolls (#704).
             participants = []
 
             # Players
             for player in party_members:
-                if self._fallback_mode:
-                    # Use fallback d20 roll
-                    dex_mod = (
-                        player.get("abilities", {}).get("dexterity", 10) - 10
-                    ) // 2
-                    roll_result = self._fallback_roll_d20(dex_mod)
-                    initiative = roll_result["total"]
-                else:
-                    # Use plugin-based rolling when available
-                    dex_mod = (
-                        player.get("abilities", {}).get("dexterity", 10) - 10
-                    ) // 2
-                    initiative = random.randint(1, 20) + dex_mod  # noqa: S311
+                dex_mod = (
+                    player.get("abilities", {}).get("dexterity", 10) - 10
+                ) // 2
+                roll_result = DiceRoller.roll_d20(modifier=dex_mod)
+                initiative = roll_result["total"]
 
                 participants.append(
                     {
@@ -341,14 +334,9 @@ class CombatMCAgent(BaseAgent):
 
             # Enemies
             for enemy in encounter["enemies"]:
-                if self._fallback_mode:
-                    # Use fallback d20 roll with simple modifier
-                    initiative_mod = random.randint(-2, 2)  # noqa: S311
-                    roll_result = self._fallback_roll_d20(initiative_mod)
-                    initiative = roll_result["total"]
-                else:
-                    # Use simple random roll
-                    initiative = random.randint(1, 20) + random.randint(-2, 2)  # noqa: S311
+                dex_mod = enemy.get("dex_modifier", 0)
+                roll_result = DiceRoller.roll_d20(modifier=dex_mod)
+                initiative = roll_result["total"]
 
                 enemy["initiative"] = initiative
                 participants.append(
