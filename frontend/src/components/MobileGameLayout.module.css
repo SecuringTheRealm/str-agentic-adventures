@@ -105,6 +105,31 @@
   margin: 0;
 }
 
+.visualStatus {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(228, 187, 30, 0.25);
+  background: rgba(42, 27, 10, 0.55);
+  color: var(--color-text-warm);
+  font-size: 0.8rem;
+  line-height: 1.4;
+  font-family: "Crimson Text", "Georgia", serif;
+}
+
+.imageBudget {
+  font-size: 0.75rem;
+  color: var(--color-gold-stone);
+  margin: 0;
+}
+
+.visualButtonWrapper {
+  display: block;
+}
+
+.visualButtonWrapper > button {
+  width: 100%;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .tabButton {
     transition: none;

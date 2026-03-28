@@ -11,6 +11,7 @@
  * without requiring Java or generated runtime code.
  */
 import { api } from "../api-client/client";
+import { getApiBaseUrl } from "../utils/urls";
 // Import WebSocket client for unified SDK
 import {
   WebSocketClient,
@@ -150,6 +151,12 @@ export interface OpeningNarrativeResponse {
   quest_hook: string;
   suggested_actions: string[];
   help_text: string;
+}
+
+export interface VisualGenerationStatus {
+  available: boolean;
+  status: "healthy" | "degraded" | "unavailable";
+  message: string | null;
 }
 
 // ============================================================================
@@ -369,6 +376,23 @@ export const getOpeningNarrative = async (
   if (error) throw error;
   return data as OpeningNarrativeResponse;
 };
+
+export const getVisualGenerationStatus = async (): Promise<VisualGenerationStatus> => {
+    const response = await fetch(
+      `${getApiBaseUrl()}/game/image-generation/status`,
+      {
+        headers: { Accept: "application/json" },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to load visual generation status (${response.status.toString()})`
+      );
+    }
+
+    return (await response.json()) as VisualGenerationStatus;
+  };
 
 // ============================================================================
 // Dice roll helper
