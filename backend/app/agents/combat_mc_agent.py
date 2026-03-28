@@ -106,6 +106,12 @@ class CombatMCAgent(BaseAgent):
 
         if not self._fallback_mode:
             self._register_skills()
+            try:
+                from app.azure_openai_client import azure_openai_client
+
+                self.azure_client = azure_openai_client
+            except Exception:
+                logger.debug("Azure OpenAI client unavailable for Combat MC narration")
         else:
             self._initialize_fallback_mechanics()
 
@@ -188,6 +194,42 @@ class CombatMCAgent(BaseAgent):
                 "notation": dice_notation,
                 "fallback": True,
             }
+
+    async def _narrate_result(self, rule_text: str) -> str:
+        """Enhance a bare rule string with LLM narration when available.
+
+        Falls back to the original *rule_text* when the AI client is
+        not configured or the call fails.
+        """
+        if self._fallback_mode or not getattr(self, "azure_client", None):
+            return rule_text
+
+        try:
+            prompt = (
+                "You are a dramatic D&D 5e combat narrator. Given the "
+                "following mechanical combat result, write 1-2 vivid "
+                "sentences describing what happens. Keep the original "
+                "numbers but wrap them in exciting prose.\n\n"
+                f"Result: {rule_text}"
+            )
+            narration = await self.azure_client.chat_completion(
+                messages=[
+                    {
+                        "role": "system",
+                        "content": (
+                            "Narrate D&D combat moments dramatically "
+                            "in 1-2 sentences."
+                        ),
+                    },
+                    {"role": "user", "content": prompt},
+                ],
+                temperature=0.8,
+                max_tokens=120,
+            )
+            return narration.strip() if narration else rule_text
+        except Exception as exc:
+            logger.debug("Combat narration LLM call failed: %s", exc)
+            return rule_text
 
     async def create_encounter(
         self, party_info: dict[str, Any], narrative_context: dict[str, Any]
@@ -386,10 +428,15 @@ class CombatMCAgent(BaseAgent):
                 return {"error": "Combat is not currently active"}
 
             if self._fallback_mode:
-                # Use fallback combat processing
-                return self._process_fallback_combat_action(encounter, action_data)
-            # Use plugin-based combat processing
-            return self._process_plugin_combat_action(encounter, action_data)
+                result = self._process_fallback_combat_action(encounter, action_data)
+            else:
+                result = self._process_plugin_combat_action(encounter, action_data)
+
+            # Enrich the bare rule message with AI narration (#697)
+            if "message" in result and "error" not in result:
+                result["narration"] = await self._narrate_result(result["message"])
+
+            return result
 
         except Exception as e:
             logger.error("Error processing combat action: %s", str(e))
