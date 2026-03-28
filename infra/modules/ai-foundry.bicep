@@ -139,5 +139,4 @@ output name string = foundry.name
 @description('The resource ID')
 output id string = foundry.id
 
-@description('Primary API key (for local dev only)')
-output apiKey string = foundry.listKeys().key1
+// API key intentionally not output — use managed identity auth in all environments
