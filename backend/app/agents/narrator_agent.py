@@ -105,6 +105,53 @@ class NarratorAgent(BaseAgent):
         # Basic fallback - no advanced narrative generation
         logger.info("Narrator agent initialized in fallback mode")
 
+    async def _narrate(
+        self,
+        session_id: str,
+        user_message: str,
+        *,
+        system_prompt: str | None = None,
+        temperature: float = 0.75,
+        max_tokens: int = 350,
+    ) -> str | None:
+        """Try the SDK lifecycle first, then fall back to direct Azure calls.
+
+        Args:
+            session_id: Identifier for SDK thread management (usually campaign_id).
+            user_message: The prompt to send.
+            system_prompt: Optional system instructions override.
+            temperature: Sampling temperature for the direct Azure path.
+            max_tokens: Max token limit for the direct Azure path.
+
+        Returns:
+            The AI response text, or None when both paths fail.
+        """
+        # --- Try the SDK first ---
+        sdk_response = await self._sdk_chat(session_id, user_message)
+        if sdk_response is not None:
+            return sdk_response
+
+        # --- Fall back to direct AzureOpenAIClient ---
+        if not self.azure_client:
+            return None
+
+        try:
+            messages: list[dict[str, str]] = []
+            if system_prompt:
+                messages.append({"role": "system", "content": system_prompt})
+            messages.append({"role": "user", "content": user_message})
+
+            response = await self.azure_client.chat_completion(
+                messages=messages,
+                deployment=settings.azure_openai_mini_deployment or None,
+                temperature=temperature,
+                max_tokens=max_tokens,
+            )
+            return response.strip() if response else None
+        except Exception as exc:
+            logger.error("Narrator direct Azure call failed: %s", exc)
+            return None
+
     def _register_skills(self) -> None:
         """Register necessary skills for the Narrator agent."""
         # Note: Plugins will be converted to tool functions when needed
@@ -133,53 +180,45 @@ class NarratorAgent(BaseAgent):
             )
 
     async def describe_scene(self, scene_context: dict[str, Any]) -> str:
-        """
-        Generate a rich description of a scene based on the provided context.
+        """Generate a rich description of a scene based on the provided context.
 
         Args:
-            scene_context: Dictionary containing scene details
+            scene_context: Dictionary containing scene details.
 
         Returns:
-            str: Descriptive narrative of the scene
+            Descriptive narrative of the scene.
         """
         scene_context = scene_context or {}
         fallback_description, summary = self._build_scene_summary(scene_context)
+        fallback_with_prefix = f"[AI model not configured] {fallback_description}"
 
-        if self._fallback_mode or not self.azure_client:
-            return f"[AI model not configured] {fallback_description}"
+        if self._fallback_mode:
+            return fallback_with_prefix
 
-        try:
-            system_prompt = (
-                "You are the Narrator collaborating with a Dungeon Master. "
-                "Craft immersive, sensory scene descriptions for players in 3-4 "
-                "sentences. Keep the tone cinematic but concise."
-            )
-            context_json = json.dumps(
-                summary,
-                ensure_ascii=False,
-                default=str,
-                indent=2,
-            )
-            user_message = (
-                "Use the scene context below to describe what the players perceive "
-                "right now.\n"
-                f"{context_json}\n"
-                "Focus on actionable details that invite interaction."
-            )
+        system_prompt = (
+            "You are the Narrator collaborating with a Dungeon Master. "
+            "Craft immersive, sensory scene descriptions for players in 3-4 "
+            "sentences. Keep the tone cinematic but concise."
+        )
+        context_json = json.dumps(
+            summary, ensure_ascii=False, default=str, indent=2
+        )
+        user_message = (
+            "Use the scene context below to describe what the players perceive "
+            "right now.\n"
+            f"{context_json}\n"
+            "Focus on actionable details that invite interaction."
+        )
 
-            response = await self.azure_client.chat_completion(
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_message},
-                ],
-                deployment=settings.azure_openai_mini_deployment or None,
-                temperature=0.75,
-                max_tokens=350,
-            )
-            return response.strip() or fallback_description
-        except Exception as exc:
-            logger.error("Narrator scene generation failed: %s", exc)
-            return f"[AI model not configured] {fallback_description}"
+        session_id = scene_context.get("campaign_id", "narrator-default")
+        response = await self._narrate(
+            session_id,
+            user_message,
+            system_prompt=system_prompt,
+            temperature=0.75,
+            max_tokens=350,
+        )
+        return response or fallback_with_prefix
 
     def _build_scene_summary(
         self, scene_context: dict[str, Any]
@@ -419,11 +458,11 @@ class NarratorAgent(BaseAgent):
     async def _generate_action_narration(
         self, action: str, context: dict[str, Any], result: dict[str, Any]
     ) -> str:
-        """Generate a narrated outcome for a player action using Azure OpenAI."""
+        """Generate a narrated outcome for a player action via SDK or Azure."""
         system_prompt = (
             "You are the Narrator supporting a Dungeon Master. Summarize player "
-            "actions in 2-3 sentences, emphasizing consequences, tone, and hooks for "
-            "future decisions."
+            "actions in 2-3 sentences, emphasizing consequences, tone, and hooks "
+            "for future decisions."
         )
         payload = {
             "action": action,
@@ -437,16 +476,15 @@ class NarratorAgent(BaseAgent):
             "Keep it grounded in the established scene."
         )
 
-        response = await self.azure_client.chat_completion(
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_message},
-            ],
-            deployment=settings.azure_openai_mini_deployment or None,
+        session_id = context.get("campaign_id", "narrator-default")
+        response = await self._narrate(
+            session_id,
+            user_message,
+            system_prompt=system_prompt,
             temperature=0.7,
             max_tokens=300,
         )
-        return response.strip()
+        return response or ""
 
     async def create_campaign_story(
         self, campaign_context: dict[str, Any]
@@ -600,7 +638,7 @@ class NarratorAgent(BaseAgent):
         }
         scene_description = await self.describe_scene(scene_context)
 
-        if self._fallback_mode or not self.azure_client:
+        if self._fallback_mode:
             fallback = self._fallback_opening_narrative(
                 character_name, character_class, setting, tone
             )
@@ -618,7 +656,9 @@ class NarratorAgent(BaseAgent):
                 if character_race
                 else f"{character_class} named {character_name}"
             )
-            backstory_line = f" Character backstory: {backstory}." if backstory else ""
+            backstory_line = (
+                f" Character backstory: {backstory}." if backstory else ""
+            )
 
             user_message = (
                 f"Create an opening for a {tone} adventure in a {setting} setting "
@@ -633,25 +673,32 @@ class NarratorAgent(BaseAgent):
                 "the player can take right now."
             )
 
-            response = await self.azure_client.chat_completion(
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_message},
-                ],
+            response = await self._narrate(
+                campaign_id or "narrator-default",
+                user_message,
+                system_prompt=system_prompt,
                 temperature=0.8,
                 max_tokens=300,
             )
 
-            parsed = json.loads(response.strip())
-            quest_hook = parsed.get("quest_hook", "")
-            suggested_actions = parsed.get("suggested_actions", [])
+            if response:
+                parsed = json.loads(response)
+                quest_hook = parsed.get("quest_hook", "")
+                suggested_actions = parsed.get("suggested_actions", [])
 
-            return {
-                "scene_description": scene_description,
-                "quest_hook": quest_hook,
-                "suggested_actions": suggested_actions[:3],
-                "help_text": "What can I do?",
-            }
+                return {
+                    "scene_description": scene_description,
+                    "quest_hook": quest_hook,
+                    "suggested_actions": suggested_actions[:3],
+                    "help_text": "What can I do?",
+                }
+
+            # _narrate returned None — use fallback
+            fallback = self._fallback_opening_narrative(
+                character_name, character_class, setting, tone
+            )
+            fallback["scene_description"] = scene_description
+            return fallback
 
         except Exception as exc:
             logger.error("Failed to generate opening narrative details: %s", exc)
