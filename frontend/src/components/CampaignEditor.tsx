@@ -1,5 +1,5 @@
 import type React from "react";
-import { useCallback, useEffect, useId, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import {
   type AIAssistanceRequest,
   type AIContentGenerationRequest,
@@ -30,6 +30,8 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
   const worldDescriptionId = useId();
   const toneId = useId();
   const homebrewRulesId = useId();
+
+  const textareaRefs = useRef<Record<string, HTMLTextAreaElement | null>>({});
 
   const [formData, setFormData] = useState({
     name: campaign?.name || "",
@@ -80,7 +82,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
     field: string,
     format: "bold" | "italic" | "header" | "list"
   ) => {
-    const textarea = document.getElementById(field) as HTMLTextAreaElement;
+    const textarea = textareaRefs.current[field];
     if (!textarea) return;
 
     const start = textarea.selectionStart;
@@ -443,6 +445,9 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
           </div>
           <textarea
             id={descriptionId}
+            ref={(el) => {
+              textareaRefs.current.description = el;
+            }}
             value={formData.description}
             onChange={(e) => handleInputChange("description", e.target.value)}
             placeholder="Brief description of your campaign..."
@@ -493,6 +498,9 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
           </div>
           <textarea
             id={settingId}
+            ref={(el) => {
+              textareaRefs.current.setting = el;
+            }}
             value={formData.setting}
             onChange={(e) => handleInputChange("setting", e.target.value)}
             placeholder="Describe the world and setting for your campaign..."
@@ -549,6 +557,9 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
           </div>
           <textarea
             id={worldDescriptionId}
+            ref={(el) => {
+              textareaRefs.current.world_description = el;
+            }}
             value={formData.world_description}
             onChange={(e) =>
               handleInputChange("world_description", e.target.value)
