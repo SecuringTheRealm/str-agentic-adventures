@@ -1229,26 +1229,32 @@ async def lifespan(app: FastAPI):
 
 **Agent Client Setup** (`backend/app/agent_client_setup.py`):
 ```python
-from azure.ai.projects import AIProjectClient
-from azure.ai.agents import AgentsClient
+from azure.ai.agents.aio import AgentsClient
+from azure.ai.agents.models import AsyncFunctionTool, AsyncToolSet
 
-# Initialize project client with endpoint and credentials
-project_client = AIProjectClient.from_connection_string(
-    conn_str=settings.AZURE_AI_PROJECT_CONNECTION_STRING
+# Async agents client initialised at startup
+agents_client = AgentsClient(
+    endpoint=settings.AZURE_AI_PROJECT_ENDPOINT,
+    credential=credential,
 )
 
-# Create agents client for orchestration
-agents_client = project_client.agents
+# Each agent registers callable Python functions via AsyncToolSet
+toolset = AsyncToolSet()
+toolset.add(AsyncFunctionTool(functions=[roll_dice, resolve_attack, ...]))
+toolset.enable_auto_function_calls()
+
+# SDK auto-executes tools during create_and_process_run
 ```
 
 **Agent Orchestration Flow**:
 1. Receive player message via WebSocket
 2. Retrieve campaign thread from database or create new
 3. Add player message to thread
-4. Invoke Dungeon Master agent (orchestrator)
-5. DM agent routes to specialized agents as needed
-6. Collect agent responses
-7. Stream synthesized response back to player
+4. Invoke Dungeon Master agent (orchestrator) with `AsyncToolSet`
+5. SDK auto-executes registered tool functions as needed
+6. DM agent routes to specialised agents as needed
+7. Collect agent responses
+8. Stream synthesised response back to player
 
 ### Data Layer
 

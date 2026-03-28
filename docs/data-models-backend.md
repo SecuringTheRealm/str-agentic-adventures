@@ -168,6 +168,71 @@ The backend uses SQLAlchemy ORM with a hybrid schema approach: structured column
 
 ---
 
+### save_slots
+
+**Purpose:** Stores campaign save states for save/load functionality
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | String | PRIMARY KEY, INDEXED | Unique save slot identifier |
+| campaign_id | String | FOREIGN KEY(campaigns.id), NOT NULL, INDEXED | Owning campaign |
+| slot_number | Integer | NOT NULL | Slot position (1-5) |
+| name | String | NOT NULL, DEFAULT='' | Player-assigned save name |
+| created_at | DateTime | NOT NULL, DEFAULT=utcnow() | Creation timestamp |
+| updated_at | DateTime | NOT NULL, DEFAULT=utcnow(), AUTO-UPDATE | Last update timestamp |
+| play_time_seconds | Integer | NOT NULL, DEFAULT=0 | Total play time in seconds |
+| interaction_count | Integer | NOT NULL, DEFAULT=0 | Number of player interactions |
+| character_level | Integer | NOT NULL, DEFAULT=1 | Character level at save time |
+| current_location | String | NOT NULL, DEFAULT='' | In-game location at save time |
+| save_data | JSON | NOT NULL, DEFAULT={} | Full game state blob |
+
+**Relationships:**
+- FOREIGN KEY: `campaign_id` → `campaigns.id`
+
+**Constraints:**
+- UNIQUE on (`campaign_id`, `slot_number`) — `uq_save_slot_campaign_slot`
+
+**Indexes:**
+- Primary key on `id`
+- Index on `campaign_id`
+
+**Notes:**
+- Each campaign supports up to 5 save slots
+- `save_data` captures the full game state for restoration
+- UNIQUE constraint prevents duplicate slot numbers within a campaign (added via migration `c3d4e5f6a7b8`)
+
+---
+
+### combat_states
+
+**Purpose:** Persists combat encounter state across server restarts
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | String | PRIMARY KEY, INDEXED | Combat encounter identifier |
+| session_id | String | NOT NULL, INDEXED | Owning game session |
+| status | String | NOT NULL, DEFAULT='active' | Combat status (active, ended) |
+| round | Integer | NOT NULL, DEFAULT=1 | Current combat round |
+| current_turn | Integer | NOT NULL, DEFAULT=0 | Index into initiative order |
+| initiative_order | JSON | NOT NULL, DEFAULT=[] | Ordered list of combatants |
+| participants | JSON | NOT NULL, DEFAULT=[] | All combat participants with HP, AC, etc. |
+| environment | String | NOT NULL, DEFAULT='standard' | Combat environment type |
+| combat_log | JSON | NOT NULL, DEFAULT=[] | Chronological log of combat actions |
+| created_at | DateTime | NOT NULL, DEFAULT=utcnow() | Creation timestamp |
+| updated_at | DateTime | NOT NULL, DEFAULT=utcnow(), AUTO-UPDATE | Last update timestamp |
+
+**Indexes:**
+- Primary key on `id`
+- Index on `session_id`
+
+**Notes:**
+- Added in PR #732 via migration `c3d4e5f6a7b8_add_combat_states_table.py`
+- Ensures combat encounters survive server restarts and reconnections
+- `initiative_order` and `participants` are JSON arrays for flexible combatant data
+- `combat_log` provides an audit trail of all actions taken during the encounter
+
+---
+
 ## Database Schema Diagram
 
 ```
@@ -218,6 +283,28 @@ The backend uses SQLAlchemy ORM with a hybrid schema approach: structured column
          │ level       │
          │ ...         │
          └─────────────┘
+
+┌─────────────┐        ┌──────────────────┐
+│  campaigns  │───────▶│   save_slots     │
+│             │  FK    │                  │
+│             │        │ id (PK)          │
+│             │        │ campaign_id (FK) │
+│             │        │ slot_number      │
+│             │        │ UQ(campaign_id,  │
+│             │        │    slot_number)  │
+│             │        └──────────────────┘
+└─────────────┘
+
+         ┌──────────────────┐
+         │  combat_states   │  (Linked to game sessions)
+         │                  │
+         │ id (PK)          │
+         │ session_id (IDX) │
+         │ status           │
+         │ round            │
+         │ initiative_order │
+         │ ...              │
+         └──────────────────┘
 ```
 
 ## Migration Strategy
@@ -229,6 +316,9 @@ The backend uses SQLAlchemy ORM with a hybrid schema approach: structured column
 ### Existing Migrations
 
 1. **9a6d5baf6502_initial_database_schema.py** - Initial schema creation with all 5 tables
+2. **50b401563356_add_save_slots_table.py** - Add `save_slots` table for campaign save states
+3. **c3d4e5f6a7b8_add_combat_states_table.py** - Add `combat_states` table for persistent combat encounters
+4. **c3d4e5f6a7b8_add_unique_constraint_save_slots.py** - Add UNIQUE constraint on `save_slots(campaign_id, slot_number)`
 
 ### Migration Workflow
 
@@ -334,7 +424,7 @@ DATABASE_URL=sqlite:///./data/game.db
 ### Potential Schema Enhancements
 1. **User authentication table** - User accounts, sessions, auth tokens
 2. **Party table** - Formalize party relationships between characters and campaigns
-3. **Combat encounters table** - Persist combat state across sessions
+3. ~~**Combat encounters table**~~ - ✓ Implemented as `combat_states` (PR #732)
 4. **Dice roll history** - Log all dice rolls for transparency
 5. **AI prompt history** - Track AI-generated content for audit
 
