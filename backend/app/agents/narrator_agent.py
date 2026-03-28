@@ -146,7 +146,7 @@ class NarratorAgent(BaseAgent):
         fallback_description, summary = self._build_scene_summary(scene_context)
 
         if self._fallback_mode or not self.azure_client:
-            return fallback_description
+            return f"[AI model not configured] {fallback_description}"
 
         try:
             system_prompt = (
@@ -179,7 +179,7 @@ class NarratorAgent(BaseAgent):
             return response.strip() or fallback_description
         except Exception as exc:
             logger.error("Narrator scene generation failed: %s", exc)
-            return fallback_description
+            return f"[AI model not configured] {fallback_description}"
 
     def _build_scene_summary(
         self, scene_context: dict[str, Any]
@@ -307,7 +307,8 @@ class NarratorAgent(BaseAgent):
             character_id = context.get("character_id", "")
 
             success = True
-            description = f"You attempt to {action}."
+            fallback_prefix = "[AI model not configured] " if (self._fallback_mode or not self.azure_client) else ""
+            description = f"{fallback_prefix}You attempt to {action}."
             consequences: dict[str, Any] = {}
 
             if hasattr(self, "narrative_generation"):
@@ -411,7 +412,7 @@ class NarratorAgent(BaseAgent):
             logger.error("Error processing action: %s", str(e))
             return {
                 "success": False,
-                "description": "Something unexpected happens, preventing your action.",
+                "description": "[AI model not configured] Something unexpected happens, preventing your action.",
                 "state_updates": {},
             }
 
@@ -724,8 +725,8 @@ class NarratorAgent(BaseAgent):
         )
 
         return {
-            "scene_description": f"Your adventure begins, {character_name}.",
-            "quest_hook": quest_hook,
+            "scene_description": f"[AI model not configured] Your adventure begins, {character_name}.",
+            "quest_hook": f"[AI model not configured] {quest_hook}",
             "suggested_actions": suggested_actions,
             "help_text": "What can I do?",
         }
