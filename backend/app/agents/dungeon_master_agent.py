@@ -390,7 +390,13 @@ class DungeonMasterAgent(BaseAgent):
 
         # Use fallback streaming if needed
         if self._fallback_mode:
-            await self._process_input_stream_fallback(user_input, context)
+            fallback_msg = await self._process_input_stream_fallback(
+                user_input, context
+            )
+            # Record the exchange and persist (mirrors the non-stream path)
+            thread.append({"role": "user", "content": user_message})
+            thread.append({"role": "assistant", "content": fallback_msg})
+            self._persist_thread(session_id)
             return
 
         try:
@@ -724,11 +730,15 @@ class DungeonMasterAgent(BaseAgent):
 
     async def _process_input_stream_fallback(
         self, user_input: str, context: dict[str, Any]
-    ) -> None:
-        """Stream fallback response over WebSocket."""
+    ) -> str:
+        """Stream fallback response over WebSocket.
+
+        Returns:
+            The fallback message text (for persistence by the caller).
+        """
         websocket = context.get("websocket")
         if not websocket:
-            return
+            return ""
 
         # Send initial warning about AI model not being configured
         await websocket.send_text(
@@ -738,9 +748,11 @@ class DungeonMasterAgent(BaseAgent):
         )
 
         result = await self._process_input_fallback(user_input, context)
+        message = result.get("message", "")
         await websocket.send_text(
-            json.dumps({"type": "chat_complete", "message": result["message"]})
+            json.dumps({"type": "chat_complete", "message": message})
         )
+        return message
 
     async def _send_chat_message(
         self, websocket: "WebSocket", message: dict[str, Any]
