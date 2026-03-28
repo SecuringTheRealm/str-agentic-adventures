@@ -659,7 +659,7 @@ async def broadcast_game_state_update(
         "type": "game_update",
         "update_type": update_type,
         "data": data,
-        "timestamp": datetime.datetime.now().isoformat(),
+        "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
     }
     await manager.send_campaign_message(json.dumps(response), campaign_id)
 
@@ -674,7 +674,7 @@ async def broadcast_character_update(
         "type": "character_update",
         "character_id": character_id,
         "data": update_data,
-        "timestamp": datetime.datetime.now().isoformat(),
+        "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
     }
     await manager.send_campaign_message(json.dumps(response), campaign_id)
 

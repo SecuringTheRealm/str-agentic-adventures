@@ -2,7 +2,7 @@
 
 import logging
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, Request, status
@@ -201,7 +201,7 @@ async def start_game_session(campaign_id: str, session_data: dict[str, Any]) -> 
             "current_scene": generate_opening_scene(session_type),
             "available_actions": generate_available_actions(session_type),
             "scene_count": 1,
-            "started_at": str(datetime.now()),
+            "started_at": str(datetime.now(UTC)),
         }
 
     except Exception as e:
@@ -276,7 +276,7 @@ async def process_player_action(session_id: str, action_data: dict[str, Any]) ->
 
         # Update session state
         result["session_id"] = session_id
-        result["timestamp"] = str(datetime.now())
+        result["timestamp"] = str(datetime.now(UTC))
 
         return result
     except Exception as e:

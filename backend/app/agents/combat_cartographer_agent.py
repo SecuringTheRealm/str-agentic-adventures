@@ -195,11 +195,11 @@ class CombatCartographerAgent(BaseAgent):
             battle_map = self.battle_maps[map_id]
 
             # Implement logic to update the map with current combat state
-            import datetime
+            from datetime import UTC, datetime
 
             # Update basic combat state
             battle_map["combat_state"] = combat_state
-            battle_map["last_updated"] = datetime.datetime.now().isoformat()
+            battle_map["last_updated"] = datetime.now(UTC).isoformat()
 
             # Process combatant positions
             if "combatants" in combat_state:

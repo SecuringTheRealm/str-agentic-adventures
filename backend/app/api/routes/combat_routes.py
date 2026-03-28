@@ -2,7 +2,7 @@
 
 import logging
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, status
@@ -74,7 +74,7 @@ async def initialize_combat(combat_data: dict[str, Any]) -> dict[str, Any]:
             "initiative_order": initiative_order,
             "environment": environment,
             "battle_map_requested": True,
-            "started_at": str(datetime.now()),
+            "started_at": str(datetime.now(UTC)),
         }
 
     except Exception as e:
@@ -134,7 +134,7 @@ async def process_combat_turn(combat_id: str, turn_data: dict[str, Any]) -> dict
                     }
                 )
 
-        turn_result["timestamp"] = str(datetime.now())
+        turn_result["timestamp"] = str(datetime.now(UTC))
         return turn_result
 
     except Exception as e:
