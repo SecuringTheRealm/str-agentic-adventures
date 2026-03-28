@@ -37,17 +37,17 @@ class CombatCartographerAgent(BaseAgent):
 
         try:
             # Import combat cartographer-specific plugins for direct access
+            # Note: MapGenerationPlugin removed — generate_battle_map() uses
+            # Azure image generation directly and never called the plugin.
             from app.plugins.battle_positioning_plugin import BattlePositioningPlugin
             from app.plugins.environmental_hazards_plugin import (
                 EnvironmentalHazardsPlugin,
             )
-            from app.plugins.map_generation_plugin import MapGenerationPlugin
             from app.plugins.tactical_analysis_plugin import TacticalAnalysisPlugin
             from app.plugins.terrain_assessment_plugin import TerrainAssessmentPlugin
 
             # Define plugin configuration: (PluginClass, attribute_name)
             plugins_config = [
-                (MapGenerationPlugin, "map_generation"),
                 (TacticalAnalysisPlugin, "tactical_analysis"),
                 (TerrainAssessmentPlugin, "terrain_assessment"),
                 (BattlePositioningPlugin, "battle_positioning"),
