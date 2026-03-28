@@ -55,10 +55,20 @@ logger = logging.getLogger(__name__)
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
-    """Add security headers to all responses."""
+    """Add security headers to all responses.
+
+    Skips WebSocket requests — BaseHTTPMiddleware's dispatch breaks the
+    WebSocket handshake if it calls ``call_next`` on a WS connection.
+    """
 
     async def dispatch(self, request: Request, call_next: Any) -> Response:  # noqa: ANN401
-        """Add security headers to the response."""
+        """Add security headers to the response, skipping WebSocket upgrades."""
+        # BaseHTTPMiddleware cannot forward WebSocket connections through
+        # call_next; let them pass through untouched to avoid breaking the
+        # WS handshake (see issue #618).
+        if request.scope.get("type") == "websocket":
+            return await call_next(request)
+
         response = await call_next(request)
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
