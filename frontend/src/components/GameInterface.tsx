@@ -242,6 +242,10 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
         console.log("Character update received:", message);
         break;
 
+      case "dm_floor_request":
+        setDmWantsFloor(true);
+        break;
+
       default:
         console.log("Unknown WebSocket message:", message);
     }
