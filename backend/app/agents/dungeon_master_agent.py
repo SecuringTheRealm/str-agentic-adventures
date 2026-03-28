@@ -161,12 +161,14 @@ class DungeonMasterAgent(BaseAgent):
                     return self._threads[session_id]
 
                 # Not in DB either -- create a new record
+                sdk_ids = getattr(self, "_sdk_thread_ids", {})
                 new_thread = ConversationThread(
                     id=str(uuid.uuid4()),
                     session_id=session_id,
                     campaign_id=campaign_id,
                     agent_name="DM",
                     messages=[],
+                    sdk_thread_id=sdk_ids.get(session_id),
                 )
                 db.add(new_thread)
                 db.commit()
@@ -199,11 +201,13 @@ class DungeonMasterAgent(BaseAgent):
                     db.commit()
                 else:
                     # Row was deleted externally — recreate it
+                    sdk_ids = getattr(self, "_sdk_thread_ids", {})
                     new_thread = ConversationThread(
                         id=str(uuid.uuid4()),
                         session_id=session_id,
                         agent_name="DM",
                         messages=list(self._threads[session_id]),
+                        sdk_thread_id=sdk_ids.get(session_id),
                         created_at=datetime.now(UTC),
                         updated_at=datetime.now(UTC),
                     )
