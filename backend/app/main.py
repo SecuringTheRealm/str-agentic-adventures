@@ -24,6 +24,7 @@ from app.api import websocket_routes
 
 # Local imports
 from app.api.routes import all_routers
+from app.api.routes.realtime import router as realtime_router
 from app.api.routes._shared import limiter
 from app.config import init_settings
 from app.middleware.prompt_shield_middleware import PromptShieldMiddleware
@@ -140,6 +141,7 @@ async def global_exception_handler(request: Request, exc: Exception) -> JSONResp
 for _router in all_routers:
     app.include_router(_router, prefix="/game")
 app.include_router(websocket_routes.router)
+app.include_router(realtime_router, prefix="/api")
 
 
 # Health check endpoint
