@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["campaigns"])
 
 
-@router.post("/campaign", response_model=Campaign)
+@router.post("/campaign", response_model=Campaign, status_code=status.HTTP_201_CREATED)
 async def create_campaign(campaign_data: CreateCampaignRequest, config: ConfigDep) -> dict[str, Any]:
     """Create a new campaign."""
     try:
@@ -129,7 +129,7 @@ async def update_campaign(campaign_id: str, updates: CampaignUpdateRequest) -> d
         ) from None
 
 
-@router.post("/campaign/clone", response_model=Campaign)
+@router.post("/campaign/clone", response_model=Campaign, status_code=status.HTTP_201_CREATED)
 async def clone_campaign(clone_data: CloneCampaignRequest) -> dict[str, Any]:
     """Clone a template campaign for customization."""
     try:

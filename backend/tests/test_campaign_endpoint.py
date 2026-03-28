@@ -28,7 +28,7 @@ class TestCampaignEndpoint:
         response = client.post("/game/campaign", json=campaign_data)
 
         # Campaign creation should succeed (doesn't require Azure OpenAI)
-        assert response.status_code == 200, (
+        assert response.status_code == 201, (
             f"Campaign creation should succeed without Azure OpenAI, got: {response.status_code}"
         )
 
@@ -51,7 +51,7 @@ class TestCampaignEndpoint:
         response = client.post("/game/campaign", json=campaign_data)
 
         # Campaign creation should succeed
-        assert response.status_code == 200, f"Unexpected status: {response.status_code}"
+        assert response.status_code == 201, f"Unexpected status: {response.status_code}"
 
         response_data = response.json()
         assert response_data["name"] == "Test Campaign"
@@ -79,7 +79,7 @@ class TestCampaignEndpoint:
         response = client.post("/game/campaign", json=minimal_data)
 
         # Empty name is allowed by the model, so this should succeed
-        assert response.status_code in [200, 422], (
+        assert response.status_code in [200, 201, 422], (
             f"Should either succeed or return validation error, got: {response.status_code}"
         )
 

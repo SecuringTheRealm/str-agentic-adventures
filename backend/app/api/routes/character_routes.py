@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["characters"])
 
 
-@router.post("/character", response_model=CharacterSheet)
+@router.post("/character", response_model=CharacterSheet, status_code=status.HTTP_201_CREATED)
 async def create_character(character_data: CreateCharacterRequest, config: ConfigDep) -> dict[str, Any]:
     """Create a new player character."""
     try:
