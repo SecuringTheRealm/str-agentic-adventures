@@ -1,5 +1,6 @@
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { ChatMessage } from "../types";
@@ -78,14 +79,22 @@ const ChatBox: React.FC<ChatBoxProps> = ({
             <div className={styles.messageSender}>
               {message.sender === "player" ? "You" : "Dungeon Master"}
             </div>
-            <div className={styles.messageText}>{message.text}</div>
+            <div className={styles.messageText}>
+              {message.sender === "dm" ? (
+                <ReactMarkdown>{message.text}</ReactMarkdown>
+              ) : (
+                message.text
+              )}
+            </div>
           </div>
         ))}
         {streamingMessage && (
           <div className={`${styles.message} ${styles.dmMessage}`}>
             <div className={styles.messageSender}>Dungeon Master</div>
             <div className={`${styles.messageText} ${styles.streaming}`}>
-              {streamingMessage}
+              {streamingMessage ? (
+                <ReactMarkdown>{streamingMessage}</ReactMarkdown>
+              ) : null}
               <span className={styles.streamingCursor}>|</span>
             </div>
           </div>

@@ -341,6 +341,25 @@
   }
 }
 
+/* Markdown rendering in DM messages */
+.messageText :global(p) {
+  margin: 0.25em 0;
+}
+.messageText :global(p:first-child) {
+  margin-top: 0;
+}
+.messageText :global(p:last-child) {
+  margin-bottom: 0;
+}
+.messageText :global(strong) {
+  color: var(--tw-accent-gold);
+  font-weight: 700;
+}
+.messageText :global(em) {
+  font-style: italic;
+  opacity: 0.9;
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;
