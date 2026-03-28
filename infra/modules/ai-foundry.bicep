@@ -16,6 +16,9 @@ param managedIdentityPrincipalId string
 @description('Deploy image generation model (requires gated access on some subscriptions)')
 param deployImageModel bool = false
 
+@description('Deploy non-OpenAI models (Phi, Llama — may require Marketplace agreement)')
+param deployPartnerModels bool = false
+
 resource foundry 'Microsoft.CognitiveServices/accounts@2024-10-01' = {
   name: name
   location: location
@@ -89,7 +92,7 @@ resource imageDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-
 }
 
 // Phi-4-mini — cheap reasoning for rules lookups and simple decisions
-resource phiDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-10-01' = {
+resource phiDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-10-01' = if (deployPartnerModels) {
   parent: foundry
   name: 'Phi-4-mini-instruct'
   sku: {
@@ -106,7 +109,7 @@ resource phiDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-10
 }
 
 // Llama-4-Scout — open-weight storytelling for lore generation
-resource llamaDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-10-01' = {
+resource llamaDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-10-01' = if (deployPartnerModels) {
   parent: foundry
   name: 'Llama-4-Scout-17B-16E-Instruct'
   sku: {

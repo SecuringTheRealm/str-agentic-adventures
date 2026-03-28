@@ -22,7 +22,7 @@ class Settings(BaseSettings):
 
     # Model Deployments (names match Bicep deployment resource names)
     azure_openai_chat_deployment: str = "gpt-41-mini"
-    azure_openai_mini_deployment: str = "Phi-4-mini-instruct"  # Cheap reasoning for rules lookups
+    azure_openai_mini_deployment: str = "gpt-41-mini"  # Falls back to chat model when Phi-4 unavailable
     azure_openai_embedding_deployment: str = "text-embedding-3-small"
     azure_openai_dalle_deployment: str = "dall-e-3"
 
