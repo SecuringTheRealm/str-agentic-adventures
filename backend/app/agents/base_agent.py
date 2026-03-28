@@ -10,6 +10,8 @@ import pybreaker
 
 from app.agent_client_setup import agent_client_manager
 from app.azure_openai_client import AzureOpenAIClient, azure_openai_client
+from app.database import get_session_context
+from app.models.db_models import ConversationThread
 
 if TYPE_CHECKING:
     from azure.ai.agents.models import AsyncToolSet, FunctionToolDefinition
@@ -177,6 +179,11 @@ class BaseAgent:
     async def _get_or_create_sdk_thread(self, session_id: str) -> str | None:
         """Get an existing SDK thread for a session, or create a new one.
 
+        Checks the in-memory cache first, then the database's
+        ``sdk_thread_id`` column.  Only creates a new SDK thread when
+        neither source has one.  Newly created thread IDs are persisted
+        back to the database so they survive process restarts.
+
         Args:
             session_id: Game session identifier used as the mapping key.
 
@@ -186,10 +193,66 @@ class BaseAgent:
         if session_id in self._sdk_thread_ids:
             return self._sdk_thread_ids[session_id]
 
+        # Check the database for a previously persisted SDK thread ID
+        try:
+            with get_session_context() as db:
+                thread_row = (
+                    db.query(ConversationThread)
+                    .filter(
+                        ConversationThread.session_id == session_id,
+                        ConversationThread.agent_name == self.agent_name,
+                    )
+                    .first()
+                )
+                if thread_row and thread_row.sdk_thread_id:
+                    self._sdk_thread_ids[session_id] = thread_row.sdk_thread_id
+                    return thread_row.sdk_thread_id
+        except Exception as exc:
+            logger.debug(
+                "%s: failed to look up SDK thread from DB for session %s: %s",
+                self.agent_name,
+                session_id,
+                exc,
+            )
+
+        # Create a new SDK thread
         thread_id = await agent_client_manager.create_thread()
         if thread_id is not None:
             self._sdk_thread_ids[session_id] = thread_id
+            # Persist the new SDK thread ID to the database
+            self._persist_sdk_thread_id(session_id, thread_id)
         return thread_id
+
+    def _persist_sdk_thread_id(
+        self, session_id: str, sdk_thread_id: str
+    ) -> None:
+        """Save an SDK thread ID to the ConversationThread row in the database."""
+        try:
+            with get_session_context() as db:
+                thread_row = (
+                    db.query(ConversationThread)
+                    .filter(
+                        ConversationThread.session_id == session_id,
+                        ConversationThread.agent_name == self.agent_name,
+                    )
+                    .first()
+                )
+                if thread_row:
+                    thread_row.sdk_thread_id = sdk_thread_id
+                    db.commit()
+                    logger.debug(
+                        "%s: persisted SDK thread %s for session %s",
+                        self.agent_name,
+                        sdk_thread_id,
+                        session_id,
+                    )
+        except Exception as exc:
+            logger.warning(
+                "%s: failed to persist SDK thread ID for session %s: %s",
+                self.agent_name,
+                session_id,
+                exc,
+            )
 
     @property
     def _circuit_open(self) -> bool:

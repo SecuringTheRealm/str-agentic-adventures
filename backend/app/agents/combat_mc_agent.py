@@ -415,6 +415,9 @@ class CombatMCAgent(BaseAgent):
         actor_id = action_data.get("actor_id")
         target_id = action_data.get("target_id")
 
+        # All fallback messages carry this prefix
+        ai_warning = "[AI model not configured] "
+
         result = {
             "action_type": action_type,
             "actor_id": actor_id,
@@ -451,7 +454,7 @@ class CombatMCAgent(BaseAgent):
                         "attack_roll": attack_roll,
                         "damage": damage_result["total"],
                         "damage_detail": damage_result,
-                        "message": f"Attack hits for {damage_result['total']} damage!",
+                        "message": f"{ai_warning}Attack hits for {damage_result['total']} damage!",
                     }
                 )
             else:
@@ -459,7 +462,7 @@ class CombatMCAgent(BaseAgent):
                     {
                         "success": False,
                         "attack_roll": attack_roll,
-                        "message": f"Attack misses (rolled {attack_roll['total']} vs AC {target_ac})",
+                        "message": f"{ai_warning}Attack misses (rolled {attack_roll['total']} vs AC {target_ac})",
                     }
                 )
 
@@ -471,16 +474,22 @@ class CombatMCAgent(BaseAgent):
             skill_roll = self._fallback_roll_d20(modifier)
             success = skill_roll["total"] >= dc
 
+            outcome = "succeeds" if success else "fails"
             result.update(
                 {
                     "success": success,
                     "roll": skill_roll,
-                    "message": f"Skill check {'succeeds' if success else 'fails'} (rolled {skill_roll['total']} vs DC {dc})",
+                    "message": (
+                        f"{ai_warning}Skill check {outcome} "
+                        f"(rolled {skill_roll['total']} vs DC {dc})"
+                    ),
                 }
             )
 
         else:
-            result["message"] = f"Fallback mode: Basic {action_type} action performed"
+            result["message"] = (
+                f"{ai_warning}Fallback mode: Basic {action_type} action performed"
+            )
             result["success"] = True
 
         return result
