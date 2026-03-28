@@ -54,6 +54,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
   const [aiGenerating, setAIGenerating] = useState(false);
   const [autoSave, setAutoSave] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [showSavedFlash, setShowSavedFlash] = useState(false);
 
   const isEditing = !!campaign;
 
@@ -314,13 +315,9 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
           setHasUnsavedChanges(false);
 
           if (!silent) {
-            // Show success message briefly
-            const originalName = formData.name;
-            setFormData((prev) => ({ ...prev, name: "✓ Saved!" }));
-            setTimeout(
-              () => setFormData((prev) => ({ ...prev, name: originalName })),
-              1000
-            );
+            // Show success indicator briefly
+            setShowSavedFlash(true);
+            setTimeout(() => setShowSavedFlash(false), 1500);
           }
         } else {
           const campaignData: CampaignCreateRequest = {
@@ -370,7 +367,10 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
               />
               Auto-save
             </label>
-            {hasUnsavedChanges && (
+            {showSavedFlash && (
+              <span className={styles.savedIndicator}>✓ Saved!</span>
+            )}
+            {hasUnsavedChanges && !showSavedFlash && (
               <span className={styles.unsavedIndicator}>● Unsaved changes</span>
             )}
           </div>
