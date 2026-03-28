@@ -9,6 +9,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException, status
 
 from app.database import DbDep
+from app.models.db_models import NPC as NPCDB
 from app.models.db_models import NPCProfileDB, NPCRelationshipDB
 from app.models.game_models import (
     NPC,
@@ -35,7 +36,7 @@ router = APIRouter(tags=["npcs"])
 
 
 @router.post("/campaign/{campaign_id}/npcs", response_model=NPC)
-async def create_campaign_npc(campaign_id: str, request: CreateNPCRequest) -> dict[str, Any]:
+async def create_campaign_npc(campaign_id: str, request: CreateNPCRequest, db: DbDep) -> dict[str, Any]:
     """Create and manage campaign NPCs."""
     try:
         # Generate basic personality traits if not provided
@@ -93,7 +94,9 @@ async def create_campaign_npc(campaign_id: str, request: CreateNPCRequest) -> di
         # Use story_role if provided, otherwise fall back to role
         resolved_story_role = request.story_role or request.role
 
-        return NPC(
+        npc_id = str(uuid.uuid4())
+        npc = NPC(
+            id=npc_id,
             name=request.name,
             race=request.race,
             gender=request.gender,
@@ -108,6 +111,28 @@ async def create_campaign_npc(campaign_id: str, request: CreateNPCRequest) -> di
             importance=request.importance,
             story_role=resolved_story_role,
         )
+
+        # Persist to database
+        db_row = NPCDB(
+            id=npc_id,
+            name=request.name,
+            race=request.race,
+            occupation=request.occupation,
+            location=request.location,
+            campaign_id=campaign_id,
+            personality=personality.model_dump(),
+            stats={
+                "abilities": abilities.model_dump(),
+                "hit_points": hit_points.model_dump(),
+                "armor_class": npc.armor_class,
+            },
+            relationships=[],
+            data=npc.model_dump(),
+        )
+        db.add(db_row)
+        db.commit()
+
+        return npc
 
     except Exception as e:
         raise HTTPException(
