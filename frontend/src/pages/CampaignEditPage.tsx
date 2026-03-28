@@ -28,7 +28,7 @@ const CampaignEditPage: React.FC = () => {
   };
 
   const handleCancel = () => {
-    navigate("/");
+    navigate("/?tab=my-campaigns");
   };
 
   if (loading) return <LoadingState message="Loading campaign..." />;

@@ -1,6 +1,6 @@
 import type React from "react";
 import { useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -18,6 +18,9 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({
   onCampaignCreated,
 }) => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const defaultTab =
+    searchParams.get("tab") === "my-campaigns" ? "my-campaigns" : "gallery";
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -88,7 +91,7 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({
           </div>
         )}
 
-        <Tabs defaultValue="gallery" className={styles.campaignTabs}>
+        <Tabs defaultValue={defaultTab} className={styles.campaignTabs}>
           <div className={styles.managerHeader}>
             <div className={styles.headerContent}>
               <h2 className={styles.sectionTitle}>Campaign Hub</h2>
