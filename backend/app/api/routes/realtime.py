@@ -32,10 +32,15 @@ async def get_realtime_token() -> dict:
                 "Content-Type": "application/json",
             }
         else:
-            from azure.identity import DefaultAzureCredential
+            from azure.identity.aio import DefaultAzureCredential
 
             credential = DefaultAzureCredential()
-            token = credential.get_token("https://cognitiveservices.azure.com/.default")
+            try:
+                token = await credential.get_token("https://cognitiveservices.azure.com/.default")
+            finally:
+                await credential.close()
+            if token is None or not token.token:
+                raise HTTPException(status_code=502, detail="Failed to acquire Azure credential token")
             headers = {
                 "Authorization": f"Bearer {token.token}",
                 "Content-Type": "application/json",
@@ -54,8 +59,12 @@ async def get_realtime_token() -> dict:
             response.raise_for_status()
             data = response.json()
 
+        token_value = data.get("client_secret", {}).get("value")
+        if not token_value:
+            raise HTTPException(status_code=502, detail="Realtime session returned no token")
+
         return {
-            "token": data.get("client_secret", {}).get("value"),
+            "token": token_value,
             "endpoint": endpoint,
             "deployment": "gpt-realtime-mini",
             "voice": "ballad",
