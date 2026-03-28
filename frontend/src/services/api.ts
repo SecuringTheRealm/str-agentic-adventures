@@ -416,8 +416,7 @@ export const getOpeningNarrative = async (
   return data as unknown as OpeningNarrativeResponse;
 };
 
-export const getVisualGenerationStatus =
-  async (): Promise<VisualGenerationStatus> => {
+export const getVisualGenerationStatus = async (): Promise<VisualGenerationStatus> => {
     const response = await fetch(`${getApiBaseUrl()}/health/dependencies`, {
       headers: { Accept: "application/json" },
     });
