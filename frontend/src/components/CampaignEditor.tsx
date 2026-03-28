@@ -239,19 +239,11 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
         handleInputChange(activeField, enhancedValue);
       } else {
         console.error("AI content generation failed:", response.error);
-        // Fallback to the old behavior if generation fails
-        const enhancedValue = currentValue
-          ? `${currentValue}\n\n${suggestion}`
-          : suggestion;
-        handleInputChange(activeField, enhancedValue);
+        setError("AI content generation failed. Please try again.");
       }
     } catch (error) {
       console.error("Error generating AI content:", error);
-      // Fallback to the old behavior if request fails
-      const enhancedValue = currentValue
-        ? `${currentValue}\n\n${suggestion}`
-        : suggestion;
-      handleInputChange(activeField, enhancedValue);
+      setError("AI content generation failed. Please try again.");
     } finally {
       setAIGenerating(false);
       setShowAIAssistant(false);
