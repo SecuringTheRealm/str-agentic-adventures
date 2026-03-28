@@ -8,6 +8,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException, status
 
 from app.agents.scribe_agent import get_scribe
+from app.utils.dice import DiceRoller
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +97,7 @@ async def process_combat_turn(combat_id: str, turn_data: dict[str, Any]) -> dict
         dice_result = turn_data.get("dice_result")
 
         # Process the combat action
-        turn_result = {
+        turn_result: dict[str, Any] = {
             "combat_id": combat_id,
             "character_id": character_id,
             "action": action_type,
@@ -107,22 +108,24 @@ async def process_combat_turn(combat_id: str, turn_data: dict[str, Any]) -> dict
             "next_turn": True,
         }
 
-        if action_type == "attack" and dice_result:
-            # Process attack
-            target_ac = turn_data.get("target_ac", 15)  # Default AC
-            if dice_result["total"] >= target_ac:
-                # Hit! Calculate damage
-                damage_dice = turn_data.get("damage_dice", "1d6")
-                from app.plugins.rules_engine_plugin import RulesEnginePlugin
+        if action_type == "attack":
+            # Roll attack if the caller did not supply a pre-rolled result
+            attack_bonus = turn_data.get("attack_bonus", 0)
+            if dice_result is None:
+                dice_result = DiceRoller.roll_d20(modifier=attack_bonus)
 
-                rules_engine = RulesEnginePlugin()
-                damage_result = rules_engine.roll_dice(damage_dice)
+            target_ac = turn_data.get("target_ac", 15)
+            if dice_result["total"] >= target_ac:
+                # Hit -- roll damage
+                damage_dice = turn_data.get("damage_dice", "1d6")
+                damage_result = DiceRoller.roll_damage(damage_dice)
 
                 turn_result.update(
                     {
                         "success": True,
                         "damage": damage_result["total"],
                         "description": f"Attack hits for {damage_result['total']} damage!",
+                        "attack_roll": dice_result,
                         "damage_roll": damage_result,
                     }
                 )
@@ -130,7 +133,11 @@ async def process_combat_turn(combat_id: str, turn_data: dict[str, Any]) -> dict
                 turn_result.update(
                     {
                         "success": False,
-                        "description": f"Attack misses (rolled {dice_result['total']} vs AC {target_ac})",
+                        "description": (
+                            f"Attack misses (rolled {dice_result['total']} "
+                            f"vs AC {target_ac})"
+                        ),
+                        "attack_roll": dice_result,
                     }
                 )
 
