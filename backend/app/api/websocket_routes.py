@@ -3,16 +3,72 @@ WebSocket routes for real-time game updates.
 
 This implementation provides real-time multiplayer communication using FastAPI's
 native WebSocket support, as per the updated ADR 0008 decision.
+
+Campaign-scoped endpoints validate that the campaign exists before accepting the
+connection.  The global endpoint applies per-client rate limiting to prevent
+broadcast-based DoS (see issue #650).
 """
 
 import json
 import logging
+import time
 from typing import Any
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from fastapi.websockets import WebSocketState
 
+from app.database import get_session_context
+from app.models.db_models import Campaign as CampaignDB
+
 logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Helpers — campaign validation & rate limiting
+# ---------------------------------------------------------------------------
+
+# Per-connection rate limiter for the global WebSocket.
+# Tracks {client_key: (message_count, window_start)} to cap throughput.
+_GLOBAL_WS_MAX_MESSAGES_PER_WINDOW = 30
+_GLOBAL_WS_WINDOW_SECONDS = 60
+_global_ws_rate: dict[str, tuple[int, float]] = {}
+
+
+def _campaign_exists(campaign_id: str) -> bool:
+    """Return True if *campaign_id* refers to an existing campaign row."""
+    with get_session_context() as db:
+        return (
+            db.query(CampaignDB.id)
+            .filter(CampaignDB.id == campaign_id)
+            .first()
+            is not None
+        )
+
+
+def _rate_limit_ok(client_key: str) -> bool:
+    """Return True if the client has not exceeded the global WS message rate.
+
+    Uses a simple sliding-window counter per client key.
+    """
+    now = time.monotonic()
+    count, window_start = _global_ws_rate.get(client_key, (0, now))
+
+    if now - window_start > _GLOBAL_WS_WINDOW_SECONDS:
+        # Reset window
+        _global_ws_rate[client_key] = (1, now)
+        return True
+
+    if count >= _GLOBAL_WS_MAX_MESSAGES_PER_WINDOW:
+        return False
+
+    _global_ws_rate[client_key] = (count + 1, window_start)
+    return True
+
+
+def _client_key_for(websocket: WebSocket) -> str:
+    """Derive a rate-limit key from the WebSocket's remote address."""
+    if websocket.client:
+        return f"{websocket.client.host}:{websocket.client.port}"
+    return "unknown"
 
 
 # Player info associated with a WebSocket connection
@@ -151,7 +207,14 @@ router = APIRouter()
 
 @router.websocket("/ws/chat/{campaign_id}")
 async def chat_websocket(websocket: WebSocket, campaign_id: str) -> None:
-    """WebSocket endpoint for streaming chat responses."""
+    """WebSocket endpoint for streaming chat responses.
+
+    Validates that *campaign_id* exists before accepting the connection.
+    """
+    if not _campaign_exists(campaign_id):
+        await websocket.close(code=4004, reason="Campaign not found")
+        return
+
     await manager.connect(websocket, campaign_id)
     try:
         while True:
@@ -179,9 +242,14 @@ async def campaign_websocket(
 ) -> None:
     """WebSocket endpoint for campaign-specific real-time updates (non-chat).
 
+    Validates that *campaign_id* exists before accepting the connection.
     Query params ``player_name`` and ``character_id`` are used for multiplayer
     player tracking.
     """
+    if not _campaign_exists(campaign_id):
+        await websocket.close(code=4004, reason="Campaign not found")
+        return
+
     await manager.connect(
         websocket, campaign_id, player_name=player_name, character_id=character_id
     )
@@ -240,13 +308,47 @@ async def campaign_websocket(
 
 @router.websocket("/ws/global")
 async def global_websocket(websocket: WebSocket) -> None:
-    """WebSocket endpoint for global updates."""
+    """WebSocket endpoint for global updates.
+
+    Applies per-client rate limiting to prevent broadcast-based DoS.
+    The ``game_update`` message type is rejected on the global socket because
+    it broadcasts to *all* connected clients.
+    """
     await manager.connect(websocket)
+    client_key = _client_key_for(websocket)
     try:
         while True:
             data = await websocket.receive_text()
+
+            # Rate-limit inbound messages
+            if not _rate_limit_ok(client_key):
+                await manager.send_personal_message(
+                    json.dumps({
+                        "type": "error",
+                        "message": "Rate limit exceeded. Please slow down.",
+                    }),
+                    websocket,
+                )
+                continue
+
             try:
                 message = json.loads(data)
+
+                # Block game_update on the global socket — it broadcasts to
+                # ALL clients which is a DoS vector (issue #650).
+                if message.get("type") == "game_update":
+                    await manager.send_personal_message(
+                        json.dumps({
+                            "type": "error",
+                            "message": (
+                                "game_update is not allowed on the global "
+                                "socket. Use a campaign-scoped socket instead."
+                            ),
+                        }),
+                        websocket,
+                    )
+                    continue
+
                 await handle_websocket_message(message, websocket)
             except json.JSONDecodeError:
                 await manager.send_personal_message(
@@ -254,6 +356,8 @@ async def global_websocket(websocket: WebSocket) -> None:
                     websocket,
                 )
     except WebSocketDisconnect:
+        # Clean up rate-limit state
+        _global_ws_rate.pop(client_key, None)
         manager.disconnect(websocket)
         logger.info("Client disconnected from global websocket")
 
