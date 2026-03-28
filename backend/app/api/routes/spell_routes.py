@@ -110,9 +110,10 @@ async def cast_spell_in_combat(combat_id: str, request: CastSpellRequest, db: Db
             slot_used=True,
         )
     except Exception as e:
-        return SpellCastingResponse(
-            success=False, message=f"Failed to cast spell: {str(e)}"
-        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to cast spell: {str(e)}",
+        ) from e
 
 
 async def _get_spell_data(spell_id: str, db: Session) -> dict[str, Any]:
@@ -468,10 +469,11 @@ async def manage_concentration(character_id: str, request: ConcentrationRequest)
 
     except HTTPException:
         raise
-    except Exception:
-        return ConcentrationCheckResponse(
-            success=False, concentration_maintained=False, dc=0, spell_ended=True
-        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to manage concentration: {str(e)}",
+        ) from e
 
 
 @router.post("/spells/attack-bonus", response_model=dict[str, Any])

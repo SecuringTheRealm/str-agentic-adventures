@@ -138,11 +138,10 @@ async def generate_ai_content(  # noqa: ARG001
         )
 
     except Exception as e:
-        return AIContentGenerationResponse(
-            generated_content="",
-            success=False,
-            error=f"Failed to generate AI content: {str(e)}",
-        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate AI content: {str(e)}",
+        ) from e
 
 
 @router.post("/generate-image", response_model=dict[str, Any])

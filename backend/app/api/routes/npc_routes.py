@@ -163,11 +163,10 @@ async def log_npc_interaction(npc_id: str, request: NPCInteractionRequest) -> di
             new_relationship_level=new_level,
         )
     except Exception as e:
-        return NPCInteractionResponse(
-            success=False,
-            message=f"Failed to log NPC interaction: {str(e)}",
-            interaction_id="",
-        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to log NPC interaction: {str(e)}",
+        ) from e
 
 
 @router.post("/npc/{npc_id}/generate-stats", response_model=NPCStatsResponse)
@@ -260,11 +259,10 @@ async def generate_npc_stats(npc_id: str, request: GenerateNPCStatsRequest) -> d
             generated_stats=generated_stats,
         )
     except Exception as e:
-        return NPCStatsResponse(
-            success=False,
-            message=f"Failed to generate NPC stats: {str(e)}",
-            generated_stats={},
-        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate NPC stats: {str(e)}",
+        ) from e
 
 
 # ---------------------------------------------------------------------------

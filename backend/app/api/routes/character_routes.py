@@ -220,9 +220,10 @@ async def manage_equipment(character_id: str, request: ManageEquipmentRequest) -
     except HTTPException:
         raise
     except Exception as e:
-        return EquipmentResponse(
-            success=False, message=f"Failed to manage equipment: {str(e)}"
-        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to manage equipment: {str(e)}",
+        ) from e
 
 
 @router.get("/character/{character_id}/encumbrance", response_model=EncumbranceResponse)

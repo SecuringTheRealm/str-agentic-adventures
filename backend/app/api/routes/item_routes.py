@@ -67,12 +67,10 @@ async def manage_magical_effects(request: MagicalEffectsRequest) -> dict[str, An
     except HTTPException:
         raise
     except Exception as e:
-        return MagicalEffectsResponse(
-            success=False,
-            message=f"Failed to manage magical effects: {str(e)}",
-            active_effects=[],
-            stat_modifiers={},
-        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to manage magical effects: {str(e)}",
+        ) from e
 
 
 @router.get("/items/catalog", response_model=ItemCatalogResponse)
