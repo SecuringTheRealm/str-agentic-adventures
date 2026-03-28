@@ -146,11 +146,11 @@ class AzureOpenAIClient:
     def is_configured(self) -> bool:
         """Return True if Azure OpenAI is configured.
 
-        An API key is not required when using managed identity auth.
+        Delegates to ``Settings.is_azure_openai_configured()`` so that
+        the check is consistent across the codebase (endpoint + chat
+        deployment + embedding deployment).
         """
-        return bool(settings.azure_openai_endpoint) and bool(
-            settings.azure_openai_chat_deployment
-        )
+        return settings.is_azure_openai_configured()
 
 
 # Module-level singleton – import and use this instead of instantiating AzureOpenAIClient directly.
