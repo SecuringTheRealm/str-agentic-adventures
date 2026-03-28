@@ -72,6 +72,24 @@ resource embeddingDeployment 'Microsoft.CognitiveServices/accounts/deployments@2
   dependsOn: [chatDeployment]
 }
 
+// gpt-realtime-mini — real-time voice for DM narration via WebRTC
+resource realtimeDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-10-01' = {
+  parent: foundry
+  name: 'gpt-realtime-mini'
+  sku: {
+    name: 'GlobalStandard'
+    capacity: 1
+  }
+  properties: {
+    model: {
+      format: 'OpenAI'
+      name: 'gpt-realtime-mini'
+      version: '2025-12-15'
+    }
+  }
+  dependsOn: [embeddingDeployment]
+}
+
 // Image generation — disabled by default (all models are gated or deprecated on this subscription)
 // Enable with deployImageModel=true once gpt-image-1-mini access is granted
 resource imageDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-10-01' = if (deployImageModel) {
