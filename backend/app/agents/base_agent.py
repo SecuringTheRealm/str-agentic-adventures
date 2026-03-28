@@ -268,10 +268,11 @@ class BaseAgent:
         breaker is open, we skip the Azure call entirely and return ``None``
         so that callers fall back to deterministic logic.
 
-        Note: pybreaker's ``call_async`` relies on Tornado, which is not
-        available in this project.  Instead we check ``_circuit_open`` before
-        calling and drive ``_handle_success`` / ``_handle_error`` manually
-        for pure-asyncio compatibility.
+        We use pybreaker's public ``call()`` method with a thin synchronous
+        wrapper that stores the coroutine result.  This lets pybreaker manage
+        state transitions (success/failure counting, open/half-open/closed)
+        without touching private internals.  ``call_async`` is not used
+        because it requires Tornado, which is not available in this project.
 
         Args:
             session_id: Game session identifier.
@@ -287,20 +288,34 @@ class BaseAgent:
             )
             return None
 
+        # Run the async inner call first, then let pybreaker's public call()
+        # method handle state transitions via a synchronous wrapper.
         try:
             result = await self._sdk_chat_inner(session_id, user_message)
-            # Record success so half-open transitions back to closed
-            azure_circuit_breaker.state._handle_success()  # noqa: SLF001
-            return result
         except Exception as exc:
-            # Record failure; pybreaker will trip the breaker after fail_max
-            azure_circuit_breaker.state._handle_error(exc, reraise=False)  # noqa: SLF001
+            # Let pybreaker record the failure via its public API
+            self._record_circuit_failure(exc)
             logger.warning(
                 "%s: Azure call failed, circuit breaker recorded failure: %s",
                 self.agent_name,
                 exc,
             )
             return None
+
+        # Record success via pybreaker's public API
+        azure_circuit_breaker.call(lambda: None)
+        return result
+
+    @staticmethod
+    def _record_circuit_failure(error: Exception) -> None:
+        """Record a failure in the circuit breaker using the public API."""
+        try:
+            def _reraise() -> None:
+                raise error
+
+            azure_circuit_breaker.call(_reraise)
+        except (pybreaker.CircuitBreakerError, Exception):  # noqa: S110
+            pass  # Failure already logged by the caller
 
     async def _sdk_chat_inner(
         self, session_id: str, user_message: str

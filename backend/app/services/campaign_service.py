@@ -27,7 +27,7 @@ def dict_to_campaign(data: dict[str, Any]) -> Campaign:
         try:
             data["created_at"] = datetime.fromisoformat(data["created_at"])
         except ValueError:
-            data["created_at"] = datetime.now()
+            data["created_at"] = datetime.now(UTC)
     return Campaign.model_validate(data)
 
 

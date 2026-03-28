@@ -7,7 +7,7 @@ from alembic import command, config
 from alembic.script import ScriptDirectory
 from sqlalchemy import inspect, text
 
-from app.database import DATABASE_URL, engine
+from app.database import DATABASE_URL, get_engine
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ def get_alembic_config() -> config.Config:
 def has_alembic_version_table() -> bool:
     """Check if the alembic_version table exists."""
     try:
-        inspector = inspect(engine)
+        inspector = inspect(get_engine())
         tables = inspector.get_table_names()
         return "alembic_version" in tables
     except Exception as e:
@@ -44,7 +44,7 @@ def has_alembic_version_table() -> bool:
 def is_database_empty() -> bool:
     """Check if the database is completely empty (no tables)."""
     try:
-        inspector = inspect(engine)
+        inspector = inspect(get_engine())
         tables = inspector.get_table_names()
         return len(tables) == 0
     except Exception as e:
@@ -55,7 +55,7 @@ def is_database_empty() -> bool:
 def get_current_revision() -> str | None:
     """Get the current database revision."""
     try:
-        with engine.connect() as connection:
+        with get_engine().connect() as connection:
             result = connection.execute(text("SELECT version_num FROM alembic_version"))
             row = result.fetchone()
             return row[0] if row else None
