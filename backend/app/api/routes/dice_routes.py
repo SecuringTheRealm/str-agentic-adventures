@@ -6,6 +6,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException, status
 
 from app.agents.scribe_agent import get_scribe
+from app.models.game_models import DiceRollRequest
 
 logger = logging.getLogger(__name__)
 
@@ -13,12 +14,12 @@ router = APIRouter(tags=["dice"])
 
 
 @router.post("/dice/roll", response_model=dict[str, Any])
-async def roll_dice(dice_data: dict[str, str]) -> dict[str, Any]:
+async def roll_dice(request: DiceRollRequest) -> dict[str, Any]:
     """Roll dice using D&D notation."""
     try:
         from app.plugins.rules_engine_plugin import RulesEnginePlugin
 
-        dice_notation = dice_data.get("notation", "1d20")
+        dice_notation = request.notation
         if not dice_notation:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
