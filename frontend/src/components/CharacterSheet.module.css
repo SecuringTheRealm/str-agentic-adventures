@@ -5,7 +5,8 @@
     var(--color-fantasy-primary),
     var(--color-fantasy-bg)
   ); /* Fantasy gradient */
-  height: 100%;
+  flex: 1;
+  min-height: 0; /* Allow shrink below content size for scroll */
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   color: var(--color-text-warm); /* Warm off-white */
