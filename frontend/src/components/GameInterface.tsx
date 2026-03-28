@@ -260,7 +260,10 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
     connectionType: "chat",
     campaignId: campaign.id!,
     onMessage: handleChatWebSocketMessage,
-    onConnect: () => console.log("Connected to chat WebSocket"),
+    onConnect: () => {
+      console.log("Connected to chat WebSocket");
+      setUseWebSocketFallback(false);
+    },
     onDisconnect: () => {
       console.log("Disconnected from chat WebSocket");
       setUseWebSocketFallback(true);
