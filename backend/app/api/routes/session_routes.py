@@ -54,23 +54,27 @@ async def process_player_input(  # noqa: ARG001
                 detail="Input blocked: potential prompt injection attack detected.",
             )
 
-        # Try to get character and campaign context, but fallback gracefully
+        # Retrieve the player's character -- fail explicitly if not found
         character = None
         try:
-            character = await get_scribe().get_character(player_input.character_id)
+            character = await get_scribe().get_character(
+                player_input.character_id,
+            )
         except Exception as e:
-            logger.warning(
-                "Could not retrieve character %s: %s", player_input.character_id, str(e)
+            logger.error(
+                "Failed to retrieve character %s: %s",
+                player_input.character_id,
+                str(e),
             )
 
-        # Use fallback character info if character not found or error occurred
         if character is None:
-            character = {
-                "id": player_input.character_id,
-                "name": "Adventurer",
-                "class": "Fighter",
-                "level": 1,
-            }
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=(
+                    f"Character {player_input.character_id} not found. "
+                    "Please select a valid character before playing."
+                ),
+            )
 
         # Build rich game context from campaign state, character stats,
         # equipment, and combat-derived values (Step 1 of #416).

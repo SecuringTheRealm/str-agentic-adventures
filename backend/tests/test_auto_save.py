@@ -333,7 +333,9 @@ class TestProcessPlayerInputAutoSave:
                 ),
                 patch(
                     "app.api.routes.session_routes.get_scribe",
-                    return_value=MagicMock(get_character=AsyncMock(return_value=None)),
+                    return_value=MagicMock(get_character=AsyncMock(
+                        return_value={"id": "char-1", "name": "Tester", "class": "Fighter", "level": 1},
+                    )),
                 ),
             ):
                 mock_dm = MagicMock()
@@ -412,7 +414,9 @@ class TestProcessPlayerInputAutoSave:
                 ),
                 patch(
                     "app.api.routes.session_routes.get_scribe",
-                    return_value=MagicMock(get_character=AsyncMock(return_value=None)),
+                    return_value=MagicMock(get_character=AsyncMock(
+                        return_value={"id": "char-1", "name": "Tester", "class": "Fighter", "level": 1},
+                    )),
                 ),
             ):
                 mock_dm = MagicMock()
