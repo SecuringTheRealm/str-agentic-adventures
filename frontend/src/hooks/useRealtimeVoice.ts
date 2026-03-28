@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from "react";
+import { getApiBaseUrl } from "../utils/urls";
 
 type ConnectionState = "disconnected" | "connecting" | "connected" | "error";
 
@@ -40,7 +41,7 @@ export function useRealtimeVoice(): UseRealtimeVoiceReturn {
 
     try {
       // 1. Get ephemeral token from backend
-      const tokenRes = await fetch("/api/realtime/token");
+      const tokenRes = await fetch(`${getApiBaseUrl()}/api/realtime/token`);
       if (!tokenRes.ok) throw new Error("Failed to get realtime token");
       const { token, endpoint, deployment } = await tokenRes.json();
 
