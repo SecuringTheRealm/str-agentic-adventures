@@ -367,6 +367,12 @@ class DungeonMasterAgent(BaseAgent):
     ) -> None:
         """Process user input with streaming responses via WebSocket.
 
+        Note: This method intentionally uses the direct AzureOpenAIClient
+        (``chat_completion_stream``) rather than the Microsoft Agent
+        Framework SDK because the SDK's ``create_and_process_run`` API
+        does not support token-level streaming.  When the SDK adds
+        streaming support, this should be updated to use it.  See #645.
+
         Args:
             user_input: The player's input text.
             context: Context including WebSocket for streaming.
@@ -445,6 +451,10 @@ class DungeonMasterAgent(BaseAgent):
         self, messages: list[dict[str, str]], websocket: "WebSocket"
     ) -> str:
         """Stream AI response using Azure OpenAI chat completions.
+
+        Uses ``AzureOpenAIClient.chat_completion_stream()`` directly
+        because the Microsoft Agent Framework SDK does not yet expose a
+        streaming API for ``create_and_process_run``.  See #645.
 
         Returns:
             The full response text, or an empty string on failure.
