@@ -1,0 +1,116 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 100;
+  animation: fadeIn 0.2s ease;
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: min(320px, 85vw);
+  background: linear-gradient(
+    135deg,
+    var(--color-fantasy-primary) 0%,
+    var(--color-fantasy-bg) 100%
+  );
+  z-index: 101;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.5);
+  border: 2px solid var(--color-accent-gold);
+  animation: slideInLeft 0.25s ease;
+}
+
+.drawerRight {
+  right: 0;
+  left: auto;
+  border-left: 2px solid var(--color-accent-gold);
+  border-right: none;
+  animation: slideInRight 0.25s ease;
+}
+
+.drawerHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-accent-gold);
+  background: var(--color-fantasy-primary-90);
+}
+
+.drawerTitle {
+  color: var(--color-accent-gold);
+  font-family: "Cinzel", serif;
+  font-weight: 600;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.closeButton {
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid var(--color-stone);
+  border-radius: 4px;
+  color: var(--color-text-warm);
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.closeButton:hover {
+  background: var(--color-stone-30);
+}
+
+.drawerContent {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .drawer,
+  .drawerRight {
+    animation: none;
+  }
+
+  .closeButton {
+    transition: none;
+  }
+}

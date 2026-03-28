@@ -30,6 +30,23 @@ export interface GameSession {
   started_at: string;
 }
 
+export interface MultiplayerSession {
+  id: string;
+  campaign_id: string;
+  status: "active" | "paused" | "ended";
+  turn_order: string[];
+  current_turn_index: number;
+}
+
+export interface SessionParticipant {
+  id: string;
+  session_id: string;
+  character_id: string;
+  player_name: string;
+  is_dm: boolean;
+  is_connected: boolean;
+}
+
 export interface CombatState {
   combat_id: string;
   status: string;

@@ -18,6 +18,7 @@ import {
   type WebSocketMessage,
   websocketClient,
 } from "../api-client/websocketClient";
+import type { BattleMapData } from "../types/battleMap";
 
 // Export WebSocket client for unified SDK access
 export const wsClient = websocketClient;
@@ -333,6 +334,20 @@ export const generateBattleMap = async (
   });
   if (error) throw error;
   return data;
+};
+
+export const generateStructuredBattleMap = async (
+  environment: object,
+  combatContext?: object
+): Promise<BattleMapData> => {
+  const { data, error } = await api.POST(
+    "/game/battle-map/structured" as never,
+    {
+      body: { environment, combat_context: combatContext } as never,
+    }
+  );
+  if (error) throw error;
+  return data as BattleMapData;
 };
 
 export const getOpeningNarrative = async (

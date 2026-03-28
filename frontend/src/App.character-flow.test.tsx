@@ -40,9 +40,7 @@ describe("App Character Flow Integration", () => {
       expect(screen.getByText("Campaign Hub")).toBeInTheDocument();
     });
 
-    expect(
-      screen.queryByText("Choose Your Character")
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText("Choose Your Character")).not.toBeInTheDocument();
   });
 
   it("shows predefined characters when Browse Characters is clicked", async () => {

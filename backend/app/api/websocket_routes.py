@@ -15,15 +15,45 @@ from fastapi.websockets import WebSocketState
 logger = logging.getLogger(__name__)
 
 
+# Player info associated with a WebSocket connection
+class PlayerConnection:
+    """Metadata for a connected player."""
+
+    def __init__(
+        self,
+        websocket: WebSocket,
+        player_name: str | None = None,
+        character_id: str | None = None,
+    ) -> None:
+        self.websocket = websocket
+        self.player_name = player_name
+        self.character_id = character_id
+
+
 # WebSocket connection manager
 class ConnectionManager:
     def __init__(self) -> None:
         self.active_connections: list[WebSocket] = []
         self.campaign_connections: dict[str, list[WebSocket]] = {}
+        # Player tracking: websocket -> PlayerConnection
+        self.player_connections: dict[WebSocket, PlayerConnection] = {}
 
-    async def connect(self, websocket: WebSocket, campaign_id: str = None) -> None:
+    async def connect(
+        self,
+        websocket: WebSocket,
+        campaign_id: str | None = None,
+        player_name: str | None = None,
+        character_id: str | None = None,
+    ) -> None:
         await websocket.accept()
         self.active_connections.append(websocket)
+
+        # Track player info
+        self.player_connections[websocket] = PlayerConnection(
+            websocket=websocket,
+            player_name=player_name,
+            character_id=character_id,
+        )
 
         if campaign_id:
             if campaign_id not in self.campaign_connections:
@@ -31,13 +61,18 @@ class ConnectionManager:
             self.campaign_connections[campaign_id].append(websocket)
 
         logger.info(
-            "WebSocket connected. Total connections: %d",
+            "WebSocket connected (player=%s, character=%s). Total connections: %d",
+            player_name,
+            character_id,
             len(self.active_connections),
         )
 
-    def disconnect(self, websocket: WebSocket, campaign_id: str = None) -> None:
+    def disconnect(self, websocket: WebSocket, campaign_id: str | None = None) -> None:
         if websocket in self.active_connections:
             self.active_connections.remove(websocket)
+
+        # Clean up player tracking
+        self.player_connections.pop(websocket, None)
 
         if campaign_id and campaign_id in self.campaign_connections:
             if websocket in self.campaign_connections[campaign_id]:
@@ -51,6 +86,20 @@ class ConnectionManager:
             "WebSocket disconnected. Total connections: %d",
             len(self.active_connections),
         )
+
+    def get_player_info(self, websocket: WebSocket) -> PlayerConnection | None:
+        """Get the player info for a WebSocket connection."""
+        return self.player_connections.get(websocket)
+
+    def get_campaign_players(self, campaign_id: str) -> list[PlayerConnection]:
+        """Get all player connections for a campaign."""
+        if campaign_id not in self.campaign_connections:
+            return []
+        return [
+            self.player_connections[ws]
+            for ws in self.campaign_connections[campaign_id]
+            if ws in self.player_connections
+        ]
 
     async def send_personal_message(self, message: str, websocket: WebSocket) -> None:
         if websocket.client_state == WebSocketState.CONNECTED:
@@ -122,9 +171,43 @@ async def chat_websocket(websocket: WebSocket, campaign_id: str) -> None:
 
 
 @router.websocket("/ws/{campaign_id}")
-async def campaign_websocket(websocket: WebSocket, campaign_id: str) -> None:
-    """WebSocket endpoint for campaign-specific real-time updates (non-chat)."""
-    await manager.connect(websocket, campaign_id)
+async def campaign_websocket(
+    websocket: WebSocket,
+    campaign_id: str,
+    player_name: str | None = None,
+    character_id: str | None = None,
+) -> None:
+    """WebSocket endpoint for campaign-specific real-time updates (non-chat).
+
+    Query params ``player_name`` and ``character_id`` are used for multiplayer
+    player tracking.
+    """
+    await manager.connect(
+        websocket, campaign_id, player_name=player_name, character_id=character_id
+    )
+
+    # Broadcast player_join to campaign and send current player_list to the newcomer
+    if player_name:
+        await manager.send_campaign_message(
+            json.dumps({
+                "type": "player_join",
+                "player_name": player_name,
+                "character_id": character_id,
+            }),
+            campaign_id,
+        )
+
+    # Send current player list to the newly connected client
+    players = [
+        {"player_name": pc.player_name, "character_id": pc.character_id}
+        for pc in manager.get_campaign_players(campaign_id)
+        if pc.player_name
+    ]
+    await manager.send_personal_message(
+        json.dumps({"type": "player_list", "players": players}),
+        websocket,
+    )
+
     try:
         while True:
             # Listen for messages from client
@@ -138,7 +221,20 @@ async def campaign_websocket(websocket: WebSocket, campaign_id: str) -> None:
                     websocket,
                 )
     except WebSocketDisconnect:
-        manager.disconnect(websocket, campaign_id)
+        # Broadcast player_leave before cleaning up
+        if player_name:
+            # Disconnect first so the leaving player doesn't get their own leave msg
+            manager.disconnect(websocket, campaign_id)
+            await manager.send_campaign_message(
+                json.dumps({
+                    "type": "player_leave",
+                    "player_name": player_name,
+                    "character_id": character_id,
+                }),
+                campaign_id,
+            )
+        else:
+            manager.disconnect(websocket, campaign_id)
         logger.info("Client disconnected from campaign %s", campaign_id)
 
 
@@ -265,6 +361,12 @@ async def handle_websocket_message(
             await handle_game_update(message, websocket, campaign_id)
         elif message_type == "character_update":
             await handle_character_update(message, websocket, campaign_id)
+        elif message_type == "token_move":
+            await handle_token_move(message, websocket, campaign_id)
+        elif message_type == "map_update":
+            await handle_map_update(message, websocket, campaign_id)
+        elif message_type == "action_request":
+            await handle_action_request(message, websocket, campaign_id)
         elif message_type == "ping":
             await manager.send_personal_message(
                 json.dumps({"type": "pong", "timestamp": message.get("timestamp")}),
@@ -469,5 +571,136 @@ async def broadcast_character_update(
         "character_id": character_id,
         "data": update_data,
         "timestamp": datetime.datetime.now().isoformat(),
+    }
+    await manager.send_campaign_message(json.dumps(response), campaign_id)
+
+
+async def handle_action_request(
+    message: dict[str, Any], websocket: WebSocket, campaign_id: str | None = None
+) -> None:
+    """Handle a player action request during their turn."""
+    try:
+        player_info = manager.get_player_info(websocket)
+        player_name = (
+            player_info.player_name if player_info else message.get("player_name", "Player")
+        )
+        character_id = (
+            player_info.character_id if player_info else message.get("character_id")
+        )
+        action = message.get("action", "")
+
+        response: dict[str, Any] = {
+            "type": "action_request",
+            "player_name": player_name,
+            "character_id": character_id,
+            "action": action,
+        }
+
+        if campaign_id:
+            await manager.send_campaign_message(json.dumps(response), campaign_id)
+        else:
+            await manager.send_personal_message(json.dumps(response), websocket)
+
+    except Exception as e:
+        logger.error("Error handling action request: %s", str(e))
+        await manager.send_personal_message(
+            json.dumps({"type": "error", "message": "Failed to process action request"}),
+            websocket,
+        )
+
+
+async def broadcast_turn_advance(
+    campaign_id: str, character_id: str, player_name: str
+) -> None:
+    """Broadcast a turn advance notification to all players in a campaign."""
+    response: dict[str, Any] = {
+        "type": "turn_advance",
+        "character_id": character_id,
+        "player_name": player_name,
+    }
+    await manager.send_campaign_message(json.dumps(response), campaign_id)
+
+
+# ---------------------------------------------------------------------------
+# Battle-map helpers
+# ---------------------------------------------------------------------------
+
+
+async def handle_token_move(
+    message: dict[str, Any], websocket: WebSocket, campaign_id: str | None = None
+) -> None:
+    """Handle a token_move message and broadcast to the campaign."""
+    import datetime
+
+    try:
+        token_id = message.get("token_id")
+        x = message.get("x")
+        y = message.get("y")
+
+        if token_id is None or x is None or y is None:
+            await manager.send_personal_message(
+                json.dumps({
+                    "type": "error",
+                    "message": "token_move requires token_id, x, and y",
+                }),
+                websocket,
+            )
+            return
+
+        response: dict[str, Any] = {
+            "type": "token_move",
+            "token_id": token_id,
+            "x": int(x),
+            "y": int(y),
+            "timestamp": datetime.datetime.now(tz=datetime.UTC).isoformat(),
+        }
+
+        if campaign_id:
+            await manager.send_campaign_message(json.dumps(response), campaign_id)
+        else:
+            await manager.send_personal_message(json.dumps(response), websocket)
+
+    except Exception as e:
+        logger.error("Error handling token move: %s", str(e))
+        await manager.send_personal_message(
+            json.dumps({"type": "error", "message": "Failed to process token move"}),
+            websocket,
+        )
+
+
+async def handle_map_update(
+    message: dict[str, Any], websocket: WebSocket, campaign_id: str | None = None
+) -> None:
+    """Handle a map_update message and broadcast to the campaign."""
+    import datetime
+
+    try:
+        map_data = message.get("data", {})
+
+        response: dict[str, Any] = {
+            "type": "map_update",
+            "data": map_data,
+            "timestamp": datetime.datetime.now(tz=datetime.UTC).isoformat(),
+        }
+
+        if campaign_id:
+            await manager.send_campaign_message(json.dumps(response), campaign_id)
+        else:
+            await manager.broadcast(json.dumps(response))
+
+    except Exception as e:
+        logger.error("Error handling map update: %s", str(e))
+
+
+async def broadcast_map_update(
+    campaign_id: str, map_data: dict[str, Any]
+) -> None:
+    """Broadcast a full map state update to all players in a campaign."""
+    import datetime
+
+    response: dict[str, Any] = {
+        "type": "map_update",
+        "data": map_data,
+        "timestamp": datetime.datetime.now(tz=datetime.UTC).isoformat(),
     }
     await manager.send_campaign_message(json.dumps(response), campaign_id)

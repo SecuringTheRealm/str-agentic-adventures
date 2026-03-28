@@ -1,5 +1,15 @@
 import type React from "react";
 import { useEffect, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   cloneCampaign,
   getCampaignTemplates,
@@ -123,21 +133,20 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
               </pre>
             </details>
           )}
-          <div style={{ marginTop: "1rem" }}>
-            <button type="button" onClick={() => window.location.reload()}>
+          <div style={{ marginTop: "1rem" }} className="flex gap-2">
+            <Button variant="default" onClick={() => window.location.reload()}>
               Try Again
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="outline"
               onClick={() => {
                 setError(null);
                 setDebugInfo(null);
                 window.location.reload();
               }}
-              style={{ marginLeft: "0.5rem" }}
             >
               Reload Page
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -155,36 +164,40 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
       </header>
 
       <div className={styles.campaignOptions}>
-        <div className={styles.customCampaignCard}>
-          <div className={styles.cardContent}>
+        <Card className={styles.customCampaignCard}>
+          <CardHeader>
             <div className={styles.cardIcon}>✨</div>
-            <h3>Create Custom Campaign</h3>
-            <p>Start from scratch with your own unique world and story</p>
-            <button
-              type="button"
+            <CardTitle>Create Custom Campaign</CardTitle>
+            <CardDescription>
+              Start from scratch with your own unique world and story
+            </CardDescription>
+          </CardHeader>
+          <CardFooter>
+            <Button
               className={`${styles.selectButton} ${styles.custom}`}
               onClick={onCreateCustom}
             >
               Create Custom
-            </button>
-          </div>
-        </div>
+            </Button>
+          </CardFooter>
+        </Card>
 
         {templates.map((template) => (
-          <div key={template.id} className={styles.campaignCard}>
-            <div className={styles.cardContent}>
-              <div className={styles.cardHeader}>
-                <h3>{template.name}</h3>
-                <span
-                  className={`${styles.toneBadge} ${template.tone ? styles[template.tone] : ""}`}
-                >
-                  {template.tone}
-                </span>
-              </div>
+          <Card key={template.id} className={styles.campaignCard}>
+            <CardHeader className={styles.cardHeader}>
+              <CardTitle>{template.name}</CardTitle>
+              <Badge
+                className={`${styles.toneBadge} ${template.tone ? styles[template.tone] : ""}`}
+                variant="secondary"
+              >
+                {template.tone}
+              </Badge>
+            </CardHeader>
 
-              <p className={styles.cardDescription}>
+            <CardContent>
+              <CardDescription className={styles.cardDescription}>
                 {template.description || "An exciting adventure awaits!"}
-              </p>
+              </CardDescription>
 
               <div className={styles.cardDetails}>
                 <div className={styles.detailItem}>
@@ -215,9 +228,10 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
                     </div>
                   )}
               </div>
+            </CardContent>
 
-              <button
-                type="button"
+            <CardFooter>
+              <Button
                 className={styles.selectButton}
                 onClick={() => handleSelectTemplate(template)}
                 disabled={cloning === template.id}
@@ -232,9 +246,9 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
                 ) : (
                   "Select Campaign"
                 )}
-              </button>
-            </div>
-          </div>
+              </Button>
+            </CardFooter>
+          </Card>
         ))}
       </div>
 
@@ -242,13 +256,9 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
         <div className={styles.noTemplates}>
           <h3>No Templates Available</h3>
           <p>Create a custom campaign to get started!</p>
-          <button
-            type="button"
-            className={styles.selectButton}
-            onClick={onCreateCustom}
-          >
+          <Button className={styles.selectButton} onClick={onCreateCustom}>
             Create Custom Campaign
-          </button>
+          </Button>
         </div>
       )}
     </div>

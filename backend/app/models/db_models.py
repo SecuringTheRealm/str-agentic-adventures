@@ -171,6 +171,33 @@ class NPCRelationshipDB(Base):
     updated_at = Column(DateTime, nullable=False, default=_utcnow, onupdate=_utcnow)
 
 
+class GameSession(Base):
+    """Game session for multiplayer play within a campaign."""
+
+    __tablename__ = "game_sessions"
+
+    id = Column(String, primary_key=True, index=True)
+    campaign_id = Column(String, ForeignKey("campaigns.id"), nullable=False, index=True)
+    status = Column(String, nullable=False, default="active")  # active, paused, ended
+    created_at = Column(DateTime, nullable=False, default=_utcnow)
+    turn_order = Column(JSON, nullable=False, default=list)  # list of character_ids
+    current_turn_index = Column(Integer, nullable=False, default=0)
+
+
+class SessionParticipant(Base):
+    """A player participating in a game session."""
+
+    __tablename__ = "session_participants"
+
+    id = Column(String, primary_key=True, index=True)
+    session_id = Column(String, ForeignKey("game_sessions.id"), nullable=False, index=True)
+    character_id = Column(String, ForeignKey("characters.id"), nullable=False)
+    player_name = Column(String, nullable=False)
+    is_dm = Column(Boolean, nullable=False, default=False)
+    is_connected = Column(Boolean, nullable=False, default=True)
+    joined_at = Column(DateTime, nullable=False, default=_utcnow)
+
+
 class ConversationThread(Base):
     """Persistent conversation thread for agent interactions."""
 

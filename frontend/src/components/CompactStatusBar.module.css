@@ -1,0 +1,99 @@
+.statusBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 12px;
+  background: var(--color-fantasy-primary-90);
+  border-bottom: 1px solid var(--color-accent-gold);
+  font-family: "Cinzel", serif;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  flex-shrink: 0;
+}
+
+.hpSection {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.hpLabel {
+  color: var(--color-accent-gold);
+  font-size: 0.7rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.hpBarTrack {
+  width: 80px;
+  height: 8px;
+  background: var(--color-gray-700);
+  border-radius: 4px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.hpBarFill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.hpBarGreen {
+  background-color: var(--color-success);
+}
+
+.hpBarYellow {
+  background-color: var(--color-warning);
+}
+
+.hpBarRed {
+  background-color: var(--color-danger-red);
+}
+
+.hpText {
+  color: var(--color-text-warm);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.divider {
+  width: 1px;
+  height: 20px;
+  background: var(--color-stone);
+  flex-shrink: 0;
+}
+
+.statItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.statItemLabel {
+  color: var(--color-accent-gold);
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.statItemValue {
+  color: var(--color-text-warm);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.conditions {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hpBarFill {
+    transition: none;
+  }
+}

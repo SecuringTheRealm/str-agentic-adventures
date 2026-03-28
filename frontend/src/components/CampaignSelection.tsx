@@ -1,6 +1,8 @@
 import type React from "react";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { deleteCampaign, getCampaigns } from "../services/api";
 import type { Campaign } from "../types";
 import CampaignGallery from "./CampaignGallery";
@@ -87,29 +89,23 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({
           <div className={styles.managerHeader}>
             <h2>My Campaigns</h2>
             <div className={styles.headerActions}>
-              <button
-                type="button"
-                className="action-button secondary"
-                onClick={handleBackToGallery}
-              >
+              <Button variant="secondary" onClick={handleBackToGallery}>
                 ← Browse Templates
-              </button>
-              <button
-                type="button"
-                className="action-button primary"
-                onClick={handleCreateCustom}
-              >
-                + Create New
-              </button>
+              </Button>
+              <Button onClick={handleCreateCustom}>+ Create New</Button>
             </div>
           </div>
 
           {error && (
             <div className={styles.errorMessage}>
               {error}
-              <button type="button" onClick={() => setError(null)}>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setError(null)}
+              >
                 ×
-              </button>
+              </Button>
             </div>
           )}
 
@@ -128,13 +124,9 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({
                     Create your first custom campaign or select a template to
                     get started!
                   </p>
-                  <button
-                    type="button"
-                    className="action-button primary"
-                    onClick={handleBackToGallery}
-                  >
+                  <Button onClick={handleBackToGallery}>
                     Browse Templates
-                  </button>
+                  </Button>
                 </div>
               ) : (
                 customCampaigns.map((campaign) => (
@@ -145,34 +137,36 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({
                         {campaign.description || campaign.setting}
                       </p>
                       <div className={styles.campaignMeta}>
-                        <span className={`tone-badge ${campaign.tone}`}>
+                        <Badge
+                          variant="outline"
+                          className={`tone-badge ${campaign.tone}`}
+                        >
                           {campaign.tone}
-                        </span>
+                        </Badge>
                         {campaign.template_id && (
-                          <span className={styles.cloneBadge}>
+                          <Badge variant="secondary">
                             Cloned from template
-                          </span>
+                          </Badge>
                         )}
                       </div>
                     </div>
                     <div className={styles.campaignActions}>
-                      <button
-                        type="button"
-                        className="action-button primary small"
+                      <Button
+                        size="sm"
                         onClick={() => handleCampaignSelected(campaign)}
                       >
                         Play
-                      </button>
-                      <button
-                        type="button"
-                        className="action-button secondary small"
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
                         onClick={() => handleEditCampaign(campaign)}
                       >
                         Edit
-                      </button>
-                      <button
-                        type="button"
-                        className="action-button danger small"
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
                         onClick={() => {
                           if (!campaign.id) {
                             console.error(
@@ -184,7 +178,7 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({
                         }}
                       >
                         Delete
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 ))
@@ -216,29 +210,27 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({
             </p>
           </div>
           <div className={styles.headerActions}>
-            <button
-              type="button"
-              className={`view-toggle ${viewMode === "gallery" ? "active" : ""}`}
+            <Button
+              variant={viewMode === "gallery" ? "default" : "ghost"}
               onClick={() => setViewMode("gallery")}
             >
               Gallery
-            </button>
-            <button
-              type="button"
-              className={`view-toggle ${(viewMode as string) === "list" ? "active" : ""}`}
+            </Button>
+            <Button
+              variant={(viewMode as string) === "list" ? "default" : "ghost"}
               onClick={() => setViewMode("list")}
             >
               My Campaigns ({customCampaigns.length})
-            </button>
+            </Button>
           </div>
         </div>
 
         {error && (
           <div className={styles.errorMessage}>
             {error}
-            <button type="button" onClick={() => setError(null)}>
+            <Button variant="ghost" size="icon" onClick={() => setError(null)}>
               ×
-            </button>
+            </Button>
           </div>
         )}
 
@@ -257,13 +249,7 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({
                   Create your first custom campaign or select a template to get
                   started!
                 </p>
-                <button
-                  type="button"
-                  className="action-button primary"
-                  onClick={handleBackToGallery}
-                >
-                  Browse Templates
-                </button>
+                <Button onClick={handleBackToGallery}>Browse Templates</Button>
               </div>
             ) : (
               customCampaigns.map((campaign) => (
@@ -274,34 +260,34 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({
                       {campaign.description || campaign.setting}
                     </p>
                     <div className={styles.campaignMeta}>
-                      <span className={`tone-badge ${campaign.tone}`}>
+                      <Badge
+                        variant="outline"
+                        className={`tone-badge ${campaign.tone}`}
+                      >
                         {campaign.tone}
-                      </span>
+                      </Badge>
                       {campaign.template_id && (
-                        <span className={styles.cloneBadge}>
-                          Cloned from template
-                        </span>
+                        <Badge variant="secondary">Cloned from template</Badge>
                       )}
                     </div>
                   </div>
                   <div className={styles.campaignActions}>
-                    <button
-                      type="button"
-                      className="action-button primary small"
+                    <Button
+                      size="sm"
                       onClick={() => handleCampaignSelected(campaign)}
                     >
                       Play
-                    </button>
-                    <button
-                      type="button"
-                      className="action-button secondary small"
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
                       onClick={() => handleEditCampaign(campaign)}
                     >
                       Edit
-                    </button>
-                    <button
-                      type="button"
-                      className="action-button danger small"
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
                       onClick={() => {
                         if (!campaign.id) {
                           console.error(
@@ -313,7 +299,7 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({
                       }}
                     >
                       Delete
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ))

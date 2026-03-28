@@ -179,7 +179,11 @@
   width: 100%;
   padding: 12px 20px;
   min-height: 44px;
-  background: linear-gradient(135deg, var(--color-wood-dark), var(--color-wood-light)); /* Wood gradient */
+  background: linear-gradient(
+    135deg,
+    var(--color-wood-dark),
+    var(--color-wood-light)
+  ); /* Wood gradient */
   color: white;
   border: 2px solid var(--color-accent-gold); /* Gold border */
   border-radius: 6px;
@@ -191,7 +195,11 @@
 }
 
 .selectCharacterButton:hover {
-  background: linear-gradient(135deg, var(--color-wood-light), var(--color-gold-warm)); /* Lighter wood on hover */
+  background: linear-gradient(
+    135deg,
+    var(--color-wood-light),
+    var(--color-gold-warm)
+  ); /* Lighter wood on hover */
   box-shadow: 0 2px 4px var(--color-gold-glow-30);
 }
 

@@ -1,14 +1,17 @@
 import type React from "react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useMediaQuery } from "../hooks/useMediaQuery";
 import { useWebSocketSDK } from "../hooks/useWebSocketSDK";
 import type { WebSocketMessage } from "../services/api";
 import {
   generateBattleMap,
   generateImage,
+  generateStructuredBattleMap,
   getOpeningNarrative,
   sendPlayerInput,
 } from "../services/api";
 import type { Campaign, Character, DiceResult } from "../types";
+import type { BattleMapData } from "../types/battleMap";
 import AutoSaveToast from "./AutoSaveToast";
 import BattleMap from "./BattleMap";
 import CharacterSheet from "./CharacterSheet";
@@ -16,6 +19,7 @@ import ChatBox from "./ChatBox";
 import DiceRoller from "./DiceRoller";
 import styles from "./GameInterface.module.css";
 import ImageDisplay from "./ImageDisplay";
+import MobileGameLayout from "./MobileGameLayout";
 
 interface GameInterfaceProps {
   character: Character;
@@ -62,6 +66,8 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
   character,
   campaign,
 }) => {
+  const isMobile = useMediaQuery("(max-width: 768px)");
+
   const [messages, setMessages] = useState<
     Array<{ text: string; sender: "player" | "dm" }>
   >([]);
@@ -69,6 +75,9 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
   const [imageLoading, setImageLoading] = useState<boolean>(false);
   const [currentImage, setCurrentImage] = useState<string | null>(null);
   const [battleMapUrl, setBattleMapUrl] = useState<string | null>(null);
+  const [battleMapData, setBattleMapData] = useState<BattleMapData | null>(
+    null
+  );
   const [combatActive, setCombatActive] = useState<boolean>(false);
   const [streamingMessage, setStreamingMessage] = useState<string>("");
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
@@ -185,8 +194,40 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
         // Handle game state updates
         if (message.update_type === "combat_start") {
           setCombatActive(true);
+          // Attempt to load structured battle map data
+          generateStructuredBattleMap(
+            { location: "dungeon", terrain: "stone", size: "medium" },
+            message.combat_context as object | undefined
+          )
+            .then((data) => setBattleMapData(data))
+            .catch((err) =>
+              console.warn("Structured battle map unavailable:", err)
+            );
         } else if (message.update_type === "combat_end") {
           setCombatActive(false);
+          setBattleMapData(null);
+        }
+        break;
+
+      case "token_move":
+        // Update token position from server
+        if (
+          battleMapData &&
+          message.token_id &&
+          message.x != null &&
+          message.y != null
+        ) {
+          setBattleMapData((prev) => {
+            if (!prev) return prev;
+            return {
+              ...prev,
+              tokens: prev.tokens.map((t) =>
+                t.id === message.token_id
+                  ? { ...t, x: message.x as number, y: message.y as number }
+                  : t
+              ),
+            };
+          });
         }
         break;
 
@@ -442,6 +483,19 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
       } else {
         throw new Error("No map data received from server");
       }
+
+      // Also attempt to load structured tile map data
+      try {
+        const structuredData = await generateStructuredBattleMap({
+          location: "dungeon corridor",
+          terrain: "stone",
+          size: "medium",
+          features: ["pillars", "doorways", "torches"],
+        });
+        setBattleMapData(structuredData);
+      } catch (structuredError) {
+        console.warn("Structured battle map unavailable:", structuredError);
+      }
     } catch (error) {
       console.error("Error generating battle map:", error);
       const errorMessage = extractErrorMessage(
@@ -459,6 +513,39 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
       setImageLoading(false);
     }
   };
+
+  const handleTokenMove = useCallback(
+    (tokenId: string, x: number, y: number) => {
+      // Optimistic local update
+      setBattleMapData((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          tokens: prev.tokens.map((t) =>
+            t.id === tokenId ? { ...t, x, y } : t
+          ),
+        };
+      });
+
+      // Send move via WebSocket
+      if (isConnected && socket) {
+        try {
+          socket.send(
+            JSON.stringify({
+              type: "token_move",
+              token_id: tokenId,
+              x,
+              y,
+              campaign_id: campaign.id,
+            })
+          );
+        } catch (err) {
+          console.error("Failed to send token move:", err);
+        }
+      }
+    },
+    [campaign.id, isConnected, socket]
+  );
 
   const handlePlayerInput = async (message: string) => {
     // Validate input before processing
@@ -577,7 +664,10 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
       }
 
       // Show auto-save notification when the backend reports a save
-      if (response.state_updates?.auto_saved && response.state_updates?.last_auto_save) {
+      if (
+        response.state_updates?.auto_saved &&
+        response.state_updates?.last_auto_save
+      ) {
         setLastAutoSave(response.state_updates.last_auto_save as string);
       }
     } catch (error) {
@@ -598,6 +688,52 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
     }
   };
 
+  const handleDiceRoll = useCallback(
+    (result: DiceResult) => {
+      if (!isConnected) {
+        const diceMessage = `You rolled ${result.notation}: ${result.total}`;
+        setMessages((prev) => [
+          ...prev,
+          { text: diceMessage, sender: "player" },
+        ]);
+      }
+    },
+    [isConnected]
+  );
+
+  if (isMobile) {
+    return (
+      <div className={styles.gameInterface} data-testid="game-interface">
+        <AutoSaveToast lastAutoSave={lastAutoSave} />
+        <MobileGameLayout
+          character={character}
+          campaign={campaign}
+          messages={messages}
+          onSendMessage={handlePlayerInput}
+          isLoading={loading}
+          streamingMessage={isStreaming ? streamingMessage : undefined}
+          suggestedActions={suggestedActions}
+          onSuggestedAction={handlePlayerInput}
+          currentImage={currentImage}
+          battleMapUrl={battleMapUrl}
+          combatActive={combatActive}
+          imageLoading={imageLoading}
+          imagesRemaining={imagesRemaining}
+          onGeneratePortrait={handleGenerateCharacterPortrait}
+          onGenerateScene={handleGenerateSceneIllustration}
+          onGenerateBattleMap={handleGenerateBattleMap}
+          diceRollerProps={{
+            characterId: character.id,
+            playerName: character.name,
+            websocket: socket,
+            webSocketDiceResult: webSocketDiceResult,
+            onRoll: handleDiceRoll,
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className={styles.gameInterface} data-testid="game-interface">
       <AutoSaveToast lastAutoSave={lastAutoSave} />
@@ -609,16 +745,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
             playerName={character.name}
             websocket={socket}
             webSocketDiceResult={webSocketDiceResult}
-            onRoll={(result) => {
-              // Add dice roll to local chat if not using WebSocket
-              if (!isConnected) {
-                const diceMessage = `You rolled ${result.notation}: ${result.total}`;
-                setMessages((prev) => [
-                  ...prev,
-                  { text: diceMessage, sender: "player" },
-                ]);
-              }
-            }}
+            onRoll={handleDiceRoll}
           />
         </aside>
 
@@ -633,7 +760,10 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
           />
         </main>
 
-        <aside aria-label="Visuals and battle map" className={styles.rightPanel}>
+        <aside
+          aria-label="Visuals and battle map"
+          className={styles.rightPanel}
+        >
           <div className={styles.visualControls}>
             <h4>Generate Visuals</h4>
             {imagesRemaining !== null && (
@@ -677,7 +807,11 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 
           {combatActive && (
             <div className={styles.battleMapSection}>
-              <BattleMap mapUrl={battleMapUrl} />
+              <BattleMap
+                mapUrl={battleMapUrl}
+                mapData={battleMapData}
+                onTokenMove={handleTokenMove}
+              />
             </div>
           )}
         </aside>

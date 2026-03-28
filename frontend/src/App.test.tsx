@@ -47,16 +47,12 @@ describe("App", () => {
 
   it("shows campaign selection by default", () => {
     renderWithRouter();
-    expect(
-      screen.getByTestId("campaign-selection-page")
-    ).toBeInTheDocument();
+    expect(screen.getByTestId("campaign-selection-page")).toBeInTheDocument();
   });
 
   it("routes to character selection page", () => {
     renderWithRouter("/campaigns/test-id/characters");
-    expect(
-      screen.getByTestId("character-selection-page")
-    ).toBeInTheDocument();
+    expect(screen.getByTestId("character-selection-page")).toBeInTheDocument();
   });
 
   it("routes to game page", () => {
@@ -71,8 +67,6 @@ describe("App", () => {
 
   it("redirects unknown routes to campaign selection", () => {
     renderWithRouter("/unknown-route");
-    expect(
-      screen.getByTestId("campaign-selection-page")
-    ).toBeInTheDocument();
+    expect(screen.getByTestId("campaign-selection-page")).toBeInTheDocument();
   });
 });

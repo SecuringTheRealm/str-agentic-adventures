@@ -9,7 +9,11 @@
 }
 
 .dialog {
-  background: linear-gradient(135deg, var(--color-fantasy-bg) 0%, var(--color-fantasy-primary) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-fantasy-bg) 0%,
+    var(--color-fantasy-primary) 100%
+  );
   border: 2px solid var(--color-accent-gold);
   border-radius: 12px;
   padding: 2rem;

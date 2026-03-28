@@ -2,7 +2,9 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
-  background: var(--color-fantasy-primary-80); /* Semi-transparent primary fantasy color */
+  background: var(
+    --color-fantasy-primary-80
+  ); /* Semi-transparent primary fantasy color */
   border-radius: 8px;
   border: 2px solid var(--color-accent-gold); /* Gold border to match theme */
 }

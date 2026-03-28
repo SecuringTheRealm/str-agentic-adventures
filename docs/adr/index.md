@@ -36,6 +36,8 @@ This directory contains Architecture Decision Records (ADRs) for the Agentic Adv
 | 0017 | [Unified SDK with WebSocket Client Extension](0017-unified-sdk-websocket-extension.md) | Accepted | 2025-10-12 | Extend OpenAPI-generated REST client with manual WebSocket module for unified developer experience |
 | 0018 | [Adopt Azure AI Agents SDK for Multi-Agent Architecture](0018-azure-ai-agents-sdk-adoption.md) | Accepted | 2025-10-12 | Migration from Semantic Kernel to Azure AI Agents SDK for production-grade agent orchestration |
 | 0019 | [API Prefix Configuration for Production Deployment](0019-api-prefix-configuration.md) | Accepted | 2025-10-31 | Configure FastAPI to serve routes under /api prefix in production while maintaining backward compatibility |
+| 0020 | [Investigate FLUX.1-Kontext-pro for Character Portrait Consistency](0020-flux-kontext-pro-investigation.md) | Proposed | 2026-03-27 | Evaluate FLUX.1-Kontext-pro as supplementary portrait model for character consistency via reference images |
+| 0021 | [Add Speaker Diarisation for Voice-Based Gameplay](0021-speech-diarisation.md) | Proposed | 2026-03-27 | Speaker diarisation with Azure Speech Service for voice-based multi-player gameplay |
 
 ## ADR Statuses
 

@@ -1,6 +1,10 @@
 .characterSheet {
   padding: 15px;
-  background: linear-gradient(135deg, var(--color-fantasy-primary), var(--color-fantasy-bg)); /* Fantasy gradient */
+  background: linear-gradient(
+    135deg,
+    var(--color-fantasy-primary),
+    var(--color-fantasy-bg)
+  ); /* Fantasy gradient */
   height: 100%;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
@@ -143,8 +147,41 @@
 
 /* Mobile responsive adjustments */
 @media (max-width: 768px) {
+  .characterSheet {
+    height: auto;
+    border: none;
+  }
+
+  .characterStats {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
   .abilitiesGrid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  .ability {
+    padding: 6px;
+  }
+
+  .abilities h3,
+  .inventory h3 {
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .abilities h3::after,
+  .inventory h3::after {
+    content: " \25BC";
+    font-size: 0.7em;
+  }
+
+  .inventoryList {
+    max-height: 200px;
+    overflow-y: auto;
   }
 }
 

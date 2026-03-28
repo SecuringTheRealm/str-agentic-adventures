@@ -1,5 +1,16 @@
 import type React from "react";
 import { useId, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import type {
   Campaign,
   Character,
@@ -93,6 +104,13 @@ const CharacterCreation: React.FC<CharacterCreationProps> = ({
     }
   };
 
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData((prev: CharacterCreateRequest) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
   const getTotalPoints = () => {
     return Object.values(formData.abilities).reduce(
       (sum: number, value: number) => sum + value,
@@ -159,9 +177,14 @@ const CharacterCreation: React.FC<CharacterCreationProps> = ({
         <p>
           Campaign: <strong>{campaign.name}</strong>
         </p>
-        <button type="button" onClick={onBack} className={styles.backButton}>
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={onBack}
+          className={styles.backButton}
+        >
           ← Back to Character Options
-        </button>
+        </Button>
       </div>
 
       <form onSubmit={handleSubmit} className={styles.characterForm}>
@@ -169,8 +192,8 @@ const CharacterCreation: React.FC<CharacterCreationProps> = ({
           <h3>Basic Information</h3>
 
           <div className={styles.formGroup}>
-            <label htmlFor={nameId}>Character Name</label>
-            <input
+            <Label htmlFor={nameId}>Character Name</Label>
+            <Input
               type="text"
               id={nameId}
               name="name"
@@ -184,37 +207,46 @@ const CharacterCreation: React.FC<CharacterCreationProps> = ({
 
           <div className={styles.formRow}>
             <div className={styles.formGroup}>
-              <label htmlFor={raceId}>Race</label>
-              <select
-                id={raceId}
-                name="race"
+              <Label htmlFor={raceId}>Race</Label>
+              <Select
                 value={formData.race}
-                onChange={handleInputChange}
-                data-testid="character-race-select"
+                onValueChange={(value) => handleSelectChange("race", value)}
               >
-                {races.map((race) => (
-                  <option key={race} value={race.toLowerCase()}>
-                    {race}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger id={raceId} data-testid="character-race-select">
+                  <SelectValue placeholder="Select a race" />
+                </SelectTrigger>
+                <SelectContent>
+                  {races.map((race) => (
+                    <SelectItem key={race} value={race.toLowerCase()}>
+                      {race}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor={classId}>Class</label>
-              <select
-                id={classId}
-                name="character_class"
+              <Label htmlFor={classId}>Class</Label>
+              <Select
                 value={formData.character_class}
-                onChange={handleInputChange}
-                data-testid="character-class-select"
+                onValueChange={(value) =>
+                  handleSelectChange("character_class", value)
+                }
               >
-                {classes.map((cls) => (
-                  <option key={cls} value={cls.toLowerCase()}>
-                    {cls}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger
+                  id={classId}
+                  data-testid="character-class-select"
+                >
+                  <SelectValue placeholder="Select a class" />
+                </SelectTrigger>
+                <SelectContent>
+                  {classes.map((cls) => (
+                    <SelectItem key={cls} value={cls.toLowerCase()}>
+                      {cls}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>
@@ -229,17 +261,17 @@ const CharacterCreation: React.FC<CharacterCreationProps> = ({
             {Object.entries(formData.abilities).map(
               ([ability, value]: [string, number]) => (
                 <div key={ability} className={styles.abilityInput}>
-                  <label htmlFor={`abilities.${ability}`}>
+                  <Label htmlFor={`abilities.${ability}`}>
                     {ability.charAt(0).toUpperCase() + ability.slice(1)}
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     type="number"
                     id={`abilities.${ability}`}
                     name={`abilities.${ability}`}
                     value={value}
                     onChange={handleInputChange}
-                    min="8"
-                    max="18"
+                    min={8}
+                    max={18}
                     data-testid={`ability-${ability}`}
                   />
                   <span className={styles.modifier}>
@@ -254,8 +286,8 @@ const CharacterCreation: React.FC<CharacterCreationProps> = ({
         <div className={styles.formSection}>
           <h3>Backstory (Optional)</h3>
           <div className={styles.formGroup}>
-            <label htmlFor={backstoryId}>Character Background</label>
-            <textarea
+            <Label htmlFor={backstoryId}>Character Background</Label>
+            <Textarea
               id={backstoryId}
               name="backstory"
               value={formData.backstory || ""}
@@ -270,14 +302,14 @@ const CharacterCreation: React.FC<CharacterCreationProps> = ({
         {error && <div className={styles.errorMessage}>{error}</div>}
 
         <div className={styles.formActions}>
-          <button
+          <Button
             type="submit"
             disabled={isSubmitting}
             className={styles.createButton}
             data-testid="submit-character-btn"
           >
             {isSubmitting ? "Creating Character..." : "Create Character"}
-          </button>
+          </Button>
         </div>
       </form>
     </div>

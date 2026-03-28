@@ -125,6 +125,39 @@ export interface ErrorMessage extends BaseWebSocketMessage {
 }
 
 /**
+ * Multiplayer session message types
+ */
+export interface PlayerJoinMessage extends BaseWebSocketMessage {
+  type: "player_join";
+  player_name: string;
+  character_id?: string;
+}
+
+export interface PlayerLeaveMessage extends BaseWebSocketMessage {
+  type: "player_leave";
+  player_name: string;
+  character_id?: string;
+}
+
+export interface PlayerListMessage extends BaseWebSocketMessage {
+  type: "player_list";
+  players: Array<{ player_name: string; character_id?: string }>;
+}
+
+export interface TurnAdvanceMessage extends BaseWebSocketMessage {
+  type: "turn_advance";
+  character_id: string;
+  player_name: string;
+}
+
+export interface ActionRequestMessage extends BaseWebSocketMessage {
+  type: "action_request";
+  player_name: string;
+  character_id?: string;
+  action: string;
+}
+
+/**
  * Union type of all possible WebSocket messages
  */
 export type WebSocketMessage =
@@ -140,6 +173,11 @@ export type WebSocketMessage =
   | GameUpdateMessage
   | CharacterUpdateMessage
   | DmNarrationMessage
+  | PlayerJoinMessage
+  | PlayerLeaveMessage
+  | PlayerListMessage
+  | TurnAdvanceMessage
+  | ActionRequestMessage
   | PingMessage
   | PongMessage
   | ErrorMessage;
@@ -380,13 +418,24 @@ export class WebSocketClient {
   }
 
   /**
-   * Connect to a campaign-specific WebSocket for real-time updates
+   * Connect to a campaign-specific WebSocket for real-time updates.
+   *
+   * Optional `playerName` and `characterId` are sent as query params so the
+   * server can track multiplayer participants.
    */
   connectToCampaign(
     campaignId: string,
-    options: WebSocketConnectionOptions = {}
+    options: WebSocketConnectionOptions = {},
+    playerParams?: { playerName?: string; characterId?: string }
   ): WebSocketConnection {
-    const url = `${this.wsBaseUrl}/ws/${campaignId}`;
+    let url = `${this.wsBaseUrl}/ws/${campaignId}`;
+    const qp = new URLSearchParams();
+    if (playerParams?.playerName)
+      qp.set("player_name", playerParams.playerName);
+    if (playerParams?.characterId)
+      qp.set("character_id", playerParams.characterId);
+    const qs = qp.toString();
+    if (qs) url += `?${qs}`;
     const connection = new WebSocketConnection(url, options, this.config);
     connection.connect();
     return connection;
@@ -439,8 +488,9 @@ export const websocketClient = new WebSocketClient();
  */
 export const connectToCampaign = (
   campaignId: string,
-  options?: WebSocketConnectionOptions
-) => websocketClient.connectToCampaign(campaignId, options);
+  options?: WebSocketConnectionOptions,
+  playerParams?: { playerName?: string; characterId?: string }
+) => websocketClient.connectToCampaign(campaignId, options, playerParams);
 
 export const connectToChat = (
   campaignId: string,

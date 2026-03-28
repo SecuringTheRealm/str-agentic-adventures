@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  getTileAsset,
+  hasTileAsset,
   TILE_ASSETS,
   TILE_RENDER_SIZE,
   TILE_SCALE,
   TILE_SIZE,
-  getTileAsset,
-  hasTileAsset,
 } from "./tileMapping";
 
 describe("tileMapping", () => {
@@ -67,14 +67,12 @@ describe("tileMapping", () => {
   describe("getTileAsset", () => {
     it("returns the correct path for a known terrain type", () => {
       expect(getTileAsset("stone_floor")).toBe(
-        "/tiles/kenney-tiny-dungeon/tile_0000.png",
+        "/tiles/kenney-tiny-dungeon/tile_0000.png"
       );
     });
 
     it("falls back to stone_floor for an unknown terrain type", () => {
-      expect(getTileAsset("unknown_terrain_xyz")).toBe(
-        TILE_ASSETS.stone_floor,
-      );
+      expect(getTileAsset("unknown_terrain_xyz")).toBe(TILE_ASSETS.stone_floor);
     });
 
     it("falls back for an empty string", () => {

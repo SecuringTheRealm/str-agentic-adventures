@@ -7,6 +7,7 @@ from .combat_routes import router as combat_router
 from .dice_routes import router as dice_router
 from .inventory_routes import router as inventory_router
 from .item_routes import router as item_router
+from .map_routes import router as map_router
 from .npc_routes import router as npc_router
 from .rest_routes import router as rest_router
 from .save_routes import router as save_router
@@ -26,4 +27,5 @@ all_routers = [
     inventory_router,
     rest_router,
     save_router,
+    map_router,
 ]

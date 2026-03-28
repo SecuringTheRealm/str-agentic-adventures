@@ -3,7 +3,9 @@
   flex-direction: column;
   height: 100%;
   overflow: hidden;
-  background: var(--color-fantasy-primary-10); /* Subtle primary color background */
+  background: var(
+    --color-fantasy-primary-10
+  ); /* Subtle primary color background */
 }
 
 .messagesContainer {
@@ -52,7 +54,11 @@
 
 .dmMessage {
   align-self: flex-start;
-  background: linear-gradient(135deg, var(--color-wood-dark), var(--color-wood-saddle)); /* Wood gradient */
+  background: linear-gradient(
+    135deg,
+    var(--color-wood-dark),
+    var(--color-wood-saddle)
+  ); /* Wood gradient */
   color: var(--color-text-warm); /* Warm off-white text */
   margin-right: auto;
   border-bottom-left-radius: 0;
@@ -77,7 +83,11 @@
 .inputForm {
   display: flex;
   padding: 10px;
-  background: linear-gradient(135deg, var(--color-fantasy-primary), var(--color-fantasy-bg)); /* Fantasy gradient */
+  background: linear-gradient(
+    135deg,
+    var(--color-fantasy-primary),
+    var(--color-fantasy-bg)
+  ); /* Fantasy gradient */
   border-top: 2px solid var(--color-accent-gold); /* Gold border */
 }
 
@@ -107,7 +117,11 @@
   margin-left: 10px;
   padding: 10px 16px;
   min-height: 44px;
-  background: linear-gradient(135deg, var(--color-wood-dark), var(--color-wood-light)); /* Wood gradient */
+  background: linear-gradient(
+    135deg,
+    var(--color-wood-dark),
+    var(--color-wood-light)
+  ); /* Wood gradient */
   color: white;
   border: 1px solid var(--color-accent-gold); /* Gold border */
   border-radius: 4px;
@@ -200,7 +214,11 @@
 /* Suggested actions section */
 .suggestedActions {
   padding: 8px 10px;
-  background: linear-gradient(135deg, var(--color-fantasy-deep), var(--color-fantasy-navy));
+  background: linear-gradient(
+    135deg,
+    var(--color-fantasy-deep),
+    var(--color-fantasy-navy)
+  );
   border-top: 1px solid var(--color-accent-gold);
   display: flex;
   flex-direction: column;
@@ -275,9 +293,31 @@
 }
 
 /* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .message {
+    max-width: 95%;
+  }
+
+  .inputForm {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+  }
+
+  .inputForm button {
+    min-width: 60px;
+    min-height: 48px;
+    padding: 10px 20px;
+  }
+}
+
 @media (max-width: 480px) {
   .messagesContainer {
     padding: 10px;
+  }
+
+  .message {
+    max-width: 100%;
   }
 
   .messageSender {
@@ -298,7 +338,6 @@
 
   .helpButton {
     font-size: 16px; /* Prevent iOS zoom */
-
   }
 }
 

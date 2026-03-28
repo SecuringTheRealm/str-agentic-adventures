@@ -1,7 +1,39 @@
-import { act, render, screen, waitFor } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import * as api from "../services/api";
 import CampaignCreation from "./CampaignCreation";
+
+// Polyfill pointer capture methods missing in jsdom (needed for Radix UI Select)
+if (!Element.prototype.hasPointerCapture) {
+  Element.prototype.hasPointerCapture = () => false;
+}
+if (!Element.prototype.setPointerCapture) {
+  Element.prototype.setPointerCapture = () => {};
+}
+if (!Element.prototype.releasePointerCapture) {
+  Element.prototype.releasePointerCapture = () => {};
+}
+
+/**
+ * Helper to select an option from a Radix UI Select component in tests.
+ * Opens the dropdown via pointerdown on the trigger, then clicks the desired option.
+ */
+async function selectRadixOption(trigger: HTMLElement, optionName: string) {
+  fireEvent.pointerDown(trigger, {
+    ctrlKey: false,
+    button: 0,
+    pointerId: 1,
+    pointerType: "mouse",
+  });
+  const option = await screen.findByRole("option", { name: optionName });
+  fireEvent.click(option);
+}
 
 // Mock the API module
 vi.mock("../services/api");
@@ -34,17 +66,23 @@ describe("CampaignCreation", () => {
   it("has default tone set to heroic", () => {
     render(<CampaignCreation onCampaignCreated={mockOnCampaignCreated} />);
 
-    const toneSelect = screen.getByLabelText(
-      "Campaign Tone"
-    ) as HTMLSelectElement;
-    expect(toneSelect.value).toBe("heroic");
+    const toneTrigger = screen.getByTestId("campaign-tone-select");
+    expect(toneTrigger).toHaveTextContent("🛡️ Heroic");
   });
 
-  it("shows all tone options", () => {
+  it("shows all tone options", async () => {
     render(<CampaignCreation onCampaignCreated={mockOnCampaignCreated} />);
 
+    const toneTrigger = screen.getByTestId("campaign-tone-select");
+    fireEvent.pointerDown(toneTrigger, {
+      ctrlKey: false,
+      button: 0,
+      pointerId: 1,
+      pointerType: "mouse",
+    });
+
     expect(
-      screen.getByRole("option", { name: "🛡️ Heroic" })
+      await screen.findByRole("option", { name: "🛡️ Heroic" })
     ).toBeInTheDocument();
     expect(
       screen.getByRole("option", { name: "⚔️ Gritty" })
@@ -63,17 +101,17 @@ describe("CampaignCreation", () => {
 
     const nameInput = screen.getByLabelText("Campaign Name");
     const settingInput = screen.getByLabelText("Campaign Setting");
-    const toneSelect = screen.getByLabelText("Campaign Tone");
+    const toneTrigger = screen.getByTestId("campaign-tone-select");
     const homebrewInput = screen.getByLabelText("Homebrew Rules (Optional)");
 
     await userEvent.type(nameInput, "The Lost Kingdom");
     await userEvent.type(settingInput, "A mystical realm");
-    await userEvent.selectOptions(toneSelect, "gritty");
+    await selectRadixOption(toneTrigger, "⚔️ Gritty");
     await userEvent.type(homebrewInput, "Custom rule 1\nCustom rule 2");
 
     expect(nameInput).toHaveValue("The Lost Kingdom");
     expect(settingInput).toHaveValue("A mystical realm");
-    expect(toneSelect).toHaveValue("gritty");
+    expect(toneTrigger).toHaveTextContent("⚔️ Gritty");
     expect(homebrewInput).toHaveValue("Custom rule 1\nCustom rule 2");
   });
 
@@ -457,11 +495,11 @@ describe("CampaignCreation", () => {
 
     const nameInput = screen.getByLabelText("Campaign Name");
     const settingInput = screen.getByLabelText("Campaign Setting");
-    const toneSelect = screen.getByLabelText("Campaign Tone");
+    const toneTrigger = screen.getByTestId("campaign-tone-select");
 
     await userEvent.type(nameInput, "Test Campaign");
     await userEvent.type(settingInput, "Test Setting");
-    await userEvent.selectOptions(toneSelect, "gritty");
+    await selectRadixOption(toneTrigger, "⚔️ Gritty");
 
     const submitButton = screen.getByRole("button", {
       name: "Create Campaign",
@@ -479,6 +517,6 @@ describe("CampaignCreation", () => {
     // Form values should be preserved after error
     expect(nameInput).toHaveValue("Test Campaign");
     expect(settingInput).toHaveValue("Test Setting");
-    expect(toneSelect).toHaveValue("gritty");
+    expect(toneTrigger).toHaveTextContent("⚔️ Gritty");
   });
 });
