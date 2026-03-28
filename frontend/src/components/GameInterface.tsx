@@ -37,6 +37,17 @@ interface GameInterfaceProps {
   campaign: Campaign;
 }
 
+interface TokenMoveEvent {
+  token_id: string;
+  x: number;
+  y: number;
+}
+
+const VISUAL_GENERATION_UNAVAILABLE_MESSAGE =
+  "Visual generation is unavailable because image generation is not configured.";
+const VISUAL_GENERATION_RECOVERING_MESSAGE =
+  "Visual generation is temporarily unavailable while the AI service recovers.";
+
 // Utility function to extract user-friendly error messages from API errors
 const extractErrorMessage = (
   error: unknown,
@@ -118,6 +129,8 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
     useState<boolean>(true);
   const [imageGenerationStatusMessage, setImageGenerationStatusMessage] =
     useState<string | null>(null);
+  const [checkingImageGenerationAvailability, setCheckingImageGenerationAvailability] =
+    useState<boolean>(true);
 
   const handleChatWebSocketMessage = (message: WebSocketMessage) => {
     switch (message.type) {
@@ -227,27 +240,29 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
         }
         break;
 
-      case "token_move":
+      case "token_move": {
+        const tokenMove = message as TokenMoveEvent;
         // Update token position from server
         if (
           battleMapData &&
-          message.token_id &&
-          message.x != null &&
-          message.y != null
+          tokenMove.token_id &&
+          tokenMove.x != null &&
+          tokenMove.y != null
         ) {
           setBattleMapData((prev) => {
             if (!prev) return prev;
             return {
               ...prev,
               tokens: prev.tokens.map((t) =>
-                t.id === message.token_id
-                  ? { ...t, x: message.x as number, y: message.y as number }
+                t.id === tokenMove.token_id
+                  ? { ...t, x: tokenMove.x, y: tokenMove.y }
                   : t
               ),
             };
           });
         }
         break;
+      }
 
       case "character_update":
         // Handle character updates (would need character state management)
@@ -347,6 +362,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
         if (visualStatus.available) {
           setImageGenerationAvailable(true);
           setImageGenerationStatusMessage(null);
+          setCheckingImageGenerationAvailability(false);
           return;
         }
 
@@ -357,7 +373,13 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
         if (!cancelled) {
           setImageGenerationAvailable(true);
           setImageGenerationStatusMessage(null);
+          setCheckingImageGenerationAvailability(false);
         }
+        return;
+      }
+
+      if (!cancelled) {
+        setCheckingImageGenerationAvailability(false);
       }
     };
 
@@ -368,18 +390,33 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
     };
   }, []);
 
-  const showVisualError = useCallback(
-    (title: string, fallbackMessage: string, error: unknown) => {
-      const description = extractErrorMessage(error, fallbackMessage);
-      toast.error(title, { description });
-    },
-    []
-  );
-
   const markImageGenerationUnavailable = useCallback((message: string) => {
     setImageGenerationAvailable(false);
     setImageGenerationStatusMessage(message);
   }, []);
+
+  const showVisualError = useCallback(
+    (title: string, fallbackMessage: string, error: unknown) => {
+      const description = extractErrorMessage(error, fallbackMessage);
+
+      if (
+        /image generation is not configured|azure openai|temporarily unavailable while the ai service recovers/i.test(
+          description
+        )
+      ) {
+        markImageGenerationUnavailable(
+          /temporarily unavailable while the ai service recovers/i.test(
+            description
+          )
+            ? VISUAL_GENERATION_RECOVERING_MESSAGE
+            : VISUAL_GENERATION_UNAVAILABLE_MESSAGE
+        );
+      }
+
+      toast.error(title, { description });
+    },
+    [markImageGenerationUnavailable]
+  );
 
   const handleVisualGenerationUnavailable = useCallback(() => {
     if (imageGenerationStatusMessage) {
@@ -428,7 +465,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
         typeof portraitData.error === "string"
       ) {
         markImageGenerationUnavailable(
-          "Visual generation is unavailable because image generation is not configured."
+          VISUAL_GENERATION_UNAVAILABLE_MESSAGE
         );
         throw new Error(portraitData.error);
       }
@@ -494,7 +531,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
         typeof sceneData.error === "string"
       ) {
         markImageGenerationUnavailable(
-          "Visual generation is unavailable because image generation is not configured."
+          VISUAL_GENERATION_UNAVAILABLE_MESSAGE
         );
         throw new Error(sceneData.error);
       }
@@ -557,7 +594,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
         typeof mapData.error === "string"
       ) {
         markImageGenerationUnavailable(
-          "Visual generation is unavailable because image generation is not configured."
+          VISUAL_GENERATION_UNAVAILABLE_MESSAGE
         );
         throw new Error(mapData.error);
       }
@@ -606,8 +643,14 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
   };
 
   const visualsDisabled =
-    imageLoading || imagesRemaining === 0 || !imageGenerationAvailable;
+    imageLoading ||
+    checkingImageGenerationAvailability ||
+    imagesRemaining === 0 ||
+    !imageGenerationAvailable;
   const visualsDisabledReason =
+    (checkingImageGenerationAvailability
+      ? "Checking visual generation availability..."
+      : null) ||
     imageGenerationStatusMessage ||
     (imagesRemaining === 0 ? "Image limit reached for this session." : null);
 

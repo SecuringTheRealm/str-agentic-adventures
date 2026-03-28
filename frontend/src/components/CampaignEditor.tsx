@@ -19,6 +19,17 @@ interface CampaignEditorProps {
   onCancel: () => void;
 }
 
+interface CampaignFormData {
+  name: string;
+  description: string;
+  setting: string;
+  tone: string;
+  homebrew_rules: string;
+  world_description: string;
+}
+
+type CampaignFormField = keyof CampaignFormData;
+
 const CampaignEditor: React.FC<CampaignEditorProps> = ({
   campaign,
   onCampaignSaved,
@@ -31,12 +42,12 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
   const toneId = useId();
   const homebrewRulesId = useId();
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<CampaignFormData>({
     name: campaign?.name || "",
     description: campaign?.description || "",
     setting: campaign?.setting || "",
     tone: campaign?.tone || "heroic",
-    homebrew_rules: campaign?.homebrew_rules?.join("\n") || "",
+    homebrew_rules: campaign?.homebrew_rules?.join("\n") ?? "",
     world_description: campaign?.world_description || "",
   });
 
@@ -47,7 +58,9 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
   >({});
   const [showAIAssistant, setShowAIAssistant] = useState(false);
   const [aiSuggestions, setAISuggestions] = useState<string[]>([]);
-  const [activeField, setActiveField] = useState<string | null>(null);
+  const [activeField, setActiveField] = useState<CampaignFormField | null>(
+    null
+  );
   const [aiLoading, setAILoading] = useState(false);
   const [aiGenerating, setAIGenerating] = useState(false);
   const [autoSave, setAutoSave] = useState(false);
@@ -64,20 +77,20 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
         formData.setting !== (campaign?.setting || "") ||
         formData.tone !== (campaign?.tone || "heroic") ||
         formData.homebrew_rules !==
-          (campaign?.homebrew_rules?.join("\n") || "") ||
+          (campaign?.homebrew_rules?.join("\n") ?? "") ||
         formData.world_description !== (campaign?.world_description || "");
       setHasUnsavedChanges(hasChanges);
     }
   }, [formData, campaign, isEditing]);
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: CampaignFormField, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     setValidationErrors((prev) => ({ ...prev, [field]: "" }));
     setError(null);
   };
 
   const handleFormatText = (
-    field: string,
+    field: CampaignFormField,
     format: "bold" | "italic" | "header" | "list"
   ) => {
     const textarea = document.getElementById(field) as HTMLTextAreaElement;
@@ -121,14 +134,17 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
     }, 0);
   };
 
-  const handleAIAssist = async (field: string, contextType: string) => {
+  const handleAIAssist = async (
+    field: CampaignFormField,
+    contextType: string
+  ) => {
     setActiveField(field);
     setAILoading(true);
     setShowAIAssistant(true);
 
     try {
       const request: AIAssistanceRequest = {
-        text: formData[field as keyof typeof formData],
+        text: formData[field],
         context_type: contextType,
         campaign_tone: formData.tone,
       };
@@ -147,7 +163,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
     if (!activeField) return;
 
     // Check if field is empty or has only placeholder content
-    const currentValue = formData[activeField as keyof typeof formData];
+    const currentValue = formData[activeField];
     const isEmpty = !currentValue || currentValue.trim() === "";
 
     // Enhanced placeholder content detection
@@ -175,7 +191,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
       );
 
       // Check for field-specific placeholder content
-      const fieldSpecificPlaceholders: Record<string, string[]> = {
+      const fieldSpecificPlaceholders: Record<CampaignFormField, string[]> = {
         name: ["enter campaign name", "campaign name", "untitled campaign"],
         description: [
           "brief description",
@@ -197,6 +213,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
           "custom rules",
           "homebrew modifications",
         ],
+        tone: [],
       };
 
       const fieldPlaceholders = fieldSpecificPlaceholders[activeField] || [];
@@ -255,7 +272,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
     }
   };
 
-  const getContextTypeForField = (field: string): string => {
+  const getContextTypeForField = (field: CampaignFormField): string => {
     switch (field) {
       case "setting":
         return "setting";

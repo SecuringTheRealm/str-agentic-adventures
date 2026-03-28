@@ -89,6 +89,14 @@ export interface GameUpdateMessage extends BaseWebSocketMessage {
   type: "game_update";
   update_type: string;
   data?: Record<string, unknown>;
+  combat_context?: Record<string, unknown>;
+}
+
+export interface TokenMoveMessage extends BaseWebSocketMessage {
+  type: "token_move";
+  token_id: string;
+  x: number;
+  y: number;
 }
 
 export interface CharacterUpdateMessage extends BaseWebSocketMessage {
@@ -171,6 +179,7 @@ export type WebSocketMessage =
   | DiceRollMessage
   | DiceResultMessage
   | GameUpdateMessage
+  | TokenMoveMessage
   | CharacterUpdateMessage
   | DmNarrationMessage
   | PlayerJoinMessage

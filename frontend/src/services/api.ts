@@ -60,18 +60,21 @@ export interface Character {
   hit_points?: HitPoints;
   inventory?: InventoryItem[];
   backstory?: string;
-  [key: string]: unknown;
 }
 
 export interface Campaign {
   id?: string;
   name: string;
   setting?: string;
-  tone?: string;
-  homebrew_rules?: string;
+  description?: string | null;
+  tone?: string | null;
+  homebrew_rules?: string[] | null;
   world_description?: string;
+  plot_hooks?: Array<string | null>;
+  is_custom?: boolean;
+  template_id?: string | null;
+  characters?: string[];
   world_art?: { image_url?: string };
-  [key: string]: unknown;
 }
 
 export interface CharacterCreateRequest {
@@ -84,23 +87,26 @@ export interface CharacterCreateRequest {
 
 export interface CampaignCreateRequest {
   name: string;
-  setting?: string;
-  tone?: string;
-  homebrew_rules?: string;
+  setting: string;
+  tone?: string | null;
+  description?: string;
+  homebrew_rules?: string[];
+  world_description?: string;
 }
 
 export interface CampaignUpdateRequest {
   name?: string;
+  description?: string;
   setting?: string;
-  tone?: string;
-  homebrew_rules?: string;
-  [key: string]: unknown;
+  tone?: string | null;
+  homebrew_rules?: string[];
+  world_description?: string;
 }
 
 export interface CloneCampaignRequest {
   template_id: string;
   name?: string;
-  [key: string]: unknown;
+  new_name?: string;
 }
 
 export interface PlayerInput {
@@ -110,24 +116,48 @@ export interface PlayerInput {
 }
 
 export interface AIAssistanceRequest {
-  campaign_id?: string;
-  prompt: string;
-  context?: string;
-  [key: string]: unknown;
+  text: string;
+  context_type: string;
+  campaign_tone: string | null;
 }
 
 export interface AIContentGenerationRequest {
-  campaign_id?: string;
-  content_type: string;
-  parameters?: Record<string, unknown>;
-  [key: string]: unknown;
+  suggestion: string;
+  current_text: string;
+  context_type: string;
+  campaign_tone: string | null;
 }
 
 export interface InventoryItem {
-  name: string;
+  name?: string;
+  item_id?: string;
   quantity: number;
   type?: string;
   description?: string;
+  weight?: number;
+  rarity?: string;
+  value?: number;
+  magical?: boolean;
+}
+
+export interface AIAssistanceResponse {
+  suggestions: string[];
+}
+
+export interface AIContentGenerationResponse {
+  success: boolean;
+  generated_content?: string;
+  error?: string;
+}
+
+export interface GeneratedVisualResponse {
+  image_url?: string;
+  images_remaining?: number;
+  error?: string;
+}
+
+interface CampaignListResponse {
+  campaigns?: Campaign[];
 }
 
 export interface PlayerInputResponse {
@@ -159,6 +189,10 @@ export interface VisualGenerationStatus {
   message: string | null;
 }
 
+interface DependencyHealthStatus {
+  azure_openai?: "healthy" | "degraded" | "unavailable";
+}
+
 // ============================================================================
 // API wrapper functions
 //
@@ -177,7 +211,7 @@ export const createCharacter = async (
   };
 
   const { data, error } = await api.POST("/game/character", {
-    body,
+    body: body as never,
   });
   if (error) throw error;
   return data as Character;
@@ -195,7 +229,7 @@ export const sendPlayerInput = async (
   input: PlayerInput
 ): Promise<PlayerInputResponse> => {
   const { data, error } = await api.POST("/game/input", {
-    body: input,
+    body: input as never,
   });
   if (error) throw error;
   return data as PlayerInputResponse;
@@ -205,7 +239,7 @@ export const createCampaign = async (
   campaignData: CampaignCreateRequest
 ): Promise<Campaign> => {
   const { data, error } = await api.POST("/game/campaign", {
-    body: campaignData,
+    body: campaignData as never,
   });
   if (error) throw error;
   return data as Campaign;
@@ -214,7 +248,11 @@ export const createCampaign = async (
 export const getCampaigns = async (): Promise<Campaign[]> => {
   const { data, error } = await api.GET("/game/campaigns");
   if (error) throw error;
-  return (data ?? []) as Campaign[];
+  const payload = data as Campaign[] | CampaignListResponse | undefined;
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+  return payload?.campaigns ?? [];
 };
 
 export const getCampaign = async (campaignId: string): Promise<Campaign> => {
@@ -231,7 +269,7 @@ export const updateCampaign = async (
 ): Promise<Campaign> => {
   const { data, error } = await api.PUT("/game/campaign/{campaign_id}", {
     params: { path: { campaign_id: campaignId } },
-    body: updates,
+    body: updates as never,
   });
   if (error) throw error;
   return data as Campaign;
@@ -241,7 +279,7 @@ export const cloneCampaign = async (
   cloneData: CloneCampaignRequest
 ): Promise<Campaign> => {
   const { data, error } = await api.POST("/game/campaign/clone", {
-    body: cloneData,
+    body: cloneData as never,
   });
   if (error) throw error;
   return data as Campaign;
@@ -307,52 +345,53 @@ export const getCampaignTemplatesWithRetry = async (): Promise<Campaign[]> => {
   return retryApiCall(() => getCampaignTemplates(), 3, 1000);
 };
 
-export const getAIAssistance = async (request: AIAssistanceRequest) => {
+export const getAIAssistance = async (
+  request: AIAssistanceRequest
+): Promise<AIAssistanceResponse> => {
   const { data, error } = await api.POST("/game/campaign/ai-assist", {
-    body: request,
+    body: request as never,
   });
   if (error) throw error;
-  return data;
+  return data as AIAssistanceResponse;
 };
 
 export const generateAIContent = async (
   request: AIContentGenerationRequest
-) => {
+): Promise<AIContentGenerationResponse> => {
   const { data, error } = await api.POST("/game/campaign/ai-generate", {
-    body: request,
+    body: request as never,
   });
   if (error) throw error;
-  return data;
+  return data as AIContentGenerationResponse;
 };
 
-export const generateImage = async (imageRequest: Record<string, unknown>) => {
+export const generateImage = async (
+  imageRequest: Record<string, unknown>
+): Promise<GeneratedVisualResponse> => {
   const { data, error } = await api.POST("/game/generate-image", {
     body: imageRequest as never,
   });
   if (error) throw error;
-  return data;
+  return data as GeneratedVisualResponse;
 };
 
 export const generateBattleMap = async (
   mapRequest: Record<string, unknown>
-) => {
+): Promise<GeneratedVisualResponse> => {
   const { data, error } = await api.POST("/game/battle-map", {
     body: mapRequest as never,
   });
   if (error) throw error;
-  return data;
+  return data as GeneratedVisualResponse;
 };
 
 export const generateStructuredBattleMap = async (
   environment: object,
   combatContext?: object
 ): Promise<BattleMapData> => {
-  const { data, error } = await api.POST(
-    "/game/battle-map/structured" as never,
-    {
-      body: { environment, combat_context: combatContext } as never,
-    }
-  );
+  const { data, error } = await api.POST("/game/battle-map/structured", {
+    body: { environment, combat_context: combatContext } as never,
+  });
   if (error) throw error;
   return data as BattleMapData;
 };
@@ -374,16 +413,14 @@ export const getOpeningNarrative = async (
     }
   );
   if (error) throw error;
-  return data as OpeningNarrativeResponse;
+  return data as unknown as OpeningNarrativeResponse;
 };
 
-export const getVisualGenerationStatus = async (): Promise<VisualGenerationStatus> => {
-    const response = await fetch(
-      `${getApiBaseUrl()}/game/image-generation/status`,
-      {
-        headers: { Accept: "application/json" },
-      }
-    );
+export const getVisualGenerationStatus =
+  async (): Promise<VisualGenerationStatus> => {
+    const response = await fetch(`${getApiBaseUrl()}/health/dependencies`, {
+      headers: { Accept: "application/json" },
+    });
 
     if (!response.ok) {
       throw new Error(
@@ -391,7 +428,33 @@ export const getVisualGenerationStatus = async (): Promise<VisualGenerationStatu
       );
     }
 
-    return (await response.json()) as VisualGenerationStatus;
+    const dependencyHealth =
+      (await response.json()) as DependencyHealthStatus;
+    const azureStatus = dependencyHealth.azure_openai ?? "unavailable";
+
+    if (azureStatus === "healthy") {
+      return {
+        available: true,
+        status: "healthy",
+        message: null,
+      };
+    }
+
+    if (azureStatus === "degraded") {
+      return {
+        available: false,
+        status: "degraded",
+        message:
+          "Visual generation is temporarily unavailable while the AI service recovers.",
+      };
+    }
+
+    return {
+      available: false,
+      status: "unavailable",
+      message:
+        "Visual generation is unavailable because image generation is not configured.",
+    };
   };
 
 // ============================================================================

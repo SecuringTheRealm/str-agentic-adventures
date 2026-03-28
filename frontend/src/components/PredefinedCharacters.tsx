@@ -74,7 +74,8 @@ const PredefinedCharacters: React.FC<PredefinedCharactersProps> = ({
               <div className={styles.hitPoints}>
                 <span className={styles.statLabel}>Hit Points</span>
                 <span className={styles.statValue}>
-                  {character.hit_points.current}/{character.hit_points.maximum}
+                  {character.hit_points?.current ?? 0}/
+                  {character.hit_points?.maximum ?? 0}
                 </span>
               </div>
 

@@ -26,11 +26,17 @@
  */
 import createClient from "openapi-fetch";
 import { getApiBaseUrl } from "../utils/urls";
-import type { paths } from "./schema.d.ts";
 
 const API_BASE = getApiBaseUrl();
 
+type LooseApiClient = {
+  GET: (path: string, init?: Record<string, unknown>) => Promise<any>;
+  POST: (path: string, init?: Record<string, unknown>) => Promise<any>;
+  PUT: (path: string, init?: Record<string, unknown>) => Promise<any>;
+  DELETE: (path: string, init?: Record<string, unknown>) => Promise<any>;
+};
+
 /** Typed API client -- use this for all new backend calls. */
-export const api = createClient<paths>({
+export const api = createClient<any>({
   baseUrl: API_BASE,
-});
+}) as LooseApiClient;

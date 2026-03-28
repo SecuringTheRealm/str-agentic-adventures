@@ -76,6 +76,7 @@ const MobileGameLayout: React.FC<MobileGameLayoutProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<TabId>("chat");
   const [diceDrawerOpen, setDiceDrawerOpen] = useState(false);
+  const hitPoints = character.hit_points ?? character.hitPoints;
   const visualsDisabled =
     imageLoading || imagesRemaining === 0 || !imageGenerationAvailable;
   const disabledReason =
@@ -118,10 +119,10 @@ const MobileGameLayout: React.FC<MobileGameLayoutProps> = ({
   return (
     <div className={styles.mobileLayout} data-testid="mobile-game-layout">
       <CompactStatusBar
-        currentHp={character.hit_points.current}
-        maxHp={character.hit_points.maximum}
+        currentHp={hitPoints?.current ?? 0}
+        maxHp={hitPoints?.maximum ?? 0}
         armorClass={10}
-        level={character.level}
+        level={character.level ?? 1}
       />
 
       <div className={styles.tabBar} role="tablist" aria-label="Game sections">
