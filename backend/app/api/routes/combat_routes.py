@@ -8,11 +8,66 @@ from typing import Any
 from fastapi import APIRouter, HTTPException, status
 
 from app.agents.scribe_agent import get_scribe
+from app.database import get_session_context
+from app.models.db_models import CombatState
 from app.utils.dice import DiceRoller
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["combat"])
+
+
+def _persist_combat(combat_id: str, data: dict[str, Any]) -> None:
+    """Save or update a combat encounter in the database."""
+    try:
+        with get_session_context() as db:
+            row = db.query(CombatState).filter(CombatState.id == combat_id).first()
+            if row:
+                row.status = data.get("status", row.status)
+                row.round = data.get("round", row.round)
+                row.current_turn = data.get("current_turn", row.current_turn)
+                row.initiative_order = data.get("initiative_order", row.initiative_order)
+                row.combat_log = data.get("combat_log", row.combat_log)
+                row.updated_at = datetime.now(UTC)
+            else:
+                row = CombatState(
+                    id=combat_id,
+                    session_id=data.get("session_id", ""),
+                    status=data.get("status", "active"),
+                    round=data.get("round", 1),
+                    current_turn=data.get("current_turn", 0),
+                    initiative_order=data.get("initiative_order", []),
+                    participants=data.get("participants", []),
+                    environment=data.get("environment", "standard"),
+                    combat_log=data.get("combat_log", []),
+                )
+                db.add(row)
+            db.commit()
+    except Exception as exc:
+        logger.warning("Failed to persist combat state %s: %s", combat_id, exc)
+
+
+def _load_combat(combat_id: str) -> dict[str, Any] | None:
+    """Load a combat encounter from the database, or None if not found."""
+    try:
+        with get_session_context() as db:
+            row = db.query(CombatState).filter(CombatState.id == combat_id).first()
+            if row is None:
+                return None
+            return {
+                "combat_id": row.id,
+                "session_id": row.session_id,
+                "status": row.status,
+                "round": row.round,
+                "current_turn": row.current_turn,
+                "initiative_order": row.initiative_order,
+                "participants": row.participants,
+                "environment": row.environment,
+                "combat_log": row.combat_log,
+            }
+    except Exception as exc:
+        logger.warning("Failed to load combat state %s: %s", combat_id, exc)
+        return None
 
 
 @router.post("/combat/initialize", response_model=dict[str, Any])
@@ -71,8 +126,9 @@ async def initialize_combat(combat_data: dict[str, Any]) -> dict[str, Any]:
         # Sort by initiative (highest first)
         initiative_order.sort(key=lambda x: x["initiative"], reverse=True)
 
-        return {
-            "combat_id": f"combat_{session_id}_{uuid.uuid4().hex[:8]}",
+        combat_id = f"combat_{session_id}_{uuid.uuid4().hex[:8]}"
+        result = {
+            "combat_id": combat_id,
             "session_id": session_id,
             "status": "active",
             "round": 1,
@@ -82,6 +138,20 @@ async def initialize_combat(combat_data: dict[str, Any]) -> dict[str, Any]:
             "battle_map_requested": True,
             "started_at": str(datetime.now(UTC)),
         }
+
+        # Persist to database so combat survives restarts (#701)
+        _persist_combat(combat_id, {
+            "session_id": session_id,
+            "status": "active",
+            "round": 1,
+            "current_turn": 0,
+            "initiative_order": initiative_order,
+            "participants": participants,
+            "environment": environment,
+            "combat_log": [],
+        })
+
+        return result
 
     except Exception as e:
         raise HTTPException(
@@ -147,6 +217,13 @@ async def process_combat_turn(combat_id: str, turn_data: dict[str, Any]) -> dict
                 )
 
         turn_result["timestamp"] = str(datetime.now(UTC))
+
+        # Append to the persistent combat log (#701)
+        existing = _load_combat(combat_id)
+        if existing is not None:
+            log = list(existing.get("combat_log", []))
+            log.append(turn_result)
+            _persist_combat(combat_id, {"combat_log": log})
         return turn_result
 
     except Exception as e:
