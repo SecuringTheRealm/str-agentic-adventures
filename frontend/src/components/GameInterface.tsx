@@ -2,6 +2,7 @@ import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useMediaQuery } from "../hooks/useMediaQuery";
+import { useRealtimeVoice } from "../hooks/useRealtimeVoice";
 import { useWebSocketSDK } from "../hooks/useWebSocketSDK";
 import type { WebSocketMessage } from "../services/api";
 import {
@@ -18,6 +19,7 @@ import BattleMap from "./BattleMap";
 import CharacterSheet from "./CharacterSheet";
 import ChatBox from "./ChatBox";
 import DiceRoller from "./DiceRoller";
+import FloorRequestCard from "./FloorRequestCard";
 import styles from "./GameInterface.module.css";
 import ImageDisplay from "./ImageDisplay";
 import MobileGameLayout from "./MobileGameLayout";
@@ -85,6 +87,9 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
   const [webSocketDiceResult, setWebSocketDiceResult] =
     useState<DiceResult | null>(null);
   const [suggestedActions, setSuggestedActions] = useState<string[]>([]);
+
+  const voice = useRealtimeVoice();
+  const [dmWantsFloor, setDmWantsFloor] = useState(false);
 
   // Stable session ID for image-generation budget tracking.
   // useRef ensures it never changes across re-renders.
@@ -621,6 +626,11 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
       // Use REST API fallback
       await handleRestApiMessage(message);
     }
+
+    // If voice is connected, also send the text to the realtime session for context
+    if (voice.voiceEnabled && voice.connectionState === "connected") {
+      voice.sendTextAsVoiceContext(message);
+    }
   };
 
   const handleRestApiMessage = async (message: string) => {
@@ -758,13 +768,40 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
             streamingMessage={isStreaming ? streamingMessage : undefined}
             suggestedActions={suggestedActions}
             onSuggestedAction={handlePlayerInput}
+            voiceEnabled={voice.voiceEnabled}
+            isSpeaking={voice.isSpeaking}
+            isListening={voice.isListening}
+            onMicPressStart={voice.startListening}
+            onMicPressEnd={voice.stopListening}
           />
+          <Button
+            variant={voice.voiceEnabled ? "default" : "outline"}
+            size="sm"
+            onClick={() => {
+              if (voice.voiceEnabled) {
+                voice.disconnect();
+              } else {
+                voice.connect();
+              }
+            }}
+            aria-label={voice.voiceEnabled ? "Disable voice" : "Enable voice"}
+          >
+            {voice.connectionState === "connecting"
+              ? "Connecting..."
+              : voice.voiceEnabled
+                ? "Voice On"
+                : "Voice Off"}
+          </Button>
         </main>
 
         <aside
           aria-label="Visuals and battle map"
           className={styles.rightPanel}
         >
+          <FloorRequestCard
+            visible={dmWantsFloor}
+            onGrantFloor={() => setDmWantsFloor(false)}
+          />
           <div className={styles.visualControls}>
             <h4>Generate Visuals</h4>
             {imagesRemaining !== null && (

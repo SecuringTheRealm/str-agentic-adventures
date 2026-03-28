@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { ChatMessage } from "../types";
 import styles from "./ChatBox.module.css";
+import VoiceIndicator from "./VoiceIndicator";
+import VoiceMicButton from "./VoiceMicButton";
 
 interface ChatBoxProps {
   messages: ChatMessage[];
@@ -14,6 +16,12 @@ interface ChatBoxProps {
   streamingMessage?: string;
   suggestedActions?: string[];
   onSuggestedAction?: (action: string) => void;
+  // Voice props (all optional — voice is progressive enhancement)
+  voiceEnabled?: boolean;
+  isSpeaking?: boolean;
+  isListening?: boolean;
+  onMicPressStart?: () => void;
+  onMicPressEnd?: () => void;
 }
 
 const ChatBox: React.FC<ChatBoxProps> = ({
@@ -23,6 +31,11 @@ const ChatBox: React.FC<ChatBoxProps> = ({
   streamingMessage,
   suggestedActions,
   onSuggestedAction,
+  voiceEnabled,
+  isSpeaking,
+  isListening,
+  onMicPressStart,
+  onMicPressEnd,
 }) => {
   const [input, setInput] = useState<string>("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -66,6 +79,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
 
   return (
     <div className={styles.chatBox}>
+      {voiceEnabled && <VoiceIndicator isSpeaking={isSpeaking ?? false} />}
       <ScrollArea className={styles.messagesContainer}>
         <div role="log" aria-live="polite" aria-label="Chat messages">
           {messages.map((message, index) => (
@@ -143,6 +157,14 @@ const ChatBox: React.FC<ChatBoxProps> = ({
       )}
 
       <form className={styles.inputForm} onSubmit={handleSubmit}>
+        {voiceEnabled && onMicPressStart && onMicPressEnd && (
+          <VoiceMicButton
+            isListening={isListening ?? false}
+            disabled={isLoading || (isSpeaking ?? false)}
+            onPressStart={onMicPressStart}
+            onPressEnd={onMicPressEnd}
+          />
+        )}
         <Input
           type="text"
           value={input}
