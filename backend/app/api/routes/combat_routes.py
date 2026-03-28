@@ -23,43 +23,48 @@ async def initialize_combat(combat_data: dict[str, Any]) -> dict[str, Any]:
         participants = combat_data.get("participants", [])
         environment = combat_data.get("environment", "standard")
 
-        # Generate initiative order
-        initiative_order = []
+        # Generate initiative order — d20 + DEX modifier for every
+        # combatant, using DiceRoller for consistent randomness.
+        initiative_order: list[dict[str, Any]] = []
         for participant in participants:
+            dex_modifier = participant.get("dex_modifier", 0)
+
             if participant.get("type") == "player":
-                # Players roll initiative
-                from app.plugins.rules_engine_plugin import RulesEnginePlugin
+                # Try to pull DEX from the character sheet
+                try:
+                    character = await get_scribe().get_character(
+                        participant["character_id"]
+                    )
+                    if isinstance(character, dict) and "error" not in character:
+                        dex_score = (
+                            character.get("abilities", {}).get("dexterity", 10)
+                        )
+                        dex_modifier = (dex_score - 10) // 2
+                except Exception:
+                    logger.debug(
+                        "Could not fetch character %s for initiative; "
+                        "using dex_modifier from request.",
+                        participant.get("character_id"),
+                    )
 
-                rules_engine = RulesEnginePlugin()
-                character = await get_scribe().get_character(
-                    participant["character_id"]
-                )
-                if "error" not in character:
-                    dex_modifier = (character["abilities"]["dexterity"] - 10) // 2
-                    initiative_roll = rules_engine.roll_dice("1d20")
-                    initiative_total = initiative_roll["total"] + dex_modifier
-                else:
-                    initiative_total = 10  # Default if character not found
-
+                roll = DiceRoller.roll_d20(modifier=dex_modifier)
                 initiative_order.append(
                     {
                         "type": "player",
-                        "id": participant["character_id"],
+                        "id": participant.get("character_id", participant.get("id")),
                         "name": participant.get("name", "Player"),
-                        "initiative": initiative_total,
+                        "initiative": roll["total"],
                     }
                 )
             else:
-                # NPCs/enemies get random initiative
-                from random import randint
-
+                # NPCs / enemies
+                roll = DiceRoller.roll_d20(modifier=dex_modifier)
                 initiative_order.append(
                     {
                         "type": "npc",
-                        "id": participant["id"],
+                        "id": participant.get("id", "npc"),
                         "name": participant.get("name", "NPC"),
-                        "initiative": randint(1, 20)  # noqa: S311
-                        + participant.get("dex_modifier", 0),
+                        "initiative": roll["total"],
                     }
                 )
 
