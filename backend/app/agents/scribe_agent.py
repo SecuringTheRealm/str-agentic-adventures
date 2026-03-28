@@ -487,10 +487,10 @@ class ScribeAgent(BaseAgent):
                     return {"error": f"Character {character_id} not found"}
                 character = db_character.data
 
-            # Apply updates (simplified for now)
-            for key, value in updates.items():
-                if key in character and key != "id":  # Don't allow changing the ID
-                    character[key] = value
+                # Apply updates inside session context
+                for key, value in updates.items():
+                    if key in character and key != "id":
+                        character[key] = value
 
                 db_character.data = character
                 db.commit()
