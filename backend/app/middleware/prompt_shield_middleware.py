@@ -23,10 +23,19 @@ def _should_check(request: Request) -> bool:
 
 
 class PromptShieldMiddleware(BaseHTTPMiddleware):
-    """Check POST bodies to game endpoints for prompt injection attacks."""
+    """Check POST bodies to game endpoints for prompt injection attacks.
+
+    Skips WebSocket requests — BaseHTTPMiddleware's dispatch breaks the
+    WebSocket handshake if it calls ``call_next`` on a WS connection.
+    """
 
     async def dispatch(self, request: Request, call_next) -> Response:  # noqa: ANN001
         """Intercept requests and check for prompt injection."""
+        # BaseHTTPMiddleware cannot forward WebSocket connections through
+        # call_next; let them pass through untouched (see issue #618).
+        if request.scope.get("type") == "websocket":
+            return await call_next(request)
+
         if not _should_check(request):
             return await call_next(request)
 
