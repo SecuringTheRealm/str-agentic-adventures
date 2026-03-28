@@ -711,6 +711,8 @@ class CreateNPCRequest(BaseModel):
     location: str | None = None
     importance: str = "minor"
     story_role: str | None = None
+    personality: NPCPersonality | None = None
+    role: str | None = None
 
 
 class UpdateNPCRequest(BaseModel):

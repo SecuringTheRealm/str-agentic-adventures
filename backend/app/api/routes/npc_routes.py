@@ -63,12 +63,15 @@ async def create_campaign_npc(campaign_id: str, request: CreateNPCRequest) -> di
             "Speaks in short sentences",
         ]
 
-        # Create NPC with generated personality
-        personality = NPCPersonality(
-            traits=random.sample(sample_traits, 2),
-            mannerisms=random.sample(sample_mannerisms, 1),
-            motivations=["Survive and prosper", "Help their family"],
-        )
+        # Use provided personality or generate a random one
+        if request.personality is not None:
+            personality = request.personality
+        else:
+            personality = NPCPersonality(
+                traits=random.sample(sample_traits, 2),
+                mannerisms=random.sample(sample_mannerisms, 1),
+                motivations=["Survive and prosper", "Help their family"],
+            )
 
         # Generate basic abilities for the NPC
         from app.models.game_models import Abilities, HitPoints
@@ -87,6 +90,9 @@ async def create_campaign_npc(campaign_id: str, request: CreateNPCRequest) -> di
             maximum=random.randint(4, 12),  # noqa: S311
         )
 
+        # Use story_role if provided, otherwise fall back to role
+        resolved_story_role = request.story_role or request.role
+
         return NPC(
             name=request.name,
             race=request.race,
@@ -100,7 +106,7 @@ async def create_campaign_npc(campaign_id: str, request: CreateNPCRequest) -> di
             hit_points=hit_points,
             armor_class=10 + ((abilities.dexterity - 10) // 2),
             importance=request.importance,
-            story_role=request.story_role,
+            story_role=resolved_story_role,
         )
 
     except Exception as e:
