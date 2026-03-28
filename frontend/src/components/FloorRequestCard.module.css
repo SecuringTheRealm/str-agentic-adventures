@@ -1,0 +1,39 @@
+.card {
+  background: rgba(228, 187, 30, 0.15);
+  border: 1px solid rgba(228, 187, 30, 0.3);
+  border-radius: 8px;
+  padding: 0.75rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  animation: fadeIn 0.3s ease;
+}
+
+.icon {
+  font-size: 1.5rem;
+}
+
+.text {
+  color: var(--tw-accent-gold, #e4bb1e);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    animation: none;
+  }
+}

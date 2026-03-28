@@ -1,0 +1,67 @@
+.indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  background: rgba(228, 187, 30, 0.1);
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  background: var(--tw-accent-gold, #e4bb1e);
+  border-radius: 50%;
+  animation: pulse 1.5s ease infinite;
+}
+
+.label {
+  color: var(--tw-accent-gold, #e4bb1e);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.waveform {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 16px;
+}
+
+.bar {
+  width: 2px;
+  background: var(--tw-accent-gold, #e4bb1e);
+  border-radius: 1px;
+  animation: wave 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+@keyframes wave {
+  0% {
+    height: 4px;
+  }
+  100% {
+    height: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot,
+  .bar {
+    animation: none;
+  }
+  .bar {
+    height: 8px;
+  }
+}

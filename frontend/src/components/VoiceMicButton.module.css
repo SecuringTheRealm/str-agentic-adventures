@@ -1,0 +1,48 @@
+.micButton {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--tw-fantasy-text-muted, #6b7280);
+  background: transparent;
+  color: var(--tw-fantasy-text-muted, #6b7280);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.micButton:hover:not(:disabled) {
+  border-color: var(--tw-accent-gold, #e4bb1e);
+  color: var(--tw-accent-gold, #e4bb1e);
+}
+
+.micButton.active {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: white;
+  box-shadow: 0 0 16px rgba(220, 38, 38, 0.4);
+  animation: pulse-ring 1.5s ease infinite;
+}
+
+.micButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+@keyframes pulse-ring {
+  0%,
+  100% {
+    box-shadow: 0 0 8px rgba(220, 38, 38, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(220, 38, 38, 0.6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .micButton.active {
+    animation: none;
+  }
+}
