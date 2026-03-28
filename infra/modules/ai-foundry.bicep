@@ -13,6 +13,9 @@ param disableLocalAuth bool = false
 @description('Principal ID of the managed identity to grant Cognitive Services OpenAI User role')
 param managedIdentityPrincipalId string
 
+@description('Deploy image generation model (requires gated access on some subscriptions)')
+param deployImageModel bool = false
+
 resource foundry 'Microsoft.CognitiveServices/accounts@2024-10-01' = {
   name: name
   location: location
@@ -66,19 +69,20 @@ resource embeddingDeployment 'Microsoft.CognitiveServices/accounts/deployments@2
   dependsOn: [chatDeployment]
 }
 
-// dall-e-3 — image generation for scenes/portraits (gpt-image-1-mini gated on this subscription)
-resource imageDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-10-01' = {
+// Image generation — disabled by default (all models are gated or deprecated on this subscription)
+// Enable with deployImageModel=true once gpt-image-1-mini access is granted
+resource imageDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-10-01' = if (deployImageModel) {
   parent: foundry
-  name: 'dall-e-3'
+  name: 'gpt-image-1-mini'
   sku: {
-    name: 'Standard'
+    name: 'GlobalStandard'
     capacity: 1
   }
   properties: {
     model: {
       format: 'OpenAI'
-      name: 'dall-e-3'
-      version: '3.0'
+      name: 'gpt-image-1-mini'
+      version: '2025-10-06'
     }
   }
   dependsOn: [embeddingDeployment]
@@ -98,7 +102,7 @@ resource phiDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-10
       name: 'Phi-4-mini-instruct'
     }
   }
-  dependsOn: [imageDeployment]
+  dependsOn: [embeddingDeployment]
 }
 
 // Llama-4-Scout — open-weight storytelling for lore generation
