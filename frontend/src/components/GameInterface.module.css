@@ -20,11 +20,13 @@
   background: rgba(255, 255, 255, 0.04);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  color: var(--color-text-warm); /* Warm off-white */
+  color: var(--color-text-warm);
   overflow-y: auto;
   transition: width 0.3s ease;
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  border-right: 1px solid rgba(228, 187, 30, 0.06);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    4px 0 16px rgba(0, 0, 0, 0.15);
 }
 
 .centerPanel {
@@ -34,6 +36,7 @@
   -webkit-backdrop-filter: blur(8px);
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 .rightPanel {
@@ -41,27 +44,44 @@
   background: rgba(255, 255, 255, 0.04);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  color: var(--color-text-warm); /* Warm off-white */
+  color: var(--color-text-warm);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  border-left: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  border-left: 1px solid rgba(228, 187, 30, 0.06);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    -4px 0 16px rgba(0, 0, 0, 0.15);
 }
 
 .visualControls {
   padding: 15px;
-  border-bottom: 1px solid var(--color-stone); /* Stone color border */
+  border-bottom: 1px solid rgba(228, 187, 30, 0.1);
 }
 
 .visualControls h4 {
   margin: 0 0 10px 0;
-  color: var(--color-accent-gold); /* Gold color for headings */
+  color: var(--color-accent-gold);
   font-size: 14px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-family: "Cinzel", serif;
   font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Decorative dash after heading */
+.visualControls h4::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgba(228, 187, 30, 0.3),
+    transparent
+  );
 }
 
 .imageBudget {
@@ -69,6 +89,7 @@
   font-size: 11px;
   color: var(--color-gold-stone);
   font-style: italic;
+  font-family: "Crimson Text", "Georgia", serif;
 }
 
 .visualButtons {
@@ -84,15 +105,17 @@
     135deg,
     var(--color-wood-dark),
     var(--color-wood-light)
-  ); /* Wood gradient */
+  );
   color: white;
-  border: 1px solid var(--color-accent-gold); /* Gold border */
-  border-radius: 4px;
+  border: 1px solid var(--color-accent-gold);
+  border-radius: 6px;
   cursor: pointer;
   font-size: 12px;
-  font-family: "Cinzel", serif;
+  font-family: "Inter", system-ui, sans-serif;
   font-weight: 500;
-  transition: all 0.3s ease;
+  transition:
+    all 0.3s ease,
+    transform 0.15s ease;
 }
 
 .visualButton:hover:not(:disabled) {
@@ -100,8 +123,16 @@
     135deg,
     var(--color-wood-light),
     var(--color-gold-warm)
-  ); /* Lighter wood on hover */
-  box-shadow: 0 2px 4px var(--color-gold-glow-30);
+  );
+  box-shadow:
+    0 4px 12px var(--color-gold-glow-30),
+    0 0 16px rgba(228, 187, 30, 0.08);
+}
+
+/* Tactile press feedback */
+.visualButton:active:not(:disabled) {
+  transform: scale(0.97);
+  box-shadow: 0 1px 4px var(--color-gold-glow-30);
 }
 
 .visualButton:disabled {
@@ -109,7 +140,7 @@
     135deg,
     var(--color-steel),
     var(--color-steel-light)
-  ); /* Steel colors when disabled */
+  );
   cursor: not-allowed;
   border-color: var(--color-steel);
 }
@@ -127,8 +158,8 @@
   min-height: 200px;
   padding: 10px;
   box-sizing: border-box;
-  border-top: 1px solid var(--color-stone); /* Stone color border */
-  background: var(--color-fantasy-bg-30); /* Subtle background */
+  border-top: 1px solid rgba(228, 187, 30, 0.1);
+  background: var(--color-fantasy-bg-30);
 }
 
 /* Responsive adjustments — desktop panels are hidden on mobile;

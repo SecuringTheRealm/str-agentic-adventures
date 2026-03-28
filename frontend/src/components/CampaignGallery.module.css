@@ -9,73 +9,191 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+/* ── Cinematic header: chapter-title feel ── */
+
 .galleryHeader {
   text-align: center;
-  margin-bottom: 3rem;
-  padding: 2rem;
-  background: var(--color-fantasy-bg-60); /* Darker background for emphasis */
+  margin-bottom: 2rem;
+  padding: 1.75rem 2rem 1.5rem;
+  background: var(--color-fantasy-bg-60);
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(228, 187, 30, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Decorative gold ruling lines above & below heading */
+.galleryHeader::before,
+.galleryHeader::after {
+  content: "";
+  display: block;
+  width: 120px;
+  height: 1px;
+  margin: 0 auto;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-accent-gold),
+    transparent
+  );
+}
+
+.galleryHeader::before {
+  margin-bottom: 1rem;
+}
+
+.galleryHeader::after {
+  margin-top: 0.75rem;
 }
 
 .galleryHeader h2 {
-  font-size: 3rem; /* Larger size for prominence */
-  color: var(--color-accent-gold); /* Gold accent color */
-  margin-bottom: 0.5rem;
-  font-family: "Cinzel Decorative", serif; /* More decorative font */
+  font-size: 2.4rem;
+  color: var(--color-accent-gold);
+  margin-bottom: 0.35rem;
+  font-family: "Cinzel Decorative", serif;
   font-weight: 700;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Strong shadow for readability */
-  letter-spacing: 1px; /* Better spacing */
+  text-shadow:
+    0 0 40px rgba(228, 187, 30, 0.15),
+    2px 2px 4px rgba(0, 0, 0, 0.7);
+  letter-spacing: 2px;
 }
 
 .galleryHeader p {
-  font-size: 1.2rem; /* Slightly larger */
-  color: var(--color-text-warm); /* Warm off-white for better contrast */
-  font-family: "Cinzel", serif;
+  font-size: 1.1rem;
+  color: var(--color-text-warm);
+  font-family: "Inter", system-ui, sans-serif;
   font-weight: 500;
+  letter-spacing: 0.03em;
+}
+
+@keyframes headerReveal {
+  from {
+    opacity: 0;
+    letter-spacing: 8px;
+  }
+  to {
+    opacity: 1;
+    letter-spacing: 2px;
+  }
+}
+
+@keyframes subtitleFade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .campaignOptions {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 2rem;
-  margin-bottom: 2rem;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
 }
 
-.campaignCard,
-.customCampaignCard {
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+/* ── Staggered card entrance animation ── */
+
+@keyframes cardEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Gold shimmer sweep on hover — traces across the border */
+@keyframes borderShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.campaignCard {
+  background: rgba(15, 64, 79, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-radius: 12px;
   overflow: hidden;
   transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.35s ease;
+  border: 1px solid rgba(228, 187, 30, 0.12);
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  position: relative;
 }
 
-.campaignCard:hover,
-.customCampaignCard:hover {
-  transform: translateY(-4px);
-  box-shadow:
-    0 12px 40px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    0 0 20px rgba(228, 187, 30, 0.1);
-  border-color: rgba(255, 255, 255, 0.15);
-}
 
 .customCampaignCard {
   background: linear-gradient(
     135deg,
     var(--color-wood-dark) 0%,
     var(--color-wood-light) 100%
-  ); /* Wood gradient to match theme */
+  );
   color: white;
-  border-color: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 12px;
+  overflow: hidden;
+  transition:
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.35s ease;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  position: relative;
+}
+
+/* Hover: elevation + gold glow halo */
+.campaignCard:hover,
+.customCampaignCard:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow:
+    0 16px 48px rgba(0, 0, 0, 0.45),
+    0 0 30px rgba(228, 187, 30, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  border-color: rgba(228, 187, 30, 0.35);
+}
+
+/* Shimmer overlay on campaign cards — gold light sweep */
+.campaignCard::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    110deg,
+    transparent 20%,
+    rgba(228, 187, 30, 0.06) 40%,
+    rgba(228, 187, 30, 0.12) 50%,
+    rgba(228, 187, 30, 0.06) 60%,
+    transparent 80%
+  );
+  background-size: 200% 100%;
+  background-position: -200% 0;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.campaignCard:hover::after {
+  opacity: 1;
+  animation: borderShimmer 1.5s ease-in-out;
 }
 
 /* More specific selector for custom campaign cards */
@@ -105,7 +223,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem; /* already correct per spec */
 }
 
 .cardHeader h3 {
@@ -113,7 +231,7 @@
   margin: 0;
   color: var(--color-accent-gold); /* Gold color for card titles */
   flex: 1;
-  font-family: "Cinzel", serif;
+  font-family: "Cinzel", serif; /* Keep Cinzel for card heading */
   font-weight: 600;
 }
 
@@ -156,10 +274,11 @@
 }
 
 .cardDescription {
+  font-family: "Inter", system-ui, sans-serif;
   font-size: 0.95rem;
   line-height: 1.6;
   color: var(--color-text-warm); /* Light warm text for better contrast */
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
   flex: 1;
 }
 
@@ -168,7 +287,7 @@
 }
 
 .cardDetails {
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .detailItem {
@@ -180,13 +299,17 @@
   display: block;
   color: var(--color-accent-gold); /* Gold color for labels */
   margin-bottom: 0.25rem;
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 0.8rem;
   font-weight: 600;
-  font-family: "Cinzel", serif;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 .detailItem span {
+  font-family: "Inter", system-ui, sans-serif;
   color: var(--color-text-warm); /* Light warm text */
-  line-height: 1.4;
+  line-height: 1.6;
 }
 
 .detailItem ul {
@@ -195,9 +318,11 @@
 }
 
 .detailItem li {
+  font-family: "Inter", system-ui, sans-serif;
   color: var(--color-text-warm); /* Light warm text */
   margin-bottom: 0.25rem;
   font-size: 0.85rem;
+  line-height: 1.6;
 }
 
 .selectButton {
@@ -205,22 +330,27 @@
     135deg,
     var(--color-wood-dark),
     var(--color-wood-light)
-  ); /* Wood gradient to match theme */
+  );
   color: white;
-  border: 1px solid var(--color-accent-gold); /* Gold border */
+  border: 1px solid var(--color-accent-gold);
   padding: 0.75rem 1.5rem;
   min-height: 44px;
   border-radius: 8px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition:
+    all 0.3s ease,
+    transform 0.15s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
   margin-top: auto;
-  font-family: "Cinzel", serif;
+  font-family: "Inter", system-ui, sans-serif;
+  letter-spacing: 0.03em;
+  position: relative;
+  z-index: 2; /* Above card shimmer overlay */
 }
 
 .selectButton:hover:not(:disabled) {
@@ -228,8 +358,16 @@
     135deg,
     var(--color-wood-light),
     var(--color-gold-warm)
-  ); /* Lighter wood on hover */
-  box-shadow: 0 2px 4px var(--color-gold-glow-30);
+  );
+  box-shadow:
+    0 4px 12px var(--color-gold-glow-30),
+    0 0 20px rgba(228, 187, 30, 0.1);
+}
+
+/* Tactile press feedback */
+.selectButton:active:not(:disabled) {
+  transform: scale(0.97);
+  box-shadow: 0 1px 4px var(--color-gold-glow-30);
 }
 
 .selectButton:disabled {
@@ -408,7 +546,37 @@
   }
 }
 
+/* Staggered entrance + header animations — only in real browsers */
+@media (prefers-reduced-motion: no-preference) {
+  .campaignCard,
+  .customCampaignCard {
+    opacity: 0;
+    animation: cardEntrance 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .campaignCard {
+    animation-delay: var(--card-delay, 0.1s);
+  }
+
+  .customCampaignCard {
+    animation-delay: 0s;
+  }
+
+  .galleryHeader h2 {
+    animation: headerReveal 0.8s ease-out both;
+  }
+
+  .galleryHeader p {
+    opacity: 0;
+    animation: subtitleFade 0.6s ease-out 0.4s forwards;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .campaignCard::after {
+    display: none;
+  }
+
   * {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;

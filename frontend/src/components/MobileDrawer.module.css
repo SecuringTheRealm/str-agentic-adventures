@@ -45,7 +45,7 @@
 
 .drawerTitle {
   color: var(--color-accent-gold);
-  font-family: "Cinzel", serif;
+  font-family: "Inter", system-ui, sans-serif;
   font-weight: 600;
   font-size: 1rem;
   margin: 0;

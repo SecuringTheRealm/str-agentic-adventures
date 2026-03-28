@@ -5,7 +5,12 @@ import { cn } from "@/lib/utils";
 
 const Separator: React.FC<
   React.ComponentPropsWithRef<typeof SeparatorPrimitive.Root>
-> = ({ className, orientation = "horizontal", decorative = true, ...props }) => (
+> = ({
+  className,
+  orientation = "horizontal",
+  decorative = true,
+  ...props
+}) => (
   <SeparatorPrimitive.Root
     decorative={decorative}
     orientation={orientation}

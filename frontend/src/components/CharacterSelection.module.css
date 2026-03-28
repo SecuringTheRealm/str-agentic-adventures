@@ -22,7 +22,7 @@
   margin: 10px 0 20px 0;
   color: var(--color-text-warm); /* Warm off-white text */
   font-size: 1.1rem;
-  font-family: "Cinzel", serif;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 .characterOptions {
@@ -69,7 +69,7 @@
   margin: 0 0 20px 0;
   color: var(--color-text-warm); /* Warm off-white text */
   line-height: 1.5;
-  font-family: "Cinzel", serif;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 .characterOptionCard ul {
@@ -82,7 +82,7 @@
 .characterOptionCard li {
   margin: 8px 0;
   line-height: 1.4;
-  font-family: "Cinzel", serif;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 .characterOptionButton {
@@ -96,7 +96,7 @@
   cursor: pointer;
   transition: all 0.3s ease;
   margin-top: 10px;
-  font-family: "Cinzel", serif;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 .characterOptionButton.primary {
@@ -128,7 +128,7 @@
   cursor: pointer;
   font-size: 0.9rem;
   transition: all 0.2s ease;
-  font-family: "Cinzel", serif;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 .backButton:hover {

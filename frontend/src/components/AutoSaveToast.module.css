@@ -8,7 +8,7 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 6px;
   font-size: 13px;
-  font-family: "Cinzel", serif;
+  font-family: "Inter", system-ui, sans-serif;
   font-weight: 500;
   letter-spacing: 0.4px;
   pointer-events: none;

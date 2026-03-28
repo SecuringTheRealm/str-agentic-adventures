@@ -68,7 +68,7 @@
   cursor: pointer;
   transition: all 0.2s ease;
   font-weight: 500;
-  font-family: "Cinzel", serif;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 .viewToggle:hover {
@@ -97,7 +97,7 @@
   text-decoration: none;
   text-align: center;
   justify-content: center;
-  font-family: "Cinzel", serif;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 .actionButton.primary {

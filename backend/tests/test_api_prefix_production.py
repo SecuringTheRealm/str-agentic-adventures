@@ -119,3 +119,23 @@ class TestProductionAPIPrefix:
 
         data = response.json()
         assert data["status"] == "ok"
+
+    def test_production_realtime_token_with_api_prefix(
+        self, production_client
+    ) -> None:
+        """Test that /api/realtime/token works in production."""
+        response = production_client.get("/api/realtime/token")
+
+        # Route should exist (not 404); 503 expected when Azure OpenAI not configured
+        assert response.status_code != 404, (
+            f"Realtime token route should exist (got {response.status_code})"
+        )
+
+    def test_dev_realtime_token_no_api_prefix(self, dev_client) -> None:
+        """Test that /realtime/token works in development."""
+        response = dev_client.get("/realtime/token")
+
+        # Route should exist (not 404); 503 expected when Azure OpenAI not configured
+        assert response.status_code != 404, (
+            f"Realtime token route should exist (got {response.status_code})"
+        )

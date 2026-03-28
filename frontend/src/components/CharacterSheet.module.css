@@ -31,7 +31,7 @@
   font-size: 0.9rem;
   margin-top: 5px;
   color: var(--color-text-muted-warm); /* Lighter fantasy text */
-  font-family: "Cinzel", serif;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 .characterStats {
@@ -53,7 +53,7 @@
   font-size: 0.8rem;
   color: var(--color-accent-gold); /* Gold for labels */
   margin-bottom: 2px;
-  font-family: "Cinzel", serif;
+  font-family: "Inter", system-ui, sans-serif;
   font-weight: 500;
 }
 
@@ -61,7 +61,7 @@
   font-size: 1.2rem;
   font-weight: bold;
   color: var(--color-text-warm); /* Light text */
-  font-family: "Cinzel", serif;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 .abilities h3,
@@ -93,7 +93,7 @@
 .abilityName {
   font-size: 0.8rem;
   color: var(--color-accent-gold); /* Gold for ability names */
-  font-family: "Cinzel", serif;
+  font-family: "Inter", system-ui, sans-serif;
   font-weight: 500;
 }
 
@@ -101,13 +101,13 @@
   font-size: 1.1rem;
   font-weight: bold;
   color: var(--color-text-warm); /* Light text */
-  font-family: "Cinzel", serif;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 .abilityMod {
   font-size: 0.9rem;
   color: var(--color-text-muted-warm); /* Light fantasy text */
-  font-family: "Cinzel", serif;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 .inventoryList {
@@ -124,7 +124,7 @@
   display: flex;
   justify-content: space-between;
   border: 1px solid var(--color-wood-dark); /* Wood border */
-  font-family: "Cinzel", serif;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 .itemName {
@@ -135,14 +135,14 @@
 .itemQuantity {
   color: var(--color-accent-gold); /* Gold for quantities */
   font-weight: bold;
-  font-family: "Cinzel", serif;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 .emptyInventory {
   color: var(--color-stone); /* Stone color for empty state */
   font-style: italic;
   padding: 10px;
-  font-family: "Cinzel", serif;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 /* Mobile responsive adjustments */

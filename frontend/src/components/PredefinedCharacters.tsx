@@ -1,5 +1,7 @@
 import type React from "react";
+import { useState } from "react";
 import { predefinedCharacters } from "../data/predefinedCharacters";
+import { createCharacter } from "../services/api";
 import type { Character } from "../types";
 import styles from "./PredefinedCharacters.module.css";
 
@@ -12,13 +14,28 @@ const PredefinedCharacters: React.FC<PredefinedCharactersProps> = ({
   onCharacterSelected,
   onBack,
 }) => {
-  const handleCharacterSelect = (characterTemplate: Omit<Character, "id">) => {
-    // Create a character with a unique ID
-    const character: Character = {
-      ...characterTemplate,
-      id: `predefined-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-    };
-    onCharacterSelected(character);
+  const [creating, setCreating] = useState<string | null>(null);
+
+  const [error, setError] = useState<string | null>(null);
+
+  const handleCharacterSelect = async (character: Omit<Character, "id">) => {
+    setCreating(character.name);
+    setError(null);
+    try {
+      const created = await createCharacter({
+        name: character.name,
+        race: (character.race || "human").toLowerCase(),
+        character_class: (character.character_class || "fighter").toLowerCase(),
+        abilities: character.abilities || { strength: 10, dexterity: 10, constitution: 10, intelligence: 10, wisdom: 10, charisma: 10 },
+        backstory: character.backstory || "",
+      });
+      onCharacterSelected(created);
+    } catch (err) {
+      console.error("Failed to create character:", err);
+      setError("Failed to create character. Please try again.");
+    } finally {
+      setCreating(null);
+    }
   };
 
   const getAbilityModifier = (score: number): string => {
@@ -35,6 +52,12 @@ const PredefinedCharacters: React.FC<PredefinedCharactersProps> = ({
           ← Back to Character Options
         </button>
       </div>
+
+      {error && (
+        <div className={styles.errorMessage} role="alert">
+          {error}
+        </div>
+      )}
 
       <div className={styles.charactersGrid}>
         {predefinedCharacters.map((character) => (
@@ -134,8 +157,9 @@ const PredefinedCharacters: React.FC<PredefinedCharactersProps> = ({
               type="button"
               onClick={() => handleCharacterSelect(character)}
               className={styles.selectCharacterButton}
+              disabled={creating !== null}
             >
-              Select This Character
+              {creating === character.name ? "Creating..." : "Select This Character"}
             </button>
           </div>
         ))}

@@ -23,7 +23,7 @@
 }
 
 .title {
-  font-family: "Cinzel", serif;
+  font-family: "Inter", system-ui, sans-serif;
   font-size: 1.4rem;
   font-weight: 600;
   color: var(--color-accent-gold);
@@ -49,7 +49,7 @@
   border-radius: 8px;
   font-size: 0.95rem;
   font-weight: 600;
-  font-family: "Cinzel", serif;
+  font-family: "Inter", system-ui, sans-serif;
   cursor: pointer;
   transition: all 0.2s ease;
   border: 2px solid;

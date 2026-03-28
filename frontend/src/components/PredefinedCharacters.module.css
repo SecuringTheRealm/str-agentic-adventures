@@ -22,7 +22,7 @@
   margin: 10px 0 20px 0;
   color: var(--color-text-warm); /* Warm off-white text */
   font-size: 1.1rem;
-  font-family: "Cinzel", serif;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 .charactersGrid {
@@ -71,7 +71,7 @@
   color: var(--color-text-warm); /* Warm off-white text */
   font-size: 0.9rem;
   font-weight: 500;
-  font-family: "Cinzel", serif;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 .characterStats {
@@ -92,14 +92,14 @@
 .statLabel {
   font-weight: 600;
   color: var(--color-accent-gold); /* Gold color for labels */
-  font-family: "Cinzel", serif;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 .statValue {
   font-weight: 700;
   color: var(--color-text-warm); /* Light text */
   font-size: 1.1rem;
-  font-family: "Cinzel", serif;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 .abilitiesGrid {
@@ -123,7 +123,7 @@
   font-weight: 600;
   color: var(--color-accent-gold); /* Gold color for labels */
   margin-bottom: 2px;
-  font-family: "Cinzel", serif;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 .abilityScore {
@@ -131,14 +131,14 @@
   font-size: 1rem;
   font-weight: 700;
   color: var(--color-text-warm); /* Light text */
-  font-family: "Cinzel", serif;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 .abilityModifier {
   display: block;
   font-size: 0.8rem;
   color: var(--color-text-muted-warm); /* Light fantasy text */
-  font-family: "Cinzel", serif;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 .equipmentPreview {
@@ -168,7 +168,7 @@
   margin: 3px 0;
   padding-left: 12px;
   position: relative;
-  font-family: "Cinzel", serif;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 .equipmentPreview li::before {
@@ -194,7 +194,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-family: "Cinzel", serif;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 .selectCharacterButton:hover {
@@ -217,7 +217,7 @@
   cursor: pointer;
   font-size: 0.9rem;
   transition: all 0.2s ease;
-  font-family: "Cinzel", serif;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 .backButton:hover {

@@ -19,7 +19,7 @@
   flex: 1;
   min-height: 44px;
   min-width: 44px;
-  font-family: "Cinzel", serif;
+  font-family: "Inter", system-ui, sans-serif;
   font-size: 0.8rem;
   font-weight: 600;
   white-space: nowrap;

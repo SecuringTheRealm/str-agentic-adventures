@@ -1,5 +1,8 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import * as api from "../services/api";
 import PredefinedCharacters from "./PredefinedCharacters";
+
+vi.mock("../services/api");
 
 describe("PredefinedCharacters", () => {
   const mockOnCharacterSelected = vi.fn();
@@ -7,6 +10,20 @@ describe("PredefinedCharacters", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(api.createCharacter).mockResolvedValue({
+      id: "created-id",
+      name: "Thorin Ironforge",
+      race: "dwarf",
+      character_class: "fighter",
+      abilities: {
+        strength: 16,
+        dexterity: 10,
+        constitution: 15,
+        intelligence: 10,
+        wisdom: 12,
+        charisma: 8,
+      },
+    });
   });
 
   it("renders predefined characters list", () => {
@@ -58,7 +75,7 @@ describe("PredefinedCharacters", () => {
     expect(mockOnBack).toHaveBeenCalledTimes(1);
   });
 
-  it("calls onCharacterSelected when character is selected", () => {
+  it("calls onCharacterSelected when character is selected", async () => {
     render(
       <PredefinedCharacters
         onCharacterSelected={mockOnCharacterSelected}
@@ -69,7 +86,9 @@ describe("PredefinedCharacters", () => {
     const selectButtons = screen.getAllByText("Select This Character");
     fireEvent.click(selectButtons[0]);
 
-    expect(mockOnCharacterSelected).toHaveBeenCalledTimes(1);
+    await waitFor(() => {
+      expect(mockOnCharacterSelected).toHaveBeenCalledTimes(1);
+    });
     expect(mockOnCharacterSelected).toHaveBeenCalledWith(
       expect.objectContaining({
         name: "Thorin Ironforge",

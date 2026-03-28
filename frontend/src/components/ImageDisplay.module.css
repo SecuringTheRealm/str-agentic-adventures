@@ -31,7 +31,7 @@
   color: var(--color-stone); /* Stone color for empty state */
   padding: 20px;
   text-align: center;
-  font-family: "Cinzel", serif;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 .emptyImageState p {
