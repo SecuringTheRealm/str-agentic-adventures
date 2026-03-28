@@ -51,6 +51,7 @@ class AgentClientManager:
         self._is_configured = False
         self._fallback_mode = False
         self._tracer = None
+        self._created_agent_ids: list[str] = []
 
     def get_chat_client(self) -> ChatCompletionsClient | None:
         """Get the Azure OpenAI chat client, creating it if necessary.
@@ -145,6 +146,7 @@ class AgentClientManager:
                 instructions=instructions,
                 tools=tools or [],
             )
+            self._created_agent_ids.append(agent.id)
             logger.info("Created SDK agent: %s (id=%s)", name, agent.id)
             return {"id": agent.id, "name": name}
         except Exception as e:
@@ -462,6 +464,33 @@ class AgentClientManager:
         # Trigger initialization if not yet done
         self.get_chat_client()
         return self._fallback_mode
+
+    # -----------------------------------------------------------------
+    # Cleanup
+    # -----------------------------------------------------------------
+
+    async def cleanup(self) -> None:
+        """Delete all agents created during this process's lifetime.
+
+        Intended to be called during application shutdown so that SDK agent
+        resources are not left dangling on the server.
+        """
+        client = self._agents_client  # Don't trigger lazy init on shutdown
+        if client is None or not self._created_agent_ids:
+            return
+
+        for agent_id in self._created_agent_ids:
+            try:
+                await client.delete_agent(agent_id)
+                logger.info("Deleted SDK agent %s on shutdown", agent_id)
+            except Exception as exc:
+                logger.warning(
+                    "Failed to delete SDK agent %s on shutdown: %s",
+                    agent_id,
+                    exc,
+                )
+
+        self._created_agent_ids.clear()
 
 
 # Singleton instance for global access
