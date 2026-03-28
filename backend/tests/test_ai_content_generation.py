@@ -92,14 +92,11 @@ class TestAIContentGeneration:
             )
 
             response = client.post("/game/campaign/ai-generate", json=request_data)
-            assert (
-                response.status_code == 200
-            )  # Should still return 200 with error in response
+            assert response.status_code == 500
 
             data = response.json()
-            assert data["success"] is False
-            assert "error" in data
-            assert "Azure OpenAI error" in data["error"]
+            assert "detail" in data
+            assert "Azure OpenAI error" in data["detail"]
 
     def test_invalid_request_data(self) -> None:
         """Test with invalid request data."""

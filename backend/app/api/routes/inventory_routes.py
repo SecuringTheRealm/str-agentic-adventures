@@ -45,7 +45,7 @@ def _slot_for_item_type(item_type: ItemType) -> str | None:
     return mapping.get(item_type)
 
 
-@router.post("/inventory/{character_id}/add", response_model=InventoryActionResponse)
+@router.post("/inventory/{character_id}/add", response_model=InventoryActionResponse, status_code=status.HTTP_201_CREATED)
 async def add_item(
     character_id: str, request: AddInventoryItemRequest
 ) -> InventoryActionResponse:

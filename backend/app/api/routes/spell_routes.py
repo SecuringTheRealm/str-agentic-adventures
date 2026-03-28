@@ -4,7 +4,7 @@ import logging
 import random
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
 from app.database import DbDep
@@ -27,11 +27,13 @@ router = APIRouter(tags=["spells"])
 
 
 @router.post("/character/{character_id}/spells", response_model=dict[str, Any])
-async def manage_character_spells(character_id: str, request: ManageSpellsRequest) -> dict[str, Any]:
+async def manage_character_spells(
+    character_id: str, request: ManageSpellsRequest, response: Response
+) -> dict[str, Any]:
     """Manage known spells for a character."""
     try:
-        # This would integrate with a character storage system
-        # For now, returning a success response with the action performed
+        # Stub: no persistence yet — returns confirmation without storing
+        response.headers["X-Fallback"] = "true"
         return {
             "character_id": character_id,
             "action": request.action,
@@ -47,11 +49,13 @@ async def manage_character_spells(character_id: str, request: ManageSpellsReques
 
 
 @router.post("/character/{character_id}/spell-slots", response_model=dict[str, Any])
-async def manage_spell_slots(character_id: str, request: ManageSpellSlotsRequest) -> dict[str, Any]:
+async def manage_spell_slots(
+    character_id: str, request: ManageSpellSlotsRequest, response: Response
+) -> dict[str, Any]:
     """Manage spell slot usage and recovery for a character."""
     try:
-        # This would integrate with a character storage system
-        # For now, returning a success response with the action performed
+        # Stub: no persistence yet — returns confirmation without storing
+        response.headers["X-Fallback"] = "true"
         return {
             "character_id": character_id,
             "action": request.action,
@@ -110,9 +114,10 @@ async def cast_spell_in_combat(combat_id: str, request: CastSpellRequest, db: Db
             slot_used=True,
         )
     except Exception as e:
-        return SpellCastingResponse(
-            success=False, message=f"Failed to cast spell: {str(e)}"
-        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to cast spell: {str(e)}",
+        ) from e
 
 
 async def _get_spell_data(spell_id: str, db: Session) -> dict[str, Any]:
@@ -468,10 +473,11 @@ async def manage_concentration(character_id: str, request: ConcentrationRequest)
 
     except HTTPException:
         raise
-    except Exception:
-        return ConcentrationCheckResponse(
-            success=False, concentration_maintained=False, dc=0, spell_ended=True
-        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to manage concentration: {str(e)}",
+        ) from e
 
 
 @router.post("/spells/attack-bonus", response_model=dict[str, Any])

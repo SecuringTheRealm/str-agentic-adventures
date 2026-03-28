@@ -91,7 +91,7 @@ class TestAPIRouteValidation:
 
             response = client.post("/game/character", json=valid_request)
 
-            if response.status_code == 200:
+            if response.status_code in [200, 201]:
                 data = response.json()
                 assert data["name"] == "Test Hero"
                 assert data["character_class"] == "fighter"
@@ -129,7 +129,7 @@ class TestAPIRouteValidation:
         for edge_case in edge_cases:
             response = client.post("/game/campaign", json=edge_case)
             # Accept either success or validation error
-            assert response.status_code in [200, 422], (
+            assert response.status_code in [200, 201, 422], (
                 f"Edge case should succeed or fail validation: {edge_case}, got {response.status_code}"
             )
 
@@ -263,7 +263,7 @@ class TestAPIRouteErrorHandling:
         response = client.post("/game/campaign", json=request_data)
 
         # Campaign creation should succeed without Azure config
-        assert response.status_code == 200, (
+        assert response.status_code == 201, (
             f"Campaign creation should succeed without Azure OpenAI, got: {response.status_code}"
         )
         data = response.json()
@@ -343,7 +343,7 @@ class TestAPIRouteDataTransformation:
         response = client.post("/game/campaign", json=request_data)
 
         # Campaign creation should succeed
-        assert response.status_code == 200, (
+        assert response.status_code == 201, (
             f"Campaign creation should succeed, got: {response.status_code}"
         )
 
@@ -394,7 +394,7 @@ class TestAPIRoutePerformance:
             try:
                 response = client.post("/game/character", json=request_data)
                 # If it completes, verify it handles the delay (including 400 for validation errors)
-                assert response.status_code in [200, 400, 500, 503, 504]
+                assert response.status_code in [200, 201, 400, 500, 503, 504]
             except (httpx.TimeoutException, httpx.ConnectTimeout, httpx.ReadTimeout):
                 # Timeout is expected behavior for this test
                 pass
@@ -433,7 +433,7 @@ class TestAPIRouteSecurity:
         response = client.post("/game/character", json=request_data)
 
         # Should handle large payload gracefully (including 400 for validation)
-        assert response.status_code in [200, 400, 413, 422, 500]
+        assert response.status_code in [200, 201, 400, 413, 422, 500]
 
     def test_malformed_json_handling(self) -> None:
         """Test API handles malformed JSON."""
@@ -482,4 +482,4 @@ class TestAPIRouteSecurity:
 
             # Should handle malicious input safely
             # Either process it as regular text or reject appropriately
-            assert response.status_code in [200, 400, 422, 500]
+            assert response.status_code in [200, 201, 400, 422, 500]

@@ -13,6 +13,7 @@ from app.models.game_models import (
     AIAssistanceResponse,
     AIContentGenerationRequest,
     AIContentGenerationResponse,
+    GenerateImageRequest,
 )
 
 logger = logging.getLogger(__name__)
@@ -138,17 +139,16 @@ async def generate_ai_content(  # noqa: ARG001
         )
 
     except Exception as e:
-        return AIContentGenerationResponse(
-            generated_content="",
-            success=False,
-            error=f"Failed to generate AI content: {str(e)}",
-        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate AI content: {str(e)}",
+        ) from e
 
 
 @router.post("/generate-image", response_model=dict[str, Any])
 @limiter.limit("5/minute")
 async def generate_image(  # noqa: ARG001
-    request: Request, image_request: dict[str, Any],
+    request: Request, image_request: GenerateImageRequest,
 ) -> dict[str, Any]:
     """Generate an image based on the request details.
 
@@ -159,7 +159,7 @@ async def generate_image(  # noqa: ARG001
     """
     try:
         # Enforce per-session image budget
-        session_id = str(image_request.get("session_id") or "anonymous")
+        session_id = str(image_request.session_id or "anonymous")
         budget = _get_image_budget()
         allowed, remaining = budget.check_and_record(session_id)
         if not allowed:
@@ -172,8 +172,8 @@ async def generate_image(  # noqa: ARG001
                 ),
             )
 
-        image_type = image_request.get("image_type")
-        details = image_request.get("details", {})
+        image_type = image_request.image_type
+        details = image_request.details
 
         if image_type == "character_portrait":
             result = await get_artist().generate_character_portrait(details)
@@ -181,11 +181,6 @@ async def generate_image(  # noqa: ARG001
             result = await get_artist().illustrate_scene(details)
         elif image_type == "item_visualization":
             result = await get_artist().create_item_visualization(details)
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Unsupported image type: {image_type}",
-            )
 
         result["images_remaining"] = remaining
         return result

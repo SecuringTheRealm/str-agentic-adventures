@@ -44,7 +44,7 @@ class TestCampaignTemplatesRouteOrdering:
             "tone": "heroic",
         }
         create_response = client.post("/game/campaign", json=campaign_data)
-        assert create_response.status_code == 200
+        assert create_response.status_code == 201
 
         campaign_id = create_response.json()["id"]
 

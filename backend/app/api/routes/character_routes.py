@@ -3,11 +3,12 @@
 import logging
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Response, status
 
 from app.agents.scribe_agent import get_scribe
 from app.config import ConfigDep
 from app.models.game_models import (
+    AwardExperienceRequest,
     CharacterSheet,
     CreateCharacterRequest,
     EncumbranceResponse,
@@ -21,7 +22,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["characters"])
 
 
-@router.post("/character", response_model=CharacterSheet)
+@router.post("/character", response_model=CharacterSheet, status_code=status.HTTP_201_CREATED)
 async def create_character(character_data: CreateCharacterRequest, config: ConfigDep) -> dict[str, Any]:
     """Create a new player character."""
     try:
@@ -115,17 +116,10 @@ async def level_up_character(character_id: str, level_up_data: LevelUpRequest) -
 @router.post(
     "/character/{character_id}/award-experience", response_model=dict[str, Any]
 )
-async def award_experience(character_id: str, experience_data: dict[str, int]) -> dict[str, Any]:
+async def award_experience(character_id: str, experience_data: AwardExperienceRequest) -> dict[str, Any]:
     """Award experience points to a character."""
     try:
-        experience_points = experience_data.get("experience_points", 0)
-        if experience_points <= 0:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Experience points must be greater than 0",
-            ) from None
-
-        result = await get_scribe().award_experience(character_id, experience_points)
+        result = await get_scribe().award_experience(character_id, experience_data.experience_points)
 
         if "error" in result:
             raise HTTPException(
@@ -220,17 +214,18 @@ async def manage_equipment(character_id: str, request: ManageEquipmentRequest) -
     except HTTPException:
         raise
     except Exception as e:
-        return EquipmentResponse(
-            success=False, message=f"Failed to manage equipment: {str(e)}"
-        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to manage equipment: {str(e)}",
+        ) from e
 
 
 @router.get("/character/{character_id}/encumbrance", response_model=EncumbranceResponse)
-async def get_encumbrance(character_id: str) -> dict[str, Any]:
+async def get_encumbrance(character_id: str, response: Response) -> dict[str, Any]:
     """Calculate carrying capacity and weight."""
     try:
-        # This would normally calculate from actual character data
-        # For now, returning sample encumbrance data
+        # Stub: returns hardcoded data until real character storage is wired up
+        response.headers["X-Fallback"] = "true"
 
         # Simulate character strength-based carrying capacity
         strength_score = 15  # Would be retrieved from character data

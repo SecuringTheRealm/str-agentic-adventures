@@ -388,6 +388,10 @@ class CreateCharacterRequest(BaseModel):
     )  # Background choice from SRD (acolyte, criminal, etc.)
 
 
+class AwardExperienceRequest(BaseModel, extra="forbid"):
+    experience_points: int = Field(..., gt=0)
+
+
 class LevelUpRequest(BaseModel):
     character_id: str
     ability_improvements: dict[str, int] | None = (
@@ -470,9 +474,10 @@ class AIContentGenerationResponse(BaseModel):
     error: str | None = None
 
 
-class GenerateImageRequest(BaseModel):
-    image_type: str  # "character_portrait", "scene_illustration", "item_visualization"
+class GenerateImageRequest(BaseModel, extra="forbid"):
+    image_type: Literal["character_portrait", "scene_illustration", "item_visualization"]
     details: dict[str, Any]
+    session_id: str | None = None
 
 
 class BattleMapRequest(BaseModel):

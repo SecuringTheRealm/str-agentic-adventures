@@ -63,7 +63,7 @@ class TestConfigurationDependencyInjection:
                 "/game/character", json=character_data
             )
 
-            assert response.status_code == 200
+            assert response.status_code == 201
             assert mock_get_scribe.called
 
     def test_character_creation_with_missing_config(
@@ -91,7 +91,7 @@ class TestConfigurationDependencyInjection:
 
         # With fallback mode, character creation can still work or return 400 for validation errors
         # The route no longer blocks with 503 - it allows the agent to handle fallback
-        assert response.status_code in [200, 400], f"Got unexpected status: {response.status_code}"
+        assert response.status_code in [200, 201, 400], f"Got unexpected status: {response.status_code}"
 
     def test_campaign_creation_with_valid_config(self, client_with_config) -> None:
         """Test campaign creation with valid configuration."""
@@ -115,7 +115,7 @@ class TestConfigurationDependencyInjection:
 
             response = client_with_config.post("/game/campaign", json=campaign_data)
 
-            assert response.status_code == 200
+            assert response.status_code == 201
             assert mock_create.called
 
     def test_campaign_creation_with_missing_config(
@@ -131,7 +131,7 @@ class TestConfigurationDependencyInjection:
 
         # Campaign creation doesn't require Azure OpenAI - it's just database operations
         # Should succeed even without Azure OpenAI configuration
-        assert response.status_code == 200, f"Campaign creation should work without Azure config, got: {response.status_code}"
+        assert response.status_code == 201, f"Campaign creation should work without Azure config, got: {response.status_code}"
         assert "id" in response.json()
 
     def test_config_dependency_injection_works(self) -> None:
@@ -197,7 +197,7 @@ class TestConfigurationDependencyInjection:
                 )
 
                 # Should use the injected config and not fail with missing config
-                assert response.status_code == 200
+                assert response.status_code == 201
 
         finally:
             # Clean up
