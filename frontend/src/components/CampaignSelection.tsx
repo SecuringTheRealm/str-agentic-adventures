@@ -133,56 +133,71 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({
                     </Button>
                   </div>
                 ) : (
-                  customCampaigns.map((campaign) => (
-                    <div key={campaign.id} className={styles.campaignItem}>
-                      <div className={styles.campaignInfo}>
-                        <h3>{campaign.name}</h3>
-                        <p className={styles.campaignDescription}>
-                          {campaign.description || campaign.setting}
-                        </p>
-                        <div className={styles.campaignMeta}>
-                          <Badge
-                            variant="outline"
-                            className={`tone-badge ${campaign.tone}`}
-                          >
-                            {campaign.tone}
-                          </Badge>
-                          {campaign.template_id && (
-                            <Badge variant="secondary">
-                              Cloned from template
-                            </Badge>
-                          )}
+                  customCampaigns.map((campaign, index) => (
+                    <div
+                      key={campaign.id}
+                      className={styles.campaignCard}
+                      style={{ "--card-delay": `${0.08 * (index + 1)}s` } as React.CSSProperties}
+                    >
+                      <div className={styles.campaignCardBody}>
+                        <div className={styles.campaignCardHeader}>
+                          <h3>{campaign.name}</h3>
+                          <div className={styles.campaignMeta}>
+                            {campaign.tone && (
+                              <Badge
+                                variant="outline"
+                                className={`tone-badge ${campaign.tone}`}
+                              >
+                                {campaign.tone}
+                              </Badge>
+                            )}
+                            {campaign.template_id && (
+                              <Badge variant="secondary">
+                                Cloned from template
+                              </Badge>
+                            )}
+                          </div>
                         </div>
+                        {(campaign.description || campaign.setting) && (
+                          <p className={styles.campaignDescription}>
+                            {campaign.description || campaign.setting}
+                          </p>
+                        )}
                       </div>
-                      <div className={styles.campaignActions}>
+                      <div className={styles.campaignCardFooter}>
                         <Button
                           size="sm"
+                          className={styles.playButton}
                           onClick={() => handleCampaignSelected(campaign)}
                         >
-                          Play
+                          ▶ Play
                         </Button>
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => handleEditCampaign(campaign)}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => {
-                            if (!campaign.id) {
-                              console.error(
-                                "Cannot delete campaign: ID is missing"
-                              );
-                              return;
-                            }
-                            handleDeleteCampaign(campaign.id);
-                          }}
-                        >
-                          Delete
-                        </Button>
+                        <div className={styles.secondaryActions}>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className={styles.ghostAction}
+                            onClick={() => handleEditCampaign(campaign)}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className={styles.ghostActionDanger}
+                            onClick={() => {
+                              if (!campaign.id) {
+                                console.error(
+                                  "Cannot delete campaign: ID is missing"
+                                );
+                                return;
+                              }
+                              handleDeleteCampaign(campaign.id);
+                            }}
+                          >
+                            Delete
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   ))
