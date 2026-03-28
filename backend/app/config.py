@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     azure_openai_endpoint: str = ""
     azure_openai_api_key: str = ""
 
-    azure_openai_api_version: str = "2025-05-01"
+    azure_openai_api_version: str = "2024-10-21"
 
     # Model Deployments (names match Bicep deployment resource names)
     azure_openai_chat_deployment: str = "gpt-41-mini"
