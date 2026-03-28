@@ -93,7 +93,7 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
       setCloning(template.id);
       const clonedCampaign = await cloneCampaign({
         template_id: template.id,
-        new_name: `${template.name} (My Campaign)`,
+        name: `${template.name} (My Campaign)`,
       });
       onCampaignSelected(clonedCampaign);
     } catch (err) {
