@@ -58,8 +58,11 @@ const extractErrorMessage = (
       }
     }
     // Check for general error message
-    else if ("message" in error && typeof (error as any).message === "string") {
-      return (error as any).message;
+    else if ("message" in error) {
+      const msg = (error as { message?: unknown }).message;
+      if (typeof msg === "string") {
+        return msg;
+      }
     }
   }
   return fallbackMessage;
