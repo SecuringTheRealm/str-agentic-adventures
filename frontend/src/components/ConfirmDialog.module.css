@@ -14,7 +14,7 @@
     var(--color-fantasy-bg) 0%,
     var(--color-fantasy-primary) 100%
   );
-  border: 2px solid var(--color-accent-gold);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   padding: 2rem;
   max-width: 480px;

@@ -17,30 +17,36 @@
 
 .leftPanel {
   width: 250px;
-  background: var(
-    --color-fantasy-primary-80
-  ); /* Primary color with transparency */
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   color: var(--color-text-warm); /* Warm off-white */
   overflow-y: auto;
   transition: width 0.3s ease;
-  border-right: 2px solid var(--color-accent-gold); /* Gold border */
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .centerPanel {
   flex: 2;
-  background: var(--color-fantasy-bg-60); /* Darker fantasy background */
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   flex-direction: column;
 }
 
 .rightPanel {
   width: 300px;
-  background: var(--color-fantasy-primary-90); /* Primary color background */
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   color: var(--color-text-warm); /* Warm off-white */
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  border-left: 2px solid var(--color-accent-gold); /* Gold border */
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .visualControls {

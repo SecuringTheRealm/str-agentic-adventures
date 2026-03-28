@@ -6,7 +6,7 @@
     --color-fantasy-primary-80
   ); /* Semi-transparent primary fantasy color */
   border-radius: 8px;
-  border: 2px solid var(--color-accent-gold); /* Gold border to match theme */
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .managerHeader {
@@ -15,7 +15,7 @@
   align-items: flex-start;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid var(--color-accent-gold); /* Gold accent border */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .headerContent h1 {
@@ -230,8 +230,8 @@
 }
 
 .campaignItem:hover {
-  border-color: var(--color-accent-gold); /* Gold border on hover */
-  box-shadow: 0 4px 6px var(--color-gold-glow-20);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
   background: var(--color-fantasy-bg-80);
 }
 

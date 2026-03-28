@@ -9,7 +9,7 @@
   display: flex;
   gap: 0;
   background: var(--color-fantasy-primary-95);
-  border-bottom: 1px solid var(--color-accent-gold);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   flex-shrink: 0;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;

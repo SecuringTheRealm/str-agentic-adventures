@@ -5,7 +5,7 @@
   padding: 8px 16px;
   background: rgba(15, 64, 79, 0.92);
   color: #e4bb1e;
-  border: 1px solid #e4bb1e;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 6px;
   font-size: 13px;
   font-family: "Cinzel", serif;

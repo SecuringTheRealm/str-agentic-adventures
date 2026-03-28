@@ -6,7 +6,7 @@
     --color-fantasy-primary-80
   ); /* Semi-transparent primary fantasy color */
   border-radius: 8px;
-  border: 2px solid var(--color-accent-gold); /* Gold border to match theme */
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .galleryHeader {
@@ -15,7 +15,7 @@
   padding: 2rem;
   background: var(--color-fantasy-bg-60); /* Darker background for emphasis */
   border-radius: 12px;
-  border: 2px solid var(--color-accent-gold); /* Gold border for prominence */
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .galleryHeader h2 {
@@ -44,21 +44,28 @@
 
 .campaignCard,
 .customCampaignCard {
-  background: var(--color-fantasy-bg-70); /* Darker fantasy background */
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
   overflow: hidden;
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
-  border: 2px solid var(--color-steel); /* Steel border */
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .campaignCard:hover,
 .customCampaignCard:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 25px var(--color-gold-glow-30); /* Gold shadow */
-  border-color: var(--color-accent-gold); /* Gold border on hover */
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 0 20px rgba(228, 187, 30, 0.1);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .customCampaignCard {
@@ -68,7 +75,7 @@
     var(--color-wood-light) 100%
   ); /* Wood gradient to match theme */
   color: white;
-  border-color: var(--color-accent-gold); /* Gold border */
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 /* More specific selector for custom campaign cards */
