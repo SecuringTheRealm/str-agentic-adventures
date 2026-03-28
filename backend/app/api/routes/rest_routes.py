@@ -166,7 +166,10 @@ async def rest(request: RestRequest) -> RestResponse:
                 f"Long rest complete. Recovered {result['hp_recovered']} HP."
             )
 
-        await scribe.update_character(result["character"])
+        character_data = result["character"]
+        if hasattr(character_data, "model_dump"):
+            character_data = character_data.model_dump()
+        await scribe.update_character(request.character_id, character_data)
 
         return RestResponse(
             success=True,
