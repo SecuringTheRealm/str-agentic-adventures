@@ -5,11 +5,11 @@ Uses the Microsoft Agent Framework SDK for combat resolution when available,
 falling back to direct plugin-based or deterministic mechanics otherwise.
 """
 
+import json
 import logging
 import random
+from collections.abc import Callable
 from typing import Any
-
-from azure.ai.agents.models import FunctionDefinition, FunctionToolDefinition
 
 from app.agents.base_agent import BaseAgent
 from app.utils.dice import DiceRoller
@@ -17,94 +17,78 @@ from app.utils.dice import DiceRoller
 logger = logging.getLogger(__name__)
 
 
-def _build_combat_tool_definitions() -> list[FunctionToolDefinition]:
-    """Build FunctionToolDefinition instances for combat resolution."""
-    return [
-        FunctionToolDefinition(
-            function=FunctionDefinition(
-                name="resolve_attack",
-                description=(
-                    "Resolve a melee or ranged attack roll against a target's "
-                    "armour class, determining hit or miss and calculating damage."
-                ),
-                parameters={
-                    "type": "object",
-                    "properties": {
-                        "attack_bonus": {
-                            "type": "integer",
-                            "description": "The attacker's total attack bonus",
-                        },
-                        "target_ac": {
-                            "type": "integer",
-                            "description": "The target's armour class",
-                        },
-                        "damage_dice": {
-                            "type": "string",
-                            "description": "Damage dice notation (e.g., 1d8+3)",
-                        },
-                        "advantage": {
-                            "type": "boolean",
-                            "description": "Whether the attack has advantage",
-                        },
-                        "disadvantage": {
-                            "type": "boolean",
-                            "description": "Whether the attack has disadvantage",
-                        },
-                    },
-                    "required": ["attack_bonus", "target_ac", "damage_dice"],
-                },
-            )
-        ),
-        FunctionToolDefinition(
-            function=FunctionDefinition(
-                name="skill_check",
-                description=(
-                    "Perform a D&D 5e skill check against a difficulty class."
-                ),
-                parameters={
-                    "type": "object",
-                    "properties": {
-                        "ability_score": {
-                            "type": "integer",
-                            "description": "The relevant ability score (e.g., 14 for STR)",
-                        },
-                        "proficient": {
-                            "type": "boolean",
-                            "description": "Whether the character is proficient",
-                        },
-                        "dc": {
-                            "type": "integer",
-                            "description": "Difficulty class for the check",
-                        },
-                    },
-                    "required": ["ability_score", "dc"],
-                },
-            )
-        ),
-        FunctionToolDefinition(
-            function=FunctionDefinition(
-                name="calculate_damage",
-                description=(
-                    "Calculate damage from a dice notation, optionally doubling "
-                    "dice for critical hits."
-                ),
-                parameters={
-                    "type": "object",
-                    "properties": {
-                        "damage_dice": {
-                            "type": "string",
-                            "description": "Dice notation like 2d6+3",
-                        },
-                        "is_critical": {
-                            "type": "boolean",
-                            "description": "Whether this is a critical hit (doubles dice)",
-                        },
-                    },
-                    "required": ["damage_dice"],
-                },
-            )
-        ),
-    ]
+# ---------------------------------------------------------------------------
+# Callable tool functions for the SDK's AsyncFunctionTool
+# ---------------------------------------------------------------------------
+
+
+def resolve_attack(
+    attack_bonus: int,
+    target_ac: int,
+    damage_dice: str,
+    advantage: bool = False,
+    disadvantage: bool = False,
+) -> str:
+    """Resolve a melee or ranged attack roll against a target's armour class.
+
+    Determines hit or miss and calculates damage.
+
+    :param attack_bonus: The attacker's total attack bonus.
+    :param target_ac: The target's armour class.
+    :param damage_dice: Damage dice notation (e.g., 1d8+3).
+    :param advantage: Whether the attack has advantage.
+    :param disadvantage: Whether the attack has disadvantage.
+    :return: JSON-encoded attack resolution result.
+    """
+    roll = DiceRoller.roll_d20(attack_bonus, advantage, disadvantage)
+    hit = roll["total"] >= target_ac
+    result: dict[str, Any] = {"attack_roll": roll, "hit": hit, "target_ac": target_ac}
+    if hit:
+        damage = DiceRoller.roll_damage(damage_dice)
+        result["damage"] = damage
+    return json.dumps(result)
+
+
+def skill_check(
+    ability_score: int, dc: int, proficient: bool = False
+) -> str:
+    """Perform a D&D 5e skill check against a difficulty class.
+
+    :param ability_score: The relevant ability score (e.g., 14 for STR).
+    :param proficient: Whether the character is proficient.
+    :param dc: Difficulty class for the check.
+    :return: JSON-encoded skill check result.
+    """
+    modifier = (ability_score - 10) // 2
+    if proficient:
+        modifier += 2  # Default proficiency bonus
+    roll = DiceRoller.roll_d20(modifier)
+    success = roll["total"] >= dc
+    return json.dumps({"roll": roll, "dc": dc, "success": success})
+
+
+def calculate_damage(
+    damage_dice: str, is_critical: bool = False
+) -> str:
+    """Calculate damage from a dice notation, optionally doubling dice for critical hits.
+
+    :param damage_dice: Dice notation like 2d6+3.
+    :param is_critical: Whether this is a critical hit (doubles dice).
+    :return: JSON-encoded damage result.
+    """
+    result = DiceRoller.roll_damage(damage_dice)
+    if is_critical:
+        # Double the dice portion (roll again), keep same modifier
+        extra = DiceRoller.roll_damage(damage_dice)
+        result["total"] += extra["total"]
+        result["rolls"].extend(extra["rolls"])
+        result["is_critical"] = True
+    return json.dumps(result)
+
+
+def _get_combat_tool_functions() -> list[Callable[..., Any]]:
+    """Return the callable tool functions for the Combat MC agent."""
+    return [resolve_attack, skill_check, calculate_damage]
 
 
 class CombatMCAgent(BaseAgent):
@@ -137,9 +121,9 @@ class CombatMCAgent(BaseAgent):
             "skill checks, and damage calculations according to D&D 5e rules."
         )
 
-    def _get_sdk_tools(self) -> list[FunctionToolDefinition]:
-        """Return combat resolution tool definitions for the SDK agent."""
-        return _build_combat_tool_definitions()
+    def _get_sdk_tool_functions(self) -> list[Callable[..., Any]]:
+        """Return callable combat tool functions for the SDK agent."""
+        return _get_combat_tool_functions()
 
     def _register_skills(self) -> None:
         """Register necessary skills for the Combat MC agent."""

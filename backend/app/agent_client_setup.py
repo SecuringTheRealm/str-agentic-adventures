@@ -123,14 +123,22 @@ class AgentClientManager:
         instructions: str,
         tools: list[FunctionToolDefinition] | None = None,
         model: str | None = None,
+        *,
+        toolset: AsyncToolSet | None = None,
     ) -> dict[str, Any] | None:
         """Create an agent via the Microsoft Agent Framework SDK.
+
+        When *toolset* is provided the SDK registers its tool definitions
+        on the agent and can dispatch tool calls automatically during
+        ``create_and_process``.  Legacy callers may still pass a plain
+        *tools* list of ``FunctionToolDefinition`` objects.
 
         Args:
             name: Human-readable agent name.
             instructions: System-level instructions for the agent.
-            tools: Optional list of FunctionToolDefinition instances.
+            tools: Optional list of FunctionToolDefinition instances (legacy).
             model: Model deployment name (defaults to chat deployment).
+            toolset: Optional ``AsyncToolSet`` for auto tool-call dispatch.
 
         Returns:
             Dict with ``id`` and ``name`` on success, or None on failure.
@@ -140,12 +148,17 @@ class AgentClientManager:
             return None
         try:
             model = model or settings.azure_openai_chat_deployment
-            agent: Agent = await client.create_agent(
-                model=model,
-                name=name,
-                instructions=instructions,
-                tools=tools or [],
-            )
+            kwargs: dict[str, Any] = {
+                "model": model,
+                "name": name,
+                "instructions": instructions,
+            }
+            if toolset is not None:
+                kwargs["toolset"] = toolset
+            else:
+                kwargs["tools"] = tools or []
+
+            agent: Agent = await client.create_agent(**kwargs)
             self._created_agent_ids.append(agent.id)
             logger.info("Created SDK agent: %s (id=%s)", name, agent.id)
             return {"id": agent.id, "name": name}

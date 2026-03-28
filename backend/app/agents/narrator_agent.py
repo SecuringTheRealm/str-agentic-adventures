@@ -7,9 +7,8 @@ falling back to direct AzureOpenAIClient calls otherwise.
 
 import json
 import logging
+from collections.abc import Callable
 from typing import Any
-
-from azure.ai.agents.models import FunctionDefinition, FunctionToolDefinition
 
 from app.agents.base_agent import BaseAgent
 from app.azure_openai_client import azure_openai_client
@@ -18,60 +17,47 @@ from app.config import settings
 logger = logging.getLogger(__name__)
 
 
-def _build_narrative_tool_definitions() -> list[FunctionToolDefinition]:
-    """Build FunctionToolDefinition instances for narrative generation."""
-    return [
-        FunctionToolDefinition(
-            function=FunctionDefinition(
-                name="describe_scene",
-                description=(
-                    "Generate a rich, immersive description of a scene based on "
-                    "location, time of day, mood, and recent events."
-                ),
-                parameters={
-                    "type": "object",
-                    "properties": {
-                        "location": {
-                            "type": "string",
-                            "description": "The name or description of the location",
-                        },
-                        "time_of_day": {
-                            "type": "string",
-                            "description": "Time of day (dawn, morning, noon, etc.)",
-                        },
-                        "mood": {
-                            "type": "string",
-                            "description": "Atmosphere/mood (tense, peaceful, mysterious)",
-                        },
-                    },
-                    "required": ["location"],
-                },
-            )
-        ),
-        FunctionToolDefinition(
-            function=FunctionDefinition(
-                name="advance_narrative",
-                description=(
-                    "Advance the story by activating or completing plot points "
-                    "based on player actions and the current narrative state."
-                ),
-                parameters={
-                    "type": "object",
-                    "properties": {
-                        "current_situation": {
-                            "type": "string",
-                            "description": "Description of what just happened",
-                        },
-                        "action": {
-                            "type": "string",
-                            "description": "The player action that triggers the advance",
-                        },
-                    },
-                    "required": ["current_situation"],
-                },
-            )
-        ),
-    ]
+# ---------------------------------------------------------------------------
+# Callable tool functions for the SDK's AsyncFunctionTool
+# ---------------------------------------------------------------------------
+
+
+def describe_scene_tool(
+    location: str,
+    time_of_day: str = "an indeterminate time",
+    mood: str = "mysterious",
+) -> str:
+    """Generate a rich, immersive description of a scene based on location, time of day, mood, and recent events.
+
+    :param location: The name or description of the location.
+    :param time_of_day: Time of day (dawn, morning, noon, etc.).
+    :param mood: Atmosphere/mood (tense, peaceful, mysterious).
+    :return: JSON-encoded scene context.
+    """
+    return json.dumps(
+        {"location": location, "time_of_day": time_of_day, "mood": mood}
+    )
+
+
+def advance_narrative_tool(
+    current_situation: str, action: str = ""
+) -> str:
+    """Advance the story by activating or completing plot points.
+
+    Based on player actions and the current narrative state.
+
+    :param current_situation: Description of what just happened.
+    :param action: The player action that triggers the advance.
+    :return: JSON-encoded narrative advancement context.
+    """
+    return json.dumps(
+        {"current_situation": current_situation, "action": action}
+    )
+
+
+def _get_narrator_tool_functions() -> list[Callable[..., Any]]:
+    """Return the callable tool functions for the Narrator agent."""
+    return [describe_scene_tool, advance_narrative_tool]
 
 
 class NarratorAgent(BaseAgent):
@@ -109,9 +95,9 @@ class NarratorAgent(BaseAgent):
             "actionable details that invite interaction."
         )
 
-    def _get_sdk_tools(self) -> list[FunctionToolDefinition]:
-        """Return narrative generation tool definitions for the SDK agent."""
-        return _build_narrative_tool_definitions()
+    def _get_sdk_tool_functions(self) -> list[Callable[..., Any]]:
+        """Return callable narrative tool functions for the SDK agent."""
+        return _get_narrator_tool_functions()
 
     def _initialize_fallback_components(self) -> None:
         """Initialize fallback components when Azure OpenAI is not available."""
