@@ -24,8 +24,8 @@ services:
     project: frontend
     language: js
     host: staticwebapp
-    # Vite writes the production build to frontend/dist
-    dist: dist
+    # Vite writes the production build to frontend/build (see vite.config.ts outDir)
+    dist: build
 
 pipeline:
   provider: github
