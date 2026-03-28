@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 
 import pybreaker
 
@@ -11,7 +12,7 @@ from app.agent_client_setup import agent_client_manager
 from app.azure_openai_client import AzureOpenAIClient, azure_openai_client
 
 if TYPE_CHECKING:
-    from azure.ai.agents.models import FunctionToolDefinition
+    from azure.ai.agents.models import AsyncToolSet, FunctionToolDefinition
     from azure.ai.inference import ChatCompletionsClient
 
 logger = logging.getLogger(__name__)
@@ -43,6 +44,7 @@ class BaseAgent:
         # Microsoft Agent Framework SDK state
         self._agent_id: str | None = None
         self._sdk_thread_ids: dict[str, str] = {}
+        self._toolset: AsyncToolSet | None = None
 
         try:
             self.chat_client = agent_client_manager.get_chat_client()
@@ -97,11 +99,37 @@ class BaseAgent:
         return agent_client_manager.get_agents_client() is not None
 
     def _get_sdk_tools(self) -> list[FunctionToolDefinition]:
-        """Return tool definitions to register with the SDK agent.
+        """Return legacy FunctionToolDefinition objects for the SDK agent.
 
-        Override in subclasses to register game-mechanics tools (dice, combat, etc.).
+        Deprecated in favour of ``_get_sdk_tool_functions``.  Kept for
+        backward compatibility with callers that have not yet migrated.
         """
         return []
+
+    def _get_sdk_tool_functions(self) -> list[Callable[..., Any]]:
+        """Return callable Python functions to register with the SDK agent.
+
+        Override in subclasses to provide tool functions.  The SDK's
+        ``AsyncFunctionTool`` auto-infers the JSON schema from the
+        function signature and docstring.
+        """
+        return []
+
+    def _build_toolset(self) -> AsyncToolSet | None:
+        """Build an ``AsyncToolSet`` from this agent's tool functions.
+
+        Returns None when no tool functions are defined.
+        """
+        funcs = self._get_sdk_tool_functions()
+        if not funcs:
+            return None
+
+        from azure.ai.agents.models import AsyncFunctionTool, AsyncToolSet
+
+        toolset = AsyncToolSet()
+        tool = AsyncFunctionTool(functions=set(funcs))
+        toolset.add(tool)
+        return toolset
 
     def _get_sdk_instructions(self) -> str:
         """Return system instructions for the SDK agent.
@@ -113,6 +141,9 @@ class BaseAgent:
     async def _ensure_agent_created(self) -> str | None:
         """Lazily create the SDK agent and cache the agent ID.
 
+        Prefers the new ``AsyncToolSet`` path when tool functions are
+        defined; falls back to the legacy ``FunctionToolDefinition`` list.
+
         Returns:
             The SDK agent ID, or None if the SDK is unavailable or creation fails.
         """
@@ -122,11 +153,20 @@ class BaseAgent:
         if not self._sdk_available:
             return None
 
-        result = await agent_client_manager.create_agent(
-            name=self.agent_name,
-            instructions=self._get_sdk_instructions(),
-            tools=self._get_sdk_tools(),
-        )
+        self._toolset = self._build_toolset()
+        if self._toolset is not None:
+            result = await agent_client_manager.create_agent(
+                name=self.agent_name,
+                instructions=self._get_sdk_instructions(),
+                toolset=self._toolset,
+            )
+        else:
+            # Legacy path — FunctionToolDefinition list
+            result = await agent_client_manager.create_agent(
+                name=self.agent_name,
+                instructions=self._get_sdk_instructions(),
+                tools=self._get_sdk_tools(),
+            )
         if result is not None:
             self._agent_id = result["id"]
             logger.info(
@@ -218,5 +258,5 @@ class BaseAgent:
             return None
 
         return await agent_client_manager.create_and_process_run(
-            thread_id=thread_id, agent_id=agent_id
+            thread_id=thread_id, agent_id=agent_id, toolset=self._toolset
         )

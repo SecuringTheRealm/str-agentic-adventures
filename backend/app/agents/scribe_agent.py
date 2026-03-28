@@ -5,10 +5,10 @@ Uses the Microsoft Agent Framework SDK for character/NPC query tools
 when available, with automatic fallback to direct database queries.
 """
 
+import json
 import logging
+from collections.abc import Callable
 from typing import Any
-
-from azure.ai.agents.models import FunctionDefinition, FunctionToolDefinition
 
 from app.agents.base_agent import BaseAgent
 from app.database import get_session_context, init_db
@@ -17,64 +17,62 @@ from app.models.db_models import NPC, Character, NPCInteraction
 logger = logging.getLogger(__name__)
 
 
-def _build_scribe_tool_definitions() -> list[FunctionToolDefinition]:
-    """Build FunctionToolDefinition instances for character and NPC queries."""
-    return [
-        FunctionToolDefinition(
-            function=FunctionDefinition(
-                name="get_character",
-                description=(
-                    "Retrieve a character's full sheet including stats, inventory, "
-                    "and equipment by their character ID."
-                ),
-                parameters={
-                    "type": "object",
-                    "properties": {
-                        "character_id": {
-                            "type": "string",
-                            "description": "The unique character identifier",
-                        }
-                    },
-                    "required": ["character_id"],
-                },
-            )
-        ),
-        FunctionToolDefinition(
-            function=FunctionDefinition(
-                name="get_npc",
-                description=(
-                    "Retrieve NPC details including personality, relationships, "
-                    "and interaction history."
-                ),
-                parameters={
-                    "type": "object",
-                    "properties": {
-                        "npc_id": {
-                            "type": "string",
-                            "description": "The unique NPC identifier",
-                        }
-                    },
-                    "required": ["npc_id"],
-                },
-            )
-        ),
-        FunctionToolDefinition(
-            function=FunctionDefinition(
-                name="get_inventory",
-                description="Retrieve a character's current inventory and equipment.",
-                parameters={
-                    "type": "object",
-                    "properties": {
-                        "character_id": {
-                            "type": "string",
-                            "description": "The unique character identifier",
-                        }
-                    },
-                    "required": ["character_id"],
-                },
-            )
-        ),
-    ]
+# ---------------------------------------------------------------------------
+# Callable tool functions for the SDK's AsyncFunctionTool
+# ---------------------------------------------------------------------------
+
+
+def get_character_tool(character_id: str) -> str:
+    """Retrieve a character's full sheet including stats, inventory, and equipment by their character ID.
+
+    :param character_id: The unique character identifier.
+    :return: JSON-encoded character data, or an error message.
+    """
+    try:
+        with get_session_context() as db:
+            character = db.query(Character).filter(Character.id == character_id).first()
+            if character is None:
+                return json.dumps({"error": f"Character {character_id} not found"})
+            return json.dumps(character.data, default=str)
+    except Exception as exc:
+        return json.dumps({"error": f"Failed to retrieve character: {exc}"})
+
+
+def get_npc_tool(npc_id: str) -> str:
+    """Retrieve NPC details including personality, relationships, and interaction history.
+
+    :param npc_id: The unique NPC identifier.
+    :return: JSON-encoded NPC data, or an error message.
+    """
+    try:
+        with get_session_context() as db:
+            npc = db.query(NPC).filter(NPC.id == npc_id).first()
+            if npc is None:
+                return json.dumps({"error": f"NPC {npc_id} not found"})
+            return json.dumps(npc.data, default=str)
+    except Exception as exc:
+        return json.dumps({"error": f"Failed to retrieve NPC: {exc}"})
+
+
+def get_inventory_tool(character_id: str) -> str:
+    """Retrieve a character's current inventory and equipment.
+
+    :param character_id: The unique character identifier.
+    :return: JSON-encoded inventory list, or an error message.
+    """
+    try:
+        with get_session_context() as db:
+            character = db.query(Character).filter(Character.id == character_id).first()
+            if character is None:
+                return json.dumps({"error": f"Character {character_id} not found"})
+            return json.dumps(character.data.get("inventory", []), default=str)
+    except Exception as exc:
+        return json.dumps({"error": f"Failed to retrieve inventory: {exc}"})
+
+
+def _get_scribe_tool_functions() -> list[Callable[..., Any]]:
+    """Return the callable tool functions for the Scribe agent."""
+    return [get_character_tool, get_npc_tool, get_inventory_tool]
 
 
 class ScribeAgent(BaseAgent):
@@ -100,9 +98,9 @@ class ScribeAgent(BaseAgent):
             "players ask about their characters or the world."
         )
 
-    def _get_sdk_tools(self) -> list[FunctionToolDefinition]:
-        """Return character/NPC query tool definitions for the SDK agent."""
-        return _build_scribe_tool_definitions()
+    def _get_sdk_tool_functions(self) -> list[Callable[..., Any]]:
+        """Return callable character/NPC query tool functions for the SDK agent."""
+        return _get_scribe_tool_functions()
 
     @property
     def characters(self) -> dict[str, Any]:

@@ -85,7 +85,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     yield
 
-    # Shutdown (currently no cleanup needed)
+    # Shutdown — clean up SDK agents created during this process
+    logger.info("Cleaning up SDK agents...")
+    from app.agent_client_setup import agent_client_manager
+
+    await agent_client_manager.cleanup()
     logger.info("Application shutdown complete.")
 
 

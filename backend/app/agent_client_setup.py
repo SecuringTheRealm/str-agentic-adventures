@@ -15,8 +15,10 @@ from typing import TYPE_CHECKING, Any
 from azure.ai.agents.aio import AgentsClient
 from azure.ai.agents.models import (
     AgentThreadCreationOptions,
+    AsyncToolSet,
     FunctionToolDefinition,
     MessageRole,
+    RunStatus,
     ThreadMessageOptions,
 )
 from azure.ai.inference import ChatCompletionsClient
@@ -49,6 +51,7 @@ class AgentClientManager:
         self._is_configured = False
         self._fallback_mode = False
         self._tracer = None
+        self._created_agent_ids: list[str] = []
 
     def get_chat_client(self) -> ChatCompletionsClient | None:
         """Get the Azure OpenAI chat client, creating it if necessary.
@@ -120,14 +123,22 @@ class AgentClientManager:
         instructions: str,
         tools: list[FunctionToolDefinition] | None = None,
         model: str | None = None,
+        *,
+        toolset: AsyncToolSet | None = None,
     ) -> dict[str, Any] | None:
         """Create an agent via the Microsoft Agent Framework SDK.
+
+        When *toolset* is provided the SDK registers its tool definitions
+        on the agent and can dispatch tool calls automatically during
+        ``create_and_process``.  Legacy callers may still pass a plain
+        *tools* list of ``FunctionToolDefinition`` objects.
 
         Args:
             name: Human-readable agent name.
             instructions: System-level instructions for the agent.
-            tools: Optional list of FunctionToolDefinition instances.
+            tools: Optional list of FunctionToolDefinition instances (legacy).
             model: Model deployment name (defaults to chat deployment).
+            toolset: Optional ``AsyncToolSet`` for auto tool-call dispatch.
 
         Returns:
             Dict with ``id`` and ``name`` on success, or None on failure.
@@ -137,12 +148,18 @@ class AgentClientManager:
             return None
         try:
             model = model or settings.azure_openai_chat_deployment
-            agent: Agent = await client.create_agent(
-                model=model,
-                name=name,
-                instructions=instructions,
-                tools=tools or [],
-            )
+            kwargs: dict[str, Any] = {
+                "model": model,
+                "name": name,
+                "instructions": instructions,
+            }
+            if toolset is not None:
+                kwargs["toolset"] = toolset
+            else:
+                kwargs["tools"] = tools or []
+
+            agent: Agent = await client.create_agent(**kwargs)
+            self._created_agent_ids.append(agent.id)
             logger.info("Created SDK agent: %s (id=%s)", name, agent.id)
             return {"id": agent.id, "name": name}
         except Exception as e:
@@ -195,13 +212,18 @@ class AgentClientManager:
             return False
 
     async def create_and_process_run(
-        self, thread_id: str, agent_id: str
+        self,
+        thread_id: str,
+        agent_id: str,
+        *,
+        toolset: AsyncToolSet | None = None,
     ) -> str | None:
         """Create a run on an existing thread and wait for completion.
 
         Args:
             thread_id: The SDK thread identifier.
             agent_id: The SDK agent identifier.
+            toolset: Optional ``AsyncToolSet`` for automatic tool-call dispatch.
 
         Returns:
             The assistant's response text on success, or None on failure.
@@ -213,9 +235,30 @@ class AgentClientManager:
             run = await client.runs.create_and_process(
                 thread_id=thread_id,
                 agent_id=agent_id,
+                toolset=toolset,
             )
-            if run.status == "failed":
+
+            status = run.status
+
+            # Terminal failure states
+            if status == RunStatus.FAILED:
                 logger.warning("SDK run failed: %s", run.last_error)
+                return None
+            if status == RunStatus.CANCELLED:
+                logger.warning("SDK run was cancelled (agent_id=%s)", agent_id)
+                return None
+            if status == RunStatus.EXPIRED:
+                logger.warning("SDK run expired (agent_id=%s)", agent_id)
+                return None
+
+            # requires_action should not normally occur when using
+            # create_and_process with a toolset, but handle it defensively.
+            if status == RunStatus.REQUIRES_ACTION:
+                logger.warning(
+                    "SDK run requires_action after processing — "
+                    "tool calls were not handled automatically (agent_id=%s)",
+                    agent_id,
+                )
                 return None
 
             # Retrieve the last assistant message from the thread
@@ -238,6 +281,7 @@ class AgentClientManager:
         user_message: str,
         *,
         instructions: str | None = None,
+        toolset: AsyncToolSet | None = None,
     ) -> tuple[str | None, str | None]:
         """Create a new thread with a user message and run the agent in one call.
 
@@ -247,6 +291,7 @@ class AgentClientManager:
             agent_id: The SDK agent identifier.
             user_message: The initial user message.
             instructions: Optional instruction override for this run.
+            toolset: Optional ``AsyncToolSet`` for automatic tool-call dispatch.
 
         Returns:
             Tuple of (thread_id, response_text), or (None, None) on failure.
@@ -264,9 +309,27 @@ class AgentClientManager:
                 agent_id=agent_id,
                 thread=thread_options,
                 instructions=instructions,
+                toolset=toolset,
             )
-            if run.status == "failed":
+
+            status = run.status
+
+            # Terminal failure states
+            if status == RunStatus.FAILED:
                 logger.warning("SDK run failed: %s", run.last_error)
+                return None, None
+            if status == RunStatus.CANCELLED:
+                logger.warning("SDK run was cancelled (agent_id=%s)", agent_id)
+                return None, None
+            if status == RunStatus.EXPIRED:
+                logger.warning("SDK run expired (agent_id=%s)", agent_id)
+                return None, None
+            if status == RunStatus.REQUIRES_ACTION:
+                logger.warning(
+                    "SDK run requires_action after processing — "
+                    "tool calls were not handled automatically (agent_id=%s)",
+                    agent_id,
+                )
                 return None, None
 
             thread_id = run.thread_id
@@ -414,6 +477,33 @@ class AgentClientManager:
         # Trigger initialization if not yet done
         self.get_chat_client()
         return self._fallback_mode
+
+    # -----------------------------------------------------------------
+    # Cleanup
+    # -----------------------------------------------------------------
+
+    async def cleanup(self) -> None:
+        """Delete all agents created during this process's lifetime.
+
+        Intended to be called during application shutdown so that SDK agent
+        resources are not left dangling on the server.
+        """
+        client = self._agents_client  # Don't trigger lazy init on shutdown
+        if client is None or not self._created_agent_ids:
+            return
+
+        for agent_id in self._created_agent_ids:
+            try:
+                await client.delete_agent(agent_id)
+                logger.info("Deleted SDK agent %s on shutdown", agent_id)
+            except Exception as exc:
+                logger.warning(
+                    "Failed to delete SDK agent %s on shutdown: %s",
+                    agent_id,
+                    exc,
+                )
+
+        self._created_agent_ids.clear()
 
 
 # Singleton instance for global access

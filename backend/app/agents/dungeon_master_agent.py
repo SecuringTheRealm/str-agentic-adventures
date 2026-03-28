@@ -11,10 +11,9 @@ import logging
 import random
 import re
 import uuid
+from collections.abc import Callable
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
-
-from azure.ai.agents.models import FunctionDefinition, FunctionToolDefinition
 
 from app.agents.base_agent import BaseAgent
 from app.azure_openai_client import azure_openai_client
@@ -31,55 +30,42 @@ logger = logging.getLogger(__name__)
 MAX_HISTORY_MESSAGES = 20
 
 
-def _build_dice_tool_definitions() -> list[FunctionToolDefinition]:
-    """Build FunctionToolDefinition instances for dice-rolling mechanics."""
-    return [
-        FunctionToolDefinition(
-            function=FunctionDefinition(
-                name="roll_dice",
-                description=(
-                    "Roll dice using standard D&D notation (e.g., 1d20, 2d6+3). "
-                    "Use this whenever a dice roll is needed during gameplay."
-                ),
-                parameters={
-                    "type": "object",
-                    "properties": {
-                        "notation": {
-                            "type": "string",
-                            "description": "Dice notation like 1d20, 2d6+3, 4d8-1",
-                        }
-                    },
-                    "required": ["notation"],
-                },
-            )
-        ),
-        FunctionToolDefinition(
-            function=FunctionDefinition(
-                name="roll_ability_check",
-                description=(
-                    "Roll a d20 ability check with modifier, advantage, or disadvantage."
-                ),
-                parameters={
-                    "type": "object",
-                    "properties": {
-                        "modifier": {
-                            "type": "integer",
-                            "description": "The ability modifier to add to the roll",
-                        },
-                        "advantage": {
-                            "type": "boolean",
-                            "description": "Whether the roll has advantage",
-                        },
-                        "disadvantage": {
-                            "type": "boolean",
-                            "description": "Whether the roll has disadvantage",
-                        },
-                    },
-                    "required": ["modifier"],
-                },
-            )
-        ),
-    ]
+# ---------------------------------------------------------------------------
+# Callable tool functions for the SDK's AsyncFunctionTool
+# ---------------------------------------------------------------------------
+
+
+def roll_dice(notation: str) -> str:
+    """Roll dice using standard D&D notation (e.g., 1d20, 2d6+3).
+
+    Use this whenever a dice roll is needed during gameplay.
+
+    :param notation: Dice notation like 1d20, 2d6+3, 4d8-1.
+    :return: JSON-encoded roll result with total, rolls, and modifier.
+    """
+    result = DiceRoller.parse_dice_from_text(notation)
+    if result is None:
+        return json.dumps({"error": f"Invalid dice notation: {notation}"})
+    return json.dumps(result)
+
+
+def roll_ability_check(
+    modifier: int, advantage: bool = False, disadvantage: bool = False
+) -> str:
+    """Roll a d20 ability check with modifier, advantage, or disadvantage.
+
+    :param modifier: The ability modifier to add to the roll.
+    :param advantage: Whether the roll has advantage.
+    :param disadvantage: Whether the roll has disadvantage.
+    :return: JSON-encoded roll result.
+    """
+    result = DiceRoller.roll_d20(modifier, advantage, disadvantage)
+    return json.dumps(result)
+
+
+def _get_dm_tool_functions() -> list[Callable[..., Any]]:
+    """Return the callable tool functions for the DM agent."""
+    return [roll_dice, roll_ability_check]
 
 
 class DungeonMasterAgent(BaseAgent):
@@ -113,9 +99,9 @@ class DungeonMasterAgent(BaseAgent):
         """Return the DM system prompt for SDK agent creation."""
         return self._get_dm_system_prompt()
 
-    def _get_sdk_tools(self) -> list[FunctionToolDefinition]:
-        """Return dice-rolling tool definitions for the SDK agent."""
-        return _build_dice_tool_definitions()
+    def _get_sdk_tool_functions(self) -> list[Callable[..., Any]]:
+        """Return callable dice-rolling tool functions for the SDK agent."""
+        return _get_dm_tool_functions()
 
     def _get_dm_system_prompt(self) -> str:
         """Generate the static system prompt for the Dungeon Master role."""
