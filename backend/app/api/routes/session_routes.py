@@ -54,23 +54,27 @@ async def process_player_input(  # noqa: ARG001
                 detail="Input blocked: potential prompt injection attack detected.",
             )
 
-        # Try to get character and campaign context, but fallback gracefully
+        # Retrieve the player's character -- fail explicitly if not found
         character = None
         try:
-            character = await get_scribe().get_character(player_input.character_id)
+            character = await get_scribe().get_character(
+                player_input.character_id,
+            )
         except Exception as e:
-            logger.warning(
-                "Could not retrieve character %s: %s", player_input.character_id, str(e)
+            logger.error(
+                "Failed to retrieve character %s: %s",
+                player_input.character_id,
+                str(e),
             )
 
-        # Use fallback character info if character not found or error occurred
         if character is None:
-            character = {
-                "id": player_input.character_id,
-                "name": "Adventurer",
-                "class": "Fighter",
-                "level": 1,
-            }
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=(
+                    f"Character {player_input.character_id} not found. "
+                    "Please select a valid character before playing."
+                ),
+            )
 
         # Build rich game context from campaign state, character stats,
         # equipment, and combat-derived values (Step 1 of #416).
@@ -322,8 +326,8 @@ async def generate_world_description(
 
 
 def generate_major_locations(setting: str) -> list[dict[str, str]]:
-    """Generate major locations for the campaign world."""
-    locations = {
+    """Generate major locations themed to the campaign setting."""
+    locations: dict[str, list[dict[str, str]]] = {
         "fantasy": [
             {
                 "name": "The Crystal Caverns",
@@ -358,66 +362,267 @@ def generate_major_locations(setting: str) -> list[dict[str, str]]:
                 "description": "A vibrant entertainment district that never sleeps.",
             },
         ],
+        "post_apocalyptic": [
+            {
+                "name": "The Rusted Citadel",
+                "type": "stronghold",
+                "description": "A fortified survivor settlement built from the wreckage of the old world.",
+            },
+            {
+                "name": "The Blighted Wastes",
+                "type": "wilderness",
+                "description": "Irradiated flatlands where mutated creatures roam and scavengers pick through ruins.",
+            },
+            {
+                "name": "Vault 17",
+                "type": "dungeon",
+                "description": "A sealed underground bunker rumoured to hold pre-war technology.",
+            },
+        ],
+        "space": [
+            {
+                "name": "Nexus Station",
+                "type": "space station",
+                "description": "A sprawling orbital hub where traders, mercenaries, and diplomats converge.",
+            },
+            {
+                "name": "The Shattered Belt",
+                "type": "asteroid field",
+                "description": "A treacherous asteroid belt hiding pirate outposts and ancient relics.",
+            },
+            {
+                "name": "Verdantis",
+                "type": "planet",
+                "description": "A lush garden world contested by rival colonial factions.",
+            },
+        ],
     }
-    return locations.get(setting, [])
+    return locations.get(setting, [
+        {
+            "name": f"The {setting.title()} Crossroads",
+            "type": "landmark",
+            "description": f"A notable gathering place central to this {setting} realm.",
+        },
+    ])
 
 
 def generate_notable_npcs(setting: str, tone: str) -> list[dict[str, str]]:
-    """Generate notable NPCs for the campaign."""
-    npcs = [
+    """Generate notable NPCs themed to the campaign setting and tone."""
+    setting_npcs: dict[str, list[dict[str, str]]] = {
+        "fantasy": [
+            {
+                "name": "Sage Meridian",
+                "role": "mentor",
+                "description": "A wise old scholar with secrets of the past.",
+            },
+            {
+                "name": "Captain Redhawk",
+                "role": "ally",
+                "description": "A brave leader who fights for justice.",
+            },
+            {
+                "name": "The Shadow Broker",
+                "role": "neutral",
+                "description": "A mysterious figure who trades in information.",
+            },
+        ],
+        "urban": [
+            {
+                "name": "Nyx",
+                "role": "ally",
+                "description": "A streetwise hacker who knows every back door in the city's network.",
+            },
+            {
+                "name": "Commissioner Vale",
+                "role": "neutral",
+                "description": "A pragmatic law enforcer walking the line between justice and corruption.",
+            },
+            {
+                "name": "The Fixer",
+                "role": "mentor",
+                "description": "A well-connected broker who arranges jobs and makes problems disappear.",
+            },
+        ],
+        "post_apocalyptic": [
+            {
+                "name": "Doc Ashwood",
+                "role": "mentor",
+                "description": "A wandering medic who remembers the world before the fall.",
+            },
+            {
+                "name": "Iron Maw",
+                "role": "neutral",
+                "description": "A fearsome warlord who controls the last clean water supply.",
+            },
+            {
+                "name": "Sparrow",
+                "role": "ally",
+                "description": "A resourceful scavenger who can find anything in the ruins.",
+            },
+        ],
+        "space": [
+            {
+                "name": "Admiral Kess Vantari",
+                "role": "ally",
+                "description": "A decorated fleet commander leading the frontier defence.",
+            },
+            {
+                "name": "Zekka",
+                "role": "neutral",
+                "description": "An alien trader whose loyalties shift with the highest bid.",
+            },
+            {
+                "name": "Professor Idris Lune",
+                "role": "mentor",
+                "description": "A xenoarchaeologist obsessed with uncovering ancient star maps.",
+            },
+        ],
+    }
+
+    fallback = [
         {
-            "name": "Sage Meridian",
+            "name": f"Elder of the {setting.title()} Realm",
             "role": "mentor",
-            "description": "An wise old scholar with secrets of the past.",
+            "description": f"A knowledgeable guide to the {setting} world.",
         },
         {
-            "name": "Captain Redhawk",
-            "role": "ally",
-            "description": "A brave leader who fights for justice.",
-        },
-        {
-            "name": "The Shadow Broker",
+            "name": "The Wanderer",
             "role": "neutral",
-            "description": "A mysterious figure who trades in information.",
+            "description": f"A drifter with ties across this {setting} landscape.",
         },
     ]
+    npcs = setting_npcs.get(setting, fallback)
 
-    if tone == "dark":
-        npcs.append(
-            {
-                "name": "Lord Malachar",
-                "role": "antagonist",
-                "description": "A cruel tyrant who rules through fear.",
-            }
-        )
-    elif tone == "comedic":
-        npcs.append(
-            {
-                "name": "Bumblethorne the Accident-Prone",
-                "role": "comic relief",
-                "description": "A well-meaning wizard whose spells rarely work as intended.",
-            }
-        )
+    tone_npcs: dict[str, dict[str, str]] = {
+        "dark": {
+            "name": "Lord Malachar",
+            "role": "antagonist",
+            "description": "A cruel tyrant who rules through fear.",
+        },
+        "comedic": {
+            "name": "Bumblethorne the Accident-Prone",
+            "role": "comic relief",
+            "description": "A well-meaning wizard whose spells rarely work as intended.",
+        },
+    }
+    extra = tone_npcs.get(tone)
+    if extra:
+        npcs = [*npcs, extra]
 
     return npcs
 
 
 def generate_plot_hooks(setting: str, tone: str) -> list[str]:
-    """Generate plot hooks for the campaign."""
-    return [
-        "Ancient artifacts have been stolen from the museum, and the thieves left behind only cryptic symbols.",
-        "Strange disappearances plague the local area, and survivors speak of shadowy figures in the night.",
-        "A powerful ally has gone missing, and their last known location was a dangerous territory.",
+    """Generate plot hooks themed to the campaign setting and tone."""
+    setting_hooks: dict[str, list[str]] = {
+        "fantasy": [
+            "Ancient artifacts have been stolen from the royal vault, "
+            "and the thieves left behind only cryptic runes.",
+            "Strange disappearances plague the local village, "
+            "and survivors speak of shadowy figures in the night.",
+            "A powerful wizard ally has gone missing, "
+            "and their last known location was a forbidden dungeon.",
+        ],
+        "urban": [
+            "A series of high-tech heists targets the city's megacorporations, "
+            "each crime scene tagged with an unknown symbol.",
+            "People in the lower wards are vanishing, "
+            "replaced by eerie synthetic duplicates.",
+            "A rogue AI has surfaced on the city network, "
+            "offering secrets to anyone brave enough to meet it.",
+        ],
+        "post_apocalyptic": [
+            "Caravans carrying vital medicine have been ambushed "
+            "on the northern trade route, and no survivors remain.",
+            "A radio signal from a supposedly dead zone is broadcasting "
+            "coordinates and the words 'sanctuary still stands'.",
+            "Mutated creatures have pushed beyond their usual territory, "
+            "as if fleeing something deeper in the wastes.",
+        ],
+        "space": [
+            "A derelict starship has drifted into the system "
+            "broadcasting an alien distress signal on loop.",
+            "Colonists on the frontier world have stopped responding, "
+            "and the last transmission mentioned lights in the sky.",
+            "A sealed star map found in ancient ruins points "
+            "to a region of space that no current charts record.",
+        ],
+    }
+    fallback_hooks = [
+        f"Mysterious events threaten the stability of this {setting} world, "
+        "and heroes are needed to investigate.",
+        f"A call for aid echoes across the {setting} landscape "
+        "-- someone powerful has vanished without a trace.",
+        f"Rumours of hidden treasure spread through the {setting} realm, "
+        "drawing adventurers and villains alike.",
     ]
+    hooks = setting_hooks.get(setting, fallback_hooks)
+
+    # Add a tone-flavoured hook
+    if tone == "dark":
+        hooks.append(
+            "Whispers of a rising darkness grow louder, "
+            "and those who investigate are never seen again."
+        )
+    elif tone == "comedic":
+        hooks.append(
+            "A prankster deity has scrambled the laws of nature, "
+            "and nothing quite works the way it should."
+        )
+    elif tone == "heroic":
+        hooks.append(
+            "A legendary champion has fallen, "
+            "and a new generation must rise to carry their banner."
+        )
+
+    return hooks
 
 
 def generate_world_lore(setting: str) -> list[str]:
-    """Generate world lore elements."""
-    return [
-        "Long ago, a great cataclysm reshaped the world, leaving scars that still influence events today.",
-        "An ancient prophecy speaks of heroes who will arise in the realm's darkest hour.",
-        "Hidden throughout the world are artifacts of immense power, sought by many but understood by few.",
+    """Generate world lore elements themed to the campaign setting."""
+    setting_lore: dict[str, list[str]] = {
+        "fantasy": [
+            "Long ago, a great magical cataclysm reshaped the realm, "
+            "leaving arcane scars that still pulse with power.",
+            "An ancient prophecy etched in dragonscale speaks of heroes "
+            "who will arise in the realm's darkest hour.",
+            "Hidden throughout the land are artifacts forged by the old gods, "
+            "sought by many but understood by few.",
+        ],
+        "urban": [
+            "The city was built on the ruins of an older civilisation "
+            "whose technology remains buried beneath the streets.",
+            "A corporate war decades ago reshaped the power structure, "
+            "and its secret deals still control the city today.",
+            "Beneath the neon glow, an underground resistance preserves "
+            "forbidden knowledge the corporations tried to erase.",
+        ],
+        "post_apocalyptic": [
+            "The Great Collapse happened in a single day, "
+            "and the few who remember it refuse to speak of what they saw.",
+            "Scattered across the wastes are sealed bunkers containing "
+            "pre-war technology that could rebuild or destroy what remains.",
+            "Strange mutations have given rise to new species, and some "
+            "survivors believe humanity is evolving into something else.",
+        ],
+        "space": [
+            "An extinct alien civilisation left behind a network of jump "
+            "gates that humanity barely understands how to operate.",
+            "The Frontier War ended a century ago, but tensions between "
+            "the core worlds and outer colonies simmer beneath the peace.",
+            "Deep-space probes have detected a signal from beyond the "
+            "galactic rim that matches no known language or phenomenon.",
+        ],
+    }
+    fallback_lore = [
+        f"The history of this {setting} world is layered with "
+        "forgotten conflicts that still shape events today.",
+        f"Legends tell of powerful relics hidden across the {setting} "
+        "landscape, waiting for those brave enough to claim them.",
+        f"A great upheaval once reshaped this {setting} realm, "
+        "and its echoes continue to be felt.",
     ]
+    return setting_lore.get(setting, fallback_lore)
 
 
 def generate_opening_scene(session_type: str) -> str:
