@@ -12,22 +12,6 @@ param location string
 @description('Name of the resource group to create or use')
 param resourceGroupName string = '${environmentName}-rg'
 
-@description('Azure OpenAI API Key (optional — managed identity is preferred)')
-@secure()
-param azureOpenAiApiKey string = ''
-
-@description('Azure OpenAI Endpoint')
-param azureOpenAiEndpoint string = ''
-
-@description('Azure OpenAI Chat Deployment Name')
-param azureOpenAiChatDeployment string = 'gpt-4o-mini'
-
-@description('Azure OpenAI Embedding Deployment Name')
-param azureOpenAiEmbeddingDeployment string = 'text-embedding-ada-002'
-
-@description('Azure OpenAI Image Generation Deployment Name')
-param azureOpenAiDalleDeployment string = 'gpt-image-1-mini'
-
 @secure()
 @description('Administrator password for the PostgreSQL server (auto-generated if not provided)')
 param databasePassword string = newGuid()
@@ -159,6 +143,18 @@ module roleAssignments 'modules/role-assignments.bicep' = {
   }
 }
 
+// Create Azure AI Foundry resource with model deployments
+module aiFoundry 'modules/ai-foundry.bicep' = {
+  name: 'ai-foundry'
+  scope: rg
+  params: {
+    name: '${environmentName}-foundry-${resourceToken}'
+    location: location
+    tags: tags
+    managedIdentityPrincipalId: managedIdentity.outputs.principalId
+  }
+}
+
 // Backend Container App will be deployed separately via GitHub Actions workflow
 // This ensures the latest code is always deployed without requiring Bicep updates
 
@@ -206,3 +202,5 @@ output AZURE_KEY_VAULT_NAME string = keyVault.outputs.name
 output DATABASE_HOST string = postgresql.outputs.host
 output DATABASE_NAME string = postgresql.outputs.databaseName
 output APPLICATIONINSIGHTS_CONNECTION_STRING string = appInsights.outputs.connectionString
+output AZURE_OPENAI_ENDPOINT string = aiFoundry.outputs.endpoint
+output AZURE_AI_FOUNDRY_NAME string = aiFoundry.outputs.name
