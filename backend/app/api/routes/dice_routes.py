@@ -6,7 +6,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException, status
 
 from app.agents.scribe_agent import get_scribe
-from app.models.game_models import DiceRollRequest
+from app.models.game_models import DiceRollRequest, ManualDiceRollRequest
 
 logger = logging.getLogger(__name__)
 
@@ -86,22 +86,17 @@ async def roll_dice_with_character(roll_data: dict[str, Any]) -> dict[str, Any]:
 
 
 @router.post("/dice/manual-roll", response_model=dict[str, Any])
-async def input_manual_roll(manual_data: dict[str, Any]) -> dict[str, Any]:
-    """Input a manual dice roll result."""
+async def input_manual_roll(body: ManualDiceRollRequest) -> dict[str, Any]:
+    """Input a manual dice roll value.
+
+    Send the physical dice value in the ``value`` field (the legacy
+    ``result`` field is still accepted for backwards compatibility).
+    """
     try:
         from app.plugins.rules_engine_plugin import RulesEnginePlugin
 
-        dice_notation = manual_data.get("notation", "1d20")
-        result = manual_data.get("result")
-
-        if result is None:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Roll result is required",
-            )
-
         rules_engine = RulesEnginePlugin()
-        return rules_engine.input_manual_roll(dice_notation, result)
+        return rules_engine.input_manual_roll(body.notation, body.value)
 
     except HTTPException:
         raise

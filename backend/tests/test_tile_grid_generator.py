@@ -242,3 +242,30 @@ class TestTokenSpawnPlacement:
         data = _make_grid()
         ids = [t.id for t in data.tokens]
         assert len(ids) == len(set(ids))
+
+
+class TestSpawnPoints:
+    """spawn_points field is populated from BSP rooms."""
+
+    def test_spawn_points_not_empty(self) -> None:
+        data = _make_grid()
+        assert len(data.spawn_points) > 0
+
+    def test_player_spawn_points(self) -> None:
+        data = _make_grid()
+        player_spawns = [sp for sp in data.spawn_points if sp.team == "player"]
+        assert len(player_spawns) == 4
+
+    def test_enemy_spawn_points(self) -> None:
+        data = _make_grid()
+        enemy_spawns = [sp for sp in data.spawn_points if sp.team == "enemy"]
+        assert len(enemy_spawns) == 3
+
+    def test_spawn_points_deterministic(self) -> None:
+        a = _make_grid(seed=42)
+        b = _make_grid(seed=42)
+        assert len(a.spawn_points) == len(b.spawn_points)
+        for sp_a, sp_b in zip(a.spawn_points, b.spawn_points, strict=True):
+            assert sp_a.x == sp_b.x
+            assert sp_a.y == sp_b.y
+            assert sp_a.team == sp_b.team

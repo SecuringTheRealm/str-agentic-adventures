@@ -566,6 +566,19 @@ class DiceRollRequest(BaseModel):
     )
 
 
+class ManualDiceRollRequest(BaseModel):
+    """Request model for inputting a physical dice roll value."""
+
+    model_config = ConfigDict(extra="forbid")
+    notation: str = Field(
+        default="1d20", description="D&D dice notation that was rolled (e.g., '1d20')"
+    )
+    value: int = Field(
+        description="The number shown on the physical dice",
+        validation_alias="result",
+    )
+
+
 # Spell-related request and response models
 class ManageSpellsRequest(BaseModel):
     action: Literal["learn", "forget", "prepare", "unprepare"]

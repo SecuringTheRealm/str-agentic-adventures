@@ -37,17 +37,17 @@ class CombatCartographerAgent(BaseAgent):
 
         try:
             # Import combat cartographer-specific plugins for direct access
+            # Note: MapGenerationPlugin removed — generate_battle_map() uses
+            # Azure image generation directly and never called the plugin.
             from app.plugins.battle_positioning_plugin import BattlePositioningPlugin
             from app.plugins.environmental_hazards_plugin import (
                 EnvironmentalHazardsPlugin,
             )
-            from app.plugins.map_generation_plugin import MapGenerationPlugin
             from app.plugins.tactical_analysis_plugin import TacticalAnalysisPlugin
             from app.plugins.terrain_assessment_plugin import TerrainAssessmentPlugin
 
             # Define plugin configuration: (PluginClass, attribute_name)
             plugins_config = [
-                (MapGenerationPlugin, "map_generation"),
                 (TacticalAnalysisPlugin, "tactical_analysis"),
                 (TerrainAssessmentPlugin, "terrain_assessment"),
                 (BattlePositioningPlugin, "battle_positioning"),
@@ -63,14 +63,16 @@ class CombatCartographerAgent(BaseAgent):
                 setattr(self, attribute_name, plugin_instance)
 
             logger.info("Combat Cartographer agent plugins initialized for direct access")
-        except ImportError as e:
-            logger.error("Error importing Combat Cartographer agent plugins: %s", str(e))
-            raise
-        except (AttributeError, ValueError) as e:
+        except Exception as e:
             logger.error(
                 "Error initializing Combat Cartographer agent plugins: %s", str(e)
             )
-            raise
+            # Don't raise - enter fallback mode instead
+            self._fallback_mode = True
+            logger.warning(
+                "Combat Cartographer agent entering fallback mode - "
+                "using basic functionality without advanced plugins"
+            )
 
     async def generate_battle_map(
         self,
