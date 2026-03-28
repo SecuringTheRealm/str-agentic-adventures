@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import type { ChatMessage } from "../types";
 import styles from "./ChatBox.module.css";
 
@@ -65,57 +66,54 @@ const ChatBox: React.FC<ChatBoxProps> = ({
 
   return (
     <div className={styles.chatBox}>
-      <div
-        className={styles.messagesContainer}
-        role="log"
-        aria-live="polite"
-        aria-label="Chat messages"
-      >
-        {messages.map((message, index) => (
-          <div
-            key={`${message.text}-${index}`}
-            className={`${styles.message} ${message.sender === "player" ? styles.playerMessage : styles.dmMessage}`}
-          >
-            <div className={styles.messageSender}>
-              {message.sender === "player" ? "You" : "Dungeon Master"}
-            </div>
-            <div className={styles.messageText}>
-              {message.sender === "dm" ? (
-                <ReactMarkdown>{message.text}</ReactMarkdown>
-              ) : (
-                message.text
-              )}
-            </div>
-          </div>
-        ))}
-        {streamingMessage && (
-          <div className={`${styles.message} ${styles.dmMessage}`}>
-            <div className={styles.messageSender}>Dungeon Master</div>
-            <div className={`${styles.messageText} ${styles.streaming}`}>
-              {streamingMessage ? (
-                <ReactMarkdown>{streamingMessage}</ReactMarkdown>
-              ) : null}
-              <span className={styles.streamingCursor}>|</span>
-            </div>
-          </div>
-        )}
-        {isLoading && !streamingMessage && (
-          <div className={`${styles.message} ${styles.dmMessage}`}>
-            <div className={styles.messageSender}>Dungeon Master</div>
-            <output
-              className={`${styles.messageText} ${styles.loading}`}
-              aria-label="Loading"
+      <ScrollArea className={styles.messagesContainer}>
+        <div role="log" aria-live="polite" aria-label="Chat messages">
+          {messages.map((message, index) => (
+            <div
+              key={`${message.text}-${index}`}
+              className={`${styles.message} ${message.sender === "player" ? styles.playerMessage : styles.dmMessage}`}
             >
-              <div className={styles.typingIndicator}>
-                <span />
-                <span />
-                <span />
+              <div className={styles.messageSender}>
+                {message.sender === "player" ? "You" : "Dungeon Master"}
               </div>
-            </output>
-          </div>
-        )}
-        <div ref={messagesEndRef} />
-      </div>
+              <div className={styles.messageText}>
+                {message.sender === "dm" ? (
+                  <ReactMarkdown>{message.text}</ReactMarkdown>
+                ) : (
+                  message.text
+                )}
+              </div>
+            </div>
+          ))}
+          {streamingMessage && (
+            <div className={`${styles.message} ${styles.dmMessage}`}>
+              <div className={styles.messageSender}>Dungeon Master</div>
+              <div className={`${styles.messageText} ${styles.streaming}`}>
+                {streamingMessage ? (
+                  <ReactMarkdown>{streamingMessage}</ReactMarkdown>
+                ) : null}
+                <span className={styles.streamingCursor}>|</span>
+              </div>
+            </div>
+          )}
+          {isLoading && !streamingMessage && (
+            <div className={`${styles.message} ${styles.dmMessage}`}>
+              <div className={styles.messageSender}>Dungeon Master</div>
+              <output
+                className={`${styles.messageText} ${styles.loading}`}
+                aria-label="Loading"
+              >
+                <div className={styles.typingIndicator}>
+                  <span />
+                  <span />
+                  <span />
+                </div>
+              </output>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+      </ScrollArea>
 
       {hasSuggestedActions && (
         <div

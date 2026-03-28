@@ -38,3 +38,26 @@
   margin: 0;
   font-style: italic;
 }
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  border: 1px dashed rgba(228, 187, 30, 0.3);
+  border-radius: 8px;
+  background: rgba(228, 187, 30, 0.05);
+  padding: 1.5rem;
+}
+
+.emptyIcon {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.emptyState p {
+  color: var(--tw-fantasy-text-muted, #a0aec0);
+  font-size: 0.85rem;
+  text-align: center;
+}

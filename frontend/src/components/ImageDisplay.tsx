@@ -12,8 +12,9 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({ imageUrl }) => {
         {imageUrl ? (
           <img src={imageUrl} alt="Game Visualization" />
         ) : (
-          <div className={styles.emptyImageState}>
-            <p>No image available</p>
+          <div className={styles.emptyState}>
+            <div className={styles.emptyIcon}>🏰</div>
+            <p>Scene will appear as the story unfolds</p>
           </div>
         )}
       </div>

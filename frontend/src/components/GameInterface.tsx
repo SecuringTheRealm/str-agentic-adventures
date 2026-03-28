@@ -1,5 +1,6 @@
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
 import { useMediaQuery } from "../hooks/useMediaQuery";
 import { useWebSocketSDK } from "../hooks/useWebSocketSDK";
 import type { WebSocketMessage } from "../services/api";
@@ -774,30 +775,27 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
               </p>
             )}
             <div className={styles.visualButtons}>
-              <button
-                type="button"
+              <Button
+                variant="secondary"
                 onClick={handleGenerateCharacterPortrait}
                 disabled={imageLoading || imagesRemaining === 0}
-                className={styles.visualButton}
               >
                 {imageLoading ? "Generating..." : "Character Portrait"}
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                variant="secondary"
                 onClick={handleGenerateSceneIllustration}
                 disabled={imageLoading || imagesRemaining === 0}
-                className={styles.visualButton}
               >
                 {imageLoading ? "Generating..." : "Scene Illustration"}
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                variant="secondary"
                 onClick={handleGenerateBattleMap}
                 disabled={imageLoading || imagesRemaining === 0}
-                className={styles.visualButton}
               >
                 {imageLoading ? "Generating..." : "Battle Map"}
-              </button>
+              </Button>
             </div>
           </div>
 

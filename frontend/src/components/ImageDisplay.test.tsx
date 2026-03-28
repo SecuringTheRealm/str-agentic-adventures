@@ -16,14 +16,18 @@ describe("ImageDisplay", () => {
   it("renders empty state when imageUrl is null", () => {
     render(<ImageDisplay imageUrl={null} />);
 
-    expect(screen.getByText("No image available")).toBeInTheDocument();
+    expect(
+      screen.getByText("Scene will appear as the story unfolds")
+    ).toBeInTheDocument();
     expect(screen.queryByRole("img")).not.toBeInTheDocument();
   });
 
   it("renders empty state when imageUrl is empty string", () => {
     render(<ImageDisplay imageUrl="" />);
 
-    expect(screen.getByText("No image available")).toBeInTheDocument();
+    expect(
+      screen.getByText("Scene will appear as the story unfolds")
+    ).toBeInTheDocument();
     expect(screen.queryByRole("img")).not.toBeInTheDocument();
   });
 
@@ -48,7 +52,7 @@ describe("ImageDisplay", () => {
       container.querySelector(`.${styles.imageContainer}`)
     ).toBeInTheDocument();
     expect(
-      container.querySelector(`.${styles.emptyImageState}`)
+      container.querySelector(`.${styles.emptyState}`)
     ).toBeInTheDocument();
   });
 });
