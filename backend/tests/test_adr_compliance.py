@@ -9,6 +9,9 @@ from pathlib import Path
 # Add the backend directory to Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+# Resolve repo root so tests work regardless of CWD (repo root vs backend/)
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+
 
 class TestADRCompliance:
     """Test ADR implementation compliance."""
@@ -16,7 +19,7 @@ class TestADRCompliance:
     def test_adr_0001_semantic_kernel_superseded_by_0018(self) -> None:
         """Test that ADR 0001 (Agent Framework) has been superseded by ADR 0018."""
         # ADR 0001 should now be superseded
-        adr_0001 = Path("docs/adr/0001-semantic-kernel-multi-agent-framework.md")
+        adr_0001 = REPO_ROOT / "docs/adr/0001-semantic-kernel-multi-agent-framework.md"
         assert adr_0001.exists(), "ADR 0001 should still exist for historical reference"
         
         with open(adr_0001) as f:
@@ -31,12 +34,12 @@ class TestADRCompliance:
     def test_adr_0018_azure_ai_agents_implementation(self) -> None:
         """Test that ADR 0018 (Azure AI Agents SDK) is implemented."""
         # Test that agent client setup exists
-        assert Path("backend/app/agent_client_setup.py").exists(), (
+        assert (REPO_ROOT / "backend/app/agent_client_setup.py").exists(), (
             "Azure AI Agent client setup file should exist"
         )
 
         # Test that the file contains actual implementation
-        with open("backend/app/agent_client_setup.py") as f:
+        with open(REPO_ROOT / "backend/app/agent_client_setup.py") as f:
             content = f.read()
             assert "AgentClientManager" in content, (
                 "AgentClientManager class should be implemented"
@@ -54,7 +57,7 @@ class TestADRCompliance:
     def test_adr_0002_multi_agent_architecture(self) -> None:
         """Test that ADR 0002 (Multi-Agent Architecture) is implemented."""
         # Test that all required agents exist
-        agents_path = Path("backend/app/agents")
+        agents_path = REPO_ROOT / "backend/app/agents"
         assert agents_path.exists(), "Agents directory should exist"
 
         required_agents = [
@@ -87,12 +90,12 @@ class TestADRCompliance:
     def test_adr_0003_data_storage_implementation(self) -> None:
         """Test that ADR 0003 (Data Storage Strategy) is implemented."""
         # Test that database setup exists
-        assert Path("backend/app/database.py").exists(), (
+        assert (REPO_ROOT / "backend/app/database.py").exists(), (
             "Database setup file should exist"
         )
 
         # Test database configuration
-        with open("backend/app/database.py") as f:
+        with open(REPO_ROOT / "backend/app/database.py") as f:
             content = f.read()
             assert "SQLAlchemy" in content or "sqlalchemy" in content, (
                 "SQLAlchemy should be configured"
@@ -103,18 +106,18 @@ class TestADRCompliance:
             assert "get_session" in content, "Session factory should be implemented"
 
         # Test that models exist
-        assert Path("backend/app/models/db_models.py").exists(), (
+        assert (REPO_ROOT / "backend/app/models/db_models.py").exists(), (
             "Database models should exist"
         )
 
-        with open("backend/app/models/db_models.py") as f:
+        with open(REPO_ROOT / "backend/app/models/db_models.py") as f:
             content = f.read()
             assert "class Character" in content, "Character model should be implemented"
             assert "Base" in content, "SQLAlchemy Base should be used"
 
     def test_adr_0004_frontend_architecture(self) -> None:
         """Test that ADR 0004 (React TypeScript Frontend) is implemented."""
-        frontend_path = Path("frontend")
+        frontend_path = REPO_ROOT / "frontend"
 
         # Test that frontend directory exists
         assert frontend_path.exists(), "Frontend directory should exist"
@@ -138,12 +141,12 @@ class TestADRCompliance:
     def test_adr_0005_azure_openai_integration(self) -> None:
         """Test that ADR 0005 (Azure OpenAI Integration) is implemented."""
         # Test that Azure OpenAI client exists
-        assert Path("backend/app/azure_openai_client.py").exists(), (
+        assert (REPO_ROOT / "backend/app/azure_openai_client.py").exists(), (
             "Azure OpenAI client should exist"
         )
 
         # Test client implementation
-        with open("backend/app/azure_openai_client.py") as f:
+        with open(REPO_ROOT / "backend/app/azure_openai_client.py") as f:
             content = f.read()
             assert "class AzureOpenAIClient" in content, (
                 "AzureOpenAIClient class should be implemented"
@@ -156,9 +159,9 @@ class TestADRCompliance:
             )
 
         # Test configuration exists
-        assert Path("backend/app/config.py").exists(), "Configuration file should exist"
+        assert (REPO_ROOT / "backend/app/config.py").exists(), "Configuration file should exist"
 
-        with open("backend/app/config.py") as f:
+        with open(REPO_ROOT / "backend/app/config.py") as f:
             content = f.read()
             assert "azure_openai" in content.lower(), (
                 "Azure OpenAI configuration should be present"
@@ -169,7 +172,7 @@ class TestADRCompliance:
 
     def test_adr_0006_character_progression_exists(self) -> None:
         """Test that ADR 0006 (D&D 5e Character Progression) exists."""
-        adr_path = Path("docs/adr/0006-dnd-5e-character-progression-system.md")
+        adr_path = REPO_ROOT / "docs/adr/0006-dnd-5e-character-progression-system.md"
         assert adr_path.exists(), "ADR 0006 file should exist"
 
         with open(adr_path) as f:
@@ -182,7 +185,7 @@ class TestADRCompliance:
     def test_agent_database_integration(self) -> None:
         """Test that agents are integrated with persistent storage."""
         # Test ScribeAgent uses database
-        scribe_path = Path("backend/app/agents/scribe_agent.py")
+        scribe_path = REPO_ROOT / "backend/app/agents/scribe_agent.py"
         assert scribe_path.exists(), "ScribeAgent should exist"
 
         with open(scribe_path) as f:
@@ -195,7 +198,7 @@ class TestADRCompliance:
 
     def test_comprehensive_adr_coverage(self) -> None:
         """Test that all ADRs have corresponding implementations."""
-        adr_directory = Path("docs/adr")
+        adr_directory = REPO_ROOT / "docs/adr"
         assert adr_directory.exists(), "ADR directory should exist"
 
         # Count ADR files (excluding template and index)
