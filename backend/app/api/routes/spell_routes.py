@@ -4,7 +4,7 @@ import logging
 import random
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
 from app.database import DbDep
@@ -27,11 +27,13 @@ router = APIRouter(tags=["spells"])
 
 
 @router.post("/character/{character_id}/spells", response_model=dict[str, Any])
-async def manage_character_spells(character_id: str, request: ManageSpellsRequest) -> dict[str, Any]:
+async def manage_character_spells(
+    character_id: str, request: ManageSpellsRequest, response: Response
+) -> dict[str, Any]:
     """Manage known spells for a character."""
     try:
-        # This would integrate with a character storage system
-        # For now, returning a success response with the action performed
+        # Stub: no persistence yet — returns confirmation without storing
+        response.headers["X-Fallback"] = "true"
         return {
             "character_id": character_id,
             "action": request.action,
@@ -47,11 +49,13 @@ async def manage_character_spells(character_id: str, request: ManageSpellsReques
 
 
 @router.post("/character/{character_id}/spell-slots", response_model=dict[str, Any])
-async def manage_spell_slots(character_id: str, request: ManageSpellSlotsRequest) -> dict[str, Any]:
+async def manage_spell_slots(
+    character_id: str, request: ManageSpellSlotsRequest, response: Response
+) -> dict[str, Any]:
     """Manage spell slot usage and recovery for a character."""
     try:
-        # This would integrate with a character storage system
-        # For now, returning a success response with the action performed
+        # Stub: no persistence yet — returns confirmation without storing
+        response.headers["X-Fallback"] = "true"
         return {
             "character_id": character_id,
             "action": request.action,

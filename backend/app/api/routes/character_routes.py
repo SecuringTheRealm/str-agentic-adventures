@@ -3,7 +3,7 @@
 import logging
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Response, status
 
 from app.agents.scribe_agent import get_scribe
 from app.config import ConfigDep
@@ -227,11 +227,11 @@ async def manage_equipment(character_id: str, request: ManageEquipmentRequest) -
 
 
 @router.get("/character/{character_id}/encumbrance", response_model=EncumbranceResponse)
-async def get_encumbrance(character_id: str) -> dict[str, Any]:
+async def get_encumbrance(character_id: str, response: Response) -> dict[str, Any]:
     """Calculate carrying capacity and weight."""
     try:
-        # This would normally calculate from actual character data
-        # For now, returning sample encumbrance data
+        # Stub: returns hardcoded data until real character storage is wired up
+        response.headers["X-Fallback"] = "true"
 
         # Simulate character strength-based carrying capacity
         strength_score = 15  # Would be retrieved from character data
