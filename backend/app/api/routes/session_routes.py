@@ -1,6 +1,7 @@
 """Game session flow routes."""
 
 import logging
+import uuid
 from datetime import datetime
 from typing import Any
 
@@ -192,7 +193,7 @@ async def start_game_session(campaign_id: str, session_data: dict[str, Any]) -> 
 
         # Initialize session state
         return {
-            "session_id": f"session_{campaign_id}_{hash(str(character_ids))}",
+            "session_id": f"session_{campaign_id}_{uuid.uuid4().hex[:8]}",
             "campaign_id": campaign_id,
             "character_ids": character_ids,
             "type": session_type,

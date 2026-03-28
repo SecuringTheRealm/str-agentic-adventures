@@ -49,7 +49,6 @@ class TestConcentrationSpellIntegration:
     def cast_spell_request(self):
         """Sample cast spell request."""
         return CastSpellRequest(
-            combat_id="test_combat_123",
             character_id="test_char_456",
             spell_id="hold_person",
             slot_level=2,

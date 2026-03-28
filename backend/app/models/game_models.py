@@ -7,7 +7,7 @@ from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 # Enum definitions
@@ -552,22 +552,28 @@ class SpellAttackBonusRequest(BaseModel):
     spellcasting_ability_score: int
 
 
+class DiceRollRequest(BaseModel):
+    """Request model for dice rolling with strict field validation."""
+
+    model_config = ConfigDict(extra="forbid")
+    notation: str = Field(
+        default="1d20", description="D&D dice notation (e.g., '1d20', '2d6+3')"
+    )
+
+
 # Spell-related request and response models
 class ManageSpellsRequest(BaseModel):
-    character_id: str
     action: Literal["learn", "forget", "prepare", "unprepare"]
     spell_ids: list[str]
 
 
 class ManageSpellSlotsRequest(BaseModel):
-    character_id: str
     action: Literal["use", "recover", "set"]
     slot_level: int
     count: int | None = 1
 
 
 class CastSpellRequest(BaseModel):
-    combat_id: str
     character_id: str
     spell_id: str
     slot_level: int

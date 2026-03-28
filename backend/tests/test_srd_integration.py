@@ -33,12 +33,14 @@ class TestSRDIntegration:
             "race": "dwarf",
             "class": "fighter",
             "background": "soldier",
-            "strength": 16,
-            "dexterity": 12,
-            "constitution": 16,
-            "intelligence": 10,
-            "wisdom": 13,
-            "charisma": 8,
+            "abilities": {
+                "strength": 16,
+                "dexterity": 12,
+                "constitution": 16,
+                "intelligence": 10,
+                "wisdom": 13,
+                "charisma": 8,
+            },
         }
 
         with patch("app.agents.scribe_agent.get_session_context") as mock_session:
@@ -123,12 +125,14 @@ class TestSRDIntegration:
             "race": "elf",
             "class": "wizard",
             "background": "sage",
-            "strength": 8,
-            "dexterity": 14,
-            "constitution": 13,
-            "intelligence": 16,
-            "wisdom": 12,
-            "charisma": 10,
+            "abilities": {
+                "strength": 8,
+                "dexterity": 14,
+                "constitution": 13,
+                "intelligence": 16,
+                "wisdom": 12,
+                "charisma": 10,
+            },
         }
 
         with patch("app.agents.scribe_agent.get_session_context") as mock_session:

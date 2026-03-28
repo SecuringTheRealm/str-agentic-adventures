@@ -349,14 +349,15 @@ class ScribeAgent(BaseAgent):
             background = (character_data.get("background") or "").lower()
             level = character_data.get("level", 1)
 
-            # Get base abilities from input
+            # Get base abilities from nested abilities dict
+            abilities_data = character_data.get("abilities", {})
             base_abilities = {
-                "strength": character_data.get("strength", 10),
-                "dexterity": character_data.get("dexterity", 10),
-                "constitution": character_data.get("constitution", 10),
-                "intelligence": character_data.get("intelligence", 10),
-                "wisdom": character_data.get("wisdom", 10),
-                "charisma": character_data.get("charisma", 10),
+                "strength": abilities_data.get("strength", 10),
+                "dexterity": abilities_data.get("dexterity", 10),
+                "constitution": abilities_data.get("constitution", 10),
+                "intelligence": abilities_data.get("intelligence", 10),
+                "wisdom": abilities_data.get("wisdom", 10),
+                "charisma": abilities_data.get("charisma", 10),
             }
 
             # Apply racial ability bonuses
@@ -486,10 +487,10 @@ class ScribeAgent(BaseAgent):
                     return {"error": f"Character {character_id} not found"}
                 character = db_character.data
 
-            # Apply updates (simplified for now)
-            for key, value in updates.items():
-                if key in character and key != "id":  # Don't allow changing the ID
-                    character[key] = value
+                # Apply updates inside session context
+                for key, value in updates.items():
+                    if key in character and key != "id":
+                        character[key] = value
 
                 db_character.data = character
                 db.commit()

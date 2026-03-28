@@ -1,6 +1,7 @@
 """Combat system routes."""
 
 import logging
+import uuid
 from datetime import datetime
 from typing import Any
 
@@ -65,7 +66,7 @@ async def initialize_combat(combat_data: dict[str, Any]) -> dict[str, Any]:
         initiative_order.sort(key=lambda x: x["initiative"], reverse=True)
 
         return {
-            "combat_id": f"combat_{session_id}_{hash(str(participants))}",
+            "combat_id": f"combat_{session_id}_{uuid.uuid4().hex[:8]}",
             "session_id": session_id,
             "status": "active",
             "round": 1,
