@@ -203,6 +203,24 @@ class SessionParticipant(Base):
     joined_at = Column(DateTime, nullable=False, default=_utcnow)
 
 
+class CombatState(Base):
+    """Persistent combat encounter state, surviving server restarts."""
+
+    __tablename__ = "combat_states"
+
+    id = Column(String, primary_key=True, index=True)  # combat_id
+    session_id = Column(String, nullable=False, index=True)
+    status = Column(String, nullable=False, default="active")  # active, ended
+    round = Column(Integer, nullable=False, default=1)
+    current_turn = Column(Integer, nullable=False, default=0)
+    initiative_order = Column(JSON, nullable=False, default=list)
+    participants = Column(JSON, nullable=False, default=list)
+    environment = Column(String, nullable=False, default="standard")
+    combat_log = Column(JSON, nullable=False, default=list)
+    created_at = Column(DateTime, nullable=False, default=_utcnow)
+    updated_at = Column(DateTime, nullable=False, default=_utcnow, onupdate=_utcnow)
+
+
 class ConversationThread(Base):
     """Persistent conversation thread for agent interactions."""
 

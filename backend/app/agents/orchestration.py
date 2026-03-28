@@ -29,6 +29,24 @@ COMBAT_KEYWORDS: list[str] = [
     "sword",
     "cast spell at",
     "shoot",
+    # Spell-casting phrases — "I cast Fireball", "cast healing word", etc.
+    "i cast ",
+    "cast ",
+    "casting ",
+    "use spell",
+    "fireball",
+    "magic missile",
+    "eldritch blast",
+    "smite",
+    "healing word",
+    "cure wounds",
+]
+
+# Regex patterns that also trigger combat routing (checked separately from
+# the simple substring keywords above).  These catch natural-language spell
+# invocations such as "I cast Fireball at the dragon".
+_COMBAT_PATTERNS: list[re.Pattern[str]] = [
+    re.compile(r"\bcast(?:s|ing)?\s+\w+", re.IGNORECASE),
 ]
 
 EXPLORATION_KEYWORDS: list[str] = [
@@ -78,8 +96,10 @@ def detect_agent_triggers(dm_response: str, player_input: str) -> list[str]:
     triggers: list[str] = []
     combined = f"{player_input} {dm_response}".lower()
 
-    # Combat triggers
-    if any(kw in combined for kw in COMBAT_KEYWORDS):
+    # Combat triggers — simple keyword substring check plus regex patterns
+    has_combat_keyword = any(kw in combined for kw in COMBAT_KEYWORDS)
+    has_combat_pattern = any(p.search(combined) for p in _COMBAT_PATTERNS)
+    if has_combat_keyword or has_combat_pattern:
         triggers.append("combat_mc")
 
     # Exploration / narrative triggers
