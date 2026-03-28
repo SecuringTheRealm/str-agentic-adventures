@@ -31,6 +31,8 @@ class EnvironmentSpec(BaseModel):
 
 class StructuredMapRequest(BaseModel):
     environment: EnvironmentSpec = Field(default_factory=EnvironmentSpec)
+    width: int | None = Field(default=None, ge=5, le=100, description="Override grid width in tiles")
+    height: int | None = Field(default=None, ge=5, le=100, description="Override grid height in tiles")
     combat_context: dict[str, Any] | None = None
     seed: int | None = None
 
@@ -61,7 +63,9 @@ async def generate_structured_battle_map(
     """
     try:
         env = body.environment
-        width, height = _SIZE_DIMENSIONS.get(env.size, _SIZE_DIMENSIONS["medium"])
+        default_w, default_h = _SIZE_DIMENSIONS.get(env.size, _SIZE_DIMENSIONS["medium"])
+        width = body.width if body.width is not None else default_w
+        height = body.height if body.height is not None else default_h
 
         context: dict[str, Any] = {
             "location": env.location,
