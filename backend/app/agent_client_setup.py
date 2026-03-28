@@ -15,8 +15,10 @@ from typing import TYPE_CHECKING, Any
 from azure.ai.agents.aio import AgentsClient
 from azure.ai.agents.models import (
     AgentThreadCreationOptions,
+    AsyncToolSet,
     FunctionToolDefinition,
     MessageRole,
+    RunStatus,
     ThreadMessageOptions,
 )
 from azure.ai.inference import ChatCompletionsClient
@@ -195,13 +197,18 @@ class AgentClientManager:
             return False
 
     async def create_and_process_run(
-        self, thread_id: str, agent_id: str
+        self,
+        thread_id: str,
+        agent_id: str,
+        *,
+        toolset: AsyncToolSet | None = None,
     ) -> str | None:
         """Create a run on an existing thread and wait for completion.
 
         Args:
             thread_id: The SDK thread identifier.
             agent_id: The SDK agent identifier.
+            toolset: Optional ``AsyncToolSet`` for automatic tool-call dispatch.
 
         Returns:
             The assistant's response text on success, or None on failure.
@@ -213,9 +220,30 @@ class AgentClientManager:
             run = await client.runs.create_and_process(
                 thread_id=thread_id,
                 agent_id=agent_id,
+                toolset=toolset,
             )
-            if run.status == "failed":
+
+            status = run.status
+
+            # Terminal failure states
+            if status == RunStatus.FAILED:
                 logger.warning("SDK run failed: %s", run.last_error)
+                return None
+            if status == RunStatus.CANCELLED:
+                logger.warning("SDK run was cancelled (agent_id=%s)", agent_id)
+                return None
+            if status == RunStatus.EXPIRED:
+                logger.warning("SDK run expired (agent_id=%s)", agent_id)
+                return None
+
+            # requires_action should not normally occur when using
+            # create_and_process with a toolset, but handle it defensively.
+            if status == RunStatus.REQUIRES_ACTION:
+                logger.warning(
+                    "SDK run requires_action after processing — "
+                    "tool calls were not handled automatically (agent_id=%s)",
+                    agent_id,
+                )
                 return None
 
             # Retrieve the last assistant message from the thread
@@ -238,6 +266,7 @@ class AgentClientManager:
         user_message: str,
         *,
         instructions: str | None = None,
+        toolset: AsyncToolSet | None = None,
     ) -> tuple[str | None, str | None]:
         """Create a new thread with a user message and run the agent in one call.
 
@@ -247,6 +276,7 @@ class AgentClientManager:
             agent_id: The SDK agent identifier.
             user_message: The initial user message.
             instructions: Optional instruction override for this run.
+            toolset: Optional ``AsyncToolSet`` for automatic tool-call dispatch.
 
         Returns:
             Tuple of (thread_id, response_text), or (None, None) on failure.
@@ -264,9 +294,27 @@ class AgentClientManager:
                 agent_id=agent_id,
                 thread=thread_options,
                 instructions=instructions,
+                toolset=toolset,
             )
-            if run.status == "failed":
+
+            status = run.status
+
+            # Terminal failure states
+            if status == RunStatus.FAILED:
                 logger.warning("SDK run failed: %s", run.last_error)
+                return None, None
+            if status == RunStatus.CANCELLED:
+                logger.warning("SDK run was cancelled (agent_id=%s)", agent_id)
+                return None, None
+            if status == RunStatus.EXPIRED:
+                logger.warning("SDK run expired (agent_id=%s)", agent_id)
+                return None, None
+            if status == RunStatus.REQUIRES_ACTION:
+                logger.warning(
+                    "SDK run requires_action after processing — "
+                    "tool calls were not handled automatically (agent_id=%s)",
+                    agent_id,
+                )
                 return None, None
 
             thread_id = run.thread_id
