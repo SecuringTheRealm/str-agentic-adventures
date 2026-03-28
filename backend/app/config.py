@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     azure_openai_chat_deployment: str = "gpt-41-mini"
     azure_openai_mini_deployment: str = "Phi-4-mini-instruct"  # Cheap reasoning for rules lookups
     azure_openai_embedding_deployment: str = "text-embedding-3-small"
-    azure_openai_dalle_deployment: str = "gpt-image-1-mini"
+    azure_openai_dalle_deployment: str = "dall-e-3"
 
     # Azure AI Foundry project endpoint
     # Format: https://<account>.services.ai.azure.com/api/projects/<project>

@@ -66,19 +66,19 @@ resource embeddingDeployment 'Microsoft.CognitiveServices/accounts/deployments@2
   dependsOn: [chatDeployment]
 }
 
-// gpt-image-1-mini — image generation for scenes/portraits
+// dall-e-3 — image generation for scenes/portraits (gpt-image-1-mini gated on this subscription)
 resource imageDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-10-01' = {
   parent: foundry
-  name: 'gpt-image-1-mini'
+  name: 'dall-e-3'
   sku: {
-    name: 'GlobalStandard'
+    name: 'Standard'
     capacity: 1
   }
   properties: {
     model: {
       format: 'OpenAI'
-      name: 'gpt-image-1-mini'
-      version: '2025-10-06'
+      name: 'dall-e-3'
+      version: '3.0'
     }
   }
   dependsOn: [embeddingDeployment]

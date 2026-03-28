@@ -158,8 +158,8 @@ module aiFoundry 'modules/ai-foundry.bicep' = {
 // Backend Container App will be deployed separately via GitHub Actions workflow
 // This ensures the latest code is always deployed without requiring Bicep updates
 
-// Create cost budget with alert notifications
-module budget 'modules/budget.bicep' = {
+// Create cost budget with alert notifications (only if contact emails provided)
+module budget 'modules/budget.bicep' = if (length(budgetContactEmails) > 0) {
   name: 'budget'
   scope: rg
   params: {
@@ -176,9 +176,9 @@ module frontend 'modules/frontend.bicep' = {
   scope: rg
   params: {
     name: '${environmentName}-frontend-${resourceToken}'
-    location: location
+    location: 'westeurope'  // Static Web Apps not available in all regions; westeurope is nearest supported
     tags: tags
-    backendUrl: 'https://production-backend.${containerAppsEnvironment.outputs.defaultDomain}/api'
+    backendUrl: 'https://${environmentName}-backend.${containerAppsEnvironment.outputs.defaultDomain}/api'
   }
 }
 
