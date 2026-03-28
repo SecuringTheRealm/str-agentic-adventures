@@ -54,25 +54,25 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
             "API call succeeded but returned no templates. Check if the backend has seeded template data."
           );
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Error loading templates:", err);
 
-        // Provide detailed error information for debugging
+        // openapi-fetch compatible error handling
         let errorMessage = "Failed to load campaign templates";
         let debugMessage = "";
 
-        if (err.response) {
-          // HTTP error response
-          errorMessage = `HTTP ${err.response.status}: ${err.response.statusText}`;
-          debugMessage = `URL: ${err.config?.url || "Unknown"}\nResponse: ${JSON.stringify(err.response.data, null, 2)}`;
-        } else if (err.request) {
-          // Network error
+        if (err && typeof err === "object" && "status" in err) {
+          // openapi-fetch HTTP error (has status from API response)
+          const apiErr = err as { status?: number; detail?: string };
+          errorMessage = `HTTP ${apiErr.status}: ${apiErr.detail || "Server error"}`;
+          debugMessage = `Response: ${JSON.stringify(err, null, 2)}`;
+        } else if (err instanceof TypeError && err.message.includes("fetch")) {
+          // Network error (fetch failure)
           errorMessage = "Network error - cannot reach the backend server";
-          debugMessage = `URL: ${err.config?.url || "Unknown"}\nError: ${err.message}`;
-        } else {
-          // Other error
+          debugMessage = `Error: ${err.message}`;
+        } else if (err instanceof Error) {
           errorMessage = err.message || errorMessage;
-          debugMessage = `Error type: ${err.name || "Unknown"}\nStack: ${err.stack || "No stack trace"}`;
+          debugMessage = `Error type: ${err.name}\nStack: ${err.stack || "No stack trace"}`;
         }
 
         setError(errorMessage);
@@ -224,7 +224,7 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
               <div className={styles.cardDetails}>
                 <div className={styles.detailItem}>
                   <strong>Setting:</strong>
-                  <span>{template.setting.substring(0, 100)}...</span>
+                  <span>{template.setting?.substring(0, 100)}...</span>
                 </div>
 
                 {template.plot_hooks && template.plot_hooks.length > 0 && (

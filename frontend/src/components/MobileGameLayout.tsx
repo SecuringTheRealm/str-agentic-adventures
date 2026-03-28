@@ -70,8 +70,8 @@ const MobileGameLayout: React.FC<MobileGameLayoutProps> = ({
   return (
     <div className={styles.mobileLayout} data-testid="mobile-game-layout">
       <CompactStatusBar
-        currentHp={character.hit_points.current}
-        maxHp={character.hit_points.maximum}
+        currentHp={character.hit_points?.current ?? 0}
+        maxHp={character.hit_points?.maximum ?? 0}
         armorClass={10}
         level={character.level}
       />

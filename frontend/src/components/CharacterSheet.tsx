@@ -205,7 +205,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
         <div className={styles.hitPoints}>
           <div className={styles.statLabel}>Hit Points</div>
           <div className={styles.statValue}>
-            {character.hit_points.current} / {character.hit_points.maximum}
+            {character.hit_points?.current ?? "?"} /{" "}
+            {character.hit_points?.maximum ?? "?"}
           </div>
         </div>
 

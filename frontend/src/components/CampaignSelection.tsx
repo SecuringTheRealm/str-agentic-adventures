@@ -30,7 +30,7 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({
     try {
       setLoading(true);
       const data = await getCampaigns();
-      setCampaigns(data.campaigns);
+      setCampaigns(data);
     } catch (err) {
       setError("Failed to load campaigns");
       console.error("Error loading campaigns:", err);
@@ -137,7 +137,11 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({
                     <div
                       key={campaign.id}
                       className={styles.campaignCard}
-                      style={{ "--card-delay": `${0.08 * (index + 1)}s` } as React.CSSProperties}
+                      style={
+                        {
+                          "--card-delay": `${0.08 * (index + 1)}s`,
+                        } as React.CSSProperties
+                      }
                     >
                       <div className={styles.campaignCardBody}>
                         <div className={styles.campaignCardHeader}>

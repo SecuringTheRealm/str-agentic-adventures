@@ -21,7 +21,10 @@
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   color: var(--color-text-warm);
-  overflow-y: auto;
+  overflow: hidden;
+  min-height: 0; /* Flex overflow fix */
+  display: flex;
+  flex-direction: column;
   transition: width 0.3s ease;
   border-right: 1px solid rgba(228, 187, 30, 0.06);
   box-shadow:
@@ -47,7 +50,8 @@
   color: var(--color-text-warm);
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
+  overflow: hidden;
+  min-height: 0; /* Flex overflow fix */
   border-left: 1px solid rgba(228, 187, 30, 0.06);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.06),
@@ -77,11 +81,7 @@
   content: "";
   flex: 1;
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    rgba(228, 187, 30, 0.3),
-    transparent
-  );
+  background: linear-gradient(90deg, rgba(228, 187, 30, 0.3), transparent);
 }
 
 .imageBudget {
