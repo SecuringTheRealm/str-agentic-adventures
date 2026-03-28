@@ -63,14 +63,16 @@ class CombatCartographerAgent(BaseAgent):
                 setattr(self, attribute_name, plugin_instance)
 
             logger.info("Combat Cartographer agent plugins initialized for direct access")
-        except ImportError as e:
-            logger.error("Error importing Combat Cartographer agent plugins: %s", str(e))
-            raise
-        except (AttributeError, ValueError) as e:
+        except Exception as e:
             logger.error(
                 "Error initializing Combat Cartographer agent plugins: %s", str(e)
             )
-            raise
+            # Don't raise - enter fallback mode instead
+            self._fallback_mode = True
+            logger.warning(
+                "Combat Cartographer agent entering fallback mode - "
+                "using basic functionality without advanced plugins"
+            )
 
     async def generate_battle_map(
         self,
