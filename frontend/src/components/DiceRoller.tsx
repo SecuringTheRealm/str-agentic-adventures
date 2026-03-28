@@ -35,6 +35,7 @@ const DiceRoller: React.FC<DiceRollerProps> = ({
   const [isRolling, setIsRolling] = useState(false);
   const [lastResult, setLastResult] = useState<DiceResult | null>(null);
   const [rollHistory, setRollHistory] = useState<DiceResult[]>([]);
+  const [rollError, setRollError] = useState<string | null>(null);
 
   // Handle WebSocket dice results
   const completeWebSocketDiceRoll = useCallback(
@@ -125,6 +126,7 @@ const DiceRoller: React.FC<DiceRollerProps> = ({
         }
 
         setLastResult(result);
+        setRollError(null);
         setRollHistory((prev) => [result, ...prev.slice(0, 9)]); // Keep last 10 rolls
 
         if (onRoll) {
@@ -132,7 +134,7 @@ const DiceRoller: React.FC<DiceRollerProps> = ({
         }
       } catch (error) {
         console.error("Error rolling dice:", error);
-        alert("Failed to roll dice. Please try again.");
+        setRollError("Failed to roll dice. Please try again.");
       } finally {
         setIsRolling(false);
       }
@@ -231,6 +233,12 @@ const DiceRoller: React.FC<DiceRollerProps> = ({
           {isRolling ? "Rolling..." : "Roll Dice"}
         </Button>
       </div>
+
+      {rollError && (
+        <div className={styles.rollError} role="alert">
+          {rollError}
+        </div>
+      )}
 
       <div className={styles.commonRolls}>
         <h4>Quick Rolls:</h4>

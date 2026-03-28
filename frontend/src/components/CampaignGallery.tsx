@@ -119,13 +119,11 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
           <h3>Error Loading Templates</h3>
           <p>{error}</p>
           {debugInfo && (
-            <details style={{ marginTop: "1rem", fontSize: "0.9rem" }}>
+            <details className={styles.debugDetails}>
               <summary>Debug Information</summary>
               <pre
                 style={{
                   whiteSpace: "pre-wrap",
-                  background: "#f5f5f5",
-                  padding: "1rem",
                   margin: "0.5rem 0",
                 }}
               >

@@ -93,6 +93,16 @@
   opacity: 0.6;
 }
 
+.rollError {
+  color: var(--color-danger, #f87171);
+  font-size: 0.8rem;
+  text-align: center;
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+  background: rgba(248, 113, 113, 0.1);
+  border-radius: 4px;
+}
+
 .commonRolls {
   margin: 1rem 0;
 }
