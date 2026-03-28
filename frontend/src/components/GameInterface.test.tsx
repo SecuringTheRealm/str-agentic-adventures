@@ -9,6 +9,21 @@ import styles from "./GameInterface.module.css";
 vi.mock("../services/api");
 const mockSendPlayerInput = vi.mocked(api.sendPlayerInput);
 const mockGetOpeningNarrative = vi.mocked(api.getOpeningNarrative);
+const mockGetVisualGenerationStatus = vi.mocked(api.getVisualGenerationStatus);
+const mockGenerateImage = vi.mocked(api.generateImage);
+const mockGenerateBattleMap = vi.mocked(api.generateBattleMap);
+
+const { mockToastError, mockToastSuccess } = vi.hoisted(() => ({
+  mockToastError: vi.fn(),
+  mockToastSuccess: vi.fn(),
+}));
+
+vi.mock("sonner", () => ({
+  toast: {
+    error: mockToastError,
+    success: mockToastSuccess,
+  },
+}));
 
 // Mock the WebSocket SDK hook
 vi.mock("../hooks/useWebSocketSDK", () => ({
@@ -137,6 +152,15 @@ describe("GameInterface", () => {
   beforeEach(() => {
     mockSendPlayerInput.mockClear();
     mockGetOpeningNarrative.mockResolvedValue(defaultOpeningNarrative);
+    mockGetVisualGenerationStatus.mockResolvedValue({
+      available: true,
+      status: "healthy",
+      message: null,
+    });
+    mockGenerateImage.mockReset();
+    mockGenerateBattleMap.mockReset();
+    mockToastError.mockReset();
+    mockToastSuccess.mockReset();
   });
 
   it("renders all child components", async () => {
@@ -450,5 +474,100 @@ describe("GameInterface", () => {
     expect(
       container.querySelector(`.${styles.rightPanel}`)
     ).toBeInTheDocument();
+  });
+
+  it("disables visual generation controls when image generation is unavailable", async () => {
+    mockGetVisualGenerationStatus.mockResolvedValue({
+      available: false,
+      status: "unavailable",
+      message:
+        "Visual generation is unavailable because image generation is not configured.",
+    });
+
+    render(<GameInterface character={mockCharacter} campaign={mockCampaign} />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("visual-generation-status")).toHaveTextContent(
+        "Visual generation is unavailable because image generation is not configured."
+      );
+    });
+
+    expect(screen.getByTestId("generate-portrait-button")).toBeDisabled();
+    expect(screen.getByTestId("generate-scene-button")).toBeDisabled();
+    expect(screen.getByTestId("generate-battle-map-button")).toBeDisabled();
+  });
+
+  it("keeps visual generation controls disabled while availability is loading", async () => {
+    mockGetVisualGenerationStatus.mockReturnValue(new Promise(() => {}));
+
+    render(<GameInterface character={mockCharacter} campaign={mockCampaign} />);
+
+    expect(screen.getByTestId("generate-portrait-button")).toBeDisabled();
+    expect(screen.getByTestId("generate-scene-button")).toBeDisabled();
+    expect(screen.getByTestId("generate-battle-map-button")).toBeDisabled();
+  });
+
+  it("shows a toast instead of adding a DM message when portrait generation fails", async () => {
+    mockGenerateImage.mockRejectedValue(new Error("Image service offline"));
+
+    render(<GameInterface character={mockCharacter} campaign={mockCampaign} />);
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    await userEvent.click(screen.getByTestId("generate-portrait-button"));
+
+    await waitFor(() => {
+      expect(mockToastError).toHaveBeenCalledWith("Character portrait failed", {
+        description: "Image service offline",
+      });
+    });
+
+    expect(screen.queryByText("Image service offline")).not.toBeInTheDocument();
+  });
+
+  it("shows a toast instead of adding a DM message when battle map generation fails", async () => {
+    mockGenerateBattleMap.mockRejectedValue(new Error("Map service offline"));
+
+    render(<GameInterface character={mockCharacter} campaign={mockCampaign} />);
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    await userEvent.click(screen.getByTestId("generate-battle-map-button"));
+
+    await waitFor(() => {
+      expect(mockToastError).toHaveBeenCalledWith("Battle map failed", {
+        description: "Map service offline",
+      });
+    });
+
+    expect(screen.queryByText("Map service offline")).not.toBeInTheDocument();
+  });
+
+  it("marks visuals unavailable after a configuration error from image generation", async () => {
+    mockGenerateImage.mockResolvedValue({
+      error: "Azure OpenAI image generation is not configured.",
+    });
+
+    render(<GameInterface character={mockCharacter} campaign={mockCampaign} />);
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    await userEvent.click(screen.getByTestId("generate-portrait-button"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("visual-generation-status")).toHaveTextContent(
+        "Visual generation is unavailable because image generation is not configured."
+      );
+    });
+
+    expect(screen.getByTestId("generate-portrait-button")).toBeDisabled();
+    expect(screen.getByTestId("generate-scene-button")).toBeDisabled();
+    expect(screen.getByTestId("generate-battle-map-button")).toBeDisabled();
   });
 });

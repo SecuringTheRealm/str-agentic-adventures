@@ -1,6 +1,7 @@
 import { useId } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import "./App.css";
+import { Toaster } from "./components/ui/sonner";
 import CampaignEditPage from "./pages/CampaignEditPage";
 import CampaignNewPage from "./pages/CampaignNewPage";
 import CampaignSelectionPage from "./pages/CampaignSelectionPage";
@@ -16,6 +17,7 @@ function App() {
       <a href={`#${mainId}`} className="skip-link">
         Skip to main content
       </a>
+      <Toaster richColors position="top-right" />
       <header className="App-header">
         <h1>Securing the Realm - Agentic Adventures</h1>
       </header>

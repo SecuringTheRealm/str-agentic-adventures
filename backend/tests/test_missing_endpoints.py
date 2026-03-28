@@ -123,6 +123,7 @@ class TestFrontendBackendAPICompatibility:
             "getCharacter",
             "sendPlayerInput",
             "createCampaign",
+            "getVisualGenerationStatus",
             "generateImage",
             "generateBattleMap",
         }

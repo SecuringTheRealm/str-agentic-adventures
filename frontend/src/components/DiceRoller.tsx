@@ -118,7 +118,7 @@ const DiceRoller: React.FC<DiceRollerProps> = ({
         }
         // Fallback to direct API call via openapi-fetch client
         const response = await rollDiceApi(diceNotation, characterId, skill);
-        result = response as DiceResult;
+        result = response as unknown as DiceResult;
 
         // Add timestamp if not present
         if (!result.timestamp) {

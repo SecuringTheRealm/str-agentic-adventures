@@ -8,6 +8,8 @@ interface CharacterSheetProps {
 }
 
 const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
+  const hitPoints = character.hit_points ?? character.hitPoints;
+
   // Helper function to calculate ability modifier
   const getAbilityModifier = (score: number): string => {
     const modifier = Math.floor((score - 10) / 2);
@@ -205,7 +207,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
         <div className={styles.hitPoints}>
           <div className={styles.statLabel}>Hit Points</div>
           <div className={styles.statValue}>
-            {character.hit_points.current} / {character.hit_points.maximum}
+            {hitPoints?.current ?? 0} / {hitPoints?.maximum ?? 0}
           </div>
         </div>
 

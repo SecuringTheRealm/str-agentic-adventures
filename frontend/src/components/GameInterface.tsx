@@ -1,6 +1,13 @@
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { toast } from "sonner";
 import { useMediaQuery } from "../hooks/useMediaQuery";
 import { useRealtimeVoice } from "../hooks/useRealtimeVoice";
 import { useWebSocketSDK } from "../hooks/useWebSocketSDK";
@@ -10,6 +17,7 @@ import {
   generateImage,
   generateStructuredBattleMap,
   getOpeningNarrative,
+  getVisualGenerationStatus,
   sendPlayerInput,
 } from "../services/api";
 import type { Campaign, Character, DiceResult } from "../types";
@@ -28,6 +36,17 @@ interface GameInterfaceProps {
   character: Character;
   campaign: Campaign;
 }
+
+interface TokenMoveEvent {
+  token_id: string;
+  x: number;
+  y: number;
+}
+
+const VISUAL_GENERATION_UNAVAILABLE_MESSAGE =
+  "Visual generation is unavailable because image generation is not configured.";
+const VISUAL_GENERATION_RECOVERING_MESSAGE =
+  "Visual generation is temporarily unavailable while the AI service recovers.";
 
 // Utility function to extract user-friendly error messages from API errors
 const extractErrorMessage = (
@@ -106,6 +125,12 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
 
   // Track the last auto-save timestamp to drive the AutoSaveToast
   const [lastAutoSave, setLastAutoSave] = useState<string | null>(null);
+  const [imageGenerationAvailable, setImageGenerationAvailable] =
+    useState<boolean>(true);
+  const [imageGenerationStatusMessage, setImageGenerationStatusMessage] =
+    useState<string | null>(null);
+  const [checkingImageGenerationAvailability, setCheckingImageGenerationAvailability] =
+    useState<boolean>(true);
 
   const handleChatWebSocketMessage = (message: WebSocketMessage) => {
     switch (message.type) {
@@ -215,27 +240,29 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
         }
         break;
 
-      case "token_move":
+      case "token_move": {
+        const tokenMove = message as TokenMoveEvent;
         // Update token position from server
         if (
           battleMapData &&
-          message.token_id &&
-          message.x != null &&
-          message.y != null
+          tokenMove.token_id &&
+          tokenMove.x != null &&
+          tokenMove.y != null
         ) {
           setBattleMapData((prev) => {
             if (!prev) return prev;
             return {
               ...prev,
               tokens: prev.tokens.map((t) =>
-                t.id === message.token_id
-                  ? { ...t, x: message.x as number, y: message.y as number }
+                t.id === tokenMove.token_id
+                  ? { ...t, x: tokenMove.x, y: tokenMove.y }
                   : t
               ),
             };
           });
         }
         break;
+      }
 
       case "character_update":
         // Handle character updates (would need character state management)
@@ -322,16 +349,99 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
     fetchOpeningNarrative();
   }, [character, campaign]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    const checkImageGenerationAvailability = async () => {
+      try {
+        const visualStatus = await getVisualGenerationStatus();
+        if (cancelled) {
+          return;
+        }
+
+        if (visualStatus.available) {
+          setImageGenerationAvailable(true);
+          setImageGenerationStatusMessage(null);
+          setCheckingImageGenerationAvailability(false);
+          return;
+        }
+
+        setImageGenerationAvailable(false);
+        setImageGenerationStatusMessage(visualStatus.message);
+      } catch (error) {
+        console.warn("Failed to determine image generation availability:", error);
+        if (!cancelled) {
+          setImageGenerationAvailable(true);
+          setImageGenerationStatusMessage(null);
+          setCheckingImageGenerationAvailability(false);
+        }
+        return;
+      }
+
+      if (!cancelled) {
+        setCheckingImageGenerationAvailability(false);
+      }
+    };
+
+    checkImageGenerationAvailability();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const markImageGenerationUnavailable = useCallback((message: string) => {
+    setImageGenerationAvailable(false);
+    setImageGenerationStatusMessage(message);
+  }, []);
+
+  const showVisualError = useCallback(
+    (title: string, fallbackMessage: string, error: unknown) => {
+      const description = extractErrorMessage(error, fallbackMessage);
+
+      if (
+        /image generation is not configured|azure openai|temporarily unavailable while the ai service recovers/i.test(
+          description
+        )
+      ) {
+        markImageGenerationUnavailable(
+          /temporarily unavailable while the ai service recovers/i.test(
+            description
+          )
+            ? VISUAL_GENERATION_RECOVERING_MESSAGE
+            : VISUAL_GENERATION_UNAVAILABLE_MESSAGE
+        );
+      }
+
+      toast.error(title, { description });
+    },
+    [markImageGenerationUnavailable]
+  );
+
+  const handleVisualGenerationUnavailable = useCallback(() => {
+    if (imageGenerationStatusMessage) {
+      toast.error("Visual generation unavailable", {
+        description: imageGenerationStatusMessage,
+      });
+    }
+  }, [imageGenerationStatusMessage]);
+
+  const handleVisualGenerationSuccess = useCallback((message: string) => {
+    toast.success(message);
+  }, []);
+
   const handleGenerateCharacterPortrait = async () => {
+    if (!imageGenerationAvailable) {
+      handleVisualGenerationUnavailable();
+      return;
+    }
+
     // Validate character data exists
     if (!character?.name || !character?.race || !character?.character_class) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          text: "Character information is incomplete. Cannot generate portrait.",
-          sender: "dm",
-        },
-      ]);
+      toast.error("Character portrait unavailable", {
+        description:
+          "Character information is incomplete. Add the missing details and try again.",
+      });
       return;
     }
 
@@ -351,6 +461,18 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
       if (
         portraitData &&
         typeof portraitData === "object" &&
+        "error" in portraitData &&
+        typeof portraitData.error === "string"
+      ) {
+        markImageGenerationUnavailable(
+          VISUAL_GENERATION_UNAVAILABLE_MESSAGE
+        );
+        throw new Error(portraitData.error);
+      }
+
+      if (
+        portraitData &&
+        typeof portraitData === "object" &&
         "image_url" in portraitData
       ) {
         const imageUrl = portraitData.image_url as string;
@@ -362,13 +484,9 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
           ) {
             setImagesRemaining(portraitData.images_remaining);
           }
-          setMessages((prev) => [
-            ...prev,
-            {
-              text: `Generated character portrait for ${character.name}`,
-              sender: "dm",
-            },
-          ]);
+          handleVisualGenerationSuccess(
+            `Character portrait generated for ${character.name}`
+          );
         } else {
           throw new Error("Invalid image URL received from server");
         }
@@ -377,23 +495,22 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
       }
     } catch (error) {
       console.error("Error generating character portrait:", error);
-      const errorMessage = extractErrorMessage(
-        error,
-        "Failed to generate character portrait. Please try again."
+      showVisualError(
+        "Character portrait failed",
+        "Failed to generate character portrait. Please try again.",
+        error
       );
-      setMessages((prev) => [
-        ...prev,
-        {
-          text: errorMessage,
-          sender: "dm",
-        },
-      ]);
     } finally {
       setImageLoading(false);
     }
   };
 
   const handleGenerateSceneIllustration = async () => {
+    if (!imageGenerationAvailable) {
+      handleVisualGenerationUnavailable();
+      return;
+    }
+
     setImageLoading(true);
     try {
       const sceneData = await generateImage({
@@ -410,6 +527,18 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
       if (
         sceneData &&
         typeof sceneData === "object" &&
+        "error" in sceneData &&
+        typeof sceneData.error === "string"
+      ) {
+        markImageGenerationUnavailable(
+          VISUAL_GENERATION_UNAVAILABLE_MESSAGE
+        );
+        throw new Error(sceneData.error);
+      }
+
+      if (
+        sceneData &&
+        typeof sceneData === "object" &&
         "image_url" in sceneData
       ) {
         const imageUrl = sceneData.image_url as string;
@@ -421,13 +550,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
           ) {
             setImagesRemaining(sceneData.images_remaining);
           }
-          setMessages((prev) => [
-            ...prev,
-            {
-              text: "Generated scene illustration",
-              sender: "dm",
-            },
-          ]);
+          handleVisualGenerationSuccess("Scene illustration generated");
         } else {
           throw new Error("Invalid image URL received from server");
         }
@@ -436,23 +559,22 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
       }
     } catch (error) {
       console.error("Error generating scene illustration:", error);
-      const errorMessage = extractErrorMessage(
-        error,
-        "Failed to generate scene illustration. Please try again."
+      showVisualError(
+        "Scene illustration failed",
+        "Failed to generate scene illustration. Please try again.",
+        error
       );
-      setMessages((prev) => [
-        ...prev,
-        {
-          text: errorMessage,
-          sender: "dm",
-        },
-      ]);
     } finally {
       setImageLoading(false);
     }
   };
 
   const handleGenerateBattleMap = async () => {
+    if (!imageGenerationAvailable) {
+      handleVisualGenerationUnavailable();
+      return;
+    }
+
     setImageLoading(true);
     try {
       const mapData = await generateBattleMap({
@@ -465,6 +587,18 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
         },
       });
 
+      if (
+        mapData &&
+        typeof mapData === "object" &&
+        "error" in mapData &&
+        typeof mapData.error === "string"
+      ) {
+        markImageGenerationUnavailable(
+          VISUAL_GENERATION_UNAVAILABLE_MESSAGE
+        );
+        throw new Error(mapData.error);
+      }
+
       if (mapData && typeof mapData === "object" && "image_url" in mapData) {
         const imageUrl = mapData.image_url as string;
         if (imageUrl && typeof imageUrl === "string") {
@@ -476,13 +610,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
           ) {
             setImagesRemaining(mapData.images_remaining);
           }
-          setMessages((prev) => [
-            ...prev,
-            {
-              text: "Generated tactical battle map",
-              sender: "dm",
-            },
-          ]);
+          handleVisualGenerationSuccess("Tactical battle map generated");
         } else {
           throw new Error("Invalid map URL received from server");
         }
@@ -504,20 +632,60 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
       }
     } catch (error) {
       console.error("Error generating battle map:", error);
-      const errorMessage = extractErrorMessage(
-        error,
-        "Failed to generate battle map. Please try again."
+      showVisualError(
+        "Battle map failed",
+        "Failed to generate battle map. Please try again.",
+        error
       );
-      setMessages((prev) => [
-        ...prev,
-        {
-          text: errorMessage,
-          sender: "dm",
-        },
-      ]);
     } finally {
       setImageLoading(false);
     }
+  };
+
+  const visualsDisabled =
+    imageLoading ||
+    checkingImageGenerationAvailability ||
+    imagesRemaining === 0 ||
+    !imageGenerationAvailable;
+  const visualsDisabledReason =
+    (checkingImageGenerationAvailability
+      ? "Checking visual generation availability..."
+      : null) ||
+    imageGenerationStatusMessage ||
+    (imagesRemaining === 0 ? "Image limit reached for this session." : null);
+
+  const renderVisualButton = (
+    label: string,
+    onClick: () => Promise<void>,
+    testId: string
+  ) => {
+    const button = (
+      <Button
+        variant="secondary"
+        onClick={() => {
+          void onClick();
+        }}
+        disabled={visualsDisabled}
+        data-testid={testId}
+      >
+        {imageLoading ? "Generating..." : label}
+      </Button>
+    );
+
+    if (!visualsDisabled || !visualsDisabledReason) {
+      return button;
+    }
+
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className={styles.visualButtonWrapper} tabIndex={0}>
+            {button}
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>{visualsDisabledReason}</TooltipContent>
+      </Tooltip>
+    );
   };
 
   const handleTokenMove = useCallback(
@@ -730,6 +898,8 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
           combatActive={combatActive}
           imageLoading={imageLoading}
           imagesRemaining={imagesRemaining}
+          imageGenerationAvailable={imageGenerationAvailable}
+          imageGenerationStatusMessage={imageGenerationStatusMessage}
           onGeneratePortrait={handleGenerateCharacterPortrait}
           onGenerateScene={handleGenerateSceneIllustration}
           onGenerateBattleMap={handleGenerateBattleMap}
@@ -802,39 +972,44 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
             visible={dmWantsFloor}
             onGrantFloor={() => setDmWantsFloor(false)}
           />
-          <div className={styles.visualControls}>
-            <h4>Generate Visuals</h4>
-            {imagesRemaining !== null && (
-              <p className={styles.imageBudget}>
-                {imagesRemaining > 0
-                  ? `${imagesRemaining} illustration${imagesRemaining === 1 ? "" : "s"} remaining this session`
-                  : "Image limit reached for this session"}
-              </p>
-            )}
-            <div className={styles.visualButtons}>
-              <Button
-                variant="secondary"
-                onClick={handleGenerateCharacterPortrait}
-                disabled={imageLoading || imagesRemaining === 0}
-              >
-                {imageLoading ? "Generating..." : "Character Portrait"}
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={handleGenerateSceneIllustration}
-                disabled={imageLoading || imagesRemaining === 0}
-              >
-                {imageLoading ? "Generating..." : "Scene Illustration"}
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={handleGenerateBattleMap}
-                disabled={imageLoading || imagesRemaining === 0}
-              >
-                {imageLoading ? "Generating..." : "Battle Map"}
-              </Button>
+          <TooltipProvider delayDuration={150}>
+            <div className={styles.visualControls}>
+              <h4>Generate Visuals</h4>
+              {imageGenerationStatusMessage && (
+                <div
+                  className={styles.visualStatus}
+                  role="status"
+                  data-testid="visual-generation-status"
+                >
+                  {imageGenerationStatusMessage}
+                </div>
+              )}
+              {imagesRemaining !== null && (
+                <p className={styles.imageBudget}>
+                  {imagesRemaining > 0
+                    ? `${imagesRemaining} illustration${imagesRemaining === 1 ? "" : "s"} remaining this session`
+                    : "Image limit reached for this session"}
+                </p>
+              )}
+              <div className={styles.visualButtons}>
+                {renderVisualButton(
+                  "Character Portrait",
+                  handleGenerateCharacterPortrait,
+                  "generate-portrait-button"
+                )}
+                {renderVisualButton(
+                  "Scene Illustration",
+                  handleGenerateSceneIllustration,
+                  "generate-scene-button"
+                )}
+                {renderVisualButton(
+                  "Battle Map",
+                  handleGenerateBattleMap,
+                  "generate-battle-map-button"
+                )}
+              </div>
             </div>
-          </div>
+          </TooltipProvider>
 
           <div className={styles.imageSection}>
             <ImageDisplay imageUrl={currentImage} />
