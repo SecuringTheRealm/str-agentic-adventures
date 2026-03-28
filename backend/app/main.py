@@ -141,7 +141,7 @@ async def global_exception_handler(request: Request, exc: Exception) -> JSONResp
 for _router in all_routers:
     app.include_router(_router, prefix="/game")
 app.include_router(websocket_routes.router)
-app.include_router(realtime_router, prefix="/api")
+app.include_router(realtime_router)
 
 
 # Health check endpoint
