@@ -224,7 +224,7 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
               <div className={styles.cardDetails}>
                 <div className={styles.detailItem}>
                   <strong>Setting:</strong>
-                  <span>{template.setting.substring(0, 100)}...</span>
+                  <span>{template.setting?.substring(0, 100)}...</span>
                 </div>
 
                 {template.plot_hooks && template.plot_hooks.length > 0 && (
