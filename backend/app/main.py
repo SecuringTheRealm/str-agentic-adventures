@@ -24,8 +24,8 @@ from app.api import websocket_routes
 
 # Local imports
 from app.api.routes import all_routers
-from app.api.routes.realtime import router as realtime_router
 from app.api.routes._shared import limiter
+from app.api.routes.realtime import router as realtime_router
 from app.config import init_settings
 from app.middleware.prompt_shield_middleware import PromptShieldMiddleware
 from app.services.campaign_service import campaign_service

@@ -8,6 +8,7 @@ from fastapi import APIRouter, HTTPException, Response, status
 from app.agents.scribe_agent import get_scribe
 from app.config import ConfigDep
 from app.models.game_models import (
+    AwardExperienceRequest,
     CharacterSheet,
     CreateCharacterRequest,
     EncumbranceResponse,
@@ -115,17 +116,10 @@ async def level_up_character(character_id: str, level_up_data: LevelUpRequest) -
 @router.post(
     "/character/{character_id}/award-experience", response_model=dict[str, Any]
 )
-async def award_experience(character_id: str, experience_data: dict[str, int]) -> dict[str, Any]:
+async def award_experience(character_id: str, experience_data: AwardExperienceRequest) -> dict[str, Any]:
     """Award experience points to a character."""
     try:
-        experience_points = experience_data.get("experience_points", 0)
-        if experience_points <= 0:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Experience points must be greater than 0",
-            ) from None
-
-        result = await get_scribe().award_experience(character_id, experience_points)
+        result = await get_scribe().award_experience(character_id, experience_data.experience_points)
 
         if "error" in result:
             raise HTTPException(
