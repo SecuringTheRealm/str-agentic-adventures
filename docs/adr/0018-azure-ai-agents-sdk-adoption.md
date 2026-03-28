@@ -123,6 +123,21 @@ The SDK formerly known as "Azure AI Agents SDK" has been rebranded to **Microsof
 - Fallback mode activates automatically when `azure_ai_project_endpoint` is not configured
 - `BaseAgent._sdk_chat()` provides the full SDK lifecycle (agent + thread + message + run) with None-based failure signalling for clean fallback
 
+## Status Update — 2026-03-28 (QA Remediation)
+
+### Migration from FunctionToolDefinition to AsyncToolSet (PR #727)
+
+The initial Agent Framework wiring (2026-03-26) registered game mechanics as `FunctionToolDefinition` instances — low-level JSON schemas describing each function. During QA remediation, this was replaced with the SDK's higher-level `AsyncFunctionTool` + `AsyncToolSet` pattern paired with `enable_auto_function_calls()`.
+
+**Key changes:**
+
+- **AsyncFunctionTool + AsyncToolSet:** Each agent now defines callable Python functions (e.g. `roll_dice`, `resolve_attack`) and wraps them in `AsyncFunctionTool` instances collected into an `AsyncToolSet`. The SDK inspects function signatures and docstrings to build schemas automatically — no hand-written JSON required.
+- **Auto-execution via `enable_auto_function_calls()`:** The toolset is passed to `create_and_process_run`, and the SDK automatically invokes the registered Python functions when the LLM requests a tool call. This eliminates the manual `requires_action` polling loop that was previously needed.
+- **Run status handling:** Added proper handling for non-happy-path run statuses (`requires_action`, `expired`, `cancelled`, `failed`) with structured logging and graceful fallback to deterministic processing.
+- **Agent cleanup on shutdown:** Agents created via the SDK are now deleted during application shutdown (FastAPI lifespan teardown) to avoid orphaned resources in the Azure AI Foundry project.
+
+**Rationale:** The `FunctionToolDefinition` approach was brittle — schemas drifted from implementations, and the manual tool-call dispatch loop duplicated SDK functionality. `AsyncToolSet` with auto-execution is the SDK's intended pattern and reduces boilerplate by roughly 60%.
+
 ## Links
 
 * Supersedes: [ADR-0001 - Use Microsoft Semantic Kernel for Multi-Agent Architecture](0001-semantic-kernel-multi-agent-framework.md)
