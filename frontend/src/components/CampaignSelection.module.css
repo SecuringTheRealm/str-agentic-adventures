@@ -42,6 +42,16 @@
   font-size: 2rem; /* Maintain section header size */
 }
 
+.sectionSubtitle {
+  color: var(--color-text-warm);
+  font-size: 1.1rem;
+  margin: 0.25rem 0 0 0;
+}
+
+.campaignTabs {
+  width: 100%;
+}
+
 .headerActions {
   display: flex;
   gap: 1rem;
