@@ -17,6 +17,7 @@ from app.models.map_models import (
     MapEntity,
     MapTile,
     MapToken,
+    SpawnPoint,
     TeamType,
     TerrainType,
 )
@@ -166,6 +167,9 @@ class TileGridGenerator:
         # 6. Determine spawn tokens (players in first room, enemies in last)
         tokens = self._place_spawn_tokens(rooms)
 
+        # 7. Generate spawn points from BSP rooms
+        spawn_points = self._generate_spawn_points(rooms)
+
         return BattleMapData(
             id=str(uuid4()),
             width=width,
@@ -173,6 +177,7 @@ class TileGridGenerator:
             tiles=tiles,
             entities=entities,
             tokens=tokens,
+            spawn_points=spawn_points,
             fog_of_war=True,
         )
 
@@ -499,3 +504,40 @@ class TileGridGenerator:
             )
 
         return tokens
+
+    # -----------------------------------------------------------------------
+    # Spawn point generation from BSP rooms
+    # -----------------------------------------------------------------------
+
+    def _generate_spawn_points(self, rooms: list[Rect]) -> list[SpawnPoint]:
+        """Generate spawn points from BSP room centres.
+
+        Players spawn in the first room, enemies in the last.
+        """
+        spawn_points: list[SpawnPoint] = []
+        if not rooms:
+            return spawn_points
+
+        # Player spawn points from first room
+        player_room = rooms[0]
+        for i in range(4):
+            spawn_points.append(
+                SpawnPoint(
+                    x=player_room.x + 1 + (i % 2),
+                    y=player_room.y + 1 + (i // 2),
+                    team=TeamType.PLAYER,
+                )
+            )
+
+        # Enemy spawn points from last room
+        enemy_room = rooms[-1] if len(rooms) > 1 else rooms[0]
+        for i in range(3):
+            spawn_points.append(
+                SpawnPoint(
+                    x=enemy_room.x + enemy_room.w - 2 - (i % 2),
+                    y=enemy_room.y + enemy_room.h - 2 - (i // 2),
+                    team=TeamType.ENEMY,
+                )
+            )
+
+        return spawn_points

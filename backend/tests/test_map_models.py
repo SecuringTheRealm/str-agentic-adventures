@@ -14,6 +14,7 @@ from app.models.map_models import (
     MapEntity,
     MapTile,
     MapToken,
+    SpawnPoint,
     TeamType,
     TerrainType,
 )
@@ -136,6 +137,7 @@ class TestBattleMapData:
         assert bm.tiles == []
         assert bm.entities == []
         assert bm.tokens == []
+        assert bm.spawn_points == []
         assert bm.effects == []
         assert bm.fog_of_war is True
         assert bm.ambient_image_url is None
@@ -189,6 +191,28 @@ class TestBattleMapData:
         """BattleMapData accepts an ambient_image_url."""
         bm = BattleMapData(ambient_image_url="https://example.com/map.png")
         assert bm.ambient_image_url == "https://example.com/map.png"
+
+
+class TestSpawnPoint:
+    """Tests for SpawnPoint model."""
+
+    def test_spawn_point_defaults(self) -> None:
+        """SpawnPoint defaults team to player."""
+        sp = SpawnPoint(x=3, y=4)
+        assert sp.x == 3
+        assert sp.y == 4
+        assert sp.team == TeamType.PLAYER
+
+    def test_spawn_point_enemy(self) -> None:
+        """SpawnPoint accepts enemy team."""
+        sp = SpawnPoint(x=10, y=12, team=TeamType.ENEMY)
+        assert sp.team == TeamType.ENEMY
+
+    def test_spawn_point_serialises(self) -> None:
+        """SpawnPoint serialises to the expected dict."""
+        sp = SpawnPoint(x=1, y=2, team=TeamType.PLAYER)
+        data = sp.model_dump()
+        assert data == {"x": 1, "y": 2, "team": "player"}
 
 
 class TestMapEffect:

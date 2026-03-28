@@ -51,6 +51,12 @@ class MapToken(BaseModel):
     max_hp: int | None = None
 
 
+class SpawnPoint(BaseModel):
+    x: int
+    y: int
+    team: TeamType = TeamType.PLAYER
+
+
 class MapEffect(BaseModel):
     type: str  # "aoe_circle", "aoe_cone", "aoe_line"
     origin_x: int
@@ -69,6 +75,7 @@ class BattleMapData(BaseModel):
     tiles: list[list[MapTile]] = Field(default_factory=list)
     entities: list[MapEntity] = Field(default_factory=list)
     tokens: list[MapToken] = Field(default_factory=list)
+    spawn_points: list[SpawnPoint] = Field(default_factory=list)
     effects: list[MapEffect] = Field(default_factory=list)
     fog_of_war: bool = True
     ambient_image_url: str | None = None
