@@ -19,7 +19,6 @@ class TestSpellSystemEndpoints:
         """Test managing character spells endpoint."""
         character_id = "test_char_123"
         request_data = {
-            "character_id": character_id,
             "action": "learn",
             "spell_ids": ["magic_missile", "fireball"],
         }
@@ -39,7 +38,6 @@ class TestSpellSystemEndpoints:
         """Test managing spell slots endpoint."""
         character_id = "test_char_123"
         request_data = {
-            "character_id": character_id,
             "action": "use",
             "slot_level": 1,
             "count": 1,
@@ -60,7 +58,6 @@ class TestSpellSystemEndpoints:
         """Test casting spell in combat endpoint."""
         combat_id = "test_combat_123"
         request_data = {
-            "combat_id": combat_id,
             "character_id": "test_char_123",
             "spell_id": "magic_missile",
             "slot_level": 1,

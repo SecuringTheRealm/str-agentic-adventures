@@ -554,20 +554,17 @@ class SpellAttackBonusRequest(BaseModel):
 
 # Spell-related request and response models
 class ManageSpellsRequest(BaseModel):
-    character_id: str
     action: Literal["learn", "forget", "prepare", "unprepare"]
     spell_ids: list[str]
 
 
 class ManageSpellSlotsRequest(BaseModel):
-    character_id: str
     action: Literal["use", "recover", "set"]
     slot_level: int
     count: int | None = 1
 
 
 class CastSpellRequest(BaseModel):
-    combat_id: str
     character_id: str
     spell_id: str
     slot_level: int
