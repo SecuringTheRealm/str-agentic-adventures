@@ -58,6 +58,20 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
 
   const isEditing = !!campaign;
 
+  // Sync form data when campaign prop changes (e.g. async load)
+  useEffect(() => {
+    if (campaign) {
+      setFormData({
+        name: campaign.name || "",
+        description: campaign.description || "",
+        setting: campaign.setting || "",
+        tone: campaign.tone || "heroic",
+        homebrew_rules: campaign.homebrew_rules?.join("\n") || "",
+        world_description: campaign.world_description || "",
+      });
+    }
+  }, [campaign]);
+
   // Track changes
   useEffect(() => {
     if (isEditing) {
