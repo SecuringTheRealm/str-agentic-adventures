@@ -342,11 +342,15 @@ def generate_balanced_encounter(
     selected: list[dict[str, Any]] = []
     remaining_budget = xp_budget
 
-    # Shuffle to add variety
+    avg_level = sum(party_levels) / len(party_levels)
+
+    # Sort by CR closeness to party level so better-matched monsters are
+    # selected first, then shuffle within equal-distance groups for variety.
     pool = list(location_pool)
     random.shuffle(pool)  # noqa: S311  # game randomness — no crypto requirement
-
-    avg_level = sum(party_levels) / len(party_levels)
+    pool.sort(
+        key=lambda m: abs((_cr_as_float(str(m.get("cr", "0"))) or 0) - avg_level)
+    )
 
     for monster in pool:
         monster_xp = monster.get("xp") or cr_to_xp(str(monster.get("cr", "0")))
@@ -447,14 +451,30 @@ def _filter_monsters_for_location(
     return filtered if filtered else monsters
 
 
-def _is_cr_appropriate(cr: str, avg_party_level: float) -> bool:
-    """Return True when the CR is within a reasonable range of the party level."""
-    cr_float = _CR_AS_FLOAT.get(str(cr))
-    if cr_float is None:
-        try:
-            cr_float = float(cr)
-        except (ValueError, TypeError):
-            return True  # Unknown CR — don't exclude
+def _cr_as_float(cr: str) -> float | None:
+    """Convert a CR string to a float, or None if unrecognised."""
+    val = _CR_AS_FLOAT.get(str(cr))
+    if val is not None:
+        return val
+    try:
+        return float(cr)
+    except (ValueError, TypeError):
+        return None
 
-    # Allow CR 0 through (party_level + 3) to give a reasonable range
-    return cr_float <= avg_party_level + 3
+
+def _is_cr_appropriate(cr: str, avg_party_level: float) -> bool:
+    """Return True when the CR is within a reasonable range of the party level.
+
+    Enforces both a lower and upper bound so that high-level parties
+    do not face trivially weak monsters and low-level parties are not
+    overwhelmed by overpowered foes.
+    """
+    cr_float = _cr_as_float(cr)
+    if cr_float is None:
+        return True  # Unknown CR — don't exclude
+
+    upper = avg_party_level + 3
+    # Lower bound: at least 1/4 of the average party level (minimum 0)
+    lower = max(0.0, avg_party_level / 4)
+
+    return lower <= cr_float <= upper
