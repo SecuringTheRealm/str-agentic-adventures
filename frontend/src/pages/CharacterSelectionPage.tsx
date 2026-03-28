@@ -2,6 +2,8 @@ import type React from "react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import CharacterSelection from "../components/CharacterSelection";
+import ErrorState from "../components/ErrorState";
+import LoadingState from "../components/LoadingState";
 import { getCampaign } from "../services/api";
 import type { Campaign, Character } from "../types";
 
@@ -29,9 +31,9 @@ const CharacterSelectionPage: React.FC = () => {
     navigate("/");
   };
 
-  if (loading) return <div className="loading-state">Loading campaign...</div>;
+  if (loading) return <LoadingState message="Loading campaign..." />;
   if (error || !campaign)
-    return <div className="error-message">{error ?? "Campaign not found"}</div>;
+    return <ErrorState message={error ?? "Campaign not found"} />;
 
   return (
     <CharacterSelection

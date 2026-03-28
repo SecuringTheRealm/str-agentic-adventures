@@ -1,7 +1,9 @@
 import type React from "react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import ErrorState from "../components/ErrorState";
 import GameInterface from "../components/GameInterface";
+import LoadingState from "../components/LoadingState";
 import { getCampaign, getCharacter } from "../services/api";
 import type { Campaign, Character } from "../types";
 
@@ -25,11 +27,9 @@ const GamePage: React.FC = () => {
       .finally(() => setLoading(false));
   }, [id, characterId]);
 
-  if (loading) return <div className="loading-state">Loading game...</div>;
+  if (loading) return <LoadingState message="Loading game..." />;
   if (error || !campaign || !character)
-    return (
-      <div className="error-message">{error ?? "Game data not found"}</div>
-    );
+    return <ErrorState message={error ?? "Game data not found"} />;
 
   return <GameInterface campaign={campaign} character={character} />;
 };

@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
-import PlayerList from "./PlayerList";
 import type { SessionParticipant } from "@/types";
+import PlayerList from "./PlayerList";
 
 const makeParticipant = (
   overrides: Partial<SessionParticipant> = {}
@@ -31,9 +31,7 @@ describe("PlayerList", () => {
   });
 
   it("shows DM badge for DM participants", () => {
-    const participants = [
-      makeParticipant({ is_dm: true }),
-    ];
+    const participants = [makeParticipant({ is_dm: true })];
     render(<PlayerList participants={participants} />);
     expect(screen.getByText("DM")).toBeInTheDocument();
   });

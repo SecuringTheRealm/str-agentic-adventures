@@ -28,7 +28,9 @@
   background: none;
   color: var(--color-text-muted-warm);
   cursor: pointer;
-  transition: color 0.2s ease, border-color 0.2s ease;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease;
   padding: 8px 4px;
 }
 
@@ -75,7 +77,9 @@
   justify-content: center;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   z-index: 50;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .fab:hover {
