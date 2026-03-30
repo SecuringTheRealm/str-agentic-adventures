@@ -74,12 +74,12 @@ jobs:
       # Checkout code to install project dependencies.
       # If this step is omitted, Copilot will clone the repository automatically after setup.
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       # Set up Python 3.12 and uv (aligned with CI workflows)
       # astral-sh/setup-uv installs both uv and Python, and handles dependency caching
       - name: Set up Python and uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v8
         with:
           python-version: "3.12"
           enable-cache: true

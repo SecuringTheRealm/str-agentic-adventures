@@ -19,10 +19,10 @@ jobs:
       integration: ${{ steps.filter.outputs.integration }}
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Check for file changes
-      uses: dorny/paths-filter@v3
+      uses: dorny/paths-filter@v4
       id: filter
       with:
         filters: |
@@ -39,10 +39,10 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Set up Python and uv
-      uses: astral-sh/setup-uv@v5
+      uses: astral-sh/setup-uv@v8
       with:
         python-version: '3.12'
         enable-cache: true
@@ -62,10 +62,10 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Set up Python and uv
-      uses: astral-sh/setup-uv@v5
+      uses: astral-sh/setup-uv@v8
       with:
         python-version: '3.12'
         enable-cache: true
