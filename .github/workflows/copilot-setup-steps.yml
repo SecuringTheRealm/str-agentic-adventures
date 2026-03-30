@@ -79,7 +79,7 @@ jobs:
       # Set up Python 3.12 and uv (aligned with CI workflows)
       # astral-sh/setup-uv installs both uv and Python, and handles dependency caching
       - name: Set up Python and uv
-        uses: astral-sh/setup-uv@v8
+        uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.12"
           enable-cache: true
