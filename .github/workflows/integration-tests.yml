@@ -126,7 +126,7 @@ jobs:
         }
         
         # Check that client was generated
-        if [ ! -f "src/api-client/index.ts" ]; then
+        if [ ! -f "src/api-client/schema.d.ts" ]; then
           echo "❌ OpenAPI client files not generated"
           kill $BACKEND_PID 2>/dev/null || true
           exit 1
