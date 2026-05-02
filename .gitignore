@@ -449,3 +449,14 @@ frontend/bun.lock
 
 # Git worktrees (agent worktrees should not be committed)
 .claude/worktrees/
+
+# Plugin artifacts
+.playwright-mcp/
+.superpowers/
+
+# Local screenshots
+*.png
+!frontend/public/*.png
+
+# Draft e2e specs
+frontend/e2e/
