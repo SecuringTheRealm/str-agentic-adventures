@@ -92,10 +92,30 @@
   font-family: "Crimson Text", "Georgia", serif;
 }
 
+.visualStatus {
+  margin: 0 0 10px 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(228, 187, 30, 0.25);
+  border-radius: 8px;
+  background: rgba(42, 27, 10, 0.55);
+  color: var(--color-text-warm);
+  font-size: 12px;
+  line-height: 1.4;
+  font-family: "Crimson Text", "Georgia", serif;
+}
+
 .visualButtons {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.visualButtonWrapper {
+  display: block;
+}
+
+.visualButtonWrapper > button {
+  width: 100%;
 }
 
 .visualButton {

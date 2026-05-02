@@ -5,9 +5,11 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Request, status
 
+from app.agents.base_agent import azure_circuit_breaker
 from app.agents.artist_agent import get_artist
 from app.agents.combat_cartographer_agent import get_combat_cartographer
 from app.api.routes._shared import _get_image_budget, limiter
+from app.config import get_settings
 from app.models.game_models import (
     AIAssistanceRequest,
     AIAssistanceResponse,
@@ -19,6 +21,50 @@ from app.models.game_models import (
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["ai"])
+
+
+@router.get("/image-generation/status", response_model=dict[str, Any])
+async def get_image_generation_status() -> dict[str, Any]:
+    """Report whether visual generation is currently available to the frontend."""
+    settings = get_settings()
+
+    if not settings.azure_openai_endpoint or not settings.azure_openai_dalle_deployment:
+        return {
+            "available": False,
+            "status": "unavailable",
+            "message": (
+                "Visual generation is unavailable because image generation is not configured."
+            ),
+        }
+
+    if azure_circuit_breaker.current_state == "open":
+        return {
+            "available": False,
+            "status": "degraded",
+            "message": (
+                "Visual generation is temporarily unavailable while the AI service recovers."
+            ),
+        }
+
+    artist = get_artist()
+    cartographer = get_combat_cartographer()
+    image_agents_ready = (
+        not getattr(artist, "_fallback_mode", True)
+        and getattr(artist, "azure_client", None) is not None
+        and not getattr(cartographer, "_fallback_mode", True)
+        and getattr(cartographer, "azure_client", None) is not None
+    )
+
+    if not image_agents_ready:
+        return {
+            "available": False,
+            "status": "unavailable",
+            "message": (
+                "Visual generation is unavailable because image generation is not configured."
+            ),
+        }
+
+    return {"available": True, "status": "healthy", "message": None}
 
 
 @router.post("/campaign/ai-assist", response_model=AIAssistanceResponse)
