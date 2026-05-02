@@ -89,6 +89,7 @@ export interface GameUpdateMessage extends BaseWebSocketMessage {
   type: "game_update";
   update_type: string;
   data?: Record<string, unknown>;
+  combat_context?: object;
 }
 
 export interface CharacterUpdateMessage extends BaseWebSocketMessage {
@@ -157,6 +158,17 @@ export interface ActionRequestMessage extends BaseWebSocketMessage {
   action: string;
 }
 
+export interface TokenMoveMessage extends BaseWebSocketMessage {
+  type: "token_move";
+  token_id: string;
+  x: number;
+  y: number;
+}
+
+export interface DmFloorRequestMessage extends BaseWebSocketMessage {
+  type: "dm_floor_request";
+}
+
 /**
  * Union type of all possible WebSocket messages
  */
@@ -173,6 +185,8 @@ export type WebSocketMessage =
   | GameUpdateMessage
   | CharacterUpdateMessage
   | DmNarrationMessage
+  | TokenMoveMessage
+  | DmFloorRequestMessage
   | PlayerJoinMessage
   | PlayerLeaveMessage
   | PlayerListMessage

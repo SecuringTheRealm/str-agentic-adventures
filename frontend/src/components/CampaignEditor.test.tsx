@@ -78,8 +78,8 @@ describe("CampaignEditor", () => {
 
     await waitFor(() => {
       expect(mockGetAIAssistance).toHaveBeenCalledWith({
-        text: "A test campaign",
-        context_type: "description",
+        prompt: "A test campaign",
+        context: "description",
         campaign_tone: "heroic",
       });
     });

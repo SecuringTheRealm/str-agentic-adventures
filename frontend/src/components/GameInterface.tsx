@@ -1,5 +1,6 @@
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -7,7 +8,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { toast } from "sonner";
 import { useMediaQuery } from "../hooks/useMediaQuery";
 import { useRealtimeVoice } from "../hooks/useRealtimeVoice";
 import { useWebSocketSDK } from "../hooks/useWebSocketSDK";
@@ -132,8 +132,10 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
     useState<boolean>(true);
   const [imageGenerationStatusMessage, setImageGenerationStatusMessage] =
     useState<string | null>(null);
-  const [checkingImageGenerationAvailability, setCheckingImageGenerationAvailability] =
-    useState<boolean>(true);
+  const [
+    checkingImageGenerationAvailability,
+    setCheckingImageGenerationAvailability,
+  ] = useState<boolean>(true);
 
   const handleChatWebSocketMessage = (message: WebSocketMessage) => {
     switch (message.type) {
@@ -379,7 +381,10 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
         setImageGenerationAvailable(false);
         setImageGenerationStatusMessage(visualStatus.message);
       } catch (error) {
-        console.warn("Failed to determine image generation availability:", error);
+        console.warn(
+          "Failed to determine image generation availability:",
+          error
+        );
         if (!cancelled) {
           setImageGenerationAvailable(true);
           setImageGenerationStatusMessage(null);
@@ -474,9 +479,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
         "error" in portraitData &&
         typeof portraitData.error === "string"
       ) {
-        markImageGenerationUnavailable(
-          VISUAL_GENERATION_UNAVAILABLE_MESSAGE
-        );
+        markImageGenerationUnavailable(VISUAL_GENERATION_UNAVAILABLE_MESSAGE);
         throw new Error(portraitData.error);
       }
 
@@ -540,9 +543,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
         "error" in sceneData &&
         typeof sceneData.error === "string"
       ) {
-        markImageGenerationUnavailable(
-          VISUAL_GENERATION_UNAVAILABLE_MESSAGE
-        );
+        markImageGenerationUnavailable(VISUAL_GENERATION_UNAVAILABLE_MESSAGE);
         throw new Error(sceneData.error);
       }
 
@@ -603,9 +604,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
         "error" in mapData &&
         typeof mapData.error === "string"
       ) {
-        markImageGenerationUnavailable(
-          VISUAL_GENERATION_UNAVAILABLE_MESSAGE
-        );
+        markImageGenerationUnavailable(VISUAL_GENERATION_UNAVAILABLE_MESSAGE);
         throw new Error(mapData.error);
       }
 

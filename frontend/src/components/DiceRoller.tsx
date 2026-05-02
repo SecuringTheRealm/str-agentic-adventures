@@ -1,7 +1,9 @@
 import type React from "react";
 import { useCallback, useEffect, useId, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -9,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import { rollDice as rollDiceApi } from "../services/api";
 import type { DiceResult } from "../types";
 import styles from "./DiceRoller.module.css";
@@ -118,7 +121,7 @@ const DiceRoller: React.FC<DiceRollerProps> = ({
         }
         // Fallback to direct API call via openapi-fetch client
         const response = await rollDiceApi(diceNotation, characterId, skill);
-        result = response as DiceResult;
+        result = response as unknown as DiceResult;
 
         // Add timestamp if not present
         if (!result.timestamp) {
@@ -188,7 +191,7 @@ const DiceRoller: React.FC<DiceRollerProps> = ({
 
       <div className={styles.diceInputSection}>
         <div className={styles.notationInput}>
-          <label htmlFor={notationId}>Dice Notation:</label>
+          <Label htmlFor={notationId}>Dice Notation</Label>
           <Input
             id={notationId}
             type="text"
@@ -201,7 +204,7 @@ const DiceRoller: React.FC<DiceRollerProps> = ({
 
         {characterId && (
           <div className={styles.skillInput}>
-            <label htmlFor={skillId}>Skill (optional):</label>
+            <Label htmlFor={skillId}>Skill (optional)</Label>
             <Select
               value={skill || "none"}
               onValueChange={(value) => setSkill(value === "none" ? "" : value)}
@@ -260,40 +263,45 @@ const DiceRoller: React.FC<DiceRollerProps> = ({
       </div>
 
       {lastResult && (
-        <div className={styles.lastResult} aria-live="assertive" role="status">
-          <h4>Last Roll:</h4>
-          <div className={styles.resultDisplay}>
-            <div className={styles.resultNotation}>{lastResult.notation}</div>
-            <div className={styles.resultTotal}>Total: {lastResult.total}</div>
-            <div className={styles.resultDetails}>
-              {formatResult(lastResult)}
+        <Card className={styles.lastResult} aria-live="assertive" role="status">
+          <CardContent className={styles.resultCardContent}>
+            <h4>Last Roll</h4>
+            <div className={styles.resultDisplay}>
+              <div className={styles.resultNotation}>{lastResult.notation}</div>
+              <div className={styles.resultTotal}>{lastResult.total}</div>
+              <div className={styles.resultDetails}>
+                {formatResult(lastResult)}
+              </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       )}
 
       {rollHistory.length > 0 && (
-        <div className={styles.rollHistory}>
-          <h4>Recent Rolls:</h4>
-          <div className={styles.historyList}>
-            {rollHistory.map((result, index) => (
-              <div
-                key={`${result.timestamp}-${index}`}
-                className={styles.historyItem}
-              >
-                <span className={styles.historyNotation}>
-                  {result.notation}
-                </span>
-                <span className={styles.historyTotal}>{result.total}</span>
-                <span className={styles.historyTime}>
-                  {result.timestamp
-                    ? new Date(result.timestamp).toLocaleTimeString()
-                    : ""}
-                </span>
-              </div>
-            ))}
+        <>
+          <Separator className={styles.historySeparator} />
+          <div className={styles.rollHistory}>
+            <h4>Recent Rolls</h4>
+            <div className={styles.historyList}>
+              {rollHistory.map((result, index) => (
+                <div
+                  key={`${result.timestamp}-${index}`}
+                  className={styles.historyItem}
+                >
+                  <span className={styles.historyNotation}>
+                    {result.notation}
+                  </span>
+                  <span className={styles.historyTotal}>{result.total}</span>
+                  <span className={styles.historyTime}>
+                    {result.timestamp
+                      ? new Date(result.timestamp).toLocaleTimeString()
+                      : ""}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );

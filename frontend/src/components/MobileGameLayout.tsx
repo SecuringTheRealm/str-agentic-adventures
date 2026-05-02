@@ -121,7 +121,7 @@ const MobileGameLayout: React.FC<MobileGameLayoutProps> = ({
         currentHp={character.hit_points?.current ?? 0}
         maxHp={character.hit_points?.maximum ?? 0}
         armorClass={10}
-        level={character.level}
+        level={character.level ?? 1}
       />
 
       <div className={styles.tabBar} role="tablist" aria-label="Game sections">

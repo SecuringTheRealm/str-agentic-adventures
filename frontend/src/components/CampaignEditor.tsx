@@ -156,8 +156,8 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
 
     try {
       const request: AIAssistanceRequest = {
-        text: formData[field as keyof typeof formData],
-        context_type: contextType,
+        prompt: formData[field as keyof typeof formData],
+        context: contextType,
         campaign_tone: formData.tone,
       };
 
@@ -473,7 +473,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
               ✨ AI
             </Button>
           </div>
-          <Textarea
+          <textarea
             id={descriptionId}
             ref={(el) => {
               textareaRefs.current.description = el;
@@ -483,6 +483,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
             placeholder="Brief description of your campaign..."
             rows={3}
             disabled={isSubmitting}
+            className={styles.styledTextarea}
           />
         </div>
 
@@ -539,7 +540,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
               ✨ AI
             </Button>
           </div>
-          <Textarea
+          <textarea
             id={settingId}
             ref={(el) => {
               textareaRefs.current.setting = el;
@@ -548,7 +549,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
             onChange={(e) => handleInputChange("setting", e.target.value)}
             placeholder="Describe the world and setting for your campaign..."
             rows={4}
-            className={validationErrors.setting ? styles.inputError : ""}
+            className={`${styles.styledTextarea} ${validationErrors.setting ? styles.inputError : ""}`}
             disabled={isSubmitting}
           />
           {validationErrors.setting && (
@@ -611,7 +612,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
               ✨ AI
             </Button>
           </div>
-          <Textarea
+          <textarea
             id={worldDescriptionId}
             ref={(el) => {
               textareaRefs.current.world_description = el;
@@ -623,6 +624,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
             placeholder="Detailed world description, lore, and background..."
             rows={6}
             disabled={isSubmitting}
+            className={styles.styledTextarea}
           />
         </div>
 

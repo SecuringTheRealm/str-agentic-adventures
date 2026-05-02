@@ -26,7 +26,14 @@ const PredefinedCharacters: React.FC<PredefinedCharactersProps> = ({
         name: character.name,
         race: (character.race || "human").toLowerCase(),
         character_class: (character.character_class || "fighter").toLowerCase(),
-        abilities: character.abilities || { strength: 10, dexterity: 10, constitution: 10, intelligence: 10, wisdom: 10, charisma: 10 },
+        abilities: character.abilities || {
+          strength: 10,
+          dexterity: 10,
+          constitution: 10,
+          intelligence: 10,
+          wisdom: 10,
+          charisma: 10,
+        },
         backstory: character.backstory || "",
       });
       onCharacterSelected(created);
@@ -74,7 +81,8 @@ const PredefinedCharacters: React.FC<PredefinedCharactersProps> = ({
               <div className={styles.hitPoints}>
                 <span className={styles.statLabel}>Hit Points</span>
                 <span className={styles.statValue}>
-                  {character.hit_points.current}/{character.hit_points.maximum}
+                  {character.hit_points?.current ?? 0}/
+                  {character.hit_points?.maximum ?? 0}
                 </span>
               </div>
 
@@ -159,7 +167,9 @@ const PredefinedCharacters: React.FC<PredefinedCharactersProps> = ({
               className={styles.selectCharacterButton}
               disabled={creating !== null}
             >
-              {creating === character.name ? "Creating..." : "Select This Character"}
+              {creating === character.name
+                ? "Creating..."
+                : "Select This Character"}
             </button>
           </div>
         ))}

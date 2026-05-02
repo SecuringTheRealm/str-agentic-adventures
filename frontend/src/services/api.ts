@@ -11,7 +11,6 @@
  * without requiring Java or generated runtime code.
  */
 import { api } from "../api-client/client";
-import { getApiBaseUrl } from "../utils/urls";
 // Import WebSocket client for unified SDK
 import {
   WebSocketClient,
@@ -20,6 +19,7 @@ import {
   websocketClient,
 } from "../api-client/websocketClient";
 import type { BattleMapData } from "../types/battleMap";
+import { getApiBaseUrl } from "../utils/urls";
 
 // Export WebSocket client for unified SDK access
 export const wsClient = websocketClient;
@@ -60,18 +60,27 @@ export interface Character {
   hit_points?: HitPoints;
   inventory?: InventoryItem[];
   backstory?: string;
-  [key: string]: unknown;
+  equipment?: Record<string, unknown>;
+  spellcasting?: Record<string, unknown>;
+  exhaustion_level?: number;
+  hit_dice_remaining?: number;
+  is_custom?: boolean;
 }
 
 export interface Campaign {
   id?: string;
   name: string;
+  description?: string | null;
   setting?: string;
   tone?: string;
-  homebrew_rules?: string;
+  homebrew_rules?: string[];
   world_description?: string;
   world_art?: { image_url?: string };
-  [key: string]: unknown;
+  is_template?: boolean;
+  is_custom?: boolean;
+  template_id?: string | null;
+  plot_hooks?: string[];
+  predefined_characters?: Record<string, unknown>[];
 }
 
 export interface CharacterCreateRequest {
@@ -86,21 +95,22 @@ export interface CampaignCreateRequest {
   name: string;
   setting?: string;
   tone?: string;
-  homebrew_rules?: string;
+  homebrew_rules?: string[];
+  description?: string;
 }
 
 export interface CampaignUpdateRequest {
   name?: string;
+  description?: string;
   setting?: string;
   tone?: string;
-  homebrew_rules?: string;
-  [key: string]: unknown;
+  homebrew_rules?: string[];
+  world_description?: string;
 }
 
 export interface CloneCampaignRequest {
   template_id: string;
   name?: string;
-  [key: string]: unknown;
 }
 
 export interface PlayerInput {
@@ -110,21 +120,22 @@ export interface PlayerInput {
 }
 
 export interface AIAssistanceRequest {
-  campaign_id?: string;
   prompt: string;
-  context?: string;
-  [key: string]: unknown;
+  context: string;
+  campaign_tone: string | null;
 }
 
 export interface AIContentGenerationRequest {
-  campaign_id?: string;
-  content_type: string;
-  parameters?: Record<string, unknown>;
-  [key: string]: unknown;
+  suggestion: string;
+  current_text: string;
+  content_type?: string;
+  context_type: string;
+  campaign_tone: string | null;
 }
 
 export interface InventoryItem {
-  name: string;
+  name?: string;
+  item_id?: string;
   quantity: number;
   type?: string;
   description?: string;
@@ -136,14 +147,13 @@ export interface PlayerInputResponse {
   combat_updates?: {
     status?: string;
     map_url?: string;
-    [key: string]: unknown;
+    combat_id?: string;
+    combat_context?: Record<string, unknown>;
   };
   state_updates?: {
     auto_saved?: boolean;
     last_auto_save?: string;
-    [key: string]: unknown;
   };
-  [key: string]: unknown;
 }
 
 export interface OpeningNarrativeResponse {
@@ -181,7 +191,7 @@ export const createCharacter = async (
   };
 
   const { data, error } = await api.POST("/game/character", {
-    body,
+    body: body as any,
   });
   if (error) throw error;
   return data as Character;
@@ -192,7 +202,7 @@ export const getCharacter = async (characterId: string): Promise<Character> => {
     params: { path: { character_id: characterId } },
   });
   if (error) throw error;
-  return data as Character;
+  return data as unknown as Character;
 };
 
 export const sendPlayerInput = async (
@@ -209,7 +219,7 @@ export const createCampaign = async (
   campaignData: CampaignCreateRequest
 ): Promise<Campaign> => {
   const { data, error } = await api.POST("/game/campaign", {
-    body: campaignData,
+    body: campaignData as any,
   });
   if (error) throw error;
   return data as Campaign;
@@ -218,7 +228,11 @@ export const createCampaign = async (
 export const getCampaigns = async (): Promise<Campaign[]> => {
   const { data, error } = await api.GET("/game/campaigns");
   if (error) throw error;
-  return (data ?? []) as Campaign[];
+  const payload = data as unknown as
+    | { campaigns?: Campaign[]; templates?: Campaign[] }
+    | Campaign[];
+  if (Array.isArray(payload)) return payload;
+  return payload?.campaigns ?? [];
 };
 
 export const getCampaign = async (campaignId: string): Promise<Campaign> => {
@@ -235,7 +249,7 @@ export const updateCampaign = async (
 ): Promise<Campaign> => {
   const { data, error } = await api.PUT("/game/campaign/{campaign_id}", {
     params: { path: { campaign_id: campaignId } },
-    body: updates,
+    body: updates as any,
   });
   if (error) throw error;
   return data as Campaign;
@@ -245,7 +259,7 @@ export const cloneCampaign = async (
   cloneData: CloneCampaignRequest
 ): Promise<Campaign> => {
   const { data, error } = await api.POST("/game/campaign/clone", {
-    body: cloneData,
+    body: cloneData as any,
   });
   if (error) throw error;
   return data as Campaign;
@@ -261,8 +275,7 @@ export const deleteCampaign = async (campaignId: string): Promise<void> => {
 export const getCampaignTemplates = async (): Promise<Campaign[]> => {
   const { data, error } = await api.GET("/game/campaign/templates");
   if (error) throw error;
-  // The API returns {templates: [...]} but we need just the array
-  const payload = data as { templates?: Campaign[] } | Campaign[];
+  const payload = data as unknown as { templates?: Campaign[] } | Campaign[];
   if (Array.isArray(payload)) return payload;
   return payload?.templates ?? [];
 };
@@ -313,20 +326,24 @@ export const getCampaignTemplatesWithRetry = async (): Promise<Campaign[]> => {
 
 export const getAIAssistance = async (request: AIAssistanceRequest) => {
   const { data, error } = await api.POST("/game/campaign/ai-assist", {
-    body: request,
+    body: request as any,
   });
   if (error) throw error;
-  return data;
+  return data as { suggestions: string[]; enhanced_text?: string | null };
 };
 
 export const generateAIContent = async (
   request: AIContentGenerationRequest
 ) => {
   const { data, error } = await api.POST("/game/campaign/ai-generate", {
-    body: request,
+    body: request as any,
   });
   if (error) throw error;
-  return data;
+  return data as {
+    generated_content: string;
+    success: boolean;
+    error?: string | null;
+  };
 };
 
 export const generateImage = async (imageRequest: Record<string, unknown>) => {
@@ -351,10 +368,10 @@ export const generateStructuredBattleMap = async (
   environment: object,
   combatContext?: object
 ): Promise<BattleMapData> => {
-  const { data, error } = await api.POST(
-    "/game/battle-map/structured" as never,
+  const { data, error } = await (api as any).POST(
+    "/game/battle-map/structured",
     {
-      body: { environment, combat_context: combatContext } as never,
+      body: { environment, combat_context: combatContext },
     }
   );
   if (error) throw error;
@@ -378,7 +395,7 @@ export const getOpeningNarrative = async (
     }
   );
   if (error) throw error;
-  return data as OpeningNarrativeResponse;
+  return data as unknown as OpeningNarrativeResponse;
 };
 
 export const getVisualGenerationStatus =
@@ -393,8 +410,7 @@ export const getVisualGenerationStatus =
       );
     }
 
-    const dependencyHealth =
-      (await response.json()) as DependencyHealthStatus;
+    const dependencyHealth = (await response.json()) as DependencyHealthStatus;
     const azureStatus = dependencyHealth.azure_openai ?? "unavailable";
 
     if (azureStatus === "healthy") {
