@@ -5,8 +5,8 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Request, status
 
-from app.agents.base_agent import azure_circuit_breaker
 from app.agents.artist_agent import get_artist
+from app.agents.base_agent import azure_circuit_breaker
 from app.agents.combat_cartographer_agent import get_combat_cartographer
 from app.api.routes._shared import _get_image_budget, limiter
 from app.config import get_settings

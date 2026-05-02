@@ -7,7 +7,7 @@ param amount int = 50
 @description('Email addresses for budget notifications')
 param contactEmails array = []
 
-@description('Budget start date in yyyy-MM-01 format (must be the first of the month)')
+@description('Budget start date in yyyy-MM-ddT00:00:00Z format (must be the first of the month)')
 param startDate string
 
 resource budget 'Microsoft.Consumption/budgets@2024-08-01' = {

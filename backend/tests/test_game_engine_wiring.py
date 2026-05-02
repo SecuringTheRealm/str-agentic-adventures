@@ -317,7 +317,6 @@ class TestCombatUsesEquipment:
             "proficiency_bonus": 2,
         }
 
-        # Mock the combat MC agent to capture what action_data it receives
         mock_combat_mc = MagicMock()
         captured = {}
 
@@ -325,7 +324,12 @@ class TestCombatUsesEquipment:
             captured.update(action_data)
             return {"success": True}
 
+        async def _mock_get_or_create(state):
+            return "encounter_1"
+
         mock_combat_mc.process_combat_action = _capture_action
+        mock_combat_mc.get_or_create_active_encounter = _mock_get_or_create
+        mock_combat_mc.active_combats = {}
 
         with patch(
             "app.agents.combat_mc_agent.get_combat_mc",

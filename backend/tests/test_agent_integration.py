@@ -55,7 +55,7 @@ async def test_agent_integration() -> None:
 
         # Verify encounter was created
         assert "id" in encounter
-        assert encounter["status"] == "ready"
+        assert encounter["status"] == "active"
         assert len(encounter["enemies"]) > 0
 
         # Start combat

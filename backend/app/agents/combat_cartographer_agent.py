@@ -90,11 +90,16 @@ class CombatCartographerAgent(BaseAgent):
             Dict[str, Any]: Details of the generated battle map, including image reference
         """
         if self._fallback_mode or not self.azure_client:
-            return {
-                "error": (
-                    "Combat Cartographer agent in fallback mode - map generation not available"
-                )
-            }
+            from app.services.tile_grid_generator import TileGridGenerator
+
+            generator = TileGridGenerator()
+            terrain = environment_context.get("terrain", "dungeon")
+            grid = generator.generate_grid(
+                width=20,
+                height=15,
+                environment_context={"terrain": terrain, **environment_context},
+            )
+            return grid.model_dump() if hasattr(grid, "model_dump") else grid
 
         try:
             # Create map ID

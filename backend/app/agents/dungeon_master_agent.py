@@ -591,10 +591,7 @@ class DungeonMasterAgent(BaseAgent):
         """Process player input without external services."""
         self._initialize_fallback_components()
 
-        # Add AI model not configured warning prefix
-        ai_warning = "[AI model not configured] "
-
-        response = {
+        response: dict[str, Any] = {
             "message": "",
             "narration": "",
             "state_updates": {},
@@ -604,27 +601,78 @@ class DungeonMasterAgent(BaseAgent):
         }
 
         if not user_input:
-            response["message"] = f"{ai_warning}No action taken."
+            response["message"] = "No action taken."
             response["narration"] = "Silence hangs in the air."
             return response
 
         lower = user_input.lower()
+
         if "roll" in lower:
             dice_result = self._handle_fallback_dice_roll(user_input)
             response["dice_result"] = dice_result
             response["message"] = dice_result.get(
-                "error", f"{ai_warning}You rolled {dice_result['total']}"
+                "error", f"You rolled {dice_result['total']}"
             )
             response["narration"] = "The dice clatter across the table."
             return response
 
         if "attack" in lower:
-            response["message"] = f"{ai_warning}You attack your foe."
+            response["message"] = "You attack your foe."
             response["narration"] = "You lunge forward in a swift strike."
             return response
 
-        response["message"] = f"{ai_warning}You continue your journey."
-        response["narration"] = self._fallback_generate_response("exploration")
+        if "cast" in lower or "spell" in lower:
+            response["message"] = "You gather arcane energy and cast your spell."
+            response["narration"] = "Magical energy crackles through the air as the spell takes form."
+            return response
+
+        if any(word in lower for word in ("talk", "speak", "persuade", "negotiate")):
+            response["message"] = "You step forward and address the situation with words."
+            response["narration"] = "The adventurer speaks with conviction, hoping to sway the outcome."
+            return response
+
+        if any(word in lower for word in ("investigate", "search", "examine", "inspect", "look")):
+            response["message"] = "You carefully examine your surroundings, searching for anything of note."
+            response["narration"] = "Sharp eyes scan the area, picking out details others might miss."
+            return response
+
+        if any(word in lower for word in ("rest", "sleep", "camp")):
+            response["message"] = "You find a suitable spot and take a moment to rest."
+            response["narration"] = "Weary muscles relax as a brief respite is claimed from the journey."
+            return response
+
+        if any(word in lower for word in ("sneak", "stealth", "hide")):
+            response["message"] = "You move silently, keeping to the shadows."
+            response["narration"] = "Soft footsteps and careful breathing mark the adventurer's stealthy advance."
+            return response
+
+        if any(word in lower for word in ("trade", "buy", "sell", "shop")):
+            response["message"] = "You approach the merchant and browse their wares."
+            response["narration"] = "Coins clink and goods exchange hands in the bustle of commerce."
+            return response
+
+        if any(word in lower for word in ("pray", "worship", "meditate")):
+            response["message"] = "You kneel and focus your mind, seeking guidance from beyond."
+            response["narration"] = "A quiet reverence settles over the adventurer as they commune with higher powers."
+            return response
+
+        if any(word in lower for word in ("craft", "build", "create", "forge")):
+            response["message"] = "You set to work, shaping raw materials with practised hands."
+            response["narration"] = "Tools strike and materials yield as something new takes shape."
+            return response
+
+        if any(word in lower for word in ("move", "walk", "run", "travel", "go")):
+            response["message"] = "You set off, pressing onward through the terrain ahead."
+            response["narration"] = "Boots meet the path as the adventurer covers new ground."
+            return response
+
+        if any(word in lower for word in ("open", "unlock", "pick")):
+            response["message"] = "You reach out and interact with the object before you."
+            response["narration"] = "Careful hands work at the task, testing locks and latches."
+            return response
+
+        response["message"] = f"You attempt to {user_input.lower().strip()[:100]}."
+        response["narration"] = "The adventurer takes action, and the world responds."
         return response
 
     @staticmethod

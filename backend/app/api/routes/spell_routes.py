@@ -5,6 +5,7 @@ import random
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, Response, status
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.database import DbDep
@@ -24,6 +25,12 @@ from app.models.game_models import (
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["spells"])
+
+
+class SpellSaveDCRequest(BaseModel):
+    character_class: CharacterClass
+    level: int = Field(ge=1, le=20)
+    spellcasting_ability_score: int = Field(ge=1, le=30)
 
 
 @router.post("/character/{character_id}/spells", response_model=dict[str, Any])
@@ -357,7 +364,7 @@ async def get_spell_list(
 
 @router.post("/spells/save-dc", response_model=dict[str, Any])
 async def calculate_spell_save_dc_endpoint(
-    character_class: CharacterClass, level: int, spellcasting_ability_score: int
+    request: SpellSaveDCRequest,
 ) -> dict[str, Any]:
     """Calculate spell save DC for a character."""
     try:
@@ -375,25 +382,25 @@ async def calculate_spell_save_dc_endpoint(
         }
 
         # Get spellcasting ability for the class
-        spellcasting_ability = spellcasting_abilities.get(character_class.value)
+        spellcasting_ability = spellcasting_abilities.get(request.character_class.value)
         if not spellcasting_ability:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Class {character_class.value} is not a spellcasting class",
+                detail=f"Class {request.character_class.value} is not a spellcasting class",
             )
 
         # Calculate ability modifier: (ability_score - 10) // 2
-        ability_modifier = (spellcasting_ability_score - 10) // 2
+        ability_modifier = (request.spellcasting_ability_score - 10) // 2
 
         # Calculate proficiency bonus based on level
         proficiency_bonus = 2
-        if level >= 17:
+        if request.level >= 17:
             proficiency_bonus = 6
-        elif level >= 13:
+        elif request.level >= 13:
             proficiency_bonus = 5
-        elif level >= 9:
+        elif request.level >= 9:
             proficiency_bonus = 4
-        elif level >= 5:
+        elif request.level >= 5:
             proficiency_bonus = 3
 
         # Spell save DC = 8 + proficiency bonus + ability modifier
@@ -401,10 +408,10 @@ async def calculate_spell_save_dc_endpoint(
 
         return {
             "save_dc": save_dc,
-            "character_class": character_class.value,
-            "level": level,
+            "character_class": request.character_class.value,
+            "level": request.level,
             "spellcasting_ability": spellcasting_ability,
-            "spellcasting_ability_score": spellcasting_ability_score,
+            "spellcasting_ability_score": request.spellcasting_ability_score,
             "ability_modifier": ability_modifier,
             "proficiency_bonus": proficiency_bonus,
         }

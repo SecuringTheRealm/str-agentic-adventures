@@ -146,12 +146,14 @@ async def rest(request: RestRequest) -> RestResponse:
         from app.agents.scribe_agent import get_scribe
 
         scribe = get_scribe()
-        character = await scribe.get_character(request.character_id)
-        if character is None:
+        character_data = await scribe.get_character(request.character_id)
+        if character_data is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Character {request.character_id} not found",
             )
+
+        character = CharacterSheet.model_validate(character_data)
 
         if request.rest_type == RestType.SHORT:
             result = calculate_short_rest(
@@ -177,7 +179,10 @@ async def rest(request: RestRequest) -> RestResponse:
             hp_recovered=result["hp_recovered"],
             spell_slots_recovered=result.get("spell_slots_recovered", []),
             hit_dice_remaining=result["hit_dice_remaining"],
-            exhaustion_level=result["character"].exhaustion_level,
+            exhaustion_level=result.get(
+                "exhaustion_level",
+                character.exhaustion_level if hasattr(character, "exhaustion_level") else 0,
+            ),
         )
     except HTTPException:
         raise

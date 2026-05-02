@@ -138,12 +138,18 @@ async def _call_combat_mc(
         from app.agents.combat_mc_agent import get_combat_mc
 
         combat_mc = get_combat_mc()
+
+        encounter_id = state.get("encounter_id")
+        if not encounter_id or encounter_id not in combat_mc.active_combats:
+            encounter_id = await combat_mc.get_or_create_active_encounter(
+                state=state,
+            )
+
         action_data: dict[str, Any] = {
             "type": "attack",
             "description": player_input,
             "actor_id": state.get("character_id", "player"),
             "target_id": state.get("target_id", "enemy_1"),
-            # Carry over weapon/combat stats from game context (#416)
             "attack_bonus": state.get("attack_bonus", 0),
             "damage_dice": state.get("equipped_weapon_damage", "1d4"),
             "damage_modifier": state.get("damage_modifier", 0),
@@ -152,7 +158,7 @@ async def _call_combat_mc(
             "proficiency_bonus": state.get("proficiency_bonus", 2),
         }
         combat_result = await combat_mc.process_combat_action(
-            encounter_id=state.get("encounter_id", "auto"),
+            encounter_id=encounter_id,
             action_data=action_data,
         )
         return ("combat_update", combat_result)

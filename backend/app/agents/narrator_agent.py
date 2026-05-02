@@ -621,6 +621,7 @@ class NarratorAgent(BaseAgent):
         setting = campaign_context.get("setting", "fantasy")
         tone = campaign_context.get("tone", "heroic")
         campaign_id = campaign_context.get("id", "")
+        campaign_name = campaign_context.get("name", "")
         world_description = campaign_context.get("world_description", "")
 
         character_name = character_context.get("name", "adventurer")
@@ -640,7 +641,7 @@ class NarratorAgent(BaseAgent):
 
         if self._fallback_mode:
             fallback = self._fallback_opening_narrative(
-                character_name, character_class, setting, tone
+                character_name, character_class, setting, tone, campaign_name
             )
             fallback["scene_description"] = scene_description
             return fallback
@@ -695,7 +696,7 @@ class NarratorAgent(BaseAgent):
 
             # _narrate returned None — use fallback
             fallback = self._fallback_opening_narrative(
-                character_name, character_class, setting, tone
+                character_name, character_class, setting, tone, campaign_name
             )
             fallback["scene_description"] = scene_description
             return fallback
@@ -703,7 +704,7 @@ class NarratorAgent(BaseAgent):
         except Exception as exc:
             logger.error("Failed to generate opening narrative details: %s", exc)
             fallback = self._fallback_opening_narrative(
-                character_name, character_class, setting, tone
+                character_name, character_class, setting, tone, campaign_name
             )
             fallback["scene_description"] = scene_description
             return fallback
@@ -714,24 +715,34 @@ class NarratorAgent(BaseAgent):
         character_class: str,
         setting: str,
         tone: str,
+        campaign_name: str = "",
     ) -> dict[str, Any]:
         """Generate a fallback opening narrative when Azure OpenAI is not available."""
+        setting_imagery: dict[str, str] = {
+            "fantasy": "ancient towers and enchanted forests",
+            "urban": "neon-lit streets and towering skyscrapers",
+            "post_apocalyptic": "crumbling ruins and ash-grey skies",
+            "space": "glittering star fields and humming starships",
+        }
+        imagery = setting_imagery.get(setting, f"the {setting} landscape")
+        realm = campaign_name or f"this {setting} realm"
+
         hooks: dict[str, str] = {
             "heroic": (
-                f"A desperate messenger has arrived with urgent news that only a "
-                f"{character_class} of your skill can address."
+                f"A desperate messenger has arrived in {realm} with urgent news "
+                f"that only a {character_class} of your skill can address."
             ),
             "dark": (
-                "Dark omens have troubled the land, and whispered prophecies speak "
+                f"Dark omens have troubled {realm}, and whispered prophecies speak "
                 "of one who will rise to meet the coming shadow."
             ),
             "mystery": (
-                "A cryptic letter arrived at dawn, sealed with an unfamiliar crest "
-                "and bearing your name."
+                f"A cryptic letter arrived at dawn in {realm}, sealed with an "
+                "unfamiliar crest and bearing your name."
             ),
             "comedy": (
-                "Through a series of unfortunate misunderstandings, you find yourself "
-                "at the center of a most peculiar situation."
+                f"Through a series of unfortunate misunderstandings in {realm}, "
+                "you find yourself at the centre of a most peculiar situation."
             ),
         }
 
@@ -760,7 +771,7 @@ class NarratorAgent(BaseAgent):
 
         quest_hook = hooks.get(
             tone,
-            f"Adventure calls to {character_name}, and destiny waits for no one.",
+            f"Adventure calls to {character_name} across {realm}, and destiny waits for no one.",
         )
         suggested_actions = actions_by_tone.get(
             tone,
@@ -771,8 +782,13 @@ class NarratorAgent(BaseAgent):
             ],
         )
 
+        scene = (
+            f"[AI model not configured] Your adventure begins in {realm}, "
+            f"{character_name}. Amid {imagery}, a new chapter unfolds."
+        )
+
         return {
-            "scene_description": f"[AI model not configured] Your adventure begins, {character_name}.",
+            "scene_description": scene,
             "quest_hook": f"[AI model not configured] {quest_hook}",
             "suggested_actions": suggested_actions,
             "help_text": "What can I do?",

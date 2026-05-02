@@ -4,7 +4,7 @@ import logging
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, status
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from app.models.map_models import BattleMapData
 from app.services.tile_grid_generator import TileGridGenerator
@@ -35,6 +35,13 @@ class StructuredMapRequest(BaseModel):
     height: int | None = Field(default=None, ge=5, le=100, description="Override grid height in tiles")
     combat_context: dict[str, Any] | None = None
     seed: int | None = None
+
+    @field_validator("environment", mode="before")
+    @classmethod
+    def coerce_environment(cls, v: Any) -> Any:  # noqa: ANN401
+        if isinstance(v, str):
+            return EnvironmentSpec(location=v, terrain=v)
+        return v
 
 
 # ---------------------------------------------------------------------------

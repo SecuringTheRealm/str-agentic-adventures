@@ -347,16 +347,25 @@ class ScribeAgent(BaseAgent):
             background = (character_data.get("background") or "").lower()
             level = character_data.get("level", 1)
 
-            # Get base abilities from nested abilities dict
-            abilities_data = character_data.get("abilities", {})
-            base_abilities = {
-                "strength": abilities_data.get("strength", 10),
-                "dexterity": abilities_data.get("dexterity", 10),
-                "constitution": abilities_data.get("constitution", 10),
-                "intelligence": abilities_data.get("intelligence", 10),
-                "wisdom": abilities_data.get("wisdom", 10),
-                "charisma": abilities_data.get("charisma", 10),
-            }
+            # Get base abilities from nested abilities dict (try multiple key names)
+            abilities_data = (
+                character_data.get("abilities")
+                or character_data.get("ability_scores")
+                or {}
+            )
+            # If abilities_data is a Pydantic model, convert to dict
+            if hasattr(abilities_data, "model_dump"):
+                abilities_data = abilities_data.model_dump()
+
+            # Also accept top-level ability keys as fallback
+            ability_names = ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"]
+            base_abilities = {}
+            for ability in ability_names:
+                base_abilities[ability] = (
+                    abilities_data.get(ability)
+                    or character_data.get(ability)
+                    or 10
+                )
 
             # Apply racial ability bonuses
             final_abilities = apply_racial_ability_bonuses(base_abilities, race)

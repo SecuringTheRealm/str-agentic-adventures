@@ -328,6 +328,18 @@ class CombatMCAgent(BaseAgent):
             # Store the encounter
             self.active_combats[encounter_id] = encounter
 
+            party_members = [
+                {
+                    "id": m.get("id", f"player_{i}"),
+                    "name": m.get("name", "Player"),
+                    "abilities": m.get("abilities", {"dexterity": 10}),
+                }
+                for i, m in enumerate(members)
+            ]
+            started = await self.start_combat(encounter_id, party_members)
+            if "error" not in started:
+                encounter = started
+
             return encounter
 
         except Exception as e:
@@ -404,6 +416,33 @@ class CombatMCAgent(BaseAgent):
         except Exception as e:
             logger.error("Error starting combat: %s", str(e))
             return {"error": "Failed to start combat"}
+
+    async def get_or_create_active_encounter(
+        self, state: dict[str, Any]
+    ) -> str:
+        """Return an active encounter_id, creating one if none exists."""
+        for eid, enc in self.active_combats.items():
+            if enc.get("status") == "active":
+                return eid
+
+        party_members = []
+        character_id = state.get("character_id", "player")
+        party_members.append(
+            {
+                "id": character_id,
+                "name": state.get("character_name", "Player"),
+                "level": state.get("character_level", 1),
+                "abilities": state.get("abilities", {"dexterity": 10}),
+            }
+        )
+        party_info = {"members": party_members}
+        narrative_context = {
+            "location": state.get("location", "dungeon"),
+            "difficulty": state.get("difficulty", "medium"),
+        }
+
+        encounter = await self.create_encounter(party_info, narrative_context)
+        return encounter.get("id", f"encounter_{len(self.active_combats)}")
 
     async def process_combat_action(
         self, encounter_id: str, action_data: dict[str, Any]

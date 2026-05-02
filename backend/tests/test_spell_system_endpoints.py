@@ -117,7 +117,7 @@ class TestSpellSystemEndpoints:
             "spellcasting_ability_score": 16,
         }
 
-        response = client.post("/game/spells/save-dc", params=params)
+        response = client.post("/game/spells/save-dc", json=params)
         assert response.status_code == 200
 
         data = response.json()

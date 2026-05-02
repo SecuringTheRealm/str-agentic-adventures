@@ -75,6 +75,8 @@ async def initialize_combat(combat_data: dict[str, Any]) -> dict[str, Any]:
     """Initialize a new combat encounter."""
     try:
         session_id = combat_data.get("session_id")
+        if not session_id:
+            session_id = f"session_{uuid.uuid4().hex[:8]}"
         participants = combat_data.get("participants", [])
         environment = combat_data.get("environment", "standard")
 
@@ -216,6 +218,70 @@ async def process_combat_turn(combat_id: str, turn_data: dict[str, Any]) -> dict
                     }
                 )
 
+        elif action_type == "spell":
+            turn_result["success"] = True
+            turn_result["description"] = "Spell cast successfully!"
+            damage_dice = turn_data.get("damage_dice")
+            if damage_dice:
+                damage_result = DiceRoller.roll_damage(damage_dice)
+                turn_result["damage"] = damage_result["total"]
+                turn_result["damage_roll"] = damage_result
+                turn_result["description"] = f"Spell hits for {damage_result['total']} damage!"
+
+        elif action_type == "dodge":
+            turn_result["success"] = True
+            turn_result["description"] = (
+                "You take the Dodge action, gaining advantage on DEX saves "
+                "and imposing disadvantage on attacks against you until your next turn."
+            )
+
+        elif action_type == "dash":
+            turn_result["success"] = True
+            turn_result["description"] = (
+                "You take the Dash action, doubling your movement speed this turn."
+            )
+
+        elif action_type == "disengage":
+            turn_result["success"] = True
+            turn_result["description"] = (
+                "You disengage, your movement doesn't provoke opportunity attacks this turn."
+            )
+
+        elif action_type == "help":
+            turn_result["success"] = True
+            turn_result["description"] = (
+                "You help an ally, giving them advantage on their next ability check or attack roll."
+            )
+
+        elif action_type == "hide":
+            stealth_bonus = turn_data.get("stealth_bonus", 0)
+            stealth_roll = DiceRoller.roll_d20(modifier=stealth_bonus)
+            if stealth_roll["total"] >= 15:
+                turn_result["success"] = True
+                turn_result["description"] = (
+                    f"You successfully hide (rolled {stealth_roll['total']} vs DC 15)."
+                )
+            else:
+                turn_result["success"] = False
+                turn_result["description"] = (
+                    f"You fail to hide (rolled {stealth_roll['total']} vs DC 15)."
+                )
+            turn_result["stealth_roll"] = stealth_roll
+
+        elif action_type == "ready":
+            turn_result["success"] = True
+            turn_result["description"] = (
+                "You ready an action, waiting for your trigger condition."
+            )
+
+        elif action_type in ("use_object", "item"):
+            turn_result["success"] = True
+            turn_result["description"] = "You use an item."
+
+        else:
+            turn_result["success"] = True
+            turn_result["description"] = f"You perform: {action_type}"
+
         turn_result["timestamp"] = str(datetime.now(UTC))
 
         # Append to the persistent combat log (#701)
@@ -320,12 +386,21 @@ async def encounter_xp_award(award_request: dict[str, Any]) -> dict[str, Any]:
     try:
         monsters: list[dict[str, Any]] = award_request.get("monsters", [])
         party_size: int = award_request.get("party_size", 1)
+        direct_xp: int = award_request.get("encounter_xp", 0)
 
         if not isinstance(party_size, int) or party_size < 1:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail="party_size must be a positive integer",
             )
+
+        if direct_xp and not monsters:
+            xp_per_character = direct_xp // party_size if party_size > 0 else 0
+            return {
+                "total_xp": direct_xp,
+                "xp_per_character": xp_per_character,
+                "party_size": party_size,
+            }
 
         return calculate_xp_award(monsters=monsters, party_size=party_size)
 
@@ -342,14 +417,28 @@ async def encounter_xp_award(award_request: dict[str, Any]) -> dict[str, Any]:
 async def process_combat_action(
     session_id: str, character_id: str, description: str, dice_rolls: list[dict]
 ) -> dict[str, Any]:
-    """Process a combat action."""
+    """Process a combat action using dice mechanics."""
+    total_damage = sum(r.get("total", 0) for r in dice_rolls) if dice_rolls else 0
+    hit = any(r.get("total", 0) >= 10 for r in dice_rolls) if dice_rolls else False
+
+    if dice_rolls and hit:
+        result_text = f"Your attack hits for {total_damage} damage!"
+        effects = ["Damage dealt to target"]
+    elif dice_rolls:
+        result_text = f"Your attack misses (rolled {dice_rolls[0].get('total', 0)})."
+        effects = ["Attack missed"]
+    else:
+        roll = DiceRoller.roll_d20()
+        result_text = f"You attempt a combat action (rolled {roll['total']})."
+        effects = ["Action attempted"]
+
     return {
         "type": "combat",
         "description": description,
-        "result": "Combat action processed - dice rolls applied",
+        "result": result_text,
         "dice_rolls": dice_rolls,
-        "effects": ["Damage dealt", "Position changed"],
-        "next_actions": ["Continue combat", "End turn"],
+        "effects": effects,
+        "next_actions": ["Continue combat", "End turn", "Use item", "Cast spell"],
     }
 
 
@@ -373,17 +462,38 @@ async def process_skill_check(
 async def process_exploration_action(
     session_id: str, character_id: str, description: str
 ) -> dict[str, Any]:
-    """Process an exploration action."""
+    """Process an exploration action with skill checks."""
+    perception = DiceRoller.roll_d20()
+
+    if perception["total"] >= 15:
+        discoveries = [
+            "A hidden passage behind the wall",
+            "Valuable items tucked in a corner",
+            "Signs that someone was here recently",
+        ]
+        result_text = f"Your keen observation (rolled {perception['total']}) reveals hidden details!"
+    elif perception["total"] >= 10:
+        discoveries = [
+            "An interesting detail catches your eye",
+            "The area seems worth investigating further",
+        ]
+        result_text = f"You notice something with your check (rolled {perception['total']})."
+    else:
+        discoveries = ["Nothing obvious stands out"]
+        result_text = f"Your search (rolled {perception['total']}) doesn't reveal much."
+
     return {
         "type": "exploration",
         "description": description,
-        "result": "You discover something interesting in your exploration.",
-        "discoveries": [
-            "A hidden passage",
-            "An ancient inscription",
-            "Signs of recent activity",
+        "result": result_text,
+        "perception_roll": perception,
+        "discoveries": discoveries,
+        "next_actions": [
+            "Investigate further",
+            "Move to a new area",
+            "Rest here",
+            "Search more carefully",
         ],
-        "next_actions": ["Investigate further", "Move to a new area", "Rest here"],
     }
 
 

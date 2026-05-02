@@ -5,21 +5,40 @@ on:
     branches: ["main"]
   pull_request:
     branches: ["main"]
+  schedule:
+    - cron: "0 6 * * 1"
 
 jobs:
-  analyze:
-    name: Analyze
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-latest
+    outputs:
+      python: ${{ steps.filter.outputs.python }}
+      javascript: ${{ steps.filter.outputs.javascript }}
+    permissions:
+      contents: read
+    steps:
+    - uses: actions/checkout@v6
+    - uses: dorny/paths-filter@v3
+      id: filter
+      with:
+        filters: |
+          python:
+            - 'backend/**'
+            - 'pyproject.toml'
+            - 'uv.lock'
+          javascript:
+            - 'frontend/**'
+
+  analyze-python:
+    name: Analyse Python
+    needs: changes
+    if: needs.changes.outputs.python == 'true' || github.event_name == 'schedule'
     runs-on: ubuntu-latest
     permissions:
       actions: read
       contents: read
       security-events: write
-
-    strategy:
-      fail-fast: false
-      matrix:
-        language: ['python', 'javascript']
-
     steps:
     - name: Checkout repository
       uses: actions/checkout@v6
@@ -27,39 +46,50 @@ jobs:
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
       with:
-        languages: ${{ matrix.language }}
-        packs: ${{ matrix.language == 'python' && 'codeql/python-queries' || '' }}
+        languages: python
+        packs: codeql/python-queries
 
     - name: Setup Python
-      if: matrix.language == 'python'
       uses: actions/setup-python@v6
       with:
         python-version: '3.12'
 
     - name: Install uv
-      if: matrix.language == 'python'
       uses: astral-sh/setup-uv@v7
 
     - name: Install Python dependencies
-      if: matrix.language == 'python'
-      run: |
-        cd backend
-        uv sync
-
-    - name: Setup Bun
-      if: matrix.language == 'javascript'
-      uses: oven-sh/setup-bun@v2
-
-    - name: Install JavaScript dependencies
-      if: matrix.language == 'javascript'
-      run: |
-        cd frontend
-        bun install
-
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v3
+      run: uv sync
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
       with:
-        category: "/language:${{ matrix.language }}"
+        category: "/language:python"
+
+  analyze-javascript:
+    name: Analyse JavaScript
+    needs: changes
+    if: needs.changes.outputs.javascript == 'true' || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v6
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v3
+      with:
+        languages: javascript
+
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+
+    - name: Install JavaScript dependencies
+      run: cd frontend && bun install
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v3
+      with:
+        category: "/language:javascript"

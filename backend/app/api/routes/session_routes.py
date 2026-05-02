@@ -1,7 +1,6 @@
 """Game session flow routes."""
 
 import logging
-import uuid
 from datetime import UTC, datetime
 from typing import Any
 
@@ -189,25 +188,17 @@ async def generate_campaign_world(  # noqa: ARG001
 @router.post("/campaign/{campaign_id}/start-session", response_model=dict[str, Any])
 async def start_game_session(campaign_id: str, session_data: dict[str, Any]) -> dict[str, Any]:
     """Start a new game session for a campaign."""
+    from app.services.session_manager import session_manager
+
     try:
-        character_ids = session_data.get("character_ids", [])
-        session_type = session_data.get(
-            "type", "exploration"
-        )  # exploration, combat, social
-
-        # Initialize session state
-        return {
-            "session_id": f"session_{campaign_id}_{uuid.uuid4().hex[:8]}",
-            "campaign_id": campaign_id,
-            "character_ids": character_ids,
-            "type": session_type,
-            "status": "active",
-            "current_scene": generate_opening_scene(session_type),
-            "available_actions": generate_available_actions(session_type),
-            "scene_count": 1,
-            "started_at": str(datetime.now(UTC)),
-        }
-
+        session = session_manager.create_session(campaign_id)
+        session_type = session_data.get("type", "exploration")
+        session["type"] = session_type
+        session["character_ids"] = session_data.get("character_ids", [])
+        session["current_scene"] = generate_opening_scene(session_type)
+        session["available_actions"] = generate_available_actions(session_type)
+        session["scene_count"] = 1
+        return session
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -294,7 +285,19 @@ async def process_player_action(session_id: str, action_data: dict[str, Any]) ->
 async def generate_world_description(
     name: str, setting: str, tone: str, homebrew_rules: list[str]
 ) -> str:
-    """Generate a world description for the campaign."""
+    """Generate a world description, using AI when available."""
+    try:
+        narrator = get_narrator()
+        if not narrator._fallback_mode:
+            result = await narrator.generate_opening_narrative(
+                campaign_context={"name": name, "setting": setting, "tone": tone, "world_description": ""},
+                character_context={},
+            )
+            if isinstance(result, dict) and result.get("scene_description"):
+                return result["scene_description"]
+    except Exception:
+        logger.debug("AI world generation unavailable, using templates")
+
     descriptions = {
         "fantasy": f"The realm of {name} is a land of magic and wonder, where ancient forests hide forgotten secrets and mighty kingdoms rise and fall with the tides of time.",
         "urban": f"The sprawling metropolis of {name} is a city of shadows and neon, where corporate towers pierce the smog-filled sky and danger lurks in every alley.",

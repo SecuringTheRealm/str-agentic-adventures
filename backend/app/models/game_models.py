@@ -7,7 +7,7 @@ from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 # Enum definitions
@@ -430,6 +430,13 @@ class CreateCampaignRequest(BaseModel):
     homebrew_rules: list[str] | None = Field(default_factory=list)
     description: str | None = Field(default=None, max_length=2000)
 
+    @field_validator("homebrew_rules", mode="before")
+    @classmethod
+    def coerce_homebrew_rules(cls, v: Any) -> Any:  # noqa: ANN401
+        if isinstance(v, str):
+            return [r.strip() for r in v.split(",") if r.strip()]
+        return v
+
 
 class CampaignUpdateRequest(BaseModel):
     name: str | None = None
@@ -451,8 +458,10 @@ class CampaignListResponse(BaseModel):
 
 
 class AIAssistanceRequest(BaseModel):
-    text: str = Field(max_length=2000)
-    context_type: str = Field(max_length=100)  # "setting", "description", "plot_hook", etc.
+    model_config = ConfigDict(populate_by_name=True)
+
+    text: str = Field(max_length=2000, alias="prompt")
+    context_type: str = Field(max_length=100, alias="context")
     campaign_tone: str | None = Field(default="heroic", max_length=100)
 
 
@@ -686,7 +695,9 @@ class MagicalEffectsResponse(BaseModel):
 
 
 class AddInventoryItemRequest(BaseModel):
-    name: str
+    model_config = ConfigDict(populate_by_name=True)
+
+    name: str = Field(alias="item_name")
     item_type: ItemType
     weight: float = 0.0
     quantity: int = 1

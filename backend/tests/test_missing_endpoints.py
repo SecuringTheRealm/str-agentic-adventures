@@ -98,7 +98,7 @@ class TestFrontendBackendAPICompatibility:
                 content = f.read()
 
             # Extract function definitions like "export const functionName = async"
-            function_pattern = r"export const (\w+) = async"
+            function_pattern = r"export const (\w+)\s*=\s*\n?\s*async"
             matches = re.findall(function_pattern, content)
             api_functions.update(matches)
 
