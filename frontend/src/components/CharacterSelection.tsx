@@ -1,5 +1,14 @@
 import type React from "react";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import type { Campaign, Character } from "../types";
 import CharacterCreation from "./CharacterCreation";
 import styles from "./CharacterSelection.module.css";
@@ -50,63 +59,78 @@ const CharacterSelection: React.FC<CharacterSelectionProps> = ({
         <p>
           Campaign: <strong>{campaign.name}</strong>
         </p>
-        <button
+        <Button
           type="button"
+          variant="ghost"
           onClick={onBackToCampaigns}
-          className={`${styles.backButton} ${styles.secondary}`}
+          className={styles.backButton}
         >
           ← Back to Campaigns
-        </button>
+        </Button>
       </div>
 
       <div className={styles.characterOptions}>
-        <div className={styles.characterOption}>
-          <div className={styles.characterOptionCard}>
-            <h3>Create New Character</h3>
-            <p>
-              Build your own custom character with full D&D 5e customization
+        <Card className={styles.characterOptionCard}>
+          <CardHeader>
+            <div className={styles.cardIcon}>⚔️</div>
+            <CardTitle className={styles.cardTitle}>
+              Create New Character
+            </CardTitle>
+            <CardDescription className={styles.cardDescription}>
+              Build your own custom character with full D&D 5e customisation
               options.
-            </p>
-            <ul>
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ul className={styles.featureList}>
               <li>Choose from multiple races and classes</li>
-              <li>Customize ability scores</li>
+              <li>Customise ability scores</li>
               <li>Add personal backstory</li>
               <li>Full control over your character's build</li>
             </ul>
-            <button
+          </CardContent>
+          <CardFooter>
+            <Button
               type="button"
               onClick={() => setSelectionMode("create")}
-              className={`${styles.characterOptionButton} ${styles.primary}`}
+              className={styles.characterOptionButton}
               data-testid="create-character-btn"
             >
               Create Character
-            </button>
-          </div>
-        </div>
+            </Button>
+          </CardFooter>
+        </Card>
 
-        <div className={styles.characterOption}>
-          <div className={styles.characterOptionCard}>
-            <h3>Choose Pre-Defined Character</h3>
-            <p>
+        <Card className={styles.characterOptionCard}>
+          <CardHeader>
+            <div className={styles.cardIcon}>📜</div>
+            <CardTitle className={styles.cardTitle}>
+              Choose Pre-Defined Character
+            </CardTitle>
+            <CardDescription className={styles.cardDescription}>
               Select from a curated list of ready-to-play characters for quick
               starts.
-            </p>
-            <ul>
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ul className={styles.featureList}>
               <li>Balanced character builds</li>
               <li>Complete equipment sets</li>
               <li>Perfect for new players</li>
               <li>Jump straight into the adventure</li>
             </ul>
-            <button
+          </CardContent>
+          <CardFooter>
+            <Button
               type="button"
               onClick={() => setSelectionMode("predefined")}
-              className={`${styles.characterOptionButton} ${styles.primary}`}
+              className={styles.characterOptionButton}
               data-testid="browse-characters-btn"
             >
               Browse Characters
-            </button>
-          </div>
-        </div>
+            </Button>
+          </CardFooter>
+        </Card>
       </div>
     </div>
   );

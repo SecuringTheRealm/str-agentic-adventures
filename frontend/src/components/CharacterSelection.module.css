@@ -1,16 +1,16 @@
 .characterSelection {
   max-width: 800px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 2rem;
 }
 
 .characterSelectionHeader {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 2.5rem;
 }
 
 .characterSelectionHeader h2 {
-  margin: 0 0 10px 0;
+  margin: 0 0 0.5rem 0;
   color: var(--color-accent-gold); /* Gold accent color */
   font-size: 2rem;
   font-family: "Cinzel", serif;
@@ -19,7 +19,7 @@
 }
 
 .characterSelectionHeader p {
-  margin: 10px 0 20px 0;
+  margin: 0.5rem 0 1.25rem 0;
   color: var(--color-text-warm); /* Warm off-white text */
   font-size: 1.1rem;
   font-family: "Inter", system-ui, sans-serif;
@@ -28,103 +28,123 @@
 .characterOptions {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 30px;
-  margin-top: 20px;
+  gap: 1.5rem;
+  margin-top: 1.25rem;
 }
 
 .characterOptionCard {
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgba(15, 64, 79, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-radius: 12px;
-  padding: 30px;
-  text-align: center;
+  overflow: hidden;
   transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.35s ease;
+  border: 1px solid rgba(228, 187, 30, 0.12);
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .characterOptionCard:hover {
-  transform: translateY(-2px);
+  transform: translateY(-4px) scale(1.01);
   box-shadow:
-    0 12px 40px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    0 0 20px rgba(228, 187, 30, 0.1);
-  border-color: rgba(255, 255, 255, 0.15);
+    0 16px 48px rgba(0, 0, 0, 0.45),
+    0 0 30px rgba(228, 187, 30, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  border-color: rgba(228, 187, 30, 0.3);
 }
 
-.characterOptionCard h3 {
-  margin: 0 0 15px 0;
-  color: var(--color-accent-gold); /* Gold color for titles */
-  font-size: 1.4rem;
+.cardIcon {
+  font-size: 2.5rem;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.cardTitle {
+  color: var(--color-accent-gold);
   font-family: "Cinzel", serif;
   font-weight: 600;
+  text-align: center;
 }
 
-.characterOptionCard p {
-  margin: 0 0 20px 0;
-  color: var(--color-text-warm); /* Warm off-white text */
+.cardDescription {
+  color: var(--color-text-warm);
+  text-align: center;
+  font-family: "Inter", system-ui, sans-serif;
+  line-height: 1.6;
+}
+
+.featureList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.featureList li {
+  padding: 0.4rem 0 0.4rem 1.5rem;
+  position: relative;
+  color: var(--color-text-muted-warm);
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 0.9rem;
   line-height: 1.5;
-  font-family: "Inter", system-ui, sans-serif;
 }
 
-.characterOptionCard ul {
-  text-align: left;
-  margin: 20px 0;
-  padding-left: 20px;
-  color: var(--color-text-muted-warm); /* Light fantasy text */
-}
-
-.characterOptionCard li {
-  margin: 8px 0;
-  line-height: 1.4;
-  font-family: "Inter", system-ui, sans-serif;
+.featureList li::before {
+  content: "\2022";
+  color: var(--color-accent-gold);
+  position: absolute;
+  left: 0.5rem;
+  font-weight: bold;
 }
 
 .characterOptionButton {
   width: 100%;
-  padding: 12px 24px;
-  min-height: 44px;
-  border: 2px solid var(--color-accent-gold); /* Gold border */
-  border-radius: 6px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin-top: 10px;
-  font-family: "Inter", system-ui, sans-serif;
-}
-
-.characterOptionButton.primary {
   background: linear-gradient(
     135deg,
     var(--color-wood-dark),
     var(--color-wood-light)
-  ); /* Wood gradient */
+  );
   color: white;
+  border: 1px solid var(--color-accent-gold);
+  padding: 0.75rem 1.5rem;
+  min-height: 44px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    all 0.3s ease,
+    transform 0.15s ease;
+  font-family: "Inter", system-ui, sans-serif;
+  letter-spacing: 0.03em;
 }
 
-.characterOptionButton.primary:hover {
+.characterOptionButton:hover {
   background: linear-gradient(
     135deg,
     var(--color-wood-light),
     var(--color-gold-warm)
-  ); /* Lighter wood on hover */
-  box-shadow: 0 2px 4px var(--color-gold-glow-30);
+  );
+  box-shadow:
+    0 4px 12px var(--color-gold-glow-30),
+    0 0 20px rgba(228, 187, 30, 0.1);
+}
+
+.characterOptionButton:active {
+  transform: scale(0.97);
 }
 
 .backButton {
-  padding: 8px 16px;
+  padding: 0.5rem 1rem;
   min-height: 44px;
   min-width: 44px;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 4px;
-  background-color: var(--color-steel-80); /* Steel color */
-  color: var(--color-text-warm); /* Light text */
+  border-radius: 6px;
+  background-color: transparent;
+  color: var(--color-text-warm);
   cursor: pointer;
   font-size: 0.9rem;
   transition: all 0.2s ease;
@@ -132,16 +152,6 @@
 }
 
 .backButton:hover {
-  background-color: var(--color-stone-90); /* Stone color on hover */
-  border-color: rgba(255, 255, 255, 0.15);
-}
-
-.backButton.secondary {
-  background-color: transparent;
-  border-color: var(--color-steel); /* Steel border */
-}
-
-.backButton.secondary:hover {
   background-color: var(--color-steel-40);
   border-color: rgba(255, 255, 255, 0.15);
 }
@@ -149,21 +159,17 @@
 @media (max-width: 768px) {
   .characterOptions {
     grid-template-columns: 1fr;
-    gap: 20px;
-  }
-
-  .characterOptionCard {
-    padding: 20px;
+    gap: 1.25rem;
   }
 
   .characterSelection {
-    padding: 15px;
+    padding: 1rem;
   }
 }
 
 @media (max-width: 480px) {
   .characterSelection {
-    padding: 10px;
+    padding: 0.75rem;
   }
 
   .characterSelectionHeader h2 {
@@ -171,10 +177,6 @@
   }
 
   .characterSelectionHeader p {
-    font-size: 1rem; /* Prevent iOS zoom */
-  }
-
-  .characterOptionCard p {
     font-size: 1rem; /* Prevent iOS zoom */
   }
 
@@ -186,6 +188,33 @@
   .backButton {
     min-height: 44px;
     font-size: 1rem; /* Prevent iOS zoom */
+  }
+}
+
+/* Staggered card entrance animation */
+@keyframes cardSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .characterOptionCard {
+    opacity: 0;
+    animation: cardSlideIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .characterOptionCard:nth-child(1) {
+    animation-delay: 0.05s;
+  }
+
+  .characterOptionCard:nth-child(2) {
+    animation-delay: 0.15s;
   }
 }
 

@@ -1,5 +1,9 @@
 import type React from "react";
 import { useMemo } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
 import type { Character } from "../types";
 import styles from "./CharacterSheet.module.css";
 

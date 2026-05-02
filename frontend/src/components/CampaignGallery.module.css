@@ -135,7 +135,6 @@
   position: relative;
 }
 
-
 .customCampaignCard {
   background: linear-gradient(
     135deg,
@@ -263,14 +262,101 @@
   color: white;
 }
 
+.toneBadge.comedic {
+  background: #0d9488;
+  color: white;
+}
+
 .toneBadge.gritty {
   background: var(--color-tone-gritty-alt);
+  color: white;
+}
+
+.toneBadge.horror {
+  background: #991b1b;
   color: white;
 }
 
 .toneBadge.mysterious {
   background: var(--color-tone-mysterious-alt);
   color: white;
+}
+
+/* ── Tone-driven card accent borders ── */
+
+.toneHeroic {
+  border-left: 3px solid #d4af37;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 12px rgba(212, 175, 55, 0.08);
+}
+
+.toneDark {
+  border-left: 3px solid #7c3aed;
+  background: linear-gradient(
+    135deg,
+    rgba(15, 10, 30, 0.6) 0%,
+    rgba(15, 64, 79, 0.45) 100%
+  );
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(124, 58, 237, 0.08),
+    0 0 12px rgba(124, 58, 237, 0.06);
+}
+
+.toneLighthearted {
+  border-left: 3px solid #f59e0b;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 12px rgba(245, 158, 11, 0.06);
+}
+
+.toneComedic {
+  border-left: 3px solid #14b8a6;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 12px rgba(20, 184, 166, 0.06);
+}
+
+.toneGritty {
+  border-left: 3px solid #b91c1c;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 12px rgba(185, 28, 28, 0.06);
+}
+
+.toneHorror {
+  border-left: 3px solid #dc2626;
+  background: linear-gradient(
+    135deg,
+    rgba(30, 5, 5, 0.5) 0%,
+    rgba(15, 64, 79, 0.45) 100%
+  );
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(220, 38, 38, 0.06),
+    0 0 12px rgba(220, 38, 38, 0.06);
+}
+
+.toneMysterious {
+  border-left: 3px solid #9b59b6;
+  background: linear-gradient(
+    135deg,
+    rgba(20, 10, 40, 0.5) 0%,
+    rgba(15, 64, 79, 0.45) 100%
+  );
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(155, 89, 182, 0.06),
+    0 0 12px rgba(155, 89, 182, 0.06);
+}
+
+.toneDefault {
+  border-left: 3px solid var(--color-steel-light);
 }
 
 .cardDescription {

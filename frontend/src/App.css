@@ -6,14 +6,40 @@
 }
 
 .App-header {
-  background-color: #0f404f; /* Primary fantasy color */
-  padding: 1rem 2rem;
+  background: linear-gradient(
+    135deg,
+    #0a2a36 0%,
+    #0f404f 40%,
+    #1a5a6b 70%,
+    #0f404f 100%
+  );
+  padding: 1.25rem 2rem;
   color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    0 1px 0 rgba(228, 187, 30, 0.2) inset;
   display: flex;
   justify-content: space-between;
   align-items: center;
   border-bottom: 2px solid #e4bb1e; /* Gold accent border */
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle shimmer overlay on header */
+.App-header::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    110deg,
+    transparent 30%,
+    rgba(228, 187, 30, 0.04) 45%,
+    rgba(228, 187, 30, 0.08) 50%,
+    rgba(228, 187, 30, 0.04) 55%,
+    transparent 70%
+  );
+  pointer-events: none;
 }
 
 .App-header h1 {
@@ -23,9 +49,12 @@
   font-family: "Cinzel Decorative", serif;
   font-weight: 700;
   text-shadow:
-    0 0 30px rgba(228, 187, 30, 0.12),
-    1px 1px 2px rgba(0, 0, 0, 0.5);
-  letter-spacing: 1px;
+    0 0 30px rgba(228, 187, 30, 0.15),
+    0 0 60px rgba(228, 187, 30, 0.06),
+    1px 1px 2px rgba(0, 0, 0, 0.6);
+  letter-spacing: 1.5px;
+  position: relative;
+  z-index: 1;
 }
 
 .skip-link {
@@ -78,4 +107,57 @@
   padding: 2rem;
   background: transparent;
   min-height: calc(100vh - 80px);
+}
+
+/* Page-level entrance animation */
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-main > * {
+    animation: pageEnter 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .App-main > * {
+    animation: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .App-header {
+    padding: 1rem 1.25rem;
+  }
+
+  .App-header h1 {
+    font-size: 1.3rem;
+    letter-spacing: 0.5px;
+  }
+
+  .App-main {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .App-header {
+    padding: 0.75rem 1rem;
+  }
+
+  .App-header h1 {
+    font-size: 1.1rem;
+  }
+
+  .App-main {
+    padding: 0.75rem;
+  }
 }

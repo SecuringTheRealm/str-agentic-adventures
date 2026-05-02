@@ -204,77 +204,87 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
           </CardFooter>
         </Card>
 
-        {templates.map((template) => (
-          <Card key={template.id} className={styles.campaignCard}>
-            <CardHeader className={styles.cardHeader}>
-              <CardTitle>{template.name}</CardTitle>
-              <Badge
-                className={`${styles.toneBadge} ${template.tone ? styles[template.tone] : ""}`}
-                variant="secondary"
-              >
-                {template.tone
-                  ? template.tone.charAt(0).toUpperCase() +
-                    template.tone.slice(1)
-                  : ""}
-              </Badge>
-            </CardHeader>
+        {templates.map((template) => {
+          const toneClass = template.tone
+            ? styles[
+                `tone${template.tone.charAt(0).toUpperCase()}${template.tone.slice(1)}` as keyof typeof styles
+              ] || styles.toneDefault
+            : styles.toneDefault;
+          return (
+            <Card
+              key={template.id}
+              className={`${styles.campaignCard} ${toneClass}`}
+            >
+              <CardHeader className={styles.cardHeader}>
+                <CardTitle>{template.name}</CardTitle>
+                <Badge
+                  className={`${styles.toneBadge} ${template.tone ? styles[template.tone] : ""}`}
+                  variant="secondary"
+                >
+                  {template.tone
+                    ? template.tone.charAt(0).toUpperCase() +
+                      template.tone.slice(1)
+                    : ""}
+                </Badge>
+              </CardHeader>
 
-            <CardContent>
-              <CardDescription className={styles.cardDescription}>
-                {template.description || "An exciting adventure awaits!"}
-              </CardDescription>
+              <CardContent>
+                <CardDescription className={styles.cardDescription}>
+                  {template.description || "An exciting adventure awaits!"}
+                </CardDescription>
 
-              <div className={styles.cardDetails}>
-                <div className={styles.detailItem}>
-                  <strong>Setting:</strong>
-                  <span>{template.setting?.substring(0, 100)}...</span>
-                </div>
-
-                {template.plot_hooks && template.plot_hooks.length > 0 && (
+                <div className={styles.cardDetails}>
                   <div className={styles.detailItem}>
-                    <strong>Plot Hooks:</strong>
-                    <ul>
-                      {template.plot_hooks
-                        .slice(0, 2)
-                        .map((hook: string | null) => (
-                          <li key={hook || ""}>{hook}</li>
-                        ))}
-                    </ul>
+                    <strong>Setting:</strong>
+                    <span>{template.setting?.substring(0, 100)}...</span>
                   </div>
-                )}
 
-                {template.homebrew_rules &&
-                  template.homebrew_rules.length > 0 && (
+                  {template.plot_hooks && template.plot_hooks.length > 0 && (
                     <div className={styles.detailItem}>
-                      <strong>Special Rules:</strong>
-                      <span>
-                        {template.homebrew_rules.length} custom rule(s)
-                      </span>
+                      <strong>Plot Hooks:</strong>
+                      <ul>
+                        {template.plot_hooks
+                          .slice(0, 2)
+                          .map((hook: string | null) => (
+                            <li key={hook || ""}>{hook}</li>
+                          ))}
+                      </ul>
                     </div>
                   )}
-              </div>
-            </CardContent>
 
-            <CardFooter>
-              <Button
-                className={styles.selectButton}
-                onClick={() => handleSelectTemplate(template)}
-                disabled={cloning === template.id}
-              >
-                {cloning === template.id ? (
-                  <>
-                    <span
-                      className={`${styles.loadingSpinner} ${styles.small}`}
-                    />
-                    Preparing...
-                  </>
-                ) : (
-                  "Select Campaign"
-                )}
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
+                  {template.homebrew_rules &&
+                    template.homebrew_rules.length > 0 && (
+                      <div className={styles.detailItem}>
+                        <strong>Special Rules:</strong>
+                        <span>
+                          {template.homebrew_rules.length} custom rule(s)
+                        </span>
+                      </div>
+                    )}
+                </div>
+              </CardContent>
+
+              <CardFooter>
+                <Button
+                  className={styles.selectButton}
+                  onClick={() => handleSelectTemplate(template)}
+                  disabled={cloning === template.id}
+                >
+                  {cloning === template.id ? (
+                    <>
+                      <span
+                        className={`${styles.loadingSpinner} ${styles.small}`}
+                      />
+                      Preparing...
+                    </>
+                  ) : (
+                    "Select Campaign"
+                  )}
+                </Button>
+              </CardFooter>
+            </Card>
+          );
+        })}
       </div>
 
       {templates.length === 0 && (

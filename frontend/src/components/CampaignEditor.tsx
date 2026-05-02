@@ -1,5 +1,16 @@
 import type React from "react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import {
   type AIAssistanceRequest,
   type AIContentGenerationRequest,
@@ -365,14 +376,14 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
         <h2>{isEditing ? "Edit Campaign" : "Create Custom Campaign"}</h2>
         {isEditing && (
           <div className={styles.editorControls}>
-            <label className={styles.autoSaveToggle}>
+            <Label className={styles.autoSaveToggle}>
               <input
                 type="checkbox"
                 checked={autoSave}
                 onChange={(e) => setAutoSave(e.target.checked)}
               />
               Auto-save
-            </label>
+            </Label>
             {showSavedFlash && (
               <span className={styles.savedIndicator}>✓ Saved!</span>
             )}
@@ -392,14 +403,14 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
         }}
       >
         <div className={styles.formGroup}>
-          <label htmlFor={nameId}>Campaign Name *</label>
-          <input
+          <Label htmlFor={nameId}>Campaign Name *</Label>
+          <Input
             id={nameId}
             type="text"
             value={formData.name}
             onChange={(e) => handleInputChange("name", e.target.value)}
             placeholder="Enter campaign name..."
-            className={validationErrors.name ? "error" : ""}
+            className={validationErrors.name ? styles.inputError : ""}
             disabled={isSubmitting}
           />
           {validationErrors.name && (
@@ -410,46 +421,59 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
         </div>
 
         <div className={styles.formGroup}>
-          <label htmlFor={descriptionId}>Description</label>
+          <Label htmlFor={descriptionId}>Description</Label>
           <div className={styles.editorToolbar}>
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={() => handleFormatText("description", "bold")}
               title="Bold"
+              className={styles.toolbarButton}
             >
               <strong>B</strong>
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={() => handleFormatText("description", "italic")}
               title="Italic"
+              className={styles.toolbarButton}
             >
               <em>I</em>
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={() => handleFormatText("description", "header")}
               title="Header"
+              className={styles.toolbarButton}
             >
               H
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={() => handleFormatText("description", "list")}
               title="List"
+              className={styles.toolbarButton}
             >
-              •
-            </button>
-            <button
+              &bull;
+            </Button>
+            <Button
               type="button"
+              size="sm"
               onClick={() => handleAIAssist("description", "description")}
               className={styles.aiAssistBtn}
               title="AI Assistance"
             >
               ✨ AI
-            </button>
+            </Button>
           </div>
-          <textarea
+          <Textarea
             id={descriptionId}
             ref={(el) => {
               textareaRefs.current.description = el;
@@ -463,46 +487,59 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
         </div>
 
         <div className={styles.formGroup}>
-          <label htmlFor={settingId}>Campaign Setting *</label>
+          <Label htmlFor={settingId}>Campaign Setting *</Label>
           <div className={styles.editorToolbar}>
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={() => handleFormatText("setting", "bold")}
               title="Bold"
+              className={styles.toolbarButton}
             >
               <strong>B</strong>
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={() => handleFormatText("setting", "italic")}
               title="Italic"
+              className={styles.toolbarButton}
             >
               <em>I</em>
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={() => handleFormatText("setting", "header")}
               title="Header"
+              className={styles.toolbarButton}
             >
               H
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={() => handleFormatText("setting", "list")}
               title="List"
+              className={styles.toolbarButton}
             >
-              •
-            </button>
-            <button
+              &bull;
+            </Button>
+            <Button
               type="button"
+              size="sm"
               onClick={() => handleAIAssist("setting", "setting")}
               className={styles.aiAssistBtn}
               title="AI Assistance"
             >
               ✨ AI
-            </button>
+            </Button>
           </div>
-          <textarea
+          <Textarea
             id={settingId}
             ref={(el) => {
               textareaRefs.current.setting = el;
@@ -511,7 +548,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
             onChange={(e) => handleInputChange("setting", e.target.value)}
             placeholder="Describe the world and setting for your campaign..."
             rows={4}
-            className={validationErrors.setting ? "error" : ""}
+            className={validationErrors.setting ? styles.inputError : ""}
             disabled={isSubmitting}
           />
           {validationErrors.setting && (
@@ -522,46 +559,59 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
         </div>
 
         <div className={styles.formGroup}>
-          <label htmlFor={worldDescriptionId}>World Description</label>
+          <Label htmlFor={worldDescriptionId}>World Description</Label>
           <div className={styles.editorToolbar}>
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={() => handleFormatText("world_description", "bold")}
               title="Bold"
+              className={styles.toolbarButton}
             >
               <strong>B</strong>
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={() => handleFormatText("world_description", "italic")}
               title="Italic"
+              className={styles.toolbarButton}
             >
               <em>I</em>
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={() => handleFormatText("world_description", "header")}
               title="Header"
+              className={styles.toolbarButton}
             >
               H
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={() => handleFormatText("world_description", "list")}
               title="List"
+              className={styles.toolbarButton}
             >
-              •
-            </button>
-            <button
+              &bull;
+            </Button>
+            <Button
               type="button"
+              size="sm"
               onClick={() => handleAIAssist("world_description", "description")}
               className={styles.aiAssistBtn}
               title="AI Assistance"
             >
               ✨ AI
-            </button>
+            </Button>
           </div>
-          <textarea
+          <Textarea
             id={worldDescriptionId}
             ref={(el) => {
               textareaRefs.current.world_description = el;
@@ -577,24 +627,30 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
         </div>
 
         <div className={styles.formGroup}>
-          <label htmlFor={toneId}>Campaign Tone</label>
-          <select
-            id={toneId}
+          <Label htmlFor={toneId}>Campaign Tone</Label>
+          <Select
             value={formData.tone}
-            onChange={(e) => handleInputChange("tone", e.target.value)}
+            onValueChange={(value) => handleInputChange("tone", value)}
             disabled={isSubmitting}
           >
-            <option value="heroic">🛡️ Heroic</option>
-            <option value="dark">💀 Dark</option>
-            <option value="lighthearted">🃏 Lighthearted</option>
-            <option value="gritty">⚔️ Gritty</option>
-            <option value="mysterious">🔍 Mysterious</option>
-          </select>
+            <SelectTrigger id={toneId}>
+              <SelectValue placeholder="Select a tone" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="heroic">Heroic</SelectItem>
+              <SelectItem value="dark">Dark</SelectItem>
+              <SelectItem value="lighthearted">Lighthearted</SelectItem>
+              <SelectItem value="comedic">Comedic</SelectItem>
+              <SelectItem value="gritty">Gritty</SelectItem>
+              <SelectItem value="horror">Horror</SelectItem>
+              <SelectItem value="mysterious">Mysterious</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <div className={styles.formGroup}>
-          <label htmlFor={homebrewRulesId}>Homebrew Rules (Optional)</label>
-          <textarea
+          <Label htmlFor={homebrewRulesId}>Homebrew Rules (Optional)</Label>
+          <Textarea
             id={homebrewRulesId}
             value={formData.homebrew_rules}
             onChange={(e) =>
@@ -610,22 +666,23 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
         </div>
 
         <div className={styles.formActions}>
-          <button
+          <Button
             type="button"
+            variant="outline"
             onClick={onCancel}
             className={styles.cancelButton}
             disabled={isSubmitting}
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
             className={styles.saveButton}
             disabled={isSubmitting}
           >
             {isSubmitting ? (
               <>
-                <span className="loading-spinner small" />
+                <span className={styles.loadingSpinner} />
                 {isEditing ? "Updating..." : "Creating..."}
               </>
             ) : isEditing ? (
@@ -633,7 +690,7 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
             ) : (
               "Create Campaign"
             )}
-          </button>
+          </Button>
         </div>
       </form>
 
@@ -649,13 +706,15 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
           <div className={styles.modalContent}>
             <div className={styles.modalHeader}>
               <h3>✨ AI Writing Assistant</h3>
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 className={styles.closeButton}
                 onClick={() => setShowAIAssistant(false)}
               >
                 ×
-              </button>
+              </Button>
             </div>
             <div className={styles.modalBody}>
               {aiLoading ? (
@@ -677,8 +736,9 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
                       return (
                         <li key={suggestion}>
                           <span>{suggestion}</span>
-                          <button
+                          <Button
                             type="button"
+                            size="sm"
                             onClick={() => applySuggestion(suggestion)}
                             className={styles.applySuggestion}
                             disabled={aiGenerating || isEmpty}
@@ -690,13 +750,13 @@ const CampaignEditor: React.FC<CampaignEditorProps> = ({
                           >
                             {aiGenerating ? (
                               <>
-                                <span className="loading-spinner small" />
+                                <span className={styles.loadingSpinner} />
                                 Generating...
                               </>
                             ) : (
                               "Apply"
                             )}
-                          </button>
+                          </Button>
                         </li>
                       );
                     })}

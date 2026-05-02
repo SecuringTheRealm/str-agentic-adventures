@@ -33,7 +33,7 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({
     try {
       setLoading(true);
       const data = await getCampaigns();
-      setCampaigns(data);
+      setCampaigns(Array.isArray(data) ? data : []);
     } catch (err) {
       setError("Failed to load campaigns");
       console.error("Error loading campaigns:", err);

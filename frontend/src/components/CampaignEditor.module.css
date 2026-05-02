@@ -121,30 +121,18 @@
   border: 1px solid var(--color-stone); /* Stone border */
 }
 
-.editorToolbar button {
-  padding: 0.25rem 0.5rem;
-  border: 1px solid var(--color-steel); /* Steel border */
-  background: var(--color-fantasy-bg-60); /* Darker fantasy background */
-  color: var(--color-text-warm); /* Light text */
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.875rem;
-  font-family: "Inter", system-ui, sans-serif;
-  transition: all 0.2s ease;
+.toolbarButton {
   min-width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  height: 36px;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
-.editorToolbar button:hover {
-  background: var(--color-stone-40); /* Stone color on hover */
-  border-color: rgba(255, 255, 255, 0.15);
+.editorToolbar button {
+  min-width: 44px;
 }
 
-.editorToolbar button:active {
-  transform: translateY(1px);
+.inputError {
+  border-color: var(--color-danger-red) !important;
 }
 
 .aiAssistBtn {
