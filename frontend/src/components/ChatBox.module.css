@@ -109,11 +109,7 @@
   content: "";
   flex: 1;
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    rgba(228, 187, 30, 0.3),
-    transparent
-  );
+  background: linear-gradient(90deg, rgba(228, 187, 30, 0.3), transparent);
   max-width: 80px;
 }
 

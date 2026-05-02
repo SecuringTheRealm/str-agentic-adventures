@@ -4,8 +4,8 @@
 
 ```bash
 cd frontend
-npm ci --legacy-peer-deps
-npm run dev
+bun install
+bun dev
 ```
 
 ## Key Features
@@ -22,7 +22,8 @@ npm run dev
 - Vite for development and build
 - CSS Modules for styling
 - Axios for API calls
-- Vitest for testing
+- Biome for linting and formatting
+- Vitest for unit testing
 - Playwright for E2E tests
 
 
@@ -36,9 +37,9 @@ npm run dev
 
 ## Available Scripts
 
-In the project directory, you can run:
+All scripts are run from the `frontend/` directory using Bun.
 
-### `npm run dev`
+### `bun dev`
 
 Runs the app in development mode using Vite.\
 Open [http://127.0.0.1:5173](http://127.0.0.1:5173) to view it in the browser.
@@ -46,20 +47,15 @@ Open [http://127.0.0.1:5173](http://127.0.0.1:5173) to view it in the browser.
 The page supports instant hot module replacement when you make edits.\
 You will also see any lint errors in the console.
 
-### `npm start`
-
-Alias for `npm run dev` to ease the transition from previous Create React App tooling.
-
-### `npm test`
+### `bun test`
 
 Launches the unit test runner in interactive watch mode using Vitest.
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
 
-### `npm run test:run`
+### `bun test:run`
 
 Runs unit tests once without watch mode.
 
-### `npm run test:e2e`
+### `bun test:e2e`
 
 Runs end-to-end tests using Playwright. Tests the complete user journey including:
 - Campaign creation flow
@@ -67,20 +63,20 @@ Runs end-to-end tests using Playwright. Tests the complete user journey includin
 - Game session interaction
 - D&D 5e SRD compliance validation
 
-### `npm run test:e2e:ui`
+### `bun test:e2e:ui`
 
 Runs E2E tests with interactive UI mode for debugging.
 
-### `npm run test:e2e:debug`
+### `bun test:e2e:debug`
 
 Runs E2E tests in debug mode with browser visible.
 
-### `npm run build`
+### `bun run build`
 
 Runs TypeScript type-checking followed by a production build powered by Vite.\
 The optimized assets are emitted to the `dist` directory with hashed filenames.
 
-### `npm run preview`
+### `bun run preview`
 
 Serves the built assets locally to validate production output.
 
@@ -128,6 +124,6 @@ The frontend expects the backend to be running on `http://localhost:8000` for lo
 - [Frontend README](../../frontend/README.md)
 - [Deployment Guide](../deployment.md)
 
-## Legacy Notes
+## Environment Variables
 
-The frontend previously used Create React App. The tooling has been modernized to use Vite for a smaller dependency footprint and faster builds. `REACT_APP_*` environment variables are still read for backwards compatibility, but new deployments should prefer the Vite-compatible `VITE_API_URL` variable.
+New deployments should use the Vite-compatible `VITE_API_URL` variable. Legacy `REACT_APP_*` variables are still read for backwards compatibility.

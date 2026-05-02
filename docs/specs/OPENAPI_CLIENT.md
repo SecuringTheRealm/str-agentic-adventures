@@ -12,45 +12,44 @@ This unified approach provides a single, consistent interface for all backend in
 
 ## 🔄 Developer Workflow
 
-**IMPORTANT**: The OpenAPI client is **NOT committed to git**. It is generated dynamically at build time and test time.
+**Note**: The OpenAPI schema (`openapi.json`) and generated types (`schema.d.ts`) are both **committed to git**. No running backend or Java tooling is required.
 
-### Generated Files are NOT in Git
+### Generated Files
 
 The `frontend/src/api-client/` directory contains:
-- ✅ **Generated files** (api.ts, base.ts, configuration.ts, etc.) - **NOT in git**, excluded via .gitignore
-- ✅ **Manual extensions** (websocketClient.ts, __tests__/) - **IN git**, manually maintained
+- `schema.d.ts` - Generated TypeScript types (committed to git)
+- `websocketClient.ts` - Manual WebSocket client extension (committed to git)
+- `__tests__/` - Tests for manual extensions (committed to git)
 
-### When the Client is Generated
+### When to Regenerate
 
-The OpenAPI client is automatically generated:
-- 📦 **During local setup**: Run `npm run generate:api` after cloning the repo
-- 🏗️ **During CI/CD builds**: Generated before building the frontend
-- 🧪 **Before tests run**: Generated to ensure tests have latest API types
-- 🔄 **After backend API changes**: Developers regenerate to get new types
+Regenerate the types after backend API schema changes:
+- After modifying Pydantic models or FastAPI route signatures
+- After adding or removing API endpoints
 
 ### How to Generate the Client Locally
 
-1. **Start the backend server:**
+1. **Run the generation script:**
    ```bash
-   cd backend && uv run python -m app.main
+   ./scripts/generate-client.sh
    ```
 
-2. **Generate the frontend client:**
+   This exports the OpenAPI spec from FastAPI (no running server needed) and runs `openapi-typescript` to produce `schema.d.ts`.
+
+2. **Or use the Bun script directly:**
    ```bash
-   cd frontend && npm run generate:api
+   cd frontend && bun run generate:api
    ```
 
 3. **Verify the update:**
    ```bash
-   cd frontend && npm run build
+   cd frontend && bun run build
    ```
 
 4. **Test the integration:**
    ```bash
-   cd frontend && npm test
+   cd frontend && bun test
    ```
-
-> 💡 Alternatively, run `make generate-client` from the repository root to execute the end-to-end validation script (`scripts/validate-openapi-client.sh`) which spins up the backend, regenerates the client, and performs sanity checks automatically.
 
 ### First-Time Setup
 
@@ -59,22 +58,20 @@ After cloning the repository:
 # Backend setup
 cd backend
 uv sync
-uv run python -m app.main  # Start backend in one terminal
 
-# Frontend setup (in another terminal)
+# Frontend setup
 cd frontend
-npm ci
-npm run generate:api  # Generate OpenAPI client
-npm start  # Start frontend dev server
+bun install
+bun run generate:api  # Generate TypeScript types from committed openapi.json
+bun dev               # Start frontend dev server
 ```
 
 ### Troubleshooting
 
 If generation fails:
-- Ensure the backend is running on `http://localhost:8000`
-- Check that `/openapi.json` endpoint is accessible (visit in browser)
-- Verify no TypeScript compilation errors in the backend
-- Check backend console for errors
+- Check that `openapi.json` exists at the repository root
+- Run `./scripts/generate-client.sh` which exports the schema and regenerates types
+- Verify `openapi-typescript` is installed (`bun install` in the frontend directory)
 
 ### CI/CD Integration
 
@@ -84,43 +81,27 @@ If generation fails:
 3. Builds the frontend
 4. Runs all tests
 
-The generated client is **never committed** - it's created fresh for each build.
+Both `openapi.json` and `schema.d.ts` are committed to git and regenerated when the backend API changes.
 
 ## Repository Structure
 
-### Generated vs. Manual Files
+### Key Files
 
-**Generated Files** (NOT in git):
-- `frontend/src/api-client/api.ts` - Generated API classes
-- `frontend/src/api-client/base.ts` - Generated base classes  
-- `frontend/src/api-client/configuration.ts` - Generated configuration
-- `frontend/src/api-client/common.ts` - Generated common types
-- `frontend/src/api-client/index.ts` - Generated exports
-- `frontend/src/api-client/docs/*` - Generated documentation
-
-**Manual Files** (IN git):
+**Committed to git:**
+- `openapi.json` - OpenAPI schema at repo root (exported from FastAPI)
+- `frontend/src/api-client/schema.d.ts` - Generated TypeScript types
 - `frontend/src/api-client/websocketClient.ts` - WebSocket client implementation
 - `frontend/src/api-client/__tests__/` - Tests for manual extensions
-- `frontend/src/api-client/.gitignore` - Excludes generated files
 - `frontend/src/hooks/useWebSocketSDK.ts` - React hook for WebSocket
 - `frontend/src/services/api.ts` - Unified exports
-
-### Why Generated Files Aren't Committed
-
-1. **Prevents merge conflicts** - No conflicts in auto-generated code
-2. **Reduces repo size** - ~9,000 lines of generated code excluded
-3. **Ensures synchronization** - Always generated fresh from backend schema
-4. **Follows best practices** - Generated code shouldn't be in version control
-- `frontend/src/components/GameInterface.tsx` - Updated to use unified SDK
-- Various component files - Updated for stricter TypeScript types
 
 ## How It Works
 
 ### REST API
-1. **Backend provides OpenAPI schema** at `http://localhost:8000/openapi.json`
+1. **OpenAPI schema** is committed at `openapi.json` (repo root) and exported via `scripts/export_openapi.py`
 2. **FastAPI uses `root_path` and `servers` configuration** to define `/api` as the base path
 3. **OpenAPI paths are relative** to the server base (e.g., `/game/character` instead of `/api/game/character`)
-4. **Generate client** with `npm run generate:api` 
+4. **Generate types** with `bun run generate:api` (runs `openapi-typescript`)
 5. **Client uses configured base URL** (`http://localhost:8000/api`) + relative paths from OpenAPI
 6. **Wrapper functions** in `api.ts` maintain compatibility with existing frontend code
 7. **Type aliases** provide backward compatibility for renamed types
@@ -287,12 +268,10 @@ The generated API uses different names for some types:
 
 ## Regenerating the Client
 
-⚠️ **This section is deprecated. See the enhanced [Developer Workflow](#-developer-workflow) section above.**
-
 When the backend API changes:
 
-1. Start the backend: `cd backend && python -m app.main`
-2. Generate new client: `cd frontend && npm run generate:api`
+1. Run `./scripts/generate-client.sh` (exports schema and regenerates types; no running backend needed)
+2. Or: `cd frontend && bun run generate:api`
 3. Review any type changes and update wrapper functions if needed
 
 ## Benefits
@@ -327,7 +306,7 @@ To ensure the frontend client stays synchronized with the backend API, automated
 ### Frontend Tests
 Run the test suite to verify client compatibility:
 ```bash
-cd frontend && npm test
+cd frontend && bun test
 ```
 
 ### Manual Verification

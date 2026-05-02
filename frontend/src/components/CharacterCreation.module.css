@@ -93,10 +93,6 @@
 .formGroup input:focus,
 .formGroup select:focus,
 .formGroup textarea:focus {
-  outline: none;
-  border-color: var(--color-accent-gold); /* Gold focus border */
-  box-shadow: 0 0 0 2px var(--color-gold-glow-20);
-
   outline: 2px solid #e4bb1e;
   outline-offset: 2px;
   border-color: #e4bb1e; /* Gold focus border */
@@ -143,7 +139,7 @@
 }
 
 .modifier {
-  display: block;
+  display: inline-block;
   font-size: 0.85rem;
   color: var(--color-text-muted-warm); /* Light fantasy text */
   font-weight: 600;
@@ -151,7 +147,6 @@
   background: var(--color-stone-20);
   border-radius: 4px;
   padding: 0.1rem 0.5rem;
-  display: inline-block;
   margin-top: 0.25rem;
 }
 

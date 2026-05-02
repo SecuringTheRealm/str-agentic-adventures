@@ -1,9 +1,9 @@
 ---
 name: agent-framework
-description: Azure AI agent creation patterns, tool registration, singleton client, fallback mode
+description: "Triggers when the agent creates or modifies AI agents, registers tools, or changes fallback logic. Covers Microsoft Agent Framework SDK patterns, singleton client, and thread management."
 ---
 
-# Agent Framework Patterns
+# Microsoft Agent Framework Patterns
 
 ## Client Access
 - Use singleton `azure_openai_client` from `backend/app/azure_openai_client.py`

@@ -60,7 +60,7 @@ The following diagram shows Secure the Realm in the context of its users and ext
 graph TB
     Player[Player<br/>D&D Enthusiast]
     WebApp[Secure the Realm<br/>Web Application]
-    AzureOpenAI[Azure OpenAI<br/>GPT-4o & Embeddings]
+    AzureOpenAI[Azure OpenAI<br/>GPT-4o-mini & Embeddings]
     DallE[Azure OpenAI<br/>gpt-image-1-mini]
     AzureAI[Azure AI Foundry<br/>Project & Endpoints]
 
@@ -866,7 +866,7 @@ graph TB
 
 **Generated From**: Backend OpenAPI schema
 
-**Generation Command**: `npm run generate:api`
+**Generation Command**: `bun run generate:api`
 
 **Location**: `frontend/src/api-client/`
 
@@ -992,16 +992,16 @@ sequenceDiagram
 
 **Build Tool**: Vite
 
-**Development Server**: `npm run dev` (Port 5173)
+**Development Server**: `bun dev` (Port 5173)
 
-**Production Build**: `npm run build`
+**Production Build**: `bun run build`
 
 **Key Scripts**:
-- `npm run dev` - Start development server with hot reload
-- `npm run build` - TypeScript compilation + production build
-- `npm run generate:api` - Regenerate OpenAPI client
-- `npm run test:run` - Run Vitest unit tests
-- `npm run test:e2e` - Run Playwright E2E tests
+- `bun dev` - Start development server with hot reload
+- `bun run build` - TypeScript compilation + production build
+- `bun run generate:api` - Regenerate OpenAPI client
+- `bun test:run` - Run Vitest unit tests
+- `bun test:e2e` - Run Playwright E2E tests
 
 ### Testing Strategy
 
@@ -2014,7 +2014,7 @@ graph TB
 **Build Configuration**:
 ```yaml
 app_location: "frontend"
-app_build_command: "npm run build"
+app_build_command: "bun run build"
 output_location: "dist"
 api_location: ""  # No backend API in Static Web App
 ```
@@ -2080,7 +2080,7 @@ api_location: ""  # No backend API in Static Web App
 3. **Deploy Production** (`.github/workflows/deploy-production.yml`):
    - Triggers: Push to main branch
    - Steps:
-     1. Build frontend: `npm run build`
+     1. Build frontend: `bun run build`
      2. Deploy frontend to Azure Static Web Apps
      3. Build backend Docker image
      4. Push image to Azure Container Registry

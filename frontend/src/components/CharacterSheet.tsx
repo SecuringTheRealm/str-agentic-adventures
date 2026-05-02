@@ -194,310 +194,327 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
     return usedSlots < maxSlots;
   };
 
+  const hpCurrent = character.hit_points?.current ?? 0;
+  const hpMax = character.hit_points?.maximum ?? 1;
+  const hpPercent = Math.round((hpCurrent / hpMax) * 100);
+
+  const abilityEntries: Array<{
+    abbrev: string;
+    key: keyof typeof character.abilities;
+  }> = [
+    { abbrev: "STR", key: "strength" },
+    { abbrev: "DEX", key: "dexterity" },
+    { abbrev: "CON", key: "constitution" },
+    { abbrev: "INT", key: "intelligence" },
+    { abbrev: "WIS", key: "wisdom" },
+    { abbrev: "CHA", key: "charisma" },
+  ];
+
   return (
     <div className={styles.characterSheet}>
-      <div className={styles.characterHeader}>
-        <h2>{character.name}</h2>
-        <div className={styles.characterBasics}>
-          <div>
-            Level {character.level} {character.race} {character.character_class}
+      <Card className={styles.headerCard}>
+        <CardHeader className={styles.characterHeader}>
+          <CardTitle className={styles.characterName}>
+            {character.name}
+          </CardTitle>
+          <div className={styles.characterBasics}>
+            <Badge variant="secondary" className={styles.levelBadge}>
+              Level {character.level}
+            </Badge>
+            <span>
+              {character.race} {character.character_class}
+            </span>
           </div>
-        </div>
-      </div>
+        </CardHeader>
+      </Card>
 
       <div className={styles.characterStats}>
-        <div className={styles.hitPoints}>
-          <div className={styles.statLabel}>Hit Points</div>
-          <div className={styles.statValue}>
-            {character.hit_points?.current ?? "?"} /{" "}
-            {character.hit_points?.maximum ?? "?"}
-          </div>
-        </div>
+        <Card className={styles.statCard}>
+          <CardContent className={styles.statCardContent}>
+            <div className={styles.statLabel}>Hit Points</div>
+            <div className={styles.statValue}>
+              {character.hit_points?.current ?? "?"} /{" "}
+              {character.hit_points?.maximum ?? "?"}
+            </div>
+            <Progress value={hpPercent} className={styles.hpBar} />
+          </CardContent>
+        </Card>
 
-        <div className={styles.armorClass}>
-          <div className={styles.statLabel}>Armor Class</div>
-          <div className={styles.statValue}>10</div>{" "}
-          {/* Would be calculated from equipment and stats */}
-        </div>
+        <Card className={styles.statCard}>
+          <CardContent className={styles.statCardContent}>
+            <div className={styles.statLabel}>Armour Class</div>
+            <div className={styles.statValueLarge}>10</div>
+          </CardContent>
+        </Card>
       </div>
 
-      <div className={styles.abilities}>
-        <h3>Abilities</h3>
-        <div className={styles.abilitiesGrid}>
-          <div className={styles.ability}>
-            <div className={styles.abilityName}>STR</div>
-            <div className={styles.abilityScore}>
-              {character.abilities.strength || 10}
-            </div>
-            <div className={styles.abilityMod}>
-              {getAbilityModifier(character.abilities.strength || 10)}
-            </div>
-          </div>
-          <div className={styles.ability}>
-            <div className={styles.abilityName}>DEX</div>
-            <div className={styles.abilityScore}>
-              {character.abilities.dexterity || 10}
-            </div>
-            <div className={styles.abilityMod}>
-              {getAbilityModifier(character.abilities.dexterity || 10)}
-            </div>
-          </div>
-          <div className={styles.ability}>
-            <div className={styles.abilityName}>CON</div>
-            <div className={styles.abilityScore}>
-              {character.abilities.constitution || 10}
-            </div>
-            <div className={styles.abilityMod}>
-              {getAbilityModifier(character.abilities.constitution || 10)}
-            </div>
-          </div>
-          <div className={styles.ability}>
-            <div className={styles.abilityName}>INT</div>
-            <div className={styles.abilityScore}>
-              {character.abilities.intelligence || 10}
-            </div>
-            <div className={styles.abilityMod}>
-              {getAbilityModifier(character.abilities.intelligence || 10)}
-            </div>
-          </div>
-          <div className={styles.ability}>
-            <div className={styles.abilityName}>WIS</div>
-            <div className={styles.abilityScore}>
-              {character.abilities.wisdom || 10}
-            </div>
-            <div className={styles.abilityMod}>
-              {getAbilityModifier(character.abilities.wisdom || 10)}
-            </div>
-          </div>
-          <div className={styles.ability}>
-            <div className={styles.abilityName}>CHA</div>
-            <div className={styles.abilityScore}>
-              {character.abilities.charisma || 10}
-            </div>
-            <div className={styles.abilityMod}>
-              {getAbilityModifier(character.abilities.charisma || 10)}
-            </div>
-          </div>
-        </div>
-      </div>
+      <Separator className={styles.sectionSeparator} />
 
-      <div className={styles.inventory}>
-        <h3>Inventory</h3>
-
-        {/* Equipment Slots — only show occupied slots */}
-        {(() => {
-          const eq = (character as any).equipment;
-          const slots: Array<{ label: string; name: string }> = [];
-          if (eq?.mainHand?.name)
-            slots.push({ label: "Main Hand", name: eq.mainHand.name });
-          if (eq?.offHand?.name)
-            slots.push({ label: "Off Hand", name: eq.offHand.name });
-          if (eq?.armor?.name)
-            slots.push({ label: "Armor", name: eq.armor.name });
-          if (eq?.shield?.name)
-            slots.push({ label: "Shield", name: eq.shield.name });
-          if (eq?.ring1?.name)
-            slots.push({ label: "Ring 1", name: eq.ring1.name });
-          if (eq?.ring2?.name)
-            slots.push({ label: "Ring 2", name: eq.ring2.name });
-          if (eq?.amulet?.name)
-            slots.push({ label: "Amulet", name: eq.amulet.name });
-          if (eq?.cloak?.name)
-            slots.push({ label: "Cloak", name: eq.cloak.name });
-
-          if (slots.length === 0) return null;
-
-          return (
-            <div className={styles.equipmentSlots}>
-              <h4>Equipment</h4>
-              <div className={styles.equipmentGrid}>
-                {slots.map((slot) => (
-                  <div key={slot.label} className={styles.equipmentSlot}>
-                    <div className={styles.slotLabel}>{slot.label}:</div>
-                    <span>{slot.name}</span>
+      <Card className={styles.sectionCard}>
+        <CardHeader className={styles.sectionHeader}>
+          <CardTitle className={styles.sectionTitle}>Abilities</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className={styles.abilitiesGrid}>
+            {abilityEntries.map(({ abbrev, key }) => {
+              const score = character.abilities[key] || 10;
+              return (
+                <div key={key} className={styles.ability}>
+                  <div className={styles.abilityName}>{abbrev}</div>
+                  <div className={styles.abilityScore}>{score}</div>
+                  <div className={styles.abilityMod}>
+                    {getAbilityModifier(score)}
                   </div>
-                ))}
-              </div>
-            </div>
-          );
-        })()}
-
-        {/* Inventory Items */}
-        <div className={styles.inventoryItems}>
-          <h4>Items</h4>
-          <div className={styles.inventoryHeader}>
-            <span>
-              Total Weight: {calculateTotalWeight(character.inventory || [])}{" "}
-              lbs
-            </span>
-            <span className={getEncumbranceClass(character)}>
-              Encumbrance: {getEncumbranceStatus(character)}
-            </span>
+                </div>
+              );
+            })}
           </div>
-          <ul className={styles.inventoryList}>
-            {character.inventory && character.inventory.length > 0 ? (
-              character.inventory.map((item: any, index: number) => (
-                <li
-                  key={`${(item as any).name || item.item_id}-${index}`}
-                  className={styles.inventoryItem}
-                >
-                  <span className={styles.itemName}>
-                    {(item as any).name || item.item_id}
-                  </span>
-                  <span
-                    className={`item-rarity rarity-${(item as any).rarity || "common"}`}
+        </CardContent>
+      </Card>
+
+      <Separator className={styles.sectionSeparator} />
+
+      <Card className={styles.sectionCard}>
+        <CardHeader className={styles.sectionHeader}>
+          <CardTitle className={styles.sectionTitle}>Inventory</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {/* Equipment Slots — only show occupied slots */}
+          {(() => {
+            const eq = (character as any).equipment;
+            const slots: Array<{ label: string; name: string }> = [];
+            if (eq?.mainHand?.name)
+              slots.push({ label: "Main Hand", name: eq.mainHand.name });
+            if (eq?.offHand?.name)
+              slots.push({ label: "Off Hand", name: eq.offHand.name });
+            if (eq?.armor?.name)
+              slots.push({ label: "Armor", name: eq.armor.name });
+            if (eq?.shield?.name)
+              slots.push({ label: "Shield", name: eq.shield.name });
+            if (eq?.ring1?.name)
+              slots.push({ label: "Ring 1", name: eq.ring1.name });
+            if (eq?.ring2?.name)
+              slots.push({ label: "Ring 2", name: eq.ring2.name });
+            if (eq?.amulet?.name)
+              slots.push({ label: "Amulet", name: eq.amulet.name });
+            if (eq?.cloak?.name)
+              slots.push({ label: "Cloak", name: eq.cloak.name });
+
+            if (slots.length === 0) return null;
+
+            return (
+              <div className={styles.equipmentSlots}>
+                <h4>Equipment</h4>
+                <div className={styles.equipmentGrid}>
+                  {slots.map((slot) => (
+                    <div key={slot.label} className={styles.equipmentSlot}>
+                      <div className={styles.slotLabel}>{slot.label}:</div>
+                      <span>{slot.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Inventory Items */}
+          <div className={styles.inventoryItems}>
+            <h4>Items</h4>
+            <div className={styles.inventoryHeader}>
+              <span>
+                Total Weight: {calculateTotalWeight(character.inventory || [])}{" "}
+                lbs
+              </span>
+              <span className={getEncumbranceClass(character)}>
+                Encumbrance: {getEncumbranceStatus(character)}
+              </span>
+            </div>
+            <ul className={styles.inventoryList}>
+              {character.inventory && character.inventory.length > 0 ? (
+                character.inventory.map((item: any, index: number) => (
+                  <li
+                    key={`${(item as any).name || item.item_id}-${index}`}
+                    className={styles.inventoryItem}
                   >
-                    {getRarityDisplay((item as any).rarity)}
-                  </span>
-                  {item.quantity > 1 && (
-                    <span className={styles.itemQuantity}>
-                      x{item.quantity}
+                    <span className={styles.itemName}>
+                      {(item as any).name || item.item_id}
                     </span>
-                  )}
-                  <span className={styles.itemWeight}>
-                    {(item as any).weight || 0} lbs
-                  </span>
-                  {(item as any).value && (
-                    <span className={styles.itemValue}>
-                      {(item as any).value} gp
+                    <span
+                      className={`item-rarity rarity-${(item as any).rarity || "common"}`}
+                    >
+                      {getRarityDisplay((item as any).rarity)}
                     </span>
-                  )}
-                  {(item as any).magical && (
-                    <span className={styles.magicalIndicator}>✨</span>
-                  )}
-                </li>
-              ))
-            ) : (
-              <li className={styles.emptyInventory}>No items in inventory</li>
-            )}
-          </ul>
-        </div>
-      </div>
+                    {item.quantity > 1 && (
+                      <span className={styles.itemQuantity}>
+                        x{item.quantity}
+                      </span>
+                    )}
+                    <span className={styles.itemWeight}>
+                      {(item as any).weight || 0} lbs
+                    </span>
+                    {(item as any).value && (
+                      <span className={styles.itemValue}>
+                        {(item as any).value} gp
+                      </span>
+                    )}
+                    {(item as any).magical && (
+                      <span className={styles.magicalIndicator}>✨</span>
+                    )}
+                  </li>
+                ))
+              ) : (
+                <li className={styles.emptyInventory}>No items in inventory</li>
+              )}
+            </ul>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Spell Management Section */}
       {isSpellcaster(character.character_class || "fighter") && (
-        <div className={styles.spellManagement}>
-          <h3>Spells</h3>
+        <>
+          <Separator className={styles.sectionSeparator} />
+          <Card className={styles.sectionCard}>
+            <CardHeader className={styles.sectionHeader}>
+              <CardTitle className={styles.sectionTitle}>Spells</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {/* Spell Save DC and Attack Bonus */}
+              <div className={styles.spellStats}>
+                <div className={styles.spellStat}>
+                  <div className={styles.statLabel}>Spell Save DC:</div>
+                  <span>{calculateSpellSaveDC(character)}</span>
+                </div>
+                <div className={styles.spellStat}>
+                  <div className={styles.statLabel}>Spell Attack Bonus:</div>
+                  <span>+{calculateSpellAttackBonus(character)}</span>
+                </div>
+                <div className={styles.spellStat}>
+                  <div className={styles.statLabel}>Spellcasting Ability:</div>
+                  <span>
+                    {getSpellcastingAbility(
+                      character.character_class || "fighter"
+                    )}
+                  </span>
+                </div>
+              </div>
 
-          {/* Spell Save DC and Attack Bonus */}
-          <div className={styles.spellStats}>
-            <div className={styles.spellStat}>
-              <div className={styles.statLabel}>Spell Save DC:</div>
-              <span>{calculateSpellSaveDC(character)}</span>
-            </div>
-            <div className={styles.spellStat}>
-              <div className={styles.statLabel}>Spell Attack Bonus:</div>
-              <span>+{calculateSpellAttackBonus(character)}</span>
-            </div>
-            <div className={styles.spellStat}>
-              <div className={styles.statLabel}>Spellcasting Ability:</div>
-              <span>
-                {getSpellcastingAbility(character.character_class || "fighter")}
-              </span>
-            </div>
-          </div>
+              {/* Spell Slots */}
+              <div className={styles.spellSlots}>
+                <h4>Spell Slots</h4>
+                <div className={styles.spellSlotGrid}>
+                  {Array.from({ length: 9 }, (_, level) => level + 1).map(
+                    (level) => {
+                      const maxSlots = getMaxSpellSlots(character, level);
+                      const usedSlots =
+                        (character as any).spellSlots?.[level] || 0;
+                      if (maxSlots === 0) return null;
 
-          {/* Spell Slots */}
-          <div className={styles.spellSlots}>
-            <h4>Spell Slots</h4>
-            <div className={styles.spellSlotGrid}>
-              {Array.from({ length: 9 }, (_, level) => level + 1).map(
-                (level) => {
-                  const maxSlots = getMaxSpellSlots(character, level);
-                  const usedSlots = (character as any).spellSlots?.[level] || 0;
-                  if (maxSlots === 0) return null;
-
-                  return (
-                    <div key={level} className={styles.spellSlotLevel}>
-                      <div className={styles.levelLabel}>Level {level}:</div>
-                      <div className={styles.slotIndicators}>
-                        {Array.from({ length: maxSlots }, (_, i) => (
-                          <div
-                            key={i}
-                            className={`slot-indicator ${i < usedSlots ? "used" : "available"}`}
-                          >
-                            ○
+                      return (
+                        <div key={level} className={styles.spellSlotLevel}>
+                          <div className={styles.levelLabel}>
+                            Level {level}:
                           </div>
-                        ))}
-                        <span className={styles.slotCount}>
-                          ({usedSlots}/{maxSlots})
-                        </span>
-                      </div>
-                    </div>
-                  );
-                }
-              )}
-            </div>
-          </div>
+                          <div className={styles.slotIndicators}>
+                            {Array.from({ length: maxSlots }, (_, i) => (
+                              <div
+                                key={i}
+                                className={`slot-indicator ${i < usedSlots ? "used" : "available"}`}
+                              >
+                                ○
+                              </div>
+                            ))}
+                            <span className={styles.slotCount}>
+                              ({usedSlots}/{maxSlots})
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    }
+                  )}
+                </div>
+              </div>
 
-          {/* Cantrips */}
-          <div className={styles.cantrips}>
-            <h4>Cantrips</h4>
-            <ul className={styles.spellList}>
-              {(character as any).spells?.cantrips?.map(
-                (spell: any, index: number) => (
-                  <li key={index} className="spell-item cantrip">
-                    <span className={styles.spellName}>{spell.name}</span>
-                    <span className={styles.spellSchool}>{spell.school}</span>
-                    <button type="button" className={styles.castButton}>
-                      Cast
-                    </button>
-                  </li>
-                )
-              ) || <li>No cantrips known</li>}
-            </ul>
-          </div>
-
-          {/* Prepared Spells */}
-          <div className={styles.preparedSpells}>
-            <h4>Prepared Spells</h4>
-            {Array.from({ length: 9 }, (_, level) => level + 1).map((level) => {
-              const levelSpells =
-                (character as any).spells?.prepared?.filter(
-                  (spell: any) => spell.level === level
-                ) || [];
-              if (levelSpells.length === 0) return null;
-
-              return (
-                <div key={level} className={styles.spellLevelGroup}>
-                  <h5>Level {level} Spells</h5>
-                  <ul className={styles.spellList}>
-                    {levelSpells.map((spell: any, index: number) => (
-                      <li key={index} className={styles.spellItem}>
+              {/* Cantrips */}
+              <div className={styles.cantrips}>
+                <h4>Cantrips</h4>
+                <ul className={styles.spellList}>
+                  {(character as any).spells?.cantrips?.map(
+                    (spell: any, index: number) => (
+                      <li key={index} className="spell-item cantrip">
                         <span className={styles.spellName}>{spell.name}</span>
                         <span className={styles.spellSchool}>
                           {spell.school}
                         </span>
-                        <span className={styles.spellCastingTime}>
-                          {spell.castingTime}
-                        </span>
-                        <span className={styles.spellRange}>{spell.range}</span>
-                        {spell.concentration && (
-                          <span className={styles.concentrationIndicator}>
-                            C
-                          </span>
-                        )}
-                        {spell.ritual && (
-                          <span className={styles.ritualIndicator}>R</span>
-                        )}
-                        <button
-                          type="button"
-                          className={styles.castButton}
-                          disabled={!hasSpellSlot(character, level)}
-                        >
+                        <button type="button" className={styles.castButton}>
                           Cast
                         </button>
                       </li>
-                    ))}
-                  </ul>
-                </div>
-              );
-            })}
-            {!(character as any).spells?.prepared?.length && (
-              <p>No spells prepared</p>
-            )}
-          </div>
-        </div>
+                    )
+                  ) || <li>No cantrips known</li>}
+                </ul>
+              </div>
+
+              {/* Prepared Spells */}
+              <div className={styles.preparedSpells}>
+                <h4>Prepared Spells</h4>
+                {Array.from({ length: 9 }, (_, level) => level + 1).map(
+                  (level) => {
+                    const levelSpells =
+                      (character as any).spells?.prepared?.filter(
+                        (spell: any) => spell.level === level
+                      ) || [];
+                    if (levelSpells.length === 0) return null;
+
+                    return (
+                      <div key={level} className={styles.spellLevelGroup}>
+                        <h5>Level {level} Spells</h5>
+                        <ul className={styles.spellList}>
+                          {levelSpells.map((spell: any, index: number) => (
+                            <li key={index} className={styles.spellItem}>
+                              <span className={styles.spellName}>
+                                {spell.name}
+                              </span>
+                              <span className={styles.spellSchool}>
+                                {spell.school}
+                              </span>
+                              <span className={styles.spellCastingTime}>
+                                {spell.castingTime}
+                              </span>
+                              <span className={styles.spellRange}>
+                                {spell.range}
+                              </span>
+                              {spell.concentration && (
+                                <span className={styles.concentrationIndicator}>
+                                  C
+                                </span>
+                              )}
+                              {spell.ritual && (
+                                <span className={styles.ritualIndicator}>
+                                  R
+                                </span>
+                              )}
+                              <button
+                                type="button"
+                                className={styles.castButton}
+                                disabled={!hasSpellSlot(character, level)}
+                              >
+                                Cast
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    );
+                  }
+                )}
+                {!(character as any).spells?.prepared?.length && (
+                  <p>No spells prepared</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </>
       )}
     </div>
   );

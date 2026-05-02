@@ -37,7 +37,7 @@ Reference materials:
 - [CONTAINER_OPTIMIZATION.md](reference/CONTAINER_OPTIMIZATION.md) - Deployment optimization guide
 
 ### `/adr/`
-Architecture Decision Records — 19 ADRs documenting all major technical decisions:
+Architecture Decision Records — 22 ADRs documenting all major technical decisions:
 - [index.md](adr/index.md) - Full ADR index with descriptions
 - Key decisions: [ADR-0018](adr/0018-azure-ai-agents-sdk-adoption.md) (current agent SDK), [ADR-0011](adr/0011-openapi-client-generation.md) (OpenAPI client), [ADR-0019](adr/0019-api-prefix-configuration.md) (API prefix)
 
@@ -60,4 +60,4 @@ Architecture Decision Records — 19 ADRs documenting all major technical decisi
 
 ## Agent & Coding Guidelines
 
-See [../AGENTS.md](../AGENTS.md) for repository-wide coding standards, security guardrails, and AI agent implementation guidelines.
+See [../CLAUDE.md](../CLAUDE.md) for repository-wide coding standards, security guardrails, and AI agent implementation guidelines.

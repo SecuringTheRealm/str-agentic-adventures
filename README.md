@@ -172,34 +172,15 @@ uv run pytest backend/tests/ -v
 
 ## Development Workflow
 
-### 🔄 OpenAPI Client Synchronization
+### OpenAPI Client Synchronisation
 
-The frontend uses a generated TypeScript client from the backend's OpenAPI schema. **When backend API changes, developers must regenerate the frontend client.**
-
-#### When to Regenerate
-
-Regenerate the client after:
-- ✅ Adding new API endpoints
-- ✅ Modifying endpoint parameters or responses
-- ✅ Changing data models or types
-- ✅ Pulling backend changes from other developers
-
-#### How to Regenerate
+The frontend uses a generated TypeScript client from the backend's OpenAPI schema. After any backend API change, regenerate it:
 
 ```bash
-# 1. Start backend server
-cd backend && uv run uvicorn app.main:app
-
-# 2. Regenerate frontend client  
-cd frontend && bun run generate:api
-
-# 3. Verify the update
-bun run build && bun run test:run
+./scripts/generate-client.sh
 ```
 
-#### Automated Validation
-
-See [docs/specs/OPENAPI_CLIENT.md](docs/specs/OPENAPI_CLIENT.md) for detailed documentation.
+See [docs/specs/OPENAPI_CLIENT.md](docs/specs/OPENAPI_CLIENT.md) for details.
 
 ## Documentation
 

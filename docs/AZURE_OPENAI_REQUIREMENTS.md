@@ -30,7 +30,7 @@ These endpoints use AI agents and require proper Azure OpenAI configuration:
 - `GET /api/game/character/{id}` - Get character (may use AI enhancements)
 
 ### Image Generation
-- `POST /api/game/generate-image` - Generate images (uses Artist agent with gpt-image-1)
+- `POST /api/game/generate-image` - Generate images (uses Artist agent with gpt-image-1-mini)
 
 ### Gameplay
 - `POST /api/game/input` - Process player input (uses Dungeon Master agent)

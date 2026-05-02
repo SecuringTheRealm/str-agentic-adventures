@@ -1,18 +1,20 @@
 ---
 name: api-client
-description: OpenAPI client generation workflow, Java requirement, regeneration triggers
+description: "Triggers when the agent modifies backend API routes, Pydantic models, or request/response types; when frontend TypeScript shows type errors against api-client/; or when openapi.json or schema.d.ts need regeneration. Covers the openapi-typescript generation workflow."
 ---
 
 # API Client Workflow
 
 ## Key Facts
-- `frontend/src/api-client/` is auto-generated and NOT committed to git
-- Requires Java (OpenJDK): `brew install openjdk` on macOS
-- Backend must be running at `http://localhost:8000`
+- Tool: `openapi-typescript` (NOT openapi-generator, NOT Java)
+- Output: `frontend/src/api-client/schema.d.ts` (committed to git)
+- Schema source: `frontend/openapi.json` (committed to git)
+- No running backend needed — uses the committed `openapi.json`
+- Frontend uses `openapi-fetch` SDK client via `frontend/src/services/api.ts`
 
 ## Generate
 ```bash
-cd frontend && npm run generate:api
+./scripts/generate-client.sh
 ```
 
 ## When to Regenerate
@@ -21,10 +23,10 @@ cd frontend && npm run generate:api
 - After changing Pydantic model fields
 
 ## After Regeneration
-- Restart frontend dev server to pick up changes
-- Re-run `npm run build` to verify TypeScript compiles
-- Re-run `npm run test:run` to verify tests pass
+- Commit both `openapi.json` and `schema.d.ts` together (commit-and-verify pattern)
+- Run `cd frontend && bun run build` to verify TypeScript compiles
+- Run `cd frontend && bun test:run` to verify tests pass
 
-## CI/CD
-- Deploy workflow generates client from the deployed backend's OpenAPI schema
-- PR checks do NOT generate the client (no backend running in CI)
+## Usage Rules
+- All API calls go through `frontend/src/services/api.ts` — never import from `api-client/` directly
+- The `api.ts` service wraps `openapi-fetch` with typed helpers

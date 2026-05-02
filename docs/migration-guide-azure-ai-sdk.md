@@ -1,5 +1,7 @@
 # Migration Reference: Semantic Kernel → Azure AI Agents SDK
 
+> **Historical reference only.** The codebase has already migrated from Semantic Kernel to Azure AI Agents SDK (see ADR-0018). This guide is preserved for context.
+
 This migration is **complete**. The project now uses the Azure AI Agents SDK exclusively.
 
 ## Key Changes (Summary)

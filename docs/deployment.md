@@ -6,7 +6,7 @@ This document explains how to deploy the STR Agentic Adventures application to A
 
 1. **Azure Subscription**: You need an active Azure subscription
 2. **Azure AI Foundry Project**: You need access to Azure AI Foundry with the following models deployed:
-   - GPT-4 or GPT-4o-mini for chat completion
+   - GPT-4o-mini for chat completion
    - text-embedding-ada-002 for embeddings
    - gpt-image-1-mini for image generation (optional)
 
@@ -16,8 +16,8 @@ This document explains how to deploy the STR Agentic Adventures application to A
 
 ### Prerequisites
 
-- **Python 3.11 or higher**
-- **Node.js 18 or higher**
+- **Python 3.12+**
+- **Node.js 22+**
 - **Azure CLI** (for authentication and deployment)
 - **Azure AI Foundry project** with deployed models
 
@@ -70,8 +70,8 @@ make run
 
 # Frontend (in a new terminal)
 cd frontend
-npm ci
-npm run dev
+bun install
+bun dev
 ```
 
 The application will be available at `http://127.0.0.1:5173`.

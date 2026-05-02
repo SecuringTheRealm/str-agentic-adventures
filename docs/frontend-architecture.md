@@ -1,10 +1,10 @@
 # Frontend Architecture
 
-**Generated:** 2025-11-01
 **Part:** frontend (React + TypeScript + Vite)
 **Framework:** React 19.2.0
 **Build Tool:** Vite 7.1.9
 **Language:** TypeScript 5.9.3
+**Component Library:** shadcn/ui + Tailwind CSS v4 (components in `src/components/ui/`)
 
 ## Overview
 
@@ -16,12 +16,12 @@ Single Page Application (SPA) built with React 19 and TypeScript, featuring gene
 
 ### Generated API Client Pattern
 
-The frontend uses **OpenAPI Generator** to automatically generate a TypeScript Axios client from the backend's OpenAPI schema.
+The frontend uses **openapi-typescript** to generate TypeScript types from the backend's OpenAPI schema.
 
-**Location:** `src/api-client/` (auto-generated, not committed to repo)
-**Generator:** `@openapitools/openapi-generator-cli`
-**Command:** `npm run generate:api`
-**Source:** `http://localhost:8000/openapi.json`
+**Location:** `src/api-client/` (generated types in `schema.d.ts`, committed to repo)
+**Generator:** `openapi-typescript`
+**Command:** `bun run generate:api` (or `./scripts/generate-client.sh`)
+**Source:** `openapi.json` (committed at repo root; no running backend required)
 
 ### Service Layer (`src/services/api.ts`)
 
@@ -290,33 +290,33 @@ Component ← Update State ← Process Response ← Axios Response ← Backend R
 
 ### Development Server
 ```bash
-npm run dev          # Starts Vite dev server on http://127.0.0.1:5173
+bun dev              # Starts Vite dev server on http://127.0.0.1:5173
 ```
 
 ### Production Build
 ```bash
-npm run build        # TypeScript check + Vite build → frontend/build/
+bun run build        # TypeScript check + Vite build → frontend/build/
 ```
 
 ### Code Quality
 ```bash
-npm run lint         # Biome linter
-npm run format       # Biome formatter
+bun lint             # Biome linter
+bun run format       # Biome formatter
 ```
 
 ### Testing
 ```bash
-npm run test         # Vitest watch mode
-npm run test:run     # Vitest single run
-npm run test:e2e     # Playwright E2E tests
+bun test             # Vitest watch mode
+bun test:run         # Vitest single run
+bun run test:e2e     # Playwright E2E tests
 ```
 
 ### API Client Generation
 ```bash
-npm run generate:api # Generate TypeScript client from backend OpenAPI spec
+bun run generate:api # Generate TypeScript types from OpenAPI spec
 ```
 
-**Prerequisites:** Backend must be running at `http://localhost:8000`
+**Note:** No running backend required. The OpenAPI schema (`openapi.json`) is committed at the repo root.
 
 ---
 
@@ -350,13 +350,15 @@ export const getApiBaseUrl = () => {
 
 ## Styling Approach
 
-### CSS Modules
-- **Pattern:** Component-scoped styles with `.module.css` files
-- **Benefits:** Automatic class name hashing prevents conflicts
+### shadcn/ui + Tailwind CSS v4
+- **Component Library:** shadcn/ui (Radix UI primitives with Tailwind styling)
+- **UI Components:** `src/components/ui/` — button, card, dialog, tabs, etc.
+- **Legacy Styles:** Some components still use CSS Modules (`.module.css` files)
 - **Global Styles:** `App.css` and `index.css` for shared styles
 
 ### Design Tokens
 - CSS variables in `:root` for theming
+- Tailwind CSS v4 utility classes for layout and styling
 - Consistent spacing, colors, typography
 
 ---
@@ -373,7 +375,7 @@ export const getApiBaseUrl = () => {
 | `@testing-library/react` | Component testing utilities |
 | `@playwright/test` | E2E testing |
 | `@biomejs/biome` | Linting and formatting |
-| `@openapitools/openapi-generator-cli` | API client generation |
+| `openapi-typescript` | API type generation |
 
 ---
 

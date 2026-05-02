@@ -49,7 +49,7 @@ str-agentic-adventures/
 | **API Framework** | FastAPI | ≥0.100.0 | High-performance async API |
 | **Language** | Python | 3.12+ | Modern Python features |
 | **AI Framework** | Azure AI Agents SDK | ≥1.0.0 | Intelligent agent orchestration |
-| **AI Model** | Azure OpenAI | GPT-4 | Natural language generation |
+| **AI Model** | Azure OpenAI | GPT-4o-mini | Natural language generation |
 | **Database** | PostgreSQL/SQLite | 2.0+ | Relational data storage |
 | **ORM** | SQLAlchemy | ≥2.0.0 | Async database access |
 | **Migrations** | Alembic | ≥1.11.0 | Schema versioning |
@@ -186,7 +186,7 @@ uv sync                # Install Python dependencies via UV
 
 # 3. Frontend setup
 cd frontend
-npm install
+bun install
 cp .env.example .env.local  # Configure VITE_API_URL if needed
 ```
 
@@ -198,7 +198,7 @@ cd backend && uv run python -m app.main  # Backend runs on http://localhost:8000
 
 # In separate terminal, generate frontend API client
 cd frontend
-npm run generate:api
+bun run generate:api
 ```
 
 ### Development
@@ -209,7 +209,7 @@ cd backend && uv run python -m app.main  # http://localhost:8000
 
 # Terminal 2: Frontend
 cd frontend
-npm run dev           # http://127.0.1.5173
+bun dev               # http://127.0.0.1:5173
 ```
 
 ### Testing
@@ -220,8 +220,8 @@ uv run pytest backend/tests/ -v
 
 # Frontend tests
 cd frontend
-npm run test:run      # Unit tests (Vitest)
-npm run test:e2e      # E2E tests (Playwright)
+bun test:run          # Unit tests (Vitest)
+bun test:e2e          # E2E tests (Playwright)
 ```
 
 ### Code Quality
@@ -233,8 +233,8 @@ uv run ruff format .
 
 # Frontend
 cd frontend
-npm run lint
-npm run format
+bun lint
+bun format
 ```
 
 ---
@@ -278,7 +278,7 @@ npm run format
 ### Backend → Azure OpenAI
 - **Protocol:** HTTPS
 - **SDK:** Azure AI Agents SDK + Azure OpenAI SDK
-- **Model:** GPT-4 (configurable deployment)
+- **Model:** GPT-4o-mini (configurable deployment)
 - **Features:** Chat completions, streaming responses, function calling
 
 ### Backend → Database

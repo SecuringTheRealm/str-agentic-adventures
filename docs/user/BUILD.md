@@ -1,85 +1,77 @@
-# Build System Documentation
-
-This project uses a modern build system based on UV package manager and Make targets for consistent development and deployment workflows.
+# Build & Development Guide
 
 ## Prerequisites
 
 - Python 3.12+
-- UV package manager (installed automatically by `make deps`)
+- [uv](https://docs.astral.sh/uv/) (Python package manager)
+- [Bun](https://bun.sh/) (frontend runtime and package manager)
+- Docker (optional, for container builds)
 
 ## Quick Start
 
 ```bash
-# Install dependencies
-make deps
+# 1. Install dependencies
+cd backend && uv sync
+cd frontend && bun install
 
-# Run the application
-make run
+# 2. Copy environment config
+cp .env.example .env   # then fill in your values
 
-# Run tests  
-make test
+# 3. Start the backend (from repo root)
+cd backend && uv run uvicorn app.main:app --reload
 
-# Generate frontend API client (runs validation workflow)
-make generate-client
-
-# Format and lint code
-make format
-make lint
-
-# Clean temporary files
-make clean
+# 4. Start the frontend (separate terminal)
+cd frontend && bun dev
 ```
 
-## Available Make Targets
+The backend runs on `http://localhost:8000`, the frontend on `http://127.0.0.1:5173`.
 
-| Target | Description |
-|--------|-------------|
-| `make deps` | Install all dependencies using uv sync |
-| `make deps-prod` | Install production dependencies only |
-| `make test` | Run all tests with pytest |
-| `make run` | Start the backend server |
-| `make lint` | Run linting checks with ruff |
-| `make format` | Format code with ruff |
-| `make clean` | Clean temporary files |
-| `make dev-setup` | Complete development environment setup |
-| `make generate-client` | Generate the frontend API client via validation script |
-| `make validate-openapi-client` | Alias for `generate-client`; runs the full validation workflow |
+## Common Tasks
 
-## Legacy Scripts
+| Task | Backend | Frontend |
+|------|---------|----------|
+| Install deps | `cd backend && uv sync` | `cd frontend && bun install` |
+| Run dev server | `cd backend && uv run uvicorn app.main:app --reload` | `cd frontend && bun dev` |
+| Run tests | `uv run pytest backend/tests/ -v` | `cd frontend && bun test:run` |
+| Lint | `uv run ruff check .` | `cd frontend && bun lint` |
+| Format | `uv run ruff format .` | `cd frontend && bunx biome check --write .` |
+| Generate API client | `./scripts/generate-client.sh` | |
+| Production build | | `cd frontend && bun run build` |
 
-- `backend/start.sh` - Now uses `make run` internally
-- The original shell script logic has been replaced with standardized Make targets
+## API Client Generation
+
+The frontend uses `openapi-typescript` to generate a typed API client from the backend's OpenAPI schema. No Java is needed.
+
+```bash
+# With the backend running:
+./scripts/generate-client.sh
+
+# Or directly:
+cd frontend && bun run generate:api
+```
+
+The generated file (`frontend/src/api-client/schema.d.ts`) is gitignored -- regenerate it after cloning or after any backend API changes.
 
 ## Container Builds
 
-The Dockerfile now uses the modern build system:
-
 ```bash
-# Build container (from repository root)
+# Build (from repo root)
 docker build -t str-agentic-adventures .
 
-# Run container
+# Run
 docker run -p 8000:8000 str-agentic-adventures
 ```
 
 ## UV Package Manager
 
-This project uses [UV](https://docs.astral.sh/uv/) for Python dependency management.
+[uv](https://docs.astral.sh/uv/) manages all Python dependencies.
 
 ```bash
-uv add <package>      # Add a dependency to pyproject.toml
+uv add <package>      # Add a dependency
 uv remove <package>   # Remove a dependency
-uv lock               # Refresh lock files after dependency changes
-uv run <command>      # Execute commands within the uv environment
-uv sync --frozen      # Install exact versions from lock file (used in CI)
+uv lock               # Refresh lock file after changes
+uv run <command>      # Run a command in the uv environment
+uv sync --frozen      # Install exact versions from lock file (CI)
 ```
 
 `pyproject.toml` is the single source of truth for dependencies. `uv.lock` is committed for reproducible installs. Run `uv lock` locally if CI reports lock file drift, then commit the updated file.
-
-## Key Improvements
-
-1. **Reproducible builds** - Uses uv.lock for exact dependency versions
-2. **Faster dependency resolution** - UV is significantly faster than pip
-3. **Better layer caching** - Docker builds copy pyproject.toml and uv.lock first
-4. **Consistent interface** - Same commands work in development and CI/CD
-5. **Simplified maintenance** - Single source of truth for dependencies in pyproject.toml
