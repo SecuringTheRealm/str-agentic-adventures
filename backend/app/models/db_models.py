@@ -221,6 +221,18 @@ class CombatState(Base):
     updated_at = Column(DateTime, nullable=False, default=_utcnow, onupdate=_utcnow)
 
 
+class NarrativeStateDB(Base):
+    """Persistent narrative state, surviving server restarts."""
+
+    __tablename__ = "narrative_states"
+
+    id = Column(String, primary_key=True, index=True)
+    campaign_id = Column(String, ForeignKey("campaigns.id"), nullable=False, index=True)
+    data = Column(JSON, nullable=False, default=dict)
+    created_at = Column(DateTime, nullable=False, default=_utcnow)
+    updated_at = Column(DateTime, nullable=False, default=_utcnow, onupdate=_utcnow)
+
+
 class ConversationThread(Base):
     """Persistent conversation thread for agent interactions."""
 

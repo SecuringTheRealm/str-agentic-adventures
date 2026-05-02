@@ -7,9 +7,11 @@ import datetime
 import json
 import logging
 import random
+import uuid
 from typing import Any
 
-# Note: Converted from Agent plugin to direct function calls
+from app.database import get_session_context
+from app.models.db_models import NarrativeStateDB
 from app.models.game_models import (
     NarrativeChoice,
     NarrativeEvent,
@@ -38,6 +40,88 @@ class NarrativeGenerationPlugin:
         self.narrative_events = []  # List of NarrativeEvent objects
         self.choice_templates = self._initialize_choice_templates()
         self.plot_templates = self._initialize_plot_templates()
+
+    def _save_state(self, campaign_id: str) -> None:
+        """Persist narrative state for a campaign to the database."""
+        if campaign_id not in self.narrative_states:
+            return
+        state = self.narrative_states[campaign_id]
+        data = {
+            "narrative_state": state.model_dump(mode="json"),
+            "story_arcs": {
+                arc_id: arc.model_dump(mode="json")
+                for arc_id, arc in self.story_arcs.items()
+            },
+            "plot_points": {
+                pp_id: pp.model_dump(mode="json")
+                for pp_id, pp in self.plot_points.items()
+            },
+            "narrative_choices": {
+                nc_id: nc.model_dump(mode="json")
+                for nc_id, nc in self.narrative_choices.items()
+            },
+            "narrative_events": [
+                e.model_dump(mode="json") for e in self.narrative_events
+            ],
+        }
+        try:
+            with get_session_context() as db:
+                row = (
+                    db.query(NarrativeStateDB)
+                    .filter(NarrativeStateDB.campaign_id == campaign_id)
+                    .first()
+                )
+                if row:
+                    row.data = data
+                    row.updated_at = datetime.datetime.now(datetime.UTC)
+                else:
+                    row = NarrativeStateDB(
+                        id=str(uuid.uuid4()),
+                        campaign_id=campaign_id,
+                        data=data,
+                    )
+                    db.add(row)
+                db.commit()
+        except Exception as exc:
+            logger.warning(
+                "Failed to persist narrative state for %s: %s", campaign_id, exc
+            )
+
+    def _load_state(self, campaign_id: str) -> None:
+        """Load narrative state from the database if not already cached."""
+        if campaign_id in self.narrative_states:
+            return
+        try:
+            with get_session_context() as db:
+                row = (
+                    db.query(NarrativeStateDB)
+                    .filter(NarrativeStateDB.campaign_id == campaign_id)
+                    .first()
+                )
+                if row is None:
+                    return
+                data = row.data
+                if "narrative_state" in data:
+                    self.narrative_states[campaign_id] = NarrativeState(
+                        **data["narrative_state"]
+                    )
+                for arc_id, arc_data in data.get("story_arcs", {}).items():
+                    if arc_id not in self.story_arcs:
+                        self.story_arcs[arc_id] = StoryArc(**arc_data)
+                for pp_id, pp_data in data.get("plot_points", {}).items():
+                    if pp_id not in self.plot_points:
+                        self.plot_points[pp_id] = PlotPoint(**pp_data)
+                for nc_id, nc_data in data.get("narrative_choices", {}).items():
+                    if nc_id not in self.narrative_choices:
+                        self.narrative_choices[nc_id] = NarrativeChoice(**nc_data)
+                if not self.narrative_events and data.get("narrative_events"):
+                    self.narrative_events = [
+                        NarrativeEvent(**e) for e in data["narrative_events"]
+                    ]
+        except Exception as exc:
+            logger.warning(
+                "Failed to load narrative state for %s: %s", campaign_id, exc
+            )
 
     def _initialize_choice_templates(self) -> dict[str, dict[str, Any]]:
         """Initialize templates for common narrative choices."""
@@ -262,6 +346,8 @@ class NarrativeGenerationPlugin:
             Dict[str, Any]: Results of the choice processing
         """
         try:
+            self._load_state(campaign_id)
+
             # Get the choice
             if choice_id not in self.narrative_choices:
                 return {"status": "error", "message": "Choice not found"}
@@ -298,6 +384,8 @@ class NarrativeGenerationPlugin:
             if choice_id in narrative_state.pending_choices:
                 narrative_state.pending_choices.remove(choice_id)
 
+            self._save_state(campaign_id)
+
             return {
                 "status": "success",
                 "message": "Choice processed successfully",
@@ -325,6 +413,8 @@ class NarrativeGenerationPlugin:
             Dict[str, Any]: Narrative advancement results
         """
         try:
+            self._load_state(campaign_id)
+
             # Get narrative state
             if campaign_id not in self.narrative_states:
                 self.narrative_states[campaign_id] = NarrativeState(
@@ -371,6 +461,8 @@ class NarrativeGenerationPlugin:
             # Update narrative state
             narrative_state.last_updated = datetime.datetime.now()
 
+            self._save_state(campaign_id)
+
             return {
                 "status": "success",
                 "activated_plot_points": activated_points,
@@ -396,6 +488,8 @@ class NarrativeGenerationPlugin:
             Dict[str, Any]: Current narrative state information
         """
         try:
+            self._load_state(campaign_id)
+
             if campaign_id not in self.narrative_states:
                 return {
                     "status": "not_found",
