@@ -54,6 +54,7 @@ class TestFrontendBackendIntegration:
             ("/game/character/test-id", "GET"),
             ("/game/input", "POST"),
             ("/game/campaign", "POST"),
+            ("/game/image-generation/status", "GET"),
             ("/game/generate-image", "POST"),
             ("/game/battle-map", "POST"),
             ("/game/character/test-id/level-up", "POST"),

@@ -1,6 +1,12 @@
 import type React from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { Campaign, Character, DiceResult } from "../types";
 import BattleMap from "./BattleMap";
 import CharacterSheet from "./CharacterSheet";
@@ -27,6 +33,8 @@ interface MobileGameLayoutProps {
   combatActive: boolean;
   imageLoading: boolean;
   imagesRemaining: number | null;
+  imageGenerationAvailable: boolean;
+  imageGenerationStatusMessage: string | null;
   onGeneratePortrait: () => void;
   onGenerateScene: () => void;
   onGenerateBattleMap: () => void;
@@ -59,6 +67,8 @@ const MobileGameLayout: React.FC<MobileGameLayoutProps> = ({
   combatActive,
   imageLoading,
   imagesRemaining,
+  imageGenerationAvailable,
+  imageGenerationStatusMessage,
   onGeneratePortrait,
   onGenerateScene,
   onGenerateBattleMap,
@@ -66,6 +76,44 @@ const MobileGameLayout: React.FC<MobileGameLayoutProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<TabId>("chat");
   const [diceDrawerOpen, setDiceDrawerOpen] = useState(false);
+  const visualsDisabled =
+    imageLoading || imagesRemaining === 0 || !imageGenerationAvailable;
+  const disabledReason =
+    imageGenerationStatusMessage ||
+    (imagesRemaining === 0 ? "Image limit reached for this session." : null);
+
+  const renderVisualButton = (
+    label: string,
+    onClick: () => void,
+    testId: string
+  ) => {
+    const button = (
+      <Button
+        variant="default"
+        onClick={onClick}
+        disabled={visualsDisabled}
+        style={{ minHeight: 44 }}
+        data-testid={testId}
+      >
+        {imageLoading ? "Generating..." : label}
+      </Button>
+    );
+
+    if (!disabledReason || !visualsDisabled) {
+      return button;
+    }
+
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className={styles.visualButtonWrapper} tabIndex={0}>
+            {button}
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>{disabledReason}</TooltipContent>
+      </Tooltip>
+    );
+  };
 
   return (
     <div className={styles.mobileLayout} data-testid="mobile-game-layout">
@@ -114,47 +162,43 @@ const MobileGameLayout: React.FC<MobileGameLayoutProps> = ({
 
         {activeTab === "gamestate" && (
           <div id="panel-gamestate" role="tabpanel" className={styles.tabPanel}>
-            <div className={styles.visualsPanel}>
-              <h4>Generate Visuals</h4>
-              {imagesRemaining !== null && (
-                <p
-                  style={{
-                    fontSize: "0.75rem",
-                    color: "var(--color-gold-stone)",
-                    margin: 0,
-                  }}
-                >
-                  {imagesRemaining > 0
-                    ? `${imagesRemaining} illustration${imagesRemaining === 1 ? "" : "s"} remaining`
-                    : "Image limit reached"}
-                </p>
-              )}
-              <Button
-                variant="default"
-                onClick={onGeneratePortrait}
-                disabled={imageLoading || imagesRemaining === 0}
-                style={{ minHeight: 44 }}
-              >
-                {imageLoading ? "Generating..." : "Character Portrait"}
-              </Button>
-              <Button
-                variant="default"
-                onClick={onGenerateScene}
-                disabled={imageLoading || imagesRemaining === 0}
-                style={{ minHeight: 44 }}
-              >
-                {imageLoading ? "Generating..." : "Scene Illustration"}
-              </Button>
-              <Button
-                variant="default"
-                onClick={onGenerateBattleMap}
-                disabled={imageLoading || imagesRemaining === 0}
-                style={{ minHeight: 44 }}
-              >
-                {imageLoading ? "Generating..." : "Battle Map"}
-              </Button>
-              <ImageDisplay imageUrl={currentImage} />
-            </div>
+            <TooltipProvider delayDuration={150}>
+              <div className={styles.visualsPanel}>
+                <h4>Generate Visuals</h4>
+                {imageGenerationStatusMessage && (
+                  <div
+                    className={styles.visualStatus}
+                    role="status"
+                    data-testid="visual-generation-status"
+                  >
+                    {imageGenerationStatusMessage}
+                  </div>
+                )}
+                {imagesRemaining !== null && (
+                  <p className={styles.imageBudget}>
+                    {imagesRemaining > 0
+                      ? `${imagesRemaining} illustration${imagesRemaining === 1 ? "" : "s"} remaining`
+                      : "Image limit reached"}
+                  </p>
+                )}
+                {renderVisualButton(
+                  "Character Portrait",
+                  onGeneratePortrait,
+                  "generate-portrait-button"
+                )}
+                {renderVisualButton(
+                  "Scene Illustration",
+                  onGenerateScene,
+                  "generate-scene-button"
+                )}
+                {renderVisualButton(
+                  "Battle Map",
+                  onGenerateBattleMap,
+                  "generate-battle-map-button"
+                )}
+                <ImageDisplay imageUrl={currentImage} />
+              </div>
+            </TooltipProvider>
           </div>
         )}
 

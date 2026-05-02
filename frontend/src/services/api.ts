@@ -11,6 +11,7 @@
  * without requiring Java or generated runtime code.
  */
 import { api } from "../api-client/client";
+import { getApiBaseUrl } from "../utils/urls";
 // Import WebSocket client for unified SDK
 import {
   WebSocketClient,
@@ -150,6 +151,16 @@ export interface OpeningNarrativeResponse {
   quest_hook: string;
   suggested_actions: string[];
   help_text: string;
+}
+
+export interface VisualGenerationStatus {
+  available: boolean;
+  status: "healthy" | "degraded" | "unavailable";
+  message: string | null;
+}
+
+interface DependencyHealthStatus {
+  azure_openai?: "healthy" | "degraded" | "unavailable";
 }
 
 // ============================================================================
@@ -369,6 +380,47 @@ export const getOpeningNarrative = async (
   if (error) throw error;
   return data as OpeningNarrativeResponse;
 };
+
+export const getVisualGenerationStatus =
+  async (): Promise<VisualGenerationStatus> => {
+    const response = await fetch(`${getApiBaseUrl()}/health/dependencies`, {
+      headers: { Accept: "application/json" },
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to load visual generation status (${response.status.toString()})`
+      );
+    }
+
+    const dependencyHealth =
+      (await response.json()) as DependencyHealthStatus;
+    const azureStatus = dependencyHealth.azure_openai ?? "unavailable";
+
+    if (azureStatus === "healthy") {
+      return {
+        available: true,
+        status: "healthy",
+        message: null,
+      };
+    }
+
+    if (azureStatus === "degraded") {
+      return {
+        available: false,
+        status: "degraded",
+        message:
+          "Visual generation is temporarily unavailable while the AI service recovers.",
+      };
+    }
+
+    return {
+      available: false,
+      status: "unavailable",
+      message:
+        "Visual generation is unavailable because image generation is not configured.",
+    };
+  };
 
 // ============================================================================
 // Dice roll helper
