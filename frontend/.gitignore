@@ -36,8 +36,6 @@ bun.lockb
 screenshots/*.png
 !screenshots/.gitkeep
 
-# Generated API client
-# schema.d.ts is generated via `bun run generate:api` (openapi-typescript)
-# Keep manually authored files (client.ts, websocketClient.ts, tests)
-/src/api-client/schema.d.ts
+# Generated API client — schema.d.ts is committed (commit-and-verify pattern)
+# Regenerate via: ./scripts/generate-client.sh
 

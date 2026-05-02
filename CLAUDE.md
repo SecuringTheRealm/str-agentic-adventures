@@ -6,8 +6,15 @@
 - Real credentials: local `.env` (gitignored), GitHub secrets, or Azure Key Vault only.
 
 ## Critical Gotchas
-- `src/api-client/schema.d.ts` is auto-generated and NOT in git. Run `cd frontend && bun run generate:api` after cloning (requires running backend). No Java needed — uses `openapi-typescript`.
-- After backend API schema changes, regenerate the client (`bun run generate:api`) and restart the frontend dev server.
+- `src/api-client/schema.d.ts` is auto-generated and committed to git (commit-and-verify pattern). Regenerate via `./scripts/generate-client.sh` (no running backend needed). Uses `openapi-typescript`.
+- After backend API schema changes, run `./scripts/generate-client.sh` and commit the updated `openapi.json` + `schema.d.ts`.
+
+## Frontend API Access Pattern
+- All backend API calls MUST go through `frontend/src/services/api.ts` (the SDK service layer).
+- `services/api.ts` wraps the `openapi-fetch` SDK client at `api-client/client.ts`.
+- Components import from `services/api.ts`, NEVER directly from `api-client/`.
+- Direct `fetch()` calls to the backend are prohibited — use the SDK.
+- Only exception: external service calls (e.g., Azure Realtime SDP exchange).
 - Use SQLAlchemy ORM for all DB interactions — never raw sqlite3/psycopg2.
 - Alembic migrations run automatically on startup.
 

@@ -1,0 +1,57 @@
+name: Verify generated client
+
+on:
+  pull_request:
+    paths:
+      - 'backend/**'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - 'frontend/src/api-client/**'
+      - 'openapi.json'
+
+jobs:
+  drift-check:
+    name: SDK drift check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+    - uses: actions/checkout@v6
+
+    - uses: astral-sh/setup-uv@v7
+      with:
+        enable-cache: true
+
+    - uses: oven-sh/setup-bun@v2
+
+    - name: Install backend deps
+      run: uv sync --frozen
+
+    - name: Install frontend deps
+      working-directory: frontend
+      run: bun install --frozen-lockfile
+
+    - name: Regenerate client
+      run: ./scripts/generate-client.sh
+
+    - name: Fail if client is out of date
+      run: |
+        if ! git diff --exit-code frontend/src/api-client/schema.d.ts openapi.json; then
+          echo "::error::Generated client is out of sync. Run ./scripts/generate-client.sh and commit."
+          exit 1
+        fi
+
+  sdk-access-check:
+    name: SDK access pattern check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Check no direct api-client imports in components/pages
+      run: |
+        if grep -rn 'from.*api-client/\(client\|schema\)' frontend/src/components/ frontend/src/pages/ 2>/dev/null; then
+          echo "::error::Components must import from services/api.ts, not directly from api-client/"
+          exit 1
+        fi

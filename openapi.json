@@ -1,0 +1,6922 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "AI Dungeon Master API",
+    "description": "Backend API for the AI Dungeon Master application",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/game/character": {
+      "post": {
+        "tags": [
+          "characters"
+        ],
+        "summary": "Create Character",
+        "description": "Create a new player character.",
+        "operationId": "create_character_game_character_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCharacterRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CharacterSheet"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/character/{character_id}": {
+      "get": {
+        "tags": [
+          "characters"
+        ],
+        "summary": "Get Character",
+        "description": "Retrieve a character sheet by ID.",
+        "operationId": "get_character_game_character__character_id__get",
+        "parameters": [
+          {
+            "name": "character_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Character Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Character Game Character  Character Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/character/{character_id}/level-up": {
+      "post": {
+        "tags": [
+          "characters"
+        ],
+        "summary": "Level Up Character",
+        "description": "Level up a character.",
+        "operationId": "level_up_character_game_character__character_id__level_up_post",
+        "parameters": [
+          {
+            "name": "character_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Character Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LevelUpRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Level Up Character Game Character  Character Id  Level Up Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/character/{character_id}/award-experience": {
+      "post": {
+        "tags": [
+          "characters"
+        ],
+        "summary": "Award Experience",
+        "description": "Award experience points to a character.",
+        "operationId": "award_experience_game_character__character_id__award_experience_post",
+        "parameters": [
+          {
+            "name": "character_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Character Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AwardExperienceRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Award Experience Game Character  Character Id  Award Experience Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/character/{character_id}/progression-info": {
+      "get": {
+        "tags": [
+          "characters"
+        ],
+        "summary": "Get Progression Info",
+        "description": "Get progression information for a character.",
+        "operationId": "get_progression_info_game_character__character_id__progression_info_get",
+        "parameters": [
+          {
+            "name": "character_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Character Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Progression Info Game Character  Character Id  Progression Info Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/character/{character_id}/equipment": {
+      "post": {
+        "tags": [
+          "characters"
+        ],
+        "summary": "Manage Equipment",
+        "description": "Equip/unequip items with stat effects.",
+        "operationId": "manage_equipment_game_character__character_id__equipment_post",
+        "parameters": [
+          {
+            "name": "character_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Character Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManageEquipmentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EquipmentResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/character/{character_id}/encumbrance": {
+      "get": {
+        "tags": [
+          "characters"
+        ],
+        "summary": "Get Encumbrance",
+        "description": "Calculate carrying capacity and weight.",
+        "operationId": "get_encumbrance_game_character__character_id__encumbrance_get",
+        "parameters": [
+          {
+            "name": "character_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Character Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EncumbranceResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/campaign": {
+      "post": {
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "Create Campaign",
+        "description": "Create a new campaign.",
+        "operationId": "create_campaign_game_campaign_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCampaignRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Campaign"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/campaigns": {
+      "get": {
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "List Campaigns",
+        "description": "List all campaigns including templates and custom campaigns.",
+        "operationId": "list_campaigns_game_campaigns_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/campaign/templates": {
+      "get": {
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "Get Campaign Templates",
+        "description": "Get pre-built campaign templates.",
+        "operationId": "get_campaign_templates_game_campaign_templates_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Get Campaign Templates Game Campaign Templates Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/campaign/{campaign_id}": {
+      "get": {
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "Get Campaign",
+        "description": "Get a specific campaign by ID.",
+        "operationId": "get_campaign_game_campaign__campaign_id__get",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Campaign"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "Update Campaign",
+        "description": "Update an existing campaign.",
+        "operationId": "update_campaign_game_campaign__campaign_id__put",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CampaignUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Campaign"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "Delete Campaign",
+        "description": "Delete a custom campaign (templates cannot be deleted).",
+        "operationId": "delete_campaign_game_campaign__campaign_id__delete",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Delete Campaign Game Campaign  Campaign Id  Delete"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/campaign/clone": {
+      "post": {
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "Clone Campaign",
+        "description": "Clone a template campaign for customization.",
+        "operationId": "clone_campaign_game_campaign_clone_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CloneCampaignRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Campaign"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/combat/initialize": {
+      "post": {
+        "tags": [
+          "combat"
+        ],
+        "summary": "Initialize Combat",
+        "description": "Initialize a new combat encounter.",
+        "operationId": "initialize_combat_game_combat_initialize_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": true,
+                "type": "object",
+                "title": "Combat Data"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Initialize Combat Game Combat Initialize Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/combat/{combat_id}/turn": {
+      "post": {
+        "tags": [
+          "combat"
+        ],
+        "summary": "Process Combat Turn",
+        "description": "Process a single combat turn.",
+        "operationId": "process_combat_turn_game_combat__combat_id__turn_post",
+        "parameters": [
+          {
+            "name": "combat_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Combat Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "title": "Turn Data"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Process Combat Turn Game Combat  Combat Id  Turn Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/encounter/generate": {
+      "post": {
+        "tags": [
+          "combat"
+        ],
+        "summary": "Generate Encounter",
+        "description": "Generate a balanced encounter for the party.\n\nRequest body:\n    - ``party_levels``: List of character levels (required).\n    - ``difficulty``: Desired difficulty \u2014 ``easy``, ``medium``, ``hard``,\n      or ``deadly`` (default ``\"medium\"``).\n    - ``location``: Thematic location hint, e.g. ``\"dungeon\"``, ``\"forest\"``\n      (default ``\"dungeon\"``).\n\nReturns a dict describing the generated encounter, including selected\nmonsters, adjusted XP, and XP award per character.",
+        "operationId": "generate_encounter_game_encounter_generate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": true,
+                "type": "object",
+                "title": "Encounter Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Generate Encounter Game Encounter Generate Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/encounter/xp-award": {
+      "post": {
+        "tags": [
+          "combat"
+        ],
+        "summary": "Encounter Xp Award",
+        "description": "Calculate XP awarded to each character after completing an encounter.\n\nRequest body:\n    - ``monsters``: List of monster dicts (each with ``\"cr\"`` or ``\"xp\"``).\n    - ``party_size``: Number of characters receiving XP (required, \u2265 1).\n\nReturns total XP and per-character XP.",
+        "operationId": "encounter_xp_award_game_encounter_xp_award_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": true,
+                "type": "object",
+                "title": "Award Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Encounter Xp Award Game Encounter Xp Award Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/character/{character_id}/spells": {
+      "post": {
+        "tags": [
+          "spells"
+        ],
+        "summary": "Manage Character Spells",
+        "description": "Manage known spells for a character.",
+        "operationId": "manage_character_spells_game_character__character_id__spells_post",
+        "parameters": [
+          {
+            "name": "character_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Character Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManageSpellsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Manage Character Spells Game Character  Character Id  Spells Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/character/{character_id}/spell-slots": {
+      "post": {
+        "tags": [
+          "spells"
+        ],
+        "summary": "Manage Spell Slots",
+        "description": "Manage spell slot usage and recovery for a character.",
+        "operationId": "manage_spell_slots_game_character__character_id__spell_slots_post",
+        "parameters": [
+          {
+            "name": "character_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Character Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManageSpellSlotsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Manage Spell Slots Game Character  Character Id  Spell Slots Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/combat/{combat_id}/cast-spell": {
+      "post": {
+        "tags": [
+          "spells"
+        ],
+        "summary": "Cast Spell In Combat",
+        "description": "Cast spells during combat with sophisticated effect resolution.",
+        "operationId": "cast_spell_in_combat_game_combat__combat_id__cast_spell_post",
+        "parameters": [
+          {
+            "name": "combat_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Combat Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CastSpellRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpellCastingResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/spells/list": {
+      "get": {
+        "tags": [
+          "spells"
+        ],
+        "summary": "Get Spell List",
+        "description": "Get available spells by class and level.",
+        "operationId": "get_spell_list_game_spells_list_get",
+        "parameters": [
+          {
+            "name": "character_class",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/CharacterClass"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Character Class"
+            }
+          },
+          {
+            "name": "spell_level",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Spell Level"
+            }
+          },
+          {
+            "name": "school",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "School"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpellListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/spells/save-dc": {
+      "post": {
+        "tags": [
+          "spells"
+        ],
+        "summary": "Calculate Spell Save Dc Endpoint",
+        "description": "Calculate spell save DC for a character.",
+        "operationId": "calculate_spell_save_dc_endpoint_game_spells_save_dc_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SpellSaveDCRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Calculate Spell Save Dc Endpoint Game Spells Save Dc Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/character/{character_id}/concentration": {
+      "post": {
+        "tags": [
+          "spells"
+        ],
+        "summary": "Manage Concentration",
+        "description": "Manage spell concentration tracking for a character.",
+        "operationId": "manage_concentration_game_character__character_id__concentration_post",
+        "parameters": [
+          {
+            "name": "character_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Character Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConcentrationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConcentrationCheckResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/spells/attack-bonus": {
+      "post": {
+        "tags": [
+          "spells"
+        ],
+        "summary": "Calculate Spell Attack Bonus",
+        "description": "Calculate spell attack bonus for a character.",
+        "operationId": "calculate_spell_attack_bonus_game_spells_attack_bonus_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SpellAttackBonusRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Calculate Spell Attack Bonus Game Spells Attack Bonus Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/dice/roll": {
+      "post": {
+        "tags": [
+          "dice"
+        ],
+        "summary": "Roll Dice",
+        "description": "Roll dice using D&D notation.",
+        "operationId": "roll_dice_game_dice_roll_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DiceRollRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Roll Dice Game Dice Roll Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/dice/roll-with-character": {
+      "post": {
+        "tags": [
+          "dice"
+        ],
+        "summary": "Roll Dice With Character",
+        "description": "Roll dice with character context for skill checks.",
+        "operationId": "roll_dice_with_character_game_dice_roll_with_character_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": true,
+                "type": "object",
+                "title": "Roll Data"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Roll Dice With Character Game Dice Roll With Character Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/dice/manual-roll": {
+      "post": {
+        "tags": [
+          "dice"
+        ],
+        "summary": "Input Manual Roll",
+        "description": "Input a manual dice roll value.\n\nSend the physical dice value in the ``value`` field (the legacy\n``result`` field is still accepted for backwards compatibility).",
+        "operationId": "input_manual_roll_game_dice_manual_roll_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManualDiceRollRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Input Manual Roll Game Dice Manual Roll Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/campaign/{campaign_id}/npcs": {
+      "post": {
+        "tags": [
+          "npcs"
+        ],
+        "summary": "Create Campaign Npc",
+        "description": "Create and manage campaign NPCs.",
+        "operationId": "create_campaign_npc_game_campaign__campaign_id__npcs_post",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateNPCRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NPC"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/npc/{npc_id}/personality": {
+      "get": {
+        "tags": [
+          "npcs"
+        ],
+        "summary": "Get Npc Personality",
+        "description": "Get NPC personality traits and behaviors.",
+        "operationId": "get_npc_personality_game_npc__npc_id__personality_get",
+        "parameters": [
+          {
+            "name": "npc_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Npc Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NPCPersonality"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/npc/{npc_id}/interaction": {
+      "post": {
+        "tags": [
+          "npcs"
+        ],
+        "summary": "Log Npc Interaction",
+        "description": "Log and retrieve NPC interaction history.",
+        "operationId": "log_npc_interaction_game_npc__npc_id__interaction_post",
+        "parameters": [
+          {
+            "name": "npc_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Npc Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NPCInteractionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NPCInteractionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/npc/{npc_id}/generate-stats": {
+      "post": {
+        "tags": [
+          "npcs"
+        ],
+        "summary": "Generate Npc Stats",
+        "description": "Generate combat stats for NPCs dynamically.",
+        "operationId": "generate_npc_stats_game_npc__npc_id__generate_stats_post",
+        "parameters": [
+          {
+            "name": "npc_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Npc Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateNPCStatsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NPCStatsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/npcs/{campaign_id}": {
+      "get": {
+        "tags": [
+          "npcs"
+        ],
+        "summary": "List Npc Profiles",
+        "description": "List all NPC profiles for a campaign.",
+        "operationId": "list_npc_profiles_game_npcs__campaign_id__get",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NPCProfileListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "npcs"
+        ],
+        "summary": "Create Npc Profile",
+        "description": "Create a new NPC profile in a campaign.",
+        "operationId": "create_npc_profile_game_npcs__campaign_id__post",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateNPCProfileRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NPCProfile"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/npcs/{campaign_id}/{npc_id}": {
+      "get": {
+        "tags": [
+          "npcs"
+        ],
+        "summary": "Get Npc Profile",
+        "description": "Get an NPC profile with its relationship data.",
+        "operationId": "get_npc_profile_game_npcs__campaign_id___npc_id__get",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          },
+          {
+            "name": "npc_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Npc Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NPCProfileWithRelationship"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/npcs/{campaign_id}/{npc_id}/disposition": {
+      "patch": {
+        "tags": [
+          "npcs"
+        ],
+        "summary": "Update Npc Disposition",
+        "description": "Update the disposition score for an NPC in a campaign.",
+        "operationId": "update_npc_disposition_game_npcs__campaign_id___npc_id__disposition_patch",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          },
+          {
+            "name": "npc_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Npc Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDispositionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NPCRelationship"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/npcs/{campaign_id}/{npc_id}/dialogue-context": {
+      "get": {
+        "tags": [
+          "npcs"
+        ],
+        "summary": "Get Npc Dialogue Context",
+        "description": "Get NPC context for dialogue generation.",
+        "operationId": "get_npc_dialogue_context_game_npcs__campaign_id___npc_id__dialogue_context_get",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          },
+          {
+            "name": "npc_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Npc Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Npc Dialogue Context Game Npcs  Campaign Id   Npc Id  Dialogue Context Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/npcs/{campaign_id}/{npc_id}/conversation": {
+      "post": {
+        "tags": [
+          "npcs"
+        ],
+        "summary": "Record Npc Conversation",
+        "description": "Record a conversation interaction with an NPC.",
+        "operationId": "record_npc_conversation_game_npcs__campaign_id___npc_id__conversation_post",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          },
+          {
+            "name": "npc_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Npc Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordConversationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Record Npc Conversation Game Npcs  Campaign Id   Npc Id  Conversation Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/image-generation/status": {
+      "get": {
+        "tags": [
+          "ai"
+        ],
+        "summary": "Get Image Generation Status",
+        "description": "Report whether visual generation is currently available to the frontend.",
+        "operationId": "get_image_generation_status_game_image_generation_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Get Image Generation Status Game Image Generation Status Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/campaign/ai-assist": {
+      "post": {
+        "tags": [
+          "ai"
+        ],
+        "summary": "Get Ai Assistance",
+        "description": "Get AI assistance for campaign text enhancement.",
+        "operationId": "get_ai_assistance_game_campaign_ai_assist_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AIAssistanceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIAssistanceResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/campaign/ai-generate": {
+      "post": {
+        "tags": [
+          "ai"
+        ],
+        "summary": "Generate Ai Content",
+        "description": "Generate AI content based on a specific suggestion and current text.",
+        "operationId": "generate_ai_content_game_campaign_ai_generate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AIContentGenerationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIContentGenerationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/generate-image": {
+      "post": {
+        "tags": [
+          "ai"
+        ],
+        "summary": "Generate Image",
+        "description": "Generate an image based on the request details.\n\nAccepts an optional ``session_id`` field in the request body.  Each session\nis limited to ``max_images_per_session`` DALL-E calls per rolling\n``image_session_window_minutes`` window (configurable via environment\nvariables).  Requests that exceed the budget receive a 429 response.",
+        "operationId": "generate_image_game_generate_image_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateImageRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Generate Image Game Generate Image Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/battle-map": {
+      "post": {
+        "tags": [
+          "ai"
+        ],
+        "summary": "Generate Battle Map",
+        "description": "Generate a battle map based on environment details.\n\nAccepts an optional ``session_id`` field in the request body.  The same\nper-session image budget used by ``/generate-image`` applies here.",
+        "operationId": "generate_battle_map_game_battle_map_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": true,
+                "type": "object",
+                "title": "Map Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Generate Battle Map Game Battle Map Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/input": {
+      "post": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Process Player Input",
+        "description": "Process player input and get game response.",
+        "operationId": "process_player_input_game_input_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlayerInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/campaign/generate-world": {
+      "post": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Generate Campaign World",
+        "description": "Generate world description and setting for a new campaign.",
+        "operationId": "generate_campaign_world_game_campaign_generate_world_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": true,
+                "type": "object",
+                "title": "Campaign Data"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Generate Campaign World Game Campaign Generate World Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/campaign/{campaign_id}/start-session": {
+      "post": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Start Game Session",
+        "description": "Start a new game session for a campaign.",
+        "operationId": "start_game_session_game_campaign__campaign_id__start_session_post",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "title": "Session Data"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Start Game Session Game Campaign  Campaign Id  Start Session Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/campaign/{campaign_id}/opening-narrative": {
+      "post": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Get Opening Narrative",
+        "description": "Generate an atmospheric opening narrative for a new game session.\n\nReturns a scene description, quest hook, and 2-3 suggested actions based on\nthe campaign setting and character context.",
+        "operationId": "get_opening_narrative_game_campaign__campaign_id__opening_narrative_post",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "title": "Request Data"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Opening Narrative Game Campaign  Campaign Id  Opening Narrative Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/session/{session_id}/action": {
+      "post": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Process Player Action",
+        "description": "Process a player action within a game session.",
+        "operationId": "process_player_action_game_session__session_id__action_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "title": "Action Data"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Process Player Action Game Session  Session Id  Action Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/session/create": {
+      "post": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Create Multiplayer Session",
+        "description": "Create a new multiplayer game session for a campaign.",
+        "operationId": "create_multiplayer_session_game_session_create_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": true,
+                "type": "object",
+                "title": "Body"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Create Multiplayer Session Game Session Create Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/session/{session_id}": {
+      "get": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Get Multiplayer Session",
+        "description": "Get session details including participants.",
+        "operationId": "get_multiplayer_session_game_session__session_id__get",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Multiplayer Session Game Session  Session Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/session/{session_id}/participants": {
+      "get": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "List Session Participants",
+        "description": "List participants in a session.",
+        "operationId": "list_session_participants_game_session__session_id__participants_get",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "title": "Response List Session Participants Game Session  Session Id  Participants Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/session/{session_id}/turn/advance": {
+      "post": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Advance Session Turn",
+        "description": "Advance to the next turn in a session.",
+        "operationId": "advance_session_turn_game_session__session_id__turn_advance_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Advance Session Turn Game Session  Session Id  Turn Advance Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/session/{session_id}/end": {
+      "post": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "End Multiplayer Session",
+        "description": "End a multiplayer game session.",
+        "operationId": "end_multiplayer_session_game_session__session_id__end_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response End Multiplayer Session Game Session  Session Id  End Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/items/magical-effects": {
+      "post": {
+        "tags": [
+          "items"
+        ],
+        "summary": "Manage Magical Effects",
+        "description": "Apply magical item effects to character stats.",
+        "operationId": "manage_magical_effects_game_items_magical_effects_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MagicalEffectsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MagicalEffectsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/items/catalog": {
+      "get": {
+        "tags": [
+          "items"
+        ],
+        "summary": "Get Item Catalog",
+        "description": "Browse available items with rarity and value information.",
+        "operationId": "get_item_catalog_game_items_catalog_get",
+        "parameters": [
+          {
+            "name": "item_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ItemType"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Item Type"
+            }
+          },
+          {
+            "name": "rarity",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ItemRarity"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Rarity"
+            }
+          },
+          {
+            "name": "min_value",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Min Value"
+            }
+          },
+          {
+            "name": "max_value",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Max Value"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemCatalogResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/inventory/{character_id}/add": {
+      "post": {
+        "tags": [
+          "inventory"
+        ],
+        "summary": "Add Item",
+        "description": "Add an item to a character's structured inventory.",
+        "operationId": "add_item_game_inventory__character_id__add_post",
+        "parameters": [
+          {
+            "name": "character_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Character Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddInventoryItemRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryActionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/inventory/{character_id}/remove/{item_id}": {
+      "delete": {
+        "tags": [
+          "inventory"
+        ],
+        "summary": "Remove Item",
+        "description": "Remove an item from a character's structured inventory.",
+        "operationId": "remove_item_game_inventory__character_id__remove__item_id__delete",
+        "parameters": [
+          {
+            "name": "character_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Character Id"
+            }
+          },
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Item Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryActionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/inventory/{character_id}/equip/{item_id}": {
+      "post": {
+        "tags": [
+          "inventory"
+        ],
+        "summary": "Equip Item",
+        "description": "Equip an item from the character's inventory.",
+        "operationId": "equip_item_game_inventory__character_id__equip__item_id__post",
+        "parameters": [
+          {
+            "name": "character_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Character Id"
+            }
+          },
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Item Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryActionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/inventory/{character_id}/unequip/{item_id}": {
+      "post": {
+        "tags": [
+          "inventory"
+        ],
+        "summary": "Unequip Item",
+        "description": "Unequip an item, returning it to unequipped inventory state.",
+        "operationId": "unequip_item_game_inventory__character_id__unequip__item_id__post",
+        "parameters": [
+          {
+            "name": "character_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Character Id"
+            }
+          },
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Item Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryActionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/game/rest": {
+      "post": {
+        "tags": [
+          "rest"
+        ],
+        "summary": "Rest",
+        "description": "Take a short or long rest.",
+        "operationId": "rest_game_game_rest_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RestRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/campaign/{campaign_id}/saves": {
+      "get": {
+        "tags": [
+          "saves"
+        ],
+        "summary": "List Save Slots",
+        "description": "List all save slots for a campaign.",
+        "operationId": "list_save_slots_game_campaign__campaign_id__saves_get",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaveSlotListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "saves"
+        ],
+        "summary": "Create Save Slot",
+        "description": "Create a new save slot for a campaign, picking the next available slot number (1-5).",
+        "operationId": "create_save_slot_game_campaign__campaign_id__saves_post",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSaveSlotRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaveSlot"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/campaign/{campaign_id}/saves/{slot_number}": {
+      "get": {
+        "tags": [
+          "saves"
+        ],
+        "summary": "Get Save Slot",
+        "description": "Get a specific save slot by slot number.",
+        "operationId": "get_save_slot_game_campaign__campaign_id__saves__slot_number__get",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          },
+          {
+            "name": "slot_number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Slot Number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaveSlot"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "saves"
+        ],
+        "summary": "Delete Save Slot",
+        "description": "Delete a save slot, freeing that slot number for future use.",
+        "operationId": "delete_save_slot_game_campaign__campaign_id__saves__slot_number__delete",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          },
+          {
+            "name": "slot_number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Slot Number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/campaign/{campaign_id}/saves/{slot_number}/load": {
+      "post": {
+        "tags": [
+          "saves"
+        ],
+        "summary": "Load Save Slot",
+        "description": "Load a save slot, returning the full save_data state blob.",
+        "operationId": "load_save_slot_game_campaign__campaign_id__saves__slot_number__load_post",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          },
+          {
+            "name": "slot_number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Slot Number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Load Save Slot Game Campaign  Campaign Id  Saves  Slot Number  Load Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/campaign/{campaign_id}/saves/capture": {
+      "post": {
+        "tags": [
+          "saves"
+        ],
+        "summary": "Capture Game State",
+        "description": "Capture the current game state into a new save slot.\n\nSerialises all campaign data, characters, NPCs, NPC profiles,\nrelationships, and conversation history, then writes the blob into the\nnext available save slot.",
+        "operationId": "capture_game_state_game_campaign__campaign_id__saves_capture_post",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaveSlot"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/campaign/{campaign_id}/saves/{slot_number}/restore": {
+      "post": {
+        "tags": [
+          "saves"
+        ],
+        "summary": "Restore Game State",
+        "description": "Restore game state from a save slot.\n\nReads the state blob from the specified save slot and recreates campaign\ndata, characters, NPCs, profiles, and relationships in the database.",
+        "operationId": "restore_game_state_game_campaign__campaign_id__saves__slot_number__restore_post",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          },
+          {
+            "name": "slot_number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Slot Number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/campaign/{campaign_id}/saves/{slot_number}/summary": {
+      "get": {
+        "tags": [
+          "saves"
+        ],
+        "summary": "Get Save Summary",
+        "description": "Return a human-readable summary of the state in a save slot.",
+        "operationId": "get_save_summary_game_campaign__campaign_id__saves__slot_number__summary_get",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Campaign Id"
+            }
+          },
+          {
+            "name": "slot_number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Slot Number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/battle-map/structured": {
+      "post": {
+        "tags": [
+          "maps"
+        ],
+        "summary": "Generate Structured Battle Map",
+        "description": "Generate a tile-grid battle map with populated tiles, entities, and tokens.\n\nReturns the full ``BattleMapData`` model (including the 2-D tile grid) as JSON.",
+        "operationId": "generate_structured_battle_map_game_battle_map_structured_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StructuredMapRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BattleMapData"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/realtime/token": {
+      "get": {
+        "tags": [
+          "realtime"
+        ],
+        "summary": "Get Realtime Token",
+        "description": "Mint an ephemeral WebRTC token for the Azure Foundry realtime API.\n\nReturns:\n    Dict with token, endpoint, deployment, and voice config.",
+        "operationId": "get_realtime_token_realtime_token_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Get Realtime Token Realtime Token Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Health Check Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/dependencies": {
+      "get": {
+        "summary": "Health Dependencies",
+        "description": "Return the health status of external dependencies and the circuit breaker.",
+        "operationId": "health_dependencies_health_dependencies_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Health Dependencies Health Dependencies Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Root",
+        "operationId": "root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Root  Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AIAssistanceRequest": {
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Prompt"
+          },
+          "context": {
+            "type": "string",
+            "maxLength": 100,
+            "title": "Context"
+          },
+          "campaign_tone": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Campaign Tone",
+            "default": "heroic"
+          }
+        },
+        "type": "object",
+        "required": [
+          "prompt",
+          "context"
+        ],
+        "title": "AIAssistanceRequest"
+      },
+      "AIAssistanceResponse": {
+        "properties": {
+          "suggestions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Suggestions"
+          },
+          "enhanced_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enhanced Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "suggestions"
+        ],
+        "title": "AIAssistanceResponse"
+      },
+      "AIContentGenerationRequest": {
+        "properties": {
+          "suggestion": {
+            "type": "string",
+            "maxLength": 1000,
+            "title": "Suggestion"
+          },
+          "current_text": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Current Text"
+          },
+          "context_type": {
+            "type": "string",
+            "maxLength": 100,
+            "title": "Context Type"
+          },
+          "campaign_tone": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Campaign Tone",
+            "default": "heroic"
+          }
+        },
+        "type": "object",
+        "required": [
+          "suggestion",
+          "current_text",
+          "context_type"
+        ],
+        "title": "AIContentGenerationRequest"
+      },
+      "AIContentGenerationResponse": {
+        "properties": {
+          "generated_content": {
+            "type": "string",
+            "title": "Generated Content"
+          },
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          }
+        },
+        "type": "object",
+        "required": [
+          "generated_content",
+          "success"
+        ],
+        "title": "AIContentGenerationResponse"
+      },
+      "Abilities": {
+        "properties": {
+          "strength": {
+            "type": "integer",
+            "title": "Strength",
+            "default": 10
+          },
+          "dexterity": {
+            "type": "integer",
+            "title": "Dexterity",
+            "default": 10
+          },
+          "constitution": {
+            "type": "integer",
+            "title": "Constitution",
+            "default": 10
+          },
+          "intelligence": {
+            "type": "integer",
+            "title": "Intelligence",
+            "default": 10
+          },
+          "wisdom": {
+            "type": "integer",
+            "title": "Wisdom",
+            "default": 10
+          },
+          "charisma": {
+            "type": "integer",
+            "title": "Charisma",
+            "default": 10
+          }
+        },
+        "type": "object",
+        "title": "Abilities"
+      },
+      "AddInventoryItemRequest": {
+        "properties": {
+          "item_name": {
+            "type": "string",
+            "title": "Item Name"
+          },
+          "item_type": {
+            "$ref": "#/components/schemas/ItemType"
+          },
+          "weight": {
+            "type": "number",
+            "title": "Weight",
+            "default": 0.0
+          },
+          "quantity": {
+            "type": "integer",
+            "title": "Quantity",
+            "default": 1
+          },
+          "requires_attunement": {
+            "type": "boolean",
+            "title": "Requires Attunement",
+            "default": false
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "item_name",
+          "item_type"
+        ],
+        "title": "AddInventoryItemRequest"
+      },
+      "AwardExperienceRequest": {
+        "properties": {
+          "experience_points": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Experience Points"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "experience_points"
+        ],
+        "title": "AwardExperienceRequest"
+      },
+      "BattleMapData": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "width": {
+            "type": "integer",
+            "title": "Width",
+            "default": 20
+          },
+          "height": {
+            "type": "integer",
+            "title": "Height",
+            "default": 20
+          },
+          "tile_size": {
+            "type": "integer",
+            "title": "Tile Size",
+            "default": 64
+          },
+          "tiles": {
+            "items": {
+              "items": {
+                "$ref": "#/components/schemas/MapTile"
+              },
+              "type": "array"
+            },
+            "type": "array",
+            "title": "Tiles"
+          },
+          "entities": {
+            "items": {
+              "$ref": "#/components/schemas/MapEntity"
+            },
+            "type": "array",
+            "title": "Entities"
+          },
+          "tokens": {
+            "items": {
+              "$ref": "#/components/schemas/MapToken"
+            },
+            "type": "array",
+            "title": "Tokens"
+          },
+          "spawn_points": {
+            "items": {
+              "$ref": "#/components/schemas/SpawnPoint"
+            },
+            "type": "array",
+            "title": "Spawn Points"
+          },
+          "effects": {
+            "items": {
+              "$ref": "#/components/schemas/MapEffect"
+            },
+            "type": "array",
+            "title": "Effects"
+          },
+          "fog_of_war": {
+            "type": "boolean",
+            "title": "Fog Of War",
+            "default": true
+          },
+          "ambient_image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ambient Image Url"
+          }
+        },
+        "type": "object",
+        "title": "BattleMapData"
+      },
+      "Campaign": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "setting": {
+            "type": "string",
+            "title": "Setting"
+          },
+          "dm_notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dm Notes"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "characters": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Characters"
+          },
+          "locations": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Locations"
+          },
+          "npcs": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Npcs"
+          },
+          "quests": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Quests"
+          },
+          "current_location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Location"
+          },
+          "tone": {
+            "type": "string",
+            "title": "Tone",
+            "default": "heroic"
+          },
+          "homebrew_rules": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Homebrew Rules"
+          },
+          "session_log": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Session Log"
+          },
+          "state": {
+            "type": "string",
+            "title": "State",
+            "default": "created"
+          },
+          "world_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "World Description"
+          },
+          "world_art": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "World Art"
+          },
+          "is_template": {
+            "type": "boolean",
+            "title": "Is Template",
+            "default": false
+          },
+          "is_custom": {
+            "type": "boolean",
+            "title": "Is Custom",
+            "default": true
+          },
+          "template_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Template Id"
+          },
+          "plot_hooks": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Plot Hooks"
+          },
+          "key_npcs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Key Npcs"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "setting"
+        ],
+        "title": "Campaign"
+      },
+      "CampaignListResponse": {
+        "properties": {
+          "campaigns": {
+            "items": {
+              "$ref": "#/components/schemas/Campaign"
+            },
+            "type": "array",
+            "title": "Campaigns"
+          },
+          "templates": {
+            "items": {
+              "$ref": "#/components/schemas/Campaign"
+            },
+            "type": "array",
+            "title": "Templates"
+          }
+        },
+        "type": "object",
+        "required": [
+          "campaigns",
+          "templates"
+        ],
+        "title": "CampaignListResponse"
+      },
+      "CampaignUpdateRequest": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "setting": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Setting"
+          },
+          "tone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tone"
+          },
+          "homebrew_rules": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Homebrew Rules"
+          },
+          "world_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "World Description"
+          }
+        },
+        "type": "object",
+        "title": "CampaignUpdateRequest"
+      },
+      "CastSpellRequest": {
+        "properties": {
+          "character_id": {
+            "type": "string",
+            "title": "Character Id"
+          },
+          "spell_id": {
+            "type": "string",
+            "title": "Spell Id"
+          },
+          "slot_level": {
+            "type": "integer",
+            "title": "Slot Level"
+          },
+          "target_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Ids"
+          },
+          "spell_attack_roll": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Spell Attack Roll"
+          }
+        },
+        "type": "object",
+        "required": [
+          "character_id",
+          "spell_id",
+          "slot_level"
+        ],
+        "title": "CastSpellRequest"
+      },
+      "CharacterClass": {
+        "type": "string",
+        "enum": [
+          "fighter",
+          "wizard",
+          "rogue",
+          "cleric",
+          "bard",
+          "druid",
+          "warlock",
+          "monk",
+          "paladin",
+          "ranger",
+          "sorcerer",
+          "barbarian"
+        ],
+        "title": "CharacterClass"
+      },
+      "CharacterSheet": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "race": {
+            "$ref": "#/components/schemas/Race"
+          },
+          "character_class": {
+            "$ref": "#/components/schemas/CharacterClass"
+          },
+          "level": {
+            "type": "integer",
+            "title": "Level",
+            "default": 1
+          },
+          "background": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Background"
+          },
+          "alignment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alignment"
+          },
+          "experience": {
+            "type": "integer",
+            "title": "Experience",
+            "default": 0
+          },
+          "abilities": {
+            "$ref": "#/components/schemas/Abilities"
+          },
+          "hit_points": {
+            "$ref": "#/components/schemas/HitPoints"
+          },
+          "armor_class": {
+            "type": "integer",
+            "title": "Armor Class",
+            "default": 10
+          },
+          "speed": {
+            "type": "integer",
+            "title": "Speed",
+            "default": 30
+          },
+          "proficiency_bonus": {
+            "type": "integer",
+            "title": "Proficiency Bonus",
+            "default": 2
+          },
+          "skills": {
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "type": "object",
+            "title": "Skills"
+          },
+          "inventory": {
+            "items": {
+              "$ref": "#/components/schemas/InventorySlot"
+            },
+            "type": "array",
+            "title": "Inventory"
+          },
+          "structured_inventory": {
+            "$ref": "#/components/schemas/Inventory"
+          },
+          "equipped_items": {
+            "items": {
+              "$ref": "#/components/schemas/EquippedItem"
+            },
+            "type": "array",
+            "title": "Equipped Items"
+          },
+          "carrying_capacity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Carrying Capacity"
+          },
+          "spells": {
+            "items": {
+              "$ref": "#/components/schemas/Spell"
+            },
+            "type": "array",
+            "title": "Spells"
+          },
+          "spellcasting": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SpellCasting"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "features": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Features"
+          },
+          "backstory": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Backstory"
+          },
+          "ability_score_improvements_used": {
+            "type": "integer",
+            "title": "Ability Score Improvements Used",
+            "default": 0
+          },
+          "hit_dice": {
+            "type": "string",
+            "title": "Hit Dice",
+            "default": "1d8"
+          },
+          "hit_dice_remaining": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hit Dice Remaining"
+          },
+          "exhaustion_level": {
+            "type": "integer",
+            "title": "Exhaustion Level",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "race",
+          "character_class",
+          "abilities",
+          "hit_points"
+        ],
+        "title": "CharacterSheet"
+      },
+      "CloneCampaignRequest": {
+        "properties": {
+          "template_id": {
+            "type": "string",
+            "title": "Template Id"
+          },
+          "new_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "New Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "template_id"
+        ],
+        "title": "CloneCampaignRequest"
+      },
+      "ConcentrationCheckResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "concentration_maintained": {
+            "type": "boolean",
+            "title": "Concentration Maintained"
+          },
+          "dc": {
+            "type": "integer",
+            "title": "Dc"
+          },
+          "roll_result": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Roll Result"
+          },
+          "spell_ended": {
+            "type": "boolean",
+            "title": "Spell Ended",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "concentration_maintained",
+          "dc"
+        ],
+        "title": "ConcentrationCheckResponse"
+      },
+      "ConcentrationRequest": {
+        "properties": {
+          "character_id": {
+            "type": "string",
+            "title": "Character Id"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "start",
+              "end",
+              "check"
+            ],
+            "title": "Action"
+          },
+          "spell_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Spell Id"
+          },
+          "damage_taken": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Damage Taken"
+          }
+        },
+        "type": "object",
+        "required": [
+          "character_id",
+          "action"
+        ],
+        "title": "ConcentrationRequest"
+      },
+      "CreateCampaignRequest": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Name"
+          },
+          "setting": {
+            "type": "string",
+            "maxLength": 1000,
+            "title": "Setting"
+          },
+          "tone": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tone",
+            "default": "heroic"
+          },
+          "homebrew_rules": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Homebrew Rules"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "setting"
+        ],
+        "title": "CreateCampaignRequest"
+      },
+      "CreateCharacterRequest": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "title": "Name"
+          },
+          "race": {
+            "$ref": "#/components/schemas/Race"
+          },
+          "character_class": {
+            "$ref": "#/components/schemas/CharacterClass"
+          },
+          "abilities": {
+            "$ref": "#/components/schemas/Abilities"
+          },
+          "backstory": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Backstory"
+          },
+          "background": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Background"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "race",
+          "character_class",
+          "abilities"
+        ],
+        "title": "CreateCharacterRequest"
+      },
+      "CreateNPCProfileRequest": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Description",
+            "default": ""
+          },
+          "personality_traits": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Personality Traits"
+          },
+          "disposition": {
+            "type": "string",
+            "enum": [
+              "friendly",
+              "neutral",
+              "hostile",
+              "fearful"
+            ],
+            "title": "Disposition",
+            "default": "neutral"
+          },
+          "location": {
+            "type": "string",
+            "maxLength": 500,
+            "title": "Location",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "CreateNPCProfileRequest"
+      },
+      "CreateNPCRequest": {
+        "properties": {
+          "campaign_id": {
+            "type": "string",
+            "title": "Campaign Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "race": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Race"
+          },
+          "gender": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gender"
+          },
+          "age": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Age"
+          },
+          "occupation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Occupation"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "importance": {
+            "type": "string",
+            "title": "Importance",
+            "default": "minor"
+          },
+          "story_role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Story Role"
+          },
+          "personality": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NPCPersonality"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          }
+        },
+        "type": "object",
+        "required": [
+          "campaign_id",
+          "name"
+        ],
+        "title": "CreateNPCRequest"
+      },
+      "CreateSaveSlotRequest": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Name",
+            "default": ""
+          },
+          "play_time_seconds": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Play Time Seconds",
+            "default": 0
+          },
+          "interaction_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Interaction Count",
+            "default": 0
+          },
+          "character_level": {
+            "type": "integer",
+            "maximum": 20.0,
+            "minimum": 1.0,
+            "title": "Character Level",
+            "default": 1
+          },
+          "current_location": {
+            "type": "string",
+            "maxLength": 500,
+            "title": "Current Location",
+            "default": ""
+          },
+          "save_data": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Save Data"
+          }
+        },
+        "type": "object",
+        "title": "CreateSaveSlotRequest"
+      },
+      "DiceRollRequest": {
+        "properties": {
+          "notation": {
+            "type": "string",
+            "title": "Notation",
+            "description": "D&D dice notation (e.g., '1d20', '2d6+3')",
+            "default": "1d20"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "DiceRollRequest",
+        "description": "Request model for dice rolling with strict field validation."
+      },
+      "EncumbranceResponse": {
+        "properties": {
+          "character_id": {
+            "type": "string",
+            "title": "Character Id"
+          },
+          "current_weight": {
+            "type": "number",
+            "title": "Current Weight"
+          },
+          "carrying_capacity": {
+            "type": "number",
+            "title": "Carrying Capacity"
+          },
+          "encumbrance_level": {
+            "type": "string",
+            "title": "Encumbrance Level"
+          },
+          "speed_penalty": {
+            "type": "integer",
+            "title": "Speed Penalty",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "character_id",
+          "current_weight",
+          "carrying_capacity",
+          "encumbrance_level"
+        ],
+        "title": "EncumbranceResponse"
+      },
+      "EnvironmentSpec": {
+        "properties": {
+          "location": {
+            "type": "string",
+            "title": "Location",
+            "default": "dungeon"
+          },
+          "terrain": {
+            "type": "string",
+            "title": "Terrain",
+            "default": "dungeon"
+          },
+          "size": {
+            "type": "string",
+            "title": "Size",
+            "default": "medium"
+          },
+          "features": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Features"
+          },
+          "hazards": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Hazards"
+          }
+        },
+        "type": "object",
+        "title": "EnvironmentSpec"
+      },
+      "Equipment": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "item_type": {
+            "$ref": "#/components/schemas/ItemType"
+          },
+          "rarity": {
+            "$ref": "#/components/schemas/ItemRarity",
+            "default": "common"
+          },
+          "weight": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weight"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          },
+          "requires_attunement": {
+            "type": "boolean",
+            "title": "Requires Attunement",
+            "default": false
+          },
+          "is_magical": {
+            "type": "boolean",
+            "title": "Is Magical",
+            "default": false
+          },
+          "stat_modifiers": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Stat Modifiers"
+          },
+          "special_abilities": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Special Abilities"
+          },
+          "damage_dice": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Damage Dice"
+          },
+          "damage_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Damage Type"
+          },
+          "armor_class": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Armor Class"
+          },
+          "properties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Properties"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "item_type"
+        ],
+        "title": "Equipment"
+      },
+      "EquipmentResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "stat_changes": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Stat Changes"
+          },
+          "armor_class_change": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Armor Class Change"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "message"
+        ],
+        "title": "EquipmentResponse"
+      },
+      "EquipmentSlot": {
+        "type": "string",
+        "enum": [
+          "main_hand",
+          "off_hand",
+          "two_hands",
+          "head",
+          "chest",
+          "legs",
+          "feet",
+          "hands",
+          "ring_1",
+          "ring_2",
+          "neck",
+          "cloak"
+        ],
+        "title": "EquipmentSlot"
+      },
+      "EquippedItem": {
+        "properties": {
+          "equipment_id": {
+            "type": "string",
+            "title": "Equipment Id"
+          },
+          "slot": {
+            "$ref": "#/components/schemas/EquipmentSlot"
+          },
+          "attuned": {
+            "type": "boolean",
+            "title": "Attuned",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "equipment_id",
+          "slot"
+        ],
+        "title": "EquippedItem"
+      },
+      "GameResponse": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "images": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Images"
+          },
+          "state_updates": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "State Updates"
+          },
+          "combat_updates": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Combat Updates"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "GameResponse"
+      },
+      "GenerateImageRequest": {
+        "properties": {
+          "image_type": {
+            "type": "string",
+            "enum": [
+              "character_portrait",
+              "scene_illustration",
+              "item_visualization"
+            ],
+            "title": "Image Type"
+          },
+          "details": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Details"
+          },
+          "session_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "image_type",
+          "details"
+        ],
+        "title": "GenerateImageRequest"
+      },
+      "GenerateNPCStatsRequest": {
+        "properties": {
+          "npc_id": {
+            "type": "string",
+            "title": "Npc Id"
+          },
+          "level": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Level"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role",
+            "default": "civilian"
+          }
+        },
+        "type": "object",
+        "required": [
+          "npc_id"
+        ],
+        "title": "GenerateNPCStatsRequest"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HitPoints": {
+        "properties": {
+          "current": {
+            "type": "integer",
+            "title": "Current"
+          },
+          "maximum": {
+            "type": "integer",
+            "title": "Maximum"
+          }
+        },
+        "type": "object",
+        "required": [
+          "current",
+          "maximum"
+        ],
+        "title": "HitPoints"
+      },
+      "Inventory": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/InventoryItem"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "equipment": {
+            "$ref": "#/components/schemas/InventoryEquipmentSlots"
+          },
+          "gold": {
+            "type": "integer",
+            "title": "Gold",
+            "default": 0
+          },
+          "max_attunements": {
+            "type": "integer",
+            "title": "Max Attunements",
+            "default": 3
+          }
+        },
+        "type": "object",
+        "title": "Inventory",
+        "description": "Full inventory container for a character."
+      },
+      "InventoryActionResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "inventory": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Inventory"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "message"
+        ],
+        "title": "InventoryActionResponse"
+      },
+      "InventoryEquipmentSlots": {
+        "properties": {
+          "main_hand": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Main Hand"
+          },
+          "off_hand": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Off Hand"
+          },
+          "armor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Armor"
+          }
+        },
+        "type": "object",
+        "title": "InventoryEquipmentSlots",
+        "description": "Tracks which item IDs are equipped in each core slot."
+      },
+      "InventoryItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "item_type": {
+            "$ref": "#/components/schemas/ItemType"
+          },
+          "weight": {
+            "type": "number",
+            "title": "Weight",
+            "default": 0.0
+          },
+          "quantity": {
+            "type": "integer",
+            "title": "Quantity",
+            "default": 1
+          },
+          "equipped": {
+            "type": "boolean",
+            "title": "Equipped",
+            "default": false
+          },
+          "requires_attunement": {
+            "type": "boolean",
+            "title": "Requires Attunement",
+            "default": false
+          },
+          "attuned": {
+            "type": "boolean",
+            "title": "Attuned",
+            "default": false
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "item_type"
+        ],
+        "title": "InventoryItem",
+        "description": "A single item in a character's inventory with equipment state."
+      },
+      "InventorySlot": {
+        "properties": {
+          "item_id": {
+            "type": "string",
+            "title": "Item Id"
+          },
+          "quantity": {
+            "type": "integer",
+            "title": "Quantity"
+          },
+          "equipped_slots": {
+            "items": {
+              "$ref": "#/components/schemas/EquipmentSlot"
+            },
+            "type": "array",
+            "title": "Equipped Slots"
+          }
+        },
+        "type": "object",
+        "required": [
+          "item_id",
+          "quantity"
+        ],
+        "title": "InventorySlot"
+      },
+      "ItemCatalogResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/Equipment"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total_count": {
+            "type": "integer",
+            "title": "Total Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total_count"
+        ],
+        "title": "ItemCatalogResponse"
+      },
+      "ItemRarity": {
+        "type": "string",
+        "enum": [
+          "common",
+          "uncommon",
+          "rare",
+          "very_rare",
+          "legendary",
+          "artifact"
+        ],
+        "title": "ItemRarity"
+      },
+      "ItemType": {
+        "type": "string",
+        "enum": [
+          "weapon",
+          "armor",
+          "shield",
+          "potion",
+          "scroll",
+          "gear",
+          "tool",
+          "consumable",
+          "treasure",
+          "ring",
+          "amulet",
+          "wondrous"
+        ],
+        "title": "ItemType"
+      },
+      "LevelUpRequest": {
+        "properties": {
+          "character_id": {
+            "type": "string",
+            "title": "Character Id"
+          },
+          "ability_improvements": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "integer"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ability Improvements"
+          },
+          "feat_choice": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Feat Choice"
+          }
+        },
+        "type": "object",
+        "required": [
+          "character_id"
+        ],
+        "title": "LevelUpRequest"
+      },
+      "MagicalEffectsRequest": {
+        "properties": {
+          "character_id": {
+            "type": "string",
+            "title": "Character Id"
+          },
+          "item_id": {
+            "type": "string",
+            "title": "Item Id"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "apply",
+              "remove"
+            ],
+            "title": "Action"
+          }
+        },
+        "type": "object",
+        "required": [
+          "character_id",
+          "item_id",
+          "action"
+        ],
+        "title": "MagicalEffectsRequest"
+      },
+      "MagicalEffectsResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "active_effects": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Active Effects"
+          },
+          "stat_modifiers": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Stat Modifiers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "message",
+          "active_effects",
+          "stat_modifiers"
+        ],
+        "title": "MagicalEffectsResponse"
+      },
+      "ManageEquipmentRequest": {
+        "properties": {
+          "character_id": {
+            "type": "string",
+            "title": "Character Id"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "equip",
+              "unequip"
+            ],
+            "title": "Action"
+          },
+          "equipment_id": {
+            "type": "string",
+            "title": "Equipment Id"
+          },
+          "slot": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EquipmentSlot"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "character_id",
+          "action",
+          "equipment_id"
+        ],
+        "title": "ManageEquipmentRequest"
+      },
+      "ManageSpellSlotsRequest": {
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "use",
+              "recover",
+              "set"
+            ],
+            "title": "Action"
+          },
+          "slot_level": {
+            "type": "integer",
+            "title": "Slot Level"
+          },
+          "count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Count",
+            "default": 1
+          }
+        },
+        "type": "object",
+        "required": [
+          "action",
+          "slot_level"
+        ],
+        "title": "ManageSpellSlotsRequest"
+      },
+      "ManageSpellsRequest": {
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "learn",
+              "forget",
+              "prepare",
+              "unprepare"
+            ],
+            "title": "Action"
+          },
+          "spell_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Spell Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "action",
+          "spell_ids"
+        ],
+        "title": "ManageSpellsRequest"
+      },
+      "ManualDiceRollRequest": {
+        "properties": {
+          "notation": {
+            "type": "string",
+            "title": "Notation",
+            "description": "D&D dice notation that was rolled (e.g., '1d20')",
+            "default": "1d20"
+          },
+          "result": {
+            "type": "integer",
+            "title": "Result",
+            "description": "The number shown on the physical dice"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "result"
+        ],
+        "title": "ManualDiceRollRequest",
+        "description": "Request model for inputting a physical dice roll value."
+      },
+      "MapEffect": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "origin_x": {
+            "type": "integer",
+            "title": "Origin X"
+          },
+          "origin_y": {
+            "type": "integer",
+            "title": "Origin Y"
+          },
+          "radius": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Radius"
+          },
+          "direction": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMaximum": 360.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Direction"
+          },
+          "colour": {
+            "type": "string",
+            "title": "Colour",
+            "default": "red"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "origin_x",
+          "origin_y"
+        ],
+        "title": "MapEffect"
+      },
+      "MapEntity": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "x": {
+            "type": "integer",
+            "title": "X"
+          },
+          "y": {
+            "type": "integer",
+            "title": "Y"
+          },
+          "blocks_los": {
+            "type": "boolean",
+            "title": "Blocks Los",
+            "default": false
+          },
+          "blocks_movement": {
+            "type": "boolean",
+            "title": "Blocks Movement",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "type",
+          "x",
+          "y"
+        ],
+        "title": "MapEntity"
+      },
+      "MapTile": {
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/TerrainType",
+            "default": "stone_floor"
+          },
+          "passable": {
+            "type": "boolean",
+            "title": "Passable",
+            "default": true
+          },
+          "elevation": {
+            "type": "integer",
+            "title": "Elevation",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "MapTile"
+      },
+      "MapToken": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "x": {
+            "type": "integer",
+            "title": "X"
+          },
+          "y": {
+            "type": "integer",
+            "title": "Y"
+          },
+          "team": {
+            "$ref": "#/components/schemas/TeamType",
+            "default": "neutral"
+          },
+          "hp": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hp"
+          },
+          "max_hp": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Hp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "x",
+          "y"
+        ],
+        "title": "MapToken"
+      },
+      "NPC": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "race": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Race"
+          },
+          "gender": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gender"
+          },
+          "age": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Age"
+          },
+          "occupation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Occupation"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "campaign_id": {
+            "type": "string",
+            "title": "Campaign Id"
+          },
+          "personality": {
+            "$ref": "#/components/schemas/NPCPersonality",
+            "default": {
+              "traits": [],
+              "ideals": [],
+              "bonds": [],
+              "flaws": [],
+              "mannerisms": [],
+              "motivations": []
+            }
+          },
+          "voice_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Voice Description"
+          },
+          "level": {
+            "type": "integer",
+            "title": "Level",
+            "default": 1
+          },
+          "abilities": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Abilities"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "hit_points": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HitPoints"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "armor_class": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Armor Class"
+          },
+          "skills": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Skills"
+          },
+          "relationships": {
+            "items": {
+              "$ref": "#/components/schemas/NPCCharacterRelationship"
+            },
+            "type": "array",
+            "title": "Relationships"
+          },
+          "interaction_history": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Interaction History"
+          },
+          "importance": {
+            "type": "string",
+            "title": "Importance",
+            "default": "minor"
+          },
+          "story_role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Story Role"
+          },
+          "quest_involvement": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Quest Involvement"
+          },
+          "is_alive": {
+            "type": "boolean",
+            "title": "Is Alive",
+            "default": true
+          },
+          "current_mood": {
+            "type": "string",
+            "title": "Current Mood",
+            "default": "neutral"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "campaign_id"
+        ],
+        "title": "NPC"
+      },
+      "NPCCharacterRelationship": {
+        "properties": {
+          "character_id": {
+            "type": "string",
+            "title": "Character Id"
+          },
+          "relationship_type": {
+            "type": "string",
+            "title": "Relationship Type"
+          },
+          "trust_level": {
+            "type": "integer",
+            "title": "Trust Level",
+            "default": 0
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "character_id",
+          "relationship_type"
+        ],
+        "title": "NPCCharacterRelationship"
+      },
+      "NPCConversationEntry": {
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "title": "Timestamp"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "disposition_change": {
+            "type": "integer",
+            "title": "Disposition Change",
+            "default": 0
+          },
+          "topics": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Topics"
+          }
+        },
+        "type": "object",
+        "required": [
+          "timestamp",
+          "summary"
+        ],
+        "title": "NPCConversationEntry",
+        "description": "A single recorded conversation with an NPC."
+      },
+      "NPCInteractionRequest": {
+        "properties": {
+          "npc_id": {
+            "type": "string",
+            "title": "Npc Id"
+          },
+          "character_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Character Id"
+          },
+          "interaction_type": {
+            "type": "string",
+            "maxLength": 100,
+            "title": "Interaction Type"
+          },
+          "summary": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Summary"
+          },
+          "outcome": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outcome"
+          },
+          "relationship_change": {
+            "type": "integer",
+            "title": "Relationship Change",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "npc_id",
+          "interaction_type",
+          "summary"
+        ],
+        "title": "NPCInteractionRequest"
+      },
+      "NPCInteractionResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "interaction_id": {
+            "type": "string",
+            "title": "Interaction Id"
+          },
+          "new_relationship_level": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "New Relationship Level"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "message",
+          "interaction_id"
+        ],
+        "title": "NPCInteractionResponse"
+      },
+      "NPCPersonality": {
+        "properties": {
+          "traits": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Traits"
+          },
+          "ideals": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Ideals"
+          },
+          "bonds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Bonds"
+          },
+          "flaws": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Flaws"
+          },
+          "mannerisms": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Mannerisms"
+          },
+          "appearance": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Appearance"
+          },
+          "motivations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Motivations"
+          }
+        },
+        "type": "object",
+        "title": "NPCPersonality"
+      },
+      "NPCProfile": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "default": ""
+          },
+          "personality_traits": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Personality Traits"
+          },
+          "disposition": {
+            "type": "string",
+            "enum": [
+              "friendly",
+              "neutral",
+              "hostile",
+              "fearful"
+            ],
+            "title": "Disposition",
+            "default": "neutral"
+          },
+          "location": {
+            "type": "string",
+            "title": "Location",
+            "default": ""
+          },
+          "is_alive": {
+            "type": "boolean",
+            "title": "Is Alive",
+            "default": true
+          },
+          "conversation_notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Conversation Notes"
+          },
+          "conversation_history": {
+            "items": {
+              "$ref": "#/components/schemas/NPCConversationEntry"
+            },
+            "type": "array",
+            "title": "Conversation History"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "NPCProfile"
+      },
+      "NPCProfileListResponse": {
+        "properties": {
+          "npcs": {
+            "items": {
+              "$ref": "#/components/schemas/NPCProfile"
+            },
+            "type": "array",
+            "title": "Npcs"
+          },
+          "total_count": {
+            "type": "integer",
+            "title": "Total Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "npcs",
+          "total_count"
+        ],
+        "title": "NPCProfileListResponse"
+      },
+      "NPCProfileWithRelationship": {
+        "properties": {
+          "profile": {
+            "$ref": "#/components/schemas/NPCProfile"
+          },
+          "relationship": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NPCRelationship"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "profile"
+        ],
+        "title": "NPCProfileWithRelationship"
+      },
+      "NPCRelationship": {
+        "properties": {
+          "npc_id": {
+            "type": "string",
+            "title": "Npc Id"
+          },
+          "campaign_id": {
+            "type": "string",
+            "title": "Campaign Id"
+          },
+          "disposition_score": {
+            "type": "integer",
+            "title": "Disposition Score",
+            "default": 0
+          },
+          "interactions_count": {
+            "type": "integer",
+            "title": "Interactions Count",
+            "default": 0
+          },
+          "key_events": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Key Events"
+          },
+          "last_interaction": {
+            "type": "string",
+            "title": "Last Interaction",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "npc_id",
+          "campaign_id"
+        ],
+        "title": "NPCRelationship"
+      },
+      "NPCStatsResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "generated_stats": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Generated Stats"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "message",
+          "generated_stats"
+        ],
+        "title": "NPCStatsResponse"
+      },
+      "PlayerInput": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Message"
+          },
+          "character_id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Character Id"
+          },
+          "campaign_id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Campaign Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message",
+          "character_id",
+          "campaign_id"
+        ],
+        "title": "PlayerInput"
+      },
+      "Race": {
+        "type": "string",
+        "enum": [
+          "human",
+          "elf",
+          "dwarf",
+          "halfling",
+          "gnome",
+          "half-elf",
+          "half-orc",
+          "dragonborn",
+          "tiefling"
+        ],
+        "title": "Race"
+      },
+      "RecordConversationRequest": {
+        "properties": {
+          "summary": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Summary"
+          },
+          "disposition_change": {
+            "type": "integer",
+            "title": "Disposition Change",
+            "default": 0
+          },
+          "topics": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Topics"
+          }
+        },
+        "type": "object",
+        "required": [
+          "summary"
+        ],
+        "title": "RecordConversationRequest",
+        "description": "Request body for recording an NPC conversation."
+      },
+      "RestRequest": {
+        "properties": {
+          "character_id": {
+            "type": "string",
+            "title": "Character Id"
+          },
+          "rest_type": {
+            "$ref": "#/components/schemas/RestType"
+          },
+          "hit_dice_to_spend": {
+            "type": "integer",
+            "title": "Hit Dice To Spend",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "character_id",
+          "rest_type"
+        ],
+        "title": "RestRequest"
+      },
+      "RestResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "hp_recovered": {
+            "type": "integer",
+            "title": "Hp Recovered",
+            "default": 0
+          },
+          "spell_slots_recovered": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Spell Slots Recovered"
+          },
+          "hit_dice_remaining": {
+            "type": "integer",
+            "title": "Hit Dice Remaining",
+            "default": 0
+          },
+          "exhaustion_level": {
+            "type": "integer",
+            "title": "Exhaustion Level",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "message"
+        ],
+        "title": "RestResponse"
+      },
+      "RestType": {
+        "type": "string",
+        "enum": [
+          "short",
+          "long"
+        ],
+        "title": "RestType"
+      },
+      "SaveSlot": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "campaign_id": {
+            "type": "string",
+            "title": "Campaign Id"
+          },
+          "slot_number": {
+            "type": "integer",
+            "title": "Slot Number"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "default": ""
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "play_time_seconds": {
+            "type": "integer",
+            "title": "Play Time Seconds",
+            "default": 0
+          },
+          "interaction_count": {
+            "type": "integer",
+            "title": "Interaction Count",
+            "default": 0
+          },
+          "character_level": {
+            "type": "integer",
+            "title": "Character Level",
+            "default": 1
+          },
+          "current_location": {
+            "type": "string",
+            "title": "Current Location",
+            "default": ""
+          },
+          "save_data": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Save Data"
+          }
+        },
+        "type": "object",
+        "required": [
+          "campaign_id",
+          "slot_number"
+        ],
+        "title": "SaveSlot"
+      },
+      "SaveSlotListResponse": {
+        "properties": {
+          "saves": {
+            "items": {
+              "$ref": "#/components/schemas/SaveSlot"
+            },
+            "type": "array",
+            "title": "Saves"
+          },
+          "total_count": {
+            "type": "integer",
+            "title": "Total Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "saves",
+          "total_count"
+        ],
+        "title": "SaveSlotListResponse"
+      },
+      "SpawnPoint": {
+        "properties": {
+          "x": {
+            "type": "integer",
+            "title": "X"
+          },
+          "y": {
+            "type": "integer",
+            "title": "Y"
+          },
+          "team": {
+            "$ref": "#/components/schemas/TeamType",
+            "default": "player"
+          }
+        },
+        "type": "object",
+        "required": [
+          "x",
+          "y"
+        ],
+        "title": "SpawnPoint"
+      },
+      "Spell": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "level": {
+            "type": "integer",
+            "title": "Level"
+          },
+          "school": {
+            "type": "string",
+            "title": "School"
+          },
+          "casting_time": {
+            "type": "string",
+            "title": "Casting Time"
+          },
+          "range": {
+            "type": "string",
+            "title": "Range"
+          },
+          "components": {
+            "type": "string",
+            "title": "Components"
+          },
+          "duration": {
+            "type": "string",
+            "title": "Duration"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "requires_concentration": {
+            "type": "boolean",
+            "title": "Requires Concentration",
+            "default": false
+          },
+          "available_classes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Available Classes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "level",
+          "school",
+          "casting_time",
+          "range",
+          "components",
+          "duration",
+          "description"
+        ],
+        "title": "Spell"
+      },
+      "SpellAttackBonusRequest": {
+        "properties": {
+          "character_class": {
+            "$ref": "#/components/schemas/CharacterClass"
+          },
+          "level": {
+            "type": "integer",
+            "title": "Level"
+          },
+          "spellcasting_ability_score": {
+            "type": "integer",
+            "title": "Spellcasting Ability Score"
+          }
+        },
+        "type": "object",
+        "required": [
+          "character_class",
+          "level",
+          "spellcasting_ability_score"
+        ],
+        "title": "SpellAttackBonusRequest"
+      },
+      "SpellCasting": {
+        "properties": {
+          "spellcasting_ability": {
+            "type": "string",
+            "title": "Spellcasting Ability"
+          },
+          "spell_attack_bonus": {
+            "type": "integer",
+            "title": "Spell Attack Bonus",
+            "default": 0
+          },
+          "spell_save_dc": {
+            "type": "integer",
+            "title": "Spell Save Dc",
+            "default": 8
+          },
+          "spell_slots": {
+            "items": {
+              "$ref": "#/components/schemas/SpellSlot"
+            },
+            "type": "array",
+            "title": "Spell Slots"
+          },
+          "known_spells": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Known Spells"
+          },
+          "prepared_spells": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Prepared Spells"
+          },
+          "cantrips_known": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Cantrips Known"
+          },
+          "concentration_spell": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Concentration Spell"
+          }
+        },
+        "type": "object",
+        "required": [
+          "spellcasting_ability"
+        ],
+        "title": "SpellCasting"
+      },
+      "SpellCastingResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "spell_effects": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Spell Effects"
+          },
+          "concentration_broken": {
+            "type": "boolean",
+            "title": "Concentration Broken",
+            "default": false
+          },
+          "slot_used": {
+            "type": "boolean",
+            "title": "Slot Used",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "message"
+        ],
+        "title": "SpellCastingResponse"
+      },
+      "SpellListResponse": {
+        "properties": {
+          "spells": {
+            "items": {
+              "$ref": "#/components/schemas/Spell"
+            },
+            "type": "array",
+            "title": "Spells"
+          },
+          "total_count": {
+            "type": "integer",
+            "title": "Total Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "spells",
+          "total_count"
+        ],
+        "title": "SpellListResponse"
+      },
+      "SpellSaveDCRequest": {
+        "properties": {
+          "character_class": {
+            "$ref": "#/components/schemas/CharacterClass"
+          },
+          "level": {
+            "type": "integer",
+            "maximum": 20.0,
+            "minimum": 1.0,
+            "title": "Level"
+          },
+          "spellcasting_ability_score": {
+            "type": "integer",
+            "maximum": 30.0,
+            "minimum": 1.0,
+            "title": "Spellcasting Ability Score"
+          }
+        },
+        "type": "object",
+        "required": [
+          "character_class",
+          "level",
+          "spellcasting_ability_score"
+        ],
+        "title": "SpellSaveDCRequest"
+      },
+      "SpellSlot": {
+        "properties": {
+          "level": {
+            "type": "integer",
+            "title": "Level"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "used": {
+            "type": "integer",
+            "title": "Used",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "level",
+          "total"
+        ],
+        "title": "SpellSlot"
+      },
+      "StructuredMapRequest": {
+        "properties": {
+          "environment": {
+            "$ref": "#/components/schemas/EnvironmentSpec"
+          },
+          "width": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 100.0,
+                "minimum": 5.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Width",
+            "description": "Override grid width in tiles"
+          },
+          "height": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 100.0,
+                "minimum": 5.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Height",
+            "description": "Override grid height in tiles"
+          },
+          "combat_context": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Combat Context"
+          },
+          "seed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seed"
+          }
+        },
+        "type": "object",
+        "title": "StructuredMapRequest"
+      },
+      "TeamType": {
+        "type": "string",
+        "enum": [
+          "player",
+          "enemy",
+          "neutral"
+        ],
+        "title": "TeamType"
+      },
+      "TerrainType": {
+        "type": "string",
+        "enum": [
+          "stone_floor",
+          "wooden_floor",
+          "grass",
+          "dirt",
+          "water",
+          "lava",
+          "wall",
+          "door",
+          "stairs"
+        ],
+        "title": "TerrainType"
+      },
+      "UpdateDispositionRequest": {
+        "properties": {
+          "disposition_score": {
+            "type": "integer",
+            "title": "Disposition Score"
+          },
+          "event_note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "disposition_score"
+        ],
+        "title": "UpdateDispositionRequest"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
