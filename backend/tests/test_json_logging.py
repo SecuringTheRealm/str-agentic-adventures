@@ -79,7 +79,9 @@ class TestJsonLoggingFormatter:
 
         root_logger = logging.getLogger()
         assert root_logger.handlers, "Root logger must have at least one handler"
-        handler = root_logger.handlers[0]
-        assert isinstance(
-            handler.formatter, JsonFormatter
-        ), "Root logger handler formatter must be JsonFormatter"
+        # Check any handler, not just [0] - pytest's logging plugin may prepend its own.
+        json_handlers = [
+            h for h in root_logger.handlers
+            if isinstance(h.formatter, JsonFormatter)
+        ]
+        assert json_handlers, "At least one root logger handler must use JsonFormatter"
