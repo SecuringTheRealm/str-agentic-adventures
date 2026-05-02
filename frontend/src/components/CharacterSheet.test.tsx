@@ -32,7 +32,8 @@ describe("CharacterSheet", () => {
     render(<CharacterSheet character={mockCharacter} />);
 
     expect(screen.getByText("Aragorn")).toBeInTheDocument();
-    expect(screen.getByText("Level 5 human Ranger")).toBeInTheDocument();
+    expect(screen.getByText("Level 5")).toBeInTheDocument();
+    expect(screen.getByText("human Ranger")).toBeInTheDocument();
   });
 
   it("renders hit points correctly", () => {
@@ -45,11 +46,10 @@ describe("CharacterSheet", () => {
   it("renders armor class", () => {
     render(<CharacterSheet character={mockCharacter} />);
 
-    expect(screen.getByText("Armor Class")).toBeInTheDocument();
-    // Look for armor class specifically within the armor-class section
+    expect(screen.getByText("Armour Class")).toBeInTheDocument();
     const armorClassSection = screen
-      .getByText("Armor Class")
-      .closest(`.${styles.armorClass}`);
+      .getByText("Armour Class")
+      .closest(`.${styles.statCard}`);
     expect(armorClassSection).toBeInTheDocument();
     expect(armorClassSection?.textContent).toContain("10");
   });
@@ -67,7 +67,7 @@ describe("CharacterSheet", () => {
     // Check for ability scores being displayed by finding the abilities section
     const abilitiesSection = screen
       .getByText("Abilities")
-      .closest(`.${styles.abilities}`);
+      .closest(`.${styles.sectionCard}`);
     expect(abilitiesSection).toBeInTheDocument();
     expect(abilitiesSection?.textContent).toContain("16"); // STR
     expect(abilitiesSection?.textContent).toContain("14"); // DEX
@@ -205,7 +205,8 @@ describe("CharacterSheet", () => {
 
     // Should render successfully with minimal data
     expect(screen.getByText("Basic Hero")).toBeInTheDocument();
-    expect(screen.getByText("Level 1 human fighter")).toBeInTheDocument();
+    expect(screen.getByText("Level 1")).toBeInTheDocument();
+    expect(screen.getByText("human fighter")).toBeInTheDocument();
     expect(screen.getByText("10 / 10")).toBeInTheDocument();
 
     // All ability modifiers should be +0
@@ -268,11 +269,10 @@ describe("CharacterSheet", () => {
     render(<CharacterSheet character={mockCharacter} />);
 
     // Default armor class should be shown
-    expect(screen.getByText("Armor Class")).toBeInTheDocument();
-    // Look for armor class specifically within the armor-class section
+    expect(screen.getByText("Armour Class")).toBeInTheDocument();
     const armorClassSection = screen
-      .getByText("Armor Class")
-      .closest(`.${styles.armorClass}`);
+      .getByText("Armour Class")
+      .closest(`.${styles.statCard}`);
     expect(armorClassSection).toBeInTheDocument();
     expect(armorClassSection?.textContent).toContain("10");
   });
