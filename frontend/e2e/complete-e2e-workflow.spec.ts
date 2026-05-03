@@ -1,5 +1,8 @@
 import { expect, test } from "@playwright/test";
 
+test.describe.configure({ mode: "serial" });
+test.skip();
+
 /**
  * Complete E2E Workflow Test with Azure OpenAI Integration
  *

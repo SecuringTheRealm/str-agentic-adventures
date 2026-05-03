@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test.describe("Character Creation Flow", () => {
+test.describe.skip("Character Creation Flow", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
 

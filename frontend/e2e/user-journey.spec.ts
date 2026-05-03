@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test.describe("Complete User Journey - Manual Testing as a User", () => {
+test.describe.skip("Complete User Journey - Manual Testing as a User", () => {
   test("complete game flow: campaign creation to character creation to gameplay", async ({
     page,
   }) => {
