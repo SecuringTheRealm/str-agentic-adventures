@@ -1,7 +1,10 @@
 # ADR-0009: Container App Deployment Strategy
 
 ## Status
-Accepted
+Accepted (amended 2026-05-03: per-PR environments retired — see ADR-0007
+amendment. `cleanup-environment.yml` and the PR-specific branches in
+`deploy-environment.yml` no longer exist. References to PR environments
+below remain for historical context.)
 
 ## Context
 

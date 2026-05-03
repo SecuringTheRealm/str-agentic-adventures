@@ -1,13 +1,13 @@
 ---
 name: Deploy Environment (Reusable)
-# Reusable workflow for deploying both production and PR environments
-# Reduces code duplication and ensures consistency
+# Reusable workflow for deploying the production environment.
+# Per-PR environments are intentionally not supported — only main deploys.
 
 on:
   workflow_call:
     inputs:
       environment-name:
-        description: "Environment name (production or pr-{number})"
+        description: "Environment name (currently always 'production')"
         required: true
         type: string
       resource-group-name:
@@ -31,11 +31,6 @@ on:
         required: false
         type: string
         default: "frontend/build"
-      is-production:
-        description: "Whether this is a production deployment"
-        required: false
-        type: boolean
-        default: false
     secrets:
       AZURE_CLIENT_ID:
         required: false
@@ -108,22 +103,6 @@ jobs:
           python-version: "3.12"
           enable-cache: true
 
-      - name: Select parameter file
-        id: params
-        run: |
-          # Select environment-specific Bicep parameter file for infrastructure defaults.
-          # Note: The deploy step currently passes all parameters inline. These parameter
-          # files define environment-specific defaults (region, naming) and can be used
-          # with 'az deployment sub create --parameters @<file>' if migrating away from
-          # inline parameters in future.
-          if [ "${{ inputs.is-production }}" = "true" ]; then
-            echo "param_file=infra/parameters/prod.bicepparam" >> $GITHUB_OUTPUT
-            echo "Selected production parameter file"
-          else
-            echo "param_file=infra/parameters/dev.bicepparam" >> $GITHUB_OUTPUT
-            echo "Selected development parameter file"
-          fi
-
       - name: Log in with Azure (Federated Credentials)
         if: steps.check-secrets.outputs.use-federated-auth == 'true'
         uses: azure/login@v3
@@ -138,45 +117,7 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Cleanup existing deployment stack (if exists)
-        if: inputs.is-production == false
-        id: cleanup-stack
-        run: |
-          STACK_NAME="${{ inputs.stack-name }}"
-          LOCATION="${{ inputs.location }}"
-
-          echo "Checking for existing deployment stack: $STACK_NAME"
-
-          # Check if stack exists and delete it to ensure clean deployment
-          if az stack show --name "$STACK_NAME" --location "$LOCATION" --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" >/dev/null 2>&1; then
-            echo "Found existing deployment stack $STACK_NAME, deleting..."
-            az stack delete --name "$STACK_NAME" --location "$LOCATION" --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" --yes --no-wait
-            echo "Deletion initiated for stack $STACK_NAME"
-
-            # Wait a bit for deletion to start
-            sleep 30
-
-            # Wait for deletion to complete (with timeout)
-            TIMEOUT=300  # 5 minutes
-            ELAPSED=0
-            while az stack show --name "$STACK_NAME" --location "$LOCATION" --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" >/dev/null 2>&1; do
-              if [ $ELAPSED -ge $TIMEOUT ]; then
-                echo "::warning::Timeout waiting for stack deletion. Proceeding with deployment..."
-                break
-              fi
-              echo "Waiting for stack deletion to complete... ($ELAPSED/$TIMEOUT seconds)"
-              sleep 15
-              ELAPSED=$((ELAPSED + 15))
-            done
-
-            echo "Stack cleanup completed"
-          else
-            echo "No existing deployment stack found"
-          fi
-        timeout-minutes: 8
-
       - name: Preview infrastructure changes (what-if)
-        if: inputs.is-production == true
         run: |
           az deployment sub what-if \
             --location "${{ inputs.location }}" \
@@ -204,9 +145,9 @@ jobs:
               "location": "${{ inputs.location }}",
               "resourceGroupName": "${{ inputs.resource-group-name }}"
             }
-          action-on-unmanage-resources: ${{ inputs.is-production && 'detach' || 'delete' }}
-          action-on-unmanage-resourcegroups: ${{ inputs.is-production && 'detach' || 'delete' }}
-          deny-settings-mode: ${{ inputs.is-production && 'denyDelete' || 'none' }}
+          action-on-unmanage-resources: detach
+          action-on-unmanage-resourcegroups: detach
+          deny-settings-mode: denyDelete
         timeout-minutes: 20
 
       - name: Assign Cognitive Services OpenAI User role to managed identity
@@ -260,12 +201,6 @@ jobs:
           CONTAINER_APP_ENVIRONMENT="${{ steps.infrastructure-deploy.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_ID }}"
           STORAGE_ACCOUNT_NAME="${{ steps.infrastructure-deploy.outputs.AZURE_STORAGE_ACCOUNT_NAME }}"
           CONTAINER_APP_NAME="${{ inputs.container-app-name }}"
-
-          # For PR environments, add a unique suffix to avoid conflicts
-          if [[ "${{ inputs.environment-name }}" == pr-* ]]; then
-            RESOURCE_TOKEN=$(echo "${{ inputs.environment-name }}" | sha256sum | cut -c1-8)
-            CONTAINER_APP_NAME="${{ inputs.container-app-name }}-$RESOURCE_TOKEN"
-          fi
 
           echo "Deploying backend container app: $CONTAINER_APP_NAME"
           echo "Resource Group: $RESOURCE_GROUP"
@@ -430,35 +365,17 @@ jobs:
 
           echo "Using Static Web App name: $SWA_NAME"
 
-          # Build frontend with backend URL
+          # Build frontend with backend URL.
+          # The OpenAPI client (frontend/src/api-client/) is committed to git via the
+          # commit-and-verify pipeline (see scripts/generate-client.sh and
+          # .github/workflows/check-client.yml). The build uses the static
+          # schema.d.ts and openapi-fetch-based client; no live backend is
+          # needed at build time.
           cd frontend
-          bun install
-
-          # Generate OpenAPI client from backend API
-          # CRITICAL: Frontend TypeScript client must be generated before build
-          # The api-client directory is NOT committed to the repository
-          echo "Generating OpenAPI client from backend API..."
-          BACKEND_URL="${{ steps.backend-deploy.outputs.backend-uri }}"
-
-          # Wait for backend to be ready
-          echo "Waiting for backend API to be available..."
-          for i in {1..30}; do
-            if curl -f -s "$BACKEND_URL/health" > /dev/null 2>&1; then
-              echo "Backend API is ready"
-              break
-            fi
-            echo "Attempt $i/30: Waiting for backend..."
-            sleep 10
-          done
-
-          # Generate the client using the backend's OpenAPI schema
-          bunx @openapitools/openapi-generator-cli generate \
-            -i "$BACKEND_URL/openapi.json" \
-            -g typescript-axios \
-            -o src/api-client \
-            --skip-validate-spec
+          bun install --frozen-lockfile
 
           # Set backend URL for build (Vite embeds VITE_* prefixed env vars at build time)
+          BACKEND_URL="${{ steps.backend-deploy.outputs.backend-uri }}"
           export VITE_API_URL="$BACKEND_URL"
           bun run build
 
