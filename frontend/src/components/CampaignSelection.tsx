@@ -81,7 +81,7 @@ const CampaignSelection: React.FC<CampaignSelectionProps> = ({
 
   return (
     <>
-      <div className={styles.campaignManager}>
+      <div className={styles.campaignManager} data-testid="campaign-hub">
         {error && (
           <div className={styles.errorMessage}>
             {error}

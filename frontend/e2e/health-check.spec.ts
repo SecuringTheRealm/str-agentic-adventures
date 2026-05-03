@@ -24,7 +24,7 @@ test.describe("Application Health Check", () => {
 
     // Check for basic HTML structure
     await expect(page.locator("html")).toBeVisible();
-    await expect(page.locator("head title")).toHaveText(/Securing the Realm/);
+    await expect(page).toHaveTitle(/Securing the Realm/);
 
     // Check for React app structure
     await expect(page.locator("#root")).toBeVisible();
