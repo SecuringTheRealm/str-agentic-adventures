@@ -430,35 +430,17 @@ jobs:
 
           echo "Using Static Web App name: $SWA_NAME"
 
-          # Build frontend with backend URL
+          # Build frontend with backend URL.
+          # The OpenAPI client (frontend/src/api-client/) is committed to git via the
+          # commit-and-verify pipeline (see scripts/generate-client.sh and
+          # .github/workflows/check-client.yml). The build uses the static
+          # schema.d.ts and openapi-fetch-based client; no live backend is
+          # needed at build time.
           cd frontend
-          bun install
-
-          # Generate OpenAPI client from backend API
-          # CRITICAL: Frontend TypeScript client must be generated before build
-          # The api-client directory is NOT committed to the repository
-          echo "Generating OpenAPI client from backend API..."
-          BACKEND_URL="${{ steps.backend-deploy.outputs.backend-uri }}"
-
-          # Wait for backend to be ready
-          echo "Waiting for backend API to be available..."
-          for i in {1..30}; do
-            if curl -f -s "$BACKEND_URL/health" > /dev/null 2>&1; then
-              echo "Backend API is ready"
-              break
-            fi
-            echo "Attempt $i/30: Waiting for backend..."
-            sleep 10
-          done
-
-          # Generate the client using the backend's OpenAPI schema
-          bunx @openapitools/openapi-generator-cli generate \
-            -i "$BACKEND_URL/openapi.json" \
-            -g typescript-axios \
-            -o src/api-client \
-            --skip-validate-spec
+          bun install --frozen-lockfile
 
           # Set backend URL for build (Vite embeds VITE_* prefixed env vars at build time)
+          BACKEND_URL="${{ steps.backend-deploy.outputs.backend-uri }}"
           export VITE_API_URL="$BACKEND_URL"
           bun run build
 
