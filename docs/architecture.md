@@ -2088,11 +2088,9 @@ api_location: ""  # No backend API in Static Web App
      6. Run database migrations
    - Requires: Azure credentials in GitHub Secrets
 
-4. **PR Environments** (`.github/workflows/pr-environments.yml`):
-   - Triggers: PR opened/updated targeting main
-   - Creates temporary Azure environment for testing
-   - Deploys PR code to temporary resources
-   - Cleanup: Deletes resources when PR closes
+   Per-PR Azure environments are intentionally not provisioned — only
+   pushes to `main` deploy to Azure. PRs are validated via the unit,
+   integration, and E2E test workflows alone.
 
 **Required Secrets**:
 - `AZURE_CREDENTIALS` - Service principal for deployment

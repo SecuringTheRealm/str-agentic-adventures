@@ -1,10 +1,19 @@
 # ADR 0007: GitHub Actions CI/CD Pipeline
 
 ## Status
-Accepted
+Accepted (amended 2026-05-03: per-PR Azure environments removed — see note below)
 
 ## Date
-2025-06-11 (Updated: 2025-06-12)
+2025-06-11 (Updated: 2025-06-12; 2026-05-03)
+
+## Amendment (2026-05-03)
+Per-PR Azure environments have been retired to avoid spinning up cloud
+resources on every pull request. The `pr-environments.yml` and
+`cleanup-environment.yml` workflows are no longer present, and
+`deploy-environment.yml` is now production-only. PR validation relies on
+the unit, integration, and E2E test workflows; Azure deploys happen only
+on push to `main` via `deploy-production.yml`. References below to "PR
+environments" are retained for historical context.
 
 ## Context
 

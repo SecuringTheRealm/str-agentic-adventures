@@ -27,7 +27,6 @@ jobs:
       stack-name: "production-${{ vars.AZURE_LOCATION || vars.AZURE_REGION || 'eastus2' }}"
       container-app-name: "production-backend"
       frontend-build-path: "frontend/build"
-      is-production: true
     secrets:
       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
