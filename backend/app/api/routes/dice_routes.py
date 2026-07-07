@@ -37,10 +37,11 @@ async def roll_dice(request: DiceRollRequest) -> dict[str, Any]:
         return result
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception:
+        logger.exception("Failed to roll dice")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to roll dice: {str(e)}",
+            detail="Internal server error",
         ) from None
 
 
@@ -78,10 +79,11 @@ async def roll_dice_with_character(roll_data: dict[str, Any]) -> dict[str, Any]:
         return result
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception:
+        logger.exception("Failed to roll dice with character")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to roll dice with character: {str(e)}",
+            detail="Internal server error",
         ) from None
 
 
@@ -100,8 +102,9 @@ async def input_manual_roll(body: ManualDiceRollRequest) -> dict[str, Any]:
 
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception:
+        logger.exception("Failed to input manual roll")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to input manual roll: {str(e)}",
+            detail="Internal server error",
         ) from None
