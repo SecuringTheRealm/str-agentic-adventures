@@ -51,10 +51,11 @@ async def create_character(character_data: CreateCharacterRequest, config: Confi
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=error_msg
             ) from None
+        logger.exception("Failed to create character")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to create character: {str(e)}",
-        ) from e
+            detail="Internal server error",
+        ) from None
 
 
 @router.get("/character/{character_id}", response_model=dict[str, Any])
@@ -81,9 +82,10 @@ async def get_character(character_id: str, config: ConfigDep) -> dict[str, Any]:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=error_msg
             ) from None
+        logger.exception("Failed to retrieve character")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to retrieve character: {str(e)}",
+            detail="Internal server error",
         ) from None
 
 
@@ -106,10 +108,11 @@ async def level_up_character(character_id: str, level_up_data: LevelUpRequest) -
         return result
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception:
+        logger.exception("Failed to level up character")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to level up character: {str(e)}",
+            detail="Internal server error",
         ) from None
 
 
@@ -129,10 +132,11 @@ async def award_experience(character_id: str, experience_data: AwardExperienceRe
         return result
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception:
+        logger.exception("Failed to award experience")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to award experience: {str(e)}",
+            detail="Internal server error",
         ) from None
 
 
@@ -168,10 +172,11 @@ async def get_progression_info(character_id: str) -> dict[str, Any]:
         }
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception:
+        logger.exception("Failed to get progression info")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get progression info: {str(e)}",
+            detail="Internal server error",
         ) from None
 
 
@@ -213,11 +218,12 @@ async def manage_equipment(character_id: str, request: ManageEquipmentRequest) -
         )
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception:
+        logger.exception("Failed to manage equipment")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to manage equipment: {str(e)}",
-        ) from e
+            detail="Internal server error",
+        ) from None
 
 
 @router.get("/character/{character_id}/encumbrance", response_model=EncumbranceResponse)
@@ -250,8 +256,9 @@ async def get_encumbrance(character_id: str, response: Response) -> dict[str, An
             encumbrance_level=encumbrance_level,
             speed_penalty=speed_penalty,
         )
-    except Exception as e:
+    except Exception:
+        logger.exception("Failed to calculate encumbrance")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to calculate encumbrance: {str(e)}",
-        ) from e
+            detail="Internal server error",
+        ) from None
