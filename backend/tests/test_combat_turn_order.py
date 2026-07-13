@@ -7,6 +7,7 @@ Covers:
 4. Round tracking — after all combatants act, round increments (advance_turn).
 5. Removed combatants — killed/removed combatants are skipped (remove_combatant).
 6. Delayed/held actions — delaying moves a combatant down in initiative.
+7. Action economy — action/bonus_action/reaction used-flags per turn (#769).
 """
 
 from unittest.mock import patch
@@ -14,9 +15,11 @@ from unittest.mock import patch
 import pytest
 from app.rules_engine import (
     advance_turn,
+    check_action_economy,
     get_active_combatant,
     is_combatant_turn,
     remove_combatant,
+    reset_turn_economy,
     roll_initiative,
 )
 
@@ -420,3 +423,47 @@ class TestDelayedActions:
         non_rogue = [c for c in delayed_order if c["id"] != "rogue"]
         assert non_rogue[0]["id"] == "wizard"
         assert non_rogue[1]["id"] == "fighter"
+
+
+# ---------------------------------------------------------------------------
+# 7. Action economy
+# ---------------------------------------------------------------------------
+
+
+class TestActionEconomy:
+    """Per-combatant action/bonus_action/reaction used-flags (#769)."""
+
+    def test_fresh_combatant_has_no_slots_used(self) -> None:
+        combatant = {"id": "fighter", "name": "Fighter"}
+        assert check_action_economy(combatant, "action") is None
+        assert check_action_economy(combatant, "bonus_action") is None
+        assert check_action_economy(combatant, "reaction") is None
+
+    def test_used_slot_is_rejected_with_honest_message(self) -> None:
+        combatant = {"id": "fighter", "name": "Fighter", "action_used": True}
+        message = check_action_economy(combatant, "action")
+        assert message is not None
+        assert "Fighter" in message
+        assert "action" in message
+
+    def test_slots_are_independent(self) -> None:
+        """Using your action doesn't spend your bonus action or reaction."""
+        combatant = {"id": "fighter", "name": "Fighter", "action_used": True}
+        assert check_action_economy(combatant, "bonus_action") is None
+        assert check_action_economy(combatant, "reaction") is None
+
+    def test_unknown_slot_defaults_to_action(self) -> None:
+        combatant = {"id": "fighter", "action_used": True}
+        assert check_action_economy(combatant, "not-a-real-slot") is not None
+
+    def test_reset_turn_economy_clears_all_three_flags(self) -> None:
+        combatant = {
+            "id": "fighter",
+            "action_used": True,
+            "bonus_action_used": True,
+            "reaction_used": True,
+        }
+        reset_turn_economy(combatant)
+        assert combatant["action_used"] is False
+        assert combatant["bonus_action_used"] is False
+        assert combatant["reaction_used"] is False

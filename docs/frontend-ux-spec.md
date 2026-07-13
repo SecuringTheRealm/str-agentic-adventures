@@ -22,14 +22,14 @@ This UX Design Specification documents the design system, visual language, and i
 ### Technology Foundation
 
 **Frontend Stack:**
-- **Framework**: React 19.2.0 with TypeScript 5.9.3
-- **Build System**: Vite 7.1.9 (modern HMR and optimized production builds)
-- **Styling**: CSS Modules with fantasy-themed custom properties
+- **Framework**: React 19.2.4 with TypeScript 5.9.3
+- **Build System**: Vite 8.1.3 (modern HMR and optimised production builds)
+- **Styling**: Radix UI + Tailwind CSS v4 with component library
 - **State Management**: React Hooks (component-local state)
-- **API Integration**: Auto-generated Axios client from OpenAPI schema
+- **API Integration**: Auto-generated openapi-fetch client from OpenAPI schema
 - **Real-Time**: WebSocket SDK for chat, dice rolls, and game state updates
-- **Testing**: Vitest 3.2.4 (unit) + Playwright 1.56.0 (E2E)
-- **Code Quality**: Biome 2.2.5 (unified linting and formatting)
+- **Testing**: Vitest 4.1.10 (unit) + Playwright 1.58.2 (E2E)
+- **Code Quality**: Biome 2.4.9 (unified linting and formatting)
 
 **Design Philosophy:**
 The interface embodies a medieval fantasy aesthetic that honors D&D's tabletop heritage while maintaining modern web usability standards. Dark mystical backgrounds, ornate gold accents, and fantasy serif typography create an immersive atmosphere without compromising accessibility or responsive design.
@@ -56,14 +56,14 @@ The interface embodies a medieval fantasy aesthetic that honors D&D's tabletop h
 
 ### 1.1 Design System Choice
 
-**Styling Architecture: CSS Modules + Custom Properties**
+**Styling Architecture: Radix UI + Tailwind CSS v4**
 
-The application uses a hybrid styling approach that balances maintainability with thematic richness:
+The application uses a modern component-based styling approach:
 
-- **CSS Modules**: Component-scoped styles prevent naming collisions and enable confident refactoring
-- **Custom CSS Variables**: Centralized color palette, typography, and spacing tokens in `:root`
-- **No UI Framework**: Intentional decision to maintain design flexibility and reduce bundle size
-- **Utility-Free**: Custom CSS provides full artistic control over fantasy aesthetic
+- **Radix UI**: Unstyled, accessible component primitives for form controls, dialogs, and other interactive elements
+- **Tailwind CSS v4**: Utility-first CSS framework for layout, spacing, and responsive design
+- **Custom CSS**: Component-specific styling for fantasy-themed visual language
+- **Design Tokens**: Centralized colour palette and typography via CSS custom properties
 
 **File Naming Convention:**
 ```
@@ -77,33 +77,34 @@ ComponentName/
 
 | Decision | Justification |
 |----------|---------------|
-| CSS Modules over Tailwind | Fantasy theme requires custom visual language not achievable with utility classes |
-| No Styled Components | CSS Modules provide type safety without runtime cost |
-| Custom Properties | Enables theme consistency without JavaScript overhead |
-| Vite Integration | Native CSS Module support with HMR for rapid iteration |
+| Radix UI | Unstyled, accessible primitives enable custom fantasy theming without component library constraints |
+| Tailwind CSS v4 | Modern utility framework with fast development velocity whilst supporting custom design tokens |
+| Custom CSS | Extends Tailwind with fantasy-specific styles for immersive medieval aesthetic |
+| Vite Integration | Native CSS support with HMR for rapid iteration and developer experience |
 
 ### 1.2 Technology Stack Details
 
 **Dependencies (Production):**
 ```json
 {
-  "react": "^19.2.0",
-  "react-dom": "^19.2.0",
-  "react-router-dom": "^6.29.1",
-  "axios": "^1.12.2",
-  "socket.io-client": "^4.8.1"
+  "react": "^19.2.4",
+  "react-dom": "^19.2.4",
+  "react-router-dom": "^7.13.2",
+  "openapi-fetch": "^0.17.0",
+  "@radix-ui/react-*": "latest",
+  "tailwindcss": "^4.2.2"
 }
 ```
 
 **Development Tools:**
 ```json
 {
-  "@vitejs/plugin-react": "^4.4.0",
-  "typescript": "~5.9.3",
-  "vite": "^7.1.9",
-  "vitest": "^3.2.4",
-  "@playwright/test": "^1.56.0",
-  "@biomejs/biome": "^2.2.5"
+  "@vitejs/plugin-react": "^5.2.0",
+  "typescript": "^5.9.3",
+  "vite": "^8.1.3",
+  "vitest": "^4.1.10",
+  "@playwright/test": "^1.58.2",
+  "@biomejs/biome": "^2.4.9"
 }
 ```
 

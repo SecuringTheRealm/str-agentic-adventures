@@ -4685,6 +4685,20 @@
               }
             ],
             "title": "Stealth Roll"
+          },
+          "action_economy": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "boolean"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Action Economy"
           }
         },
         "type": "object",

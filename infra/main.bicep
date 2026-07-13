@@ -152,6 +152,7 @@ module aiFoundry 'modules/ai-foundry.bicep' = {
     location: location
     tags: tags
     managedIdentityPrincipalId: managedIdentity.outputs.principalId
+    projectName: '${environmentName}-project'
   }
 }
 

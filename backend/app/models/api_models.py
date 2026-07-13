@@ -158,6 +158,8 @@ class CombatTurnResult(BaseModel):
     attack_roll: dict[str, Any] | None = None
     damage_roll: dict[str, Any] | None = None
     stealth_roll: dict[str, Any] | None = None
+    action_economy: dict[str, bool] | None = None
+    """Acting combatant's action/bonus_action/reaction used-flags after this turn (#769)."""
 
 
 class EncounterGenerationResult(BaseModel):

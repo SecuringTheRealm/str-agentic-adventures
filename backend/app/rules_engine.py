@@ -331,6 +331,51 @@ def remove_combatant(
 
 
 # ---------------------------------------------------------------------------
+# Action economy (SRD: 1 action + 1 bonus action + 1 reaction per round)
+# ---------------------------------------------------------------------------
+
+ACTION_ECONOMY_SLOTS = ("action", "bonus_action", "reaction")
+
+
+def reset_turn_economy(combatant: dict) -> None:
+    """Refresh a combatant's action, bonus action, and reaction (SRD turn start).
+
+    Mutates *combatant* in place, clearing all three used-flags. Call this
+    for whichever combatant becomes newly active in initiative order — per
+    SRD a reaction also refreshes at the start of your own next turn, not
+    at the start of every round.
+
+    Args:
+        combatant: Combatant dict to reset (e.g. an entry in initiative order).
+    """
+    combatant["action_used"] = False
+    combatant["bonus_action_used"] = False
+    combatant["reaction_used"] = False
+
+
+def check_action_economy(combatant: dict, slot: str) -> str | None:
+    """Return an honest rejection message if *combatant* already spent *slot*.
+
+    Args:
+        combatant: Combatant dict carrying ``action_used`` / ``bonus_action_used``
+            / ``reaction_used`` flags (missing flags default to unused).
+        slot: One of ``"action"``, ``"bonus_action"``, ``"reaction"``; any
+            other value is treated as ``"action"``.
+
+    Returns:
+        A human-readable rules message if the slot was already spent this
+        turn, otherwise ``None`` (the action may proceed).
+    """
+    if slot not in ACTION_ECONOMY_SLOTS:
+        slot = "action"
+    if combatant.get(f"{slot}_used", False):
+        name = combatant.get("name", "Combatant")
+        label = slot.replace("_", " ")
+        return f"{name} has already used their {label} this turn."
+    return None
+
+
+# ---------------------------------------------------------------------------
 # Conditions system
 # ---------------------------------------------------------------------------
 
