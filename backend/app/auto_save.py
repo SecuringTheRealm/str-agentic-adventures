@@ -67,7 +67,10 @@ async def _write_snapshot_to_campaign(
         # Keep only the most recent snapshots to prevent unbounded growth
         auto_save_entries = [e for e in current_log if e.get("type") == "auto_save"]
         other_entries = [e for e in current_log if e.get("type") != "auto_save"]
-        trimmed = auto_save_entries[-(  _MAX_SNAPSHOTS - 1):] if len(auto_save_entries) >= _MAX_SNAPSHOTS else auto_save_entries
+        if len(auto_save_entries) >= _MAX_SNAPSHOTS:
+            trimmed = auto_save_entries[-(_MAX_SNAPSHOTS - 1) :]
+        else:
+            trimmed = auto_save_entries
         updated_log = other_entries + trimmed + [snapshot]
 
         campaign_service.update_campaign(campaign_id, {"session_log": updated_log})

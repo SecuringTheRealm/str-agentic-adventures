@@ -698,7 +698,10 @@ class CombatMCAgent(BaseAgent):
                         "attack_roll": attack_result,
                         "damage": damage_result["total"],
                         "damage_detail": damage_result,
-                        "message": f"{'Critical hit!' if attack_result['is_critical_hit'] else 'Attack hits'} for {damage_result['total']} damage!",
+                        "message": (
+                            f"{'Critical hit!' if attack_result['is_critical_hit'] else 'Attack hits'} "
+                            f"for {damage_result['total']} damage!"
+                        ),
                     }
                 )
             else:
@@ -778,7 +781,10 @@ class CombatMCAgent(BaseAgent):
                         "damage": damage_result["total_damage"],
                         "damage_detail": damage_result,
                         "spell_attack_bonus": spell_attack_bonus_result,
-                        "message": f"Spell attack hits for {damage_result['total_damage']} {damage_result['damage_type']} damage!",
+                        "message": (
+                            f"Spell attack hits for {damage_result['total_damage']} "
+                            f"{damage_result['damage_type']} damage!"
+                        ),
                     }
                 )
             else:
@@ -787,7 +793,10 @@ class CombatMCAgent(BaseAgent):
                         "success": attack_result["is_hit"],
                         "attack_roll": attack_result,
                         "spell_attack_bonus": spell_attack_bonus_result,
-                        "message": f"Spell attack {'hits' if attack_result['is_hit'] else 'misses'} (rolled {attack_result['total']} vs AC {target_ac})",
+                        "message": (
+                            f"Spell attack {'hits' if attack_result['is_hit'] else 'misses'} "
+                            f"(rolled {attack_result['total']} vs AC {target_ac})"
+                        ),
                     }
                 )
 
@@ -824,7 +833,10 @@ class CombatMCAgent(BaseAgent):
                     "success": True,
                     "damage": damage_result["total_damage"],
                     "damage_detail": damage_result,
-                    "message": f"Spell deals {damage_result['total_damage']} {damage_type} damage to {target_count} target(s)!",
+                    "message": (
+                        f"Spell deals {damage_result['total_damage']} {damage_type} "
+                        f"damage to {target_count} target(s)!"
+                    ),
                 }
             )
 
@@ -902,7 +914,10 @@ class CombatMCAgent(BaseAgent):
                     "success": success,
                     "roll": skill_result,
                     "dc": dc,
-                    "message": f"Skill check {'succeeds' if success else 'fails'} (rolled {skill_result['total']} vs DC {dc})",
+                    "message": (
+                        f"Skill check {'succeeds' if success else 'fails'} "
+                        f"(rolled {skill_result['total']} vs DC {dc})"
+                    ),
                 }
             )
 
@@ -940,7 +955,10 @@ class CombatMCAgent(BaseAgent):
                 {
                     "success": save_result["save_successful"],
                     "save_result": save_result,
-                    "message": f"Saving throw {'succeeds' if save_result['save_successful'] else 'fails'} (rolled {save_result['total_roll']} vs DC {save_dc})",
+                    "message": (
+                        f"Saving throw {'succeeds' if save_result['save_successful'] else 'fails'} "
+                        f"(rolled {save_result['total_roll']} vs DC {save_dc})"
+                    ),
                 }
             )
 
@@ -1071,7 +1089,10 @@ class CombatMCAgent(BaseAgent):
                 "success": success,
                 "attacker_check": attacker_check,
                 "defender_check": defender_check,
-                "message": f"{action_type.capitalize()} {'succeeds' if success else 'fails'} (attacker {attacker_check['total']} vs defender {defender_check['total']})",
+                "message": (
+                    f"{action_type.capitalize()} {'succeeds' if success else 'fails'} "
+                    f"(attacker {attacker_check['total']} vs defender {defender_check['total']})"
+                ),
             }
         )
 

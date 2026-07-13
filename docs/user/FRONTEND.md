@@ -20,8 +20,8 @@ bun dev
 
 - React 19 with TypeScript
 - Vite for development and build
-- CSS Modules for styling
-- Axios for API calls
+- Tailwind CSS + Radix UI for styling
+- openapi-fetch for API calls
 - Biome for linting and formatting
 - Vitest for unit testing
 - Playwright for E2E tests

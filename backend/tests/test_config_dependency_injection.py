@@ -131,7 +131,9 @@ class TestConfigurationDependencyInjection:
 
         # Campaign creation doesn't require Azure OpenAI - it's just database operations
         # Should succeed even without Azure OpenAI configuration
-        assert response.status_code == 201, f"Campaign creation should work without Azure config, got: {response.status_code}"
+        assert response.status_code == 201, (
+            f"Campaign creation should work without Azure config, got: {response.status_code}"
+        )
         assert "id" in response.json()
 
     def test_config_dependency_injection_works(self) -> None:

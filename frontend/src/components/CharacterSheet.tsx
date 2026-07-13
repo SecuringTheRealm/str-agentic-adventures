@@ -331,9 +331,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
             </div>
             <ul className={styles.inventoryList}>
               {character.inventory && character.inventory.length > 0 ? (
-                character.inventory.map((item: any, index: number) => (
+                character.inventory.map((item: any) => (
                   <li
-                    key={`${(item as any).name || item.item_id}-${index}`}
+                    key={item.item_id || (item as any).name}
                     className={styles.inventoryItem}
                   >
                     <span className={styles.itemName}>
@@ -418,7 +418,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
                           <div className={styles.slotIndicators}>
                             {Array.from({ length: maxSlots }, (_, i) => (
                               <div
-                                key={i}
+                                // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length static slot-pip indicator, never reordered
+                                key={`${level}-slot-${i}`}
                                 className={`slot-indicator ${i < usedSlots ? "used" : "available"}`}
                               >
                                 ○
@@ -439,19 +440,15 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
               <div className={styles.cantrips}>
                 <h4>Cantrips</h4>
                 <ul className={styles.spellList}>
-                  {(character as any).spells?.cantrips?.map(
-                    (spell: any, index: number) => (
-                      <li key={index} className="spell-item cantrip">
-                        <span className={styles.spellName}>{spell.name}</span>
-                        <span className={styles.spellSchool}>
-                          {spell.school}
-                        </span>
-                        <button type="button" className={styles.castButton}>
-                          Cast
-                        </button>
-                      </li>
-                    )
-                  ) || <li>No cantrips known</li>}
+                  {(character as any).spells?.cantrips?.map((spell: any) => (
+                    <li key={spell.name} className="spell-item cantrip">
+                      <span className={styles.spellName}>{spell.name}</span>
+                      <span className={styles.spellSchool}>{spell.school}</span>
+                      <button type="button" className={styles.castButton}>
+                        Cast
+                      </button>
+                    </li>
+                  )) || <li>No cantrips known</li>}
                 </ul>
               </div>
 
@@ -470,8 +467,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
                       <div key={level} className={styles.spellLevelGroup}>
                         <h5>Level {level} Spells</h5>
                         <ul className={styles.spellList}>
-                          {levelSpells.map((spell: any, index: number) => (
-                            <li key={index} className={styles.spellItem}>
+                          {levelSpells.map((spell: any) => (
+                            <li key={spell.name} className={styles.spellItem}>
                               <span className={styles.spellName}>
                                 {spell.name}
                               </span>

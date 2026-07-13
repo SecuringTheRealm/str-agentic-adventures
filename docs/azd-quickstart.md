@@ -27,9 +27,9 @@ After `azd up` completes, set the Azure OpenAI configuration:
 
 ```bash
 azd env set AZURE_OPENAI_ENDPOINT https://your-openai-resource.openai.azure.com/
-azd env set AZURE_OPENAI_CHAT_DEPLOYMENT gpt-4o-mini
-azd env set AZURE_OPENAI_EMBEDDING_DEPLOYMENT text-embedding-ada-002
+azd env set AZURE_OPENAI_CHAT_DEPLOYMENT gpt-41-mini
 azd env set AZURE_OPENAI_DALLE_DEPLOYMENT gpt-image-1-mini
+azd env set AZURE_OPENAI_REALTIME_DEPLOYMENT gpt-realtime-mini
 ```
 
 Then redeploy to pick up the new values:

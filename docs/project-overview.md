@@ -36,8 +36,8 @@ str-agentic-adventures/
 |-------|-----------|---------|---------|
 | **UI Framework** | React | 19.2.0 | Component-based UI |
 | **Language** | TypeScript | 5.9.3 | Type-safe development |
-| **Build Tool** | Vite | 7.1.9 | Fast HMR + optimized builds |
-| **HTTP Client** | Axios | 1.12.2 | Generated API client |
+| **Build Tool** | Vite | 8.1.3 | Fast HMR + optimized builds |
+| **HTTP Client** | openapi-fetch | 0.17.0 | Generated API client |
 | **State** | React Hooks | Built-in | Local component state |
 | **Testing** | Vitest + Playwright | 3.2.4 / 1.56.0 | Unit + E2E testing |
 | **Code Quality** | Biome | 2.2.5 | Unified lint + format |
@@ -48,8 +48,8 @@ str-agentic-adventures/
 |-------|-----------|---------|---------|
 | **API Framework** | FastAPI | ≥0.100.0 | High-performance async API |
 | **Language** | Python | 3.12+ | Modern Python features |
-| **AI Framework** | Azure AI Agents SDK | ≥1.0.0 | Intelligent agent orchestration |
-| **AI Model** | Azure OpenAI | GPT-4o-mini | Natural language generation |
+| **AI Framework** | Microsoft Agent Framework (agent-framework-foundry) | ≥1.10.0 | Intelligent agent orchestration |
+| **AI Model** | Azure OpenAI | gpt-41-mini | Natural language generation |
 | **Database** | PostgreSQL/SQLite | 2.0+ | Relational data storage |
 | **ORM** | SQLAlchemy | ≥2.0.0 | Async database access |
 | **Migrations** | Alembic | ≥1.11.0 | Schema versioning |
@@ -194,7 +194,7 @@ cp .env.example .env.local  # Configure VITE_API_URL if needed
 
 ```bash
 # Start backend first
-cd backend && uv run python -m app.main  # Backend runs on http://localhost:8000
+cd backend && uv run uvicorn app.main:app --reload  # Backend runs on http://localhost:8000
 
 # In separate terminal, generate frontend API client
 cd frontend
@@ -205,7 +205,7 @@ bun run generate:api
 
 ```bash
 # Terminal 1: Backend
-cd backend && uv run python -m app.main  # http://localhost:8000
+cd backend && uv run uvicorn app.main:app --reload  # http://localhost:8000
 
 # Terminal 2: Frontend
 cd frontend
@@ -271,14 +271,14 @@ bun format
 ### Frontend → Backend
 - **Protocol:** HTTP/HTTPS (REST API)
 - **Format:** JSON
-- **Client:** Generated TypeScript Axios client from OpenAPI spec
+- **Client:** Generated TypeScript openapi-fetch client from OpenAPI spec
 - **Endpoints:** 45+ REST endpoints for game operations
 - **WebSocket:** 3 WebSocket endpoints for real-time features
 
 ### Backend → Azure OpenAI
 - **Protocol:** HTTPS
-- **SDK:** Azure AI Agents SDK + Azure OpenAI SDK
-- **Model:** GPT-4o-mini (configurable deployment)
+- **SDK:** Microsoft Agent Framework (agent-framework-foundry) + Azure OpenAI SDK
+- **Model:** gpt-41-mini (configurable per-agent deployment)
 - **Features:** Chat completions, streaming responses, function calling
 
 ### Backend → Database

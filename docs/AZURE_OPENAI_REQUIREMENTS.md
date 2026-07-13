@@ -46,9 +46,9 @@ To enable AI-powered features, set these environment variables:
 ```bash
 AZURE_OPENAI_ENDPOINT=https://your-project.openai.azure.com/
 AZURE_OPENAI_API_KEY=your-api-key-here
-AZURE_OPENAI_CHAT_DEPLOYMENT=gpt-4o-mini
-AZURE_OPENAI_EMBEDDING_DEPLOYMENT=text-embedding-ada-002
+AZURE_OPENAI_CHAT_DEPLOYMENT=gpt-41-mini
 AZURE_OPENAI_DALLE_DEPLOYMENT=gpt-image-1-mini  # Optional, for image generation
+AZURE_OPENAI_REALTIME_DEPLOYMENT=gpt-realtime-mini  # Optional, for realtime voice
 AZURE_OPENAI_API_VERSION=2025-04-01-preview
 ```
 

@@ -116,6 +116,7 @@ const CampaignGallery: React.FC<CampaignGalleryProps> = ({
         </header>
         <div className={styles.campaignOptions}>
           {Array.from({ length: 4 }).map((_, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length static placeholder list, never reordered
             <Card key={`skeleton-${i}`} className={styles.campaignCard}>
               <CardHeader>
                 <Skeleton className="h-6 w-3/4" />

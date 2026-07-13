@@ -1,6 +1,6 @@
 # Add Speaker Diarisation for Voice-Based Gameplay
 
-* Status: proposed
+* Status: deferred
 * Date: 2026-03-27
 
 ## Context and Problem Statement
@@ -62,6 +62,8 @@ Azure Speech Service provides speaker diarisation — the ability to distinguish
 ## Decision Outcome
 
 Chosen option: "Azure Speech Service with speaker diarisation" (Option 1)
+
+Deferred per issue #404 (closed 2026-05-02): diarisation is an investigation/research task, and implementation depends on voice pipeline decisions — the startup-plane non-Azure voice pipeline should be evaluated first. The voice pipeline actually shipped (Azure OpenAI Realtime WebRTC) is a different architecture from what this ADR proposes, so no diarisation code exists.
 
 Justification:
 * Only option that provides both real-time STT and speaker diarisation in a single service

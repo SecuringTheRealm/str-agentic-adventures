@@ -41,8 +41,8 @@ Additionally, the `PromptShieldMiddleware` and `SecurityHeadersMiddleware` (both
 Chosen option: "Campaign validation + per-client rate limiting + middleware fix"
 
 Justification:
-* Addresses all three attack vectors (unauthorised campaign access, broadcast injection, message flooding) with minimal code changes
-* In-memory rate limiting is sufficient for the current single-instance deployment model
+* Addresses broadcast injection and message flooding with minimal code changes. Campaign-existence validation narrows, but does not close, unauthorised campaign access: `_campaign_exists()` only checks that the campaign row exists, not who the connecting client is — any client that knows a campaign UUID can connect, self-report an arbitrary `player_name`, and receive/send campaign traffic. Real per-connection identity verification is deferred to #511.
+* In-memory rate limiting is sufficient for the current single-instance deployment model, and was extended in a later change to cover the chat and campaign WebSocket endpoints, not just the global one
 * Middleware fix is a targeted change (check `scope["type"]` before processing) rather than an architectural overhaul
 * Token-based authentication can be layered on later when multiplayer with user accounts is implemented (#511)
 

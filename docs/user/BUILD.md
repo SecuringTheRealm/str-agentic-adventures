@@ -43,14 +43,11 @@ The backend runs on `http://localhost:8000`, the frontend on `http://127.0.0.1:5
 The frontend uses `openapi-typescript` to generate a typed API client from the backend's OpenAPI schema. No Java is needed.
 
 ```bash
-# With the backend running:
+# No running backend needed -- exports the OpenAPI spec directly from the FastAPI app:
 ./scripts/generate-client.sh
-
-# Or directly:
-cd frontend && bun run generate:api
 ```
 
-The generated file (`frontend/src/api-client/schema.d.ts`) is gitignored -- regenerate it after cloning or after any backend API changes.
+The generated file (`frontend/src/api-client/schema.d.ts`) is committed to git (commit-and-verify pattern) -- regenerate and commit it after any backend API change.
 
 ## Container Builds
 

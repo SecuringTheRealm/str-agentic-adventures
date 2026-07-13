@@ -256,10 +256,11 @@ def build_game_context(
     # Determine attack modifier: finesse/ranged use DEX, others use STR
     is_finesse = "finesse" in weapon_properties
     is_ranged = "ammunition" in weapon_properties
-    if is_ranged or is_finesse:
-        ability_mod = max(str_mod, dex_mod) if is_finesse else dex_mod
-    else:
-        ability_mod = str_mod
+    ability_mod = (
+        (max(str_mod, dex_mod) if is_finesse else dex_mod)
+        if is_ranged or is_finesse
+        else str_mod
+    )
 
     attack_bonus = ability_mod + proficiency_bonus
     damage_modifier = ability_mod
@@ -282,7 +283,7 @@ def build_game_context(
     if isinstance(spellcasting, dict):
         spell_slots = spellcasting.get("spell_slots")
 
-    context = {
+    return {
         # Identity
         "character_id": character_id,
         "campaign_id": campaign_id,
@@ -308,8 +309,6 @@ def build_game_context(
         "setting": campaign_state.get("setting", ""),
         "tone": campaign_state.get("tone", "heroic"),
     }
-
-    return context
 
 
 def build_state_updates(

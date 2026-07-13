@@ -314,10 +314,22 @@ async def generate_world_description(
         logger.debug("AI world generation unavailable, using templates")
 
     descriptions = {
-        "fantasy": f"The realm of {name} is a land of magic and wonder, where ancient forests hide forgotten secrets and mighty kingdoms rise and fall with the tides of time.",
-        "urban": f"The sprawling metropolis of {name} is a city of shadows and neon, where corporate towers pierce the smog-filled sky and danger lurks in every alley.",
-        "post_apocalyptic": f"The wasteland of {name} stretches endlessly under a poisoned sky, where survivors eke out existence among the ruins of civilization.",
-        "space": f"The star system of {name} spans multiple worlds and space stations, where alien civilizations and human colonies struggle for dominance among the stars.",
+        "fantasy": (
+            f"The realm of {name} is a land of magic and wonder, where ancient forests hide "
+            "forgotten secrets and mighty kingdoms rise and fall with the tides of time."
+        ),
+        "urban": (
+            f"The sprawling metropolis of {name} is a city of shadows and neon, where corporate "
+            "towers pierce the smog-filled sky and danger lurks in every alley."
+        ),
+        "post_apocalyptic": (
+            f"The wasteland of {name} stretches endlessly under a poisoned sky, where survivors "
+            "eke out existence among the ruins of civilization."
+        ),
+        "space": (
+            f"The star system of {name} spans multiple worlds and space stations, where alien "
+            "civilizations and human colonies struggle for dominance among the stars."
+        ),
     }
 
     base_description = descriptions.get(
@@ -646,7 +658,10 @@ def generate_world_lore(setting: str) -> list[str]:
 def generate_opening_scene(session_type: str) -> str:
     """Generate an opening scene for a game session."""
     scenes = {
-        "exploration": "You find yourselves at the entrance to an unexplored region, with adventure calling from beyond.",
+        "exploration": (
+            "You find yourselves at the entrance to an unexplored region, "
+            "with adventure calling from beyond."
+        ),
         "combat": "Danger approaches! Ready your weapons and prepare for battle!",
         "social": "You enter a bustling tavern where information and intrigue flow as freely as the ale.",
     }

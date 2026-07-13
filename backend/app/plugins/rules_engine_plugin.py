@@ -268,7 +268,8 @@ class RulesEnginePlugin:
 
         # Concentration tracking for ongoing spells
         # Maps character_id to spell information for concentration spells
-        self.concentration_spells = {}  # {character_id: {"spell": spell_dict, "duration_remaining": int, "started_at": timestamp}}
+        # Value shape: {"spell": spell_dict, "duration_remaining": int, "started_at": timestamp}
+        self.concentration_spells = {}
 
         # Spell slot tracking by character level and class
         self.spell_slots_by_class_level = SPELL_SLOTS_BY_CLASS_LEVEL

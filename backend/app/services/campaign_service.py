@@ -241,7 +241,10 @@ class CampaignService:
             {
                 "name": "Lost Mine of Phandelver",
                 "description": "A classic starter adventure perfect for new players and DMs.",
-                "setting": "The Sword Coast region of the Forgotten Realms, centered around the frontier town of Phandalin and the surrounding wilderness.",
+                "setting": (
+                    "The Sword Coast region of the Forgotten Realms, centered around the"
+                    " frontier town of Phandalin and the surrounding wilderness."
+                ),
                 "tone": "heroic",
                 "homebrew_rules": [],
                 "world_description": (
@@ -264,7 +267,10 @@ class CampaignService:
             {
                 "name": "Dragon Heist",
                 "description": "Urban intrigue and faction politics in the City of Splendors.",
-                "setting": "Waterdeep, the bustling metropolis known as the City of Splendors, where noble houses scheme and hidden treasures await discovery.",
+                "setting": (
+                    "Waterdeep, the bustling metropolis known as the City of Splendors,"
+                    " where noble houses scheme and hidden treasures await discovery."
+                ),
                 "tone": "mysterious",
                 "homebrew_rules": [],
                 "world_description": (
@@ -287,7 +293,10 @@ class CampaignService:
             {
                 "name": "Curse of Strahd",
                 "description": "Gothic horror in the mist-shrouded realm of Barovia.",
-                "setting": "The demiplane of Barovia, a land trapped in mists and ruled by the vampire lord Strahd von Zarovich.",
+                "setting": (
+                    "The demiplane of Barovia, a land trapped in mists and ruled"
+                    " by the vampire lord Strahd von Zarovich."
+                ),
                 "tone": "dark",
                 "homebrew_rules": [
                     "Characters cannot leave Barovia until Strahd is defeated",
@@ -314,7 +323,10 @@ class CampaignService:
             {
                 "name": "Pirates of the Caribbean Coast",
                 "description": "Swashbuckling adventures on the high seas.",
-                "setting": "The Shining Sea and its many islands, where pirates, merchants, and naval forces clash over treasure and territory.",
+                "setting": (
+                    "The Shining Sea and its many islands, where pirates, merchants,"
+                    " and naval forces clash over treasure and territory."
+                ),
                 "tone": "lighthearted",
                 "homebrew_rules": [
                     "Ship combat rules are simplified for narrative focus",
@@ -342,7 +354,10 @@ class CampaignService:
             {
                 "name": "Cyberpunk Shadows",
                 "description": "High-tech corporate espionage in a dystopian future.",
-                "setting": "Neo-Tokyo 2087, a sprawling megacity dominated by powerful corporations where technology and magic coexist.",
+                "setting": (
+                    "Neo-Tokyo 2087, a sprawling megacity dominated by powerful corporations"
+                    " where technology and magic coexist."
+                ),
                 "tone": "gritty",
                 "homebrew_rules": [
                     "Technology items are more common and advanced",

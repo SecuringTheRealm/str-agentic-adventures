@@ -855,10 +855,7 @@ def calculate_ac(
         else:
             base_ac, adds_dex, max_dex = entry
             if adds_dex:
-                if max_dex is None:
-                    dex_bonus = dex_modifier
-                else:
-                    dex_bonus = min(dex_modifier, max_dex)
+                dex_bonus = dex_modifier if max_dex is None else min(dex_modifier, max_dex)
                 ac = base_ac + dex_bonus
             else:
                 ac = base_ac

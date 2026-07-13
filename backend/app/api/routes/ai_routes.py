@@ -118,16 +118,28 @@ async def get_ai_assistance(request: AIAssistanceRequest) -> dict[str, Any]:
 
             if request.context_type == "setting":
                 # Add atmospheric details for settings
-                enhanced_text = f"{text}\n\nThe air carries subtle hints of the environment's character, while distant sounds suggest the life and activity that defines this place."
+                enhanced_text = (
+                    f"{text}\n\nThe air carries subtle hints of the environment's character, "
+                    "while distant sounds suggest the life and activity that defines this place."
+                )
             elif request.context_type == "description":
                 # Add depth to descriptions
-                enhanced_text = f"{text}\n\nBeneath the surface details lies a sense of deeper significance, as if each element serves a purpose in the larger tapestry of the story."
+                enhanced_text = (
+                    f"{text}\n\nBeneath the surface details lies a sense of deeper significance, "
+                    "as if each element serves a purpose in the larger tapestry of the story."
+                )
             elif request.context_type == "plot_hook":
                 # Add urgency to plot hooks
-                enhanced_text = f"{text}\n\nTime seems to be of the essence, and the consequences of action—or inaction—weigh heavily on the minds of those involved."
+                enhanced_text = (
+                    f"{text}\n\nTime seems to be of the essence, and the consequences of "
+                    "action—or inaction—weigh heavily on the minds of those involved."
+                )
             else:
                 # General enhancement
-                enhanced_text = f"{text}\n\nThis element resonates with potential, offering opportunities for creative development and meaningful narrative engagement."
+                enhanced_text = (
+                    f"{text}\n\nThis element resonates with potential, offering opportunities "
+                    "for creative development and meaningful narrative engagement."
+                )
 
         return AIAssistanceResponse(
             suggestions=suggestions, enhanced_text=enhanced_text
