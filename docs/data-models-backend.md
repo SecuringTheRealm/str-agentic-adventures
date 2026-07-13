@@ -386,7 +386,7 @@ While JSON columns provide flexibility, the application enforces schemas via Pyd
 DATABASE_URL=postgresql://user:pass@host:5432/dbname
 
 # Development (SQLite)
-DATABASE_URL=sqlite:///./data/game.db
+DATABASE_URL=sqlite:///./app.db
 ```
 
 ### Connection Pooling

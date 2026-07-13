@@ -63,4 +63,11 @@ hooks:
       echo ""
       echo "The AZURE_OPENAI_ENDPOINT output is set automatically from the Foundry resource."
       echo "Managed identity auth is configured — no API key needed in production."
+      echo ""
+      echo "Wiring ALLOWED_ORIGINS on the backend Container App to the deployed"
+      echo "Static Web App hostname (avoids a circular bicep dependency)..."
+      az containerapp update \
+        --name "$SERVICE_BACKEND_NAME" \
+        --resource-group "$AZURE_RESOURCE_GROUP" \
+        --set-env-vars "ALLOWED_ORIGINS=$FRONTEND_URI"
     continueOnError: false

@@ -16,6 +16,13 @@ from app.models.api_models import (
     XPAwardResult,
 )
 from app.models.db_models import CombatState
+from app.rules_engine import (
+    ACTION_ECONOMY_SLOTS,
+    advance_turn,
+    check_action_economy,
+    get_active_combatant,
+    reset_turn_economy,
+)
 from app.utils.dice import DiceRoller
 
 logger = logging.getLogger(__name__)
@@ -134,6 +141,11 @@ async def initialize_combat(combat_data: dict[str, Any]) -> dict[str, Any]:
         # Sort by initiative (highest first)
         initiative_order.sort(key=lambda x: x["initiative"], reverse=True)
 
+        # Seed per-combatant action-economy flags (#769): everyone starts a
+        # fresh round with their action, bonus action, and reaction available.
+        for combatant in initiative_order:
+            reset_turn_economy(combatant)
+
         combat_id = f"combat_{session_id}_{uuid.uuid4().hex[:8]}"
         result = {
             "combat_id": combat_id,
@@ -178,6 +190,9 @@ async def process_combat_turn(combat_id: str, turn_data: dict[str, Any]) -> dict
         target_id = turn_data.get("target_id")
         character_id = turn_data.get("character_id")
         dice_result = turn_data.get("dice_result")
+        economy_slot = turn_data.get("action_economy", "action")
+        if economy_slot not in ACTION_ECONOMY_SLOTS:
+            economy_slot = "action"
 
         # Process the combat action
         turn_result: dict[str, Any] = {
@@ -190,6 +205,26 @@ async def process_combat_turn(combat_id: str, turn_data: dict[str, Any]) -> dict
             "description": "",
             "next_turn": True,
         }
+
+        # Action economy (#769): find the acting combatant in initiative
+        # order (if tracked) and refuse a slot that's already spent this turn.
+        existing = _load_combat(combat_id)
+        initiative_order = list(existing.get("initiative_order", [])) if existing else []
+        actor = next(
+            (c for c in initiative_order if c.get("id") == character_id),
+            None,
+        )
+        if actor is not None:
+            rejection = check_action_economy(actor, economy_slot)
+            if rejection:
+                turn_result.update(
+                    {"success": False, "description": rejection, "next_turn": False}
+                )
+                turn_result["timestamp"] = str(datetime.now(UTC))
+                log = list(existing.get("combat_log", []))
+                log.append(turn_result)
+                _persist_combat(combat_id, {"combat_log": log})
+                return turn_result
 
         if action_type == "attack":
             # Roll attack if the caller did not supply a pre-rolled result
@@ -290,12 +325,39 @@ async def process_combat_turn(combat_id: str, turn_data: dict[str, Any]) -> dict
 
         turn_result["timestamp"] = str(datetime.now(UTC))
 
+        persist_updates: dict[str, Any] = {}
+
+        # Mark the spent slot and, for a full Action, hand the turn to the
+        # next combatant in initiative order (#769). Bonus actions and
+        # reactions never advance the turn.
+        if actor is not None:
+            actor[f"{economy_slot}_used"] = True
+            current_turn = existing.get("current_turn", 0)
+            round_number = existing.get("round", 1)
+            if economy_slot == "action":
+                active = get_active_combatant(initiative_order, current_turn)
+                if active is not None and active.get("id") == actor.get("id"):
+                    advanced = advance_turn(initiative_order, current_turn, round_number)
+                    current_turn = advanced["current_turn"]
+                    round_number = advanced["current_round"]
+                    new_active = get_active_combatant(initiative_order, current_turn)
+                    if new_active is not None:
+                        reset_turn_economy(new_active)
+            persist_updates["current_turn"] = current_turn
+            persist_updates["round"] = round_number
+            persist_updates["initiative_order"] = initiative_order
+            turn_result["action_economy"] = {
+                "action_used": actor.get("action_used", False),
+                "bonus_action_used": actor.get("bonus_action_used", False),
+                "reaction_used": actor.get("reaction_used", False),
+            }
+
         # Append to the persistent combat log (#701)
-        existing = _load_combat(combat_id)
         if existing is not None:
             log = list(existing.get("combat_log", []))
             log.append(turn_result)
-            _persist_combat(combat_id, {"combat_log": log})
+            persist_updates["combat_log"] = log
+            _persist_combat(combat_id, persist_updates)
         return turn_result
 
     except Exception as e:

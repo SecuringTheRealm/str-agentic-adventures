@@ -16,7 +16,10 @@ param managedIdentityPrincipalId string
 @description('Deploy image generation model (requires gated access on some subscriptions)')
 param deployImageModel bool = true
 
-resource foundry 'Microsoft.CognitiveServices/accounts@2024-10-01' = {
+@description('Name of the AI Foundry project sub-resource (child of the account)')
+param projectName string = '${name}-project'
+
+resource foundry 'Microsoft.CognitiveServices/accounts@2025-06-01' = {
   name: name
   location: location
   tags: tags
@@ -31,6 +34,21 @@ resource foundry 'Microsoft.CognitiveServices/accounts@2024-10-01' = {
     customSubDomainName: name
     disableLocalAuth: disableLocalAuth
     publicNetworkAccess: 'Enabled'
+    // Required so the accounts/projects child resource below is provisioned
+    // as a real Foundry project rather than relying on the implicit default.
+    allowProjectManagement: true
+  }
+}
+
+// Explicit Foundry project — data-plane calls (agents, threads) are scoped to
+// this project. Its name drives the real projectEndpoint output below.
+resource project 'Microsoft.CognitiveServices/accounts/projects@2025-06-01' = {
+  parent: foundry
+  name: projectName
+  location: location
+  tags: tags
+  properties: {
+    displayName: projectName
   }
 }
 
@@ -93,7 +111,9 @@ resource nanoDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-1
   dependsOn: [dmDeployment]
 }
 
-// gpt-realtime-mini — real-time voice for DM narration via WebRTC
+// gpt-realtime-mini — real-time voice for DM narration via WebRTC.
+// Voice Live API (GA) is Microsoft's recommended successor to the raw
+// realtime protocol — consider migrating to it next time voice is touched.
 resource realtimeDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-10-01' = {
   parent: foundry
   name: 'gpt-realtime-mini'
@@ -146,8 +166,8 @@ resource openAiUserRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
 @description('The endpoint URL for the AI Foundry resource')
 output endpoint string = foundry.properties.endpoint
 
-@description('The default project endpoint (AIServices kind accounts get an implicit default project named after the account)')
-output projectEndpoint string = 'https://${foundry.name}.services.ai.azure.com/api/projects/${foundry.name}'
+@description('The endpoint of the explicit Foundry project resource created above')
+output projectEndpoint string = 'https://${foundry.name}.services.ai.azure.com/api/projects/${project.name}'
 
 @description('The resource name')
 output name string = foundry.name

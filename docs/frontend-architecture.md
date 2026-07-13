@@ -1,10 +1,10 @@
 # Frontend Architecture
 
 **Part:** frontend (React + TypeScript + Vite)
-**Framework:** React 19.2.0
-**Build Tool:** Vite 7.1.9
+**Framework:** React 19.2.4
+**Build Tool:** Vite 8.1.3
 **Language:** TypeScript 5.9.3
-**Component Library:** shadcn/ui + Tailwind CSS v4 (components in `src/components/ui/`)
+**Component Library:** Radix UI + Tailwind CSS v4 (components in `src/components/ui/`)
 
 ## Overview
 
@@ -27,7 +27,7 @@ The frontend uses **openapi-typescript** to generate TypeScript types from the b
 
 Wraps the generated client with:
 - **Environment-aware base URL** (`getApiBaseUrl()`)
-- **Error handling** with axios interceptors
+- **Error handling** for API failures
 - **Retry logic** for production reliability (exponential backoff)
 - **Type aliases** for compatibility with existing code
 - **Wrapper functions** for common operations
@@ -44,9 +44,10 @@ export const createCharacter = async (characterData: CreateCharacterRequest) => 
 ### API Client Exports
 
 ```typescript
-export const gameApi = new GameApi(configuration);  // Generated REST client
-export const wsClient = websocketClient;            // WebSocket unified SDK
-export const apiClient = axios.create({...});       // Legacy direct axios client
+export const gameApi = createClient<paths>({         // Generated REST client (openapi-fetch)
+  baseUrl: getApiBaseUrl(),
+});
+export const wsClient = websocketClient;             // WebSocket unified SDK
 ```
 
 ### WebSocket Integration
@@ -368,7 +369,7 @@ export const getApiBaseUrl = () => {
 | Package | Purpose |
 |---------|---------|
 | `react` + `react-dom` | UI framework |
-| `axios` | HTTP client for generated API |
+| `openapi-fetch` | HTTP client for generated API |
 | `vite` | Build tool and dev server |
 | `typescript` | Type safety |
 | `vitest` | Unit testing |

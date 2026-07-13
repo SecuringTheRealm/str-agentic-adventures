@@ -53,7 +53,7 @@ Architecture Decision Records — 22 ADRs documenting all major technical decisi
 | [AZURE_OPENAI_REQUIREMENTS.md](AZURE_OPENAI_REQUIREMENTS.md) | Azure AI configuration guide |
 | [api-contracts-backend.md](api-contracts-backend.md) | REST and WebSocket API contracts |
 | [data-models-backend.md](data-models-backend.md) | Database schema and ORM models |
-| [migration-guide-azure-ai-sdk.md](migration-guide-azure-ai-sdk.md) | Semantic Kernel → Azure AI SDK migration reference |
+| [migration-guide-azure-ai-sdk.md](migration-guide-azure-ai-sdk.md) | Historical 2025 migration reference (superseded by ADR-0023) |
 | [contributions.md](contributions.md) | Open source acknowledgements |
 
 ---

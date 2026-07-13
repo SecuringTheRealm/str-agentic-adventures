@@ -87,7 +87,7 @@ Add to `backend/.env`:
 ```env
 AZURE_OPENAI_ENDPOINT=https://your-project.openai.azure.com/
 AZURE_OPENAI_API_KEY=your-api-key-here
-AZURE_OPENAI_CHAT_DEPLOYMENT=gpt-4o-mini
+AZURE_OPENAI_CHAT_DEPLOYMENT=gpt-5-mini
 AZURE_OPENAI_EMBEDDING_DEPLOYMENT=text-embedding-ada-002
 ```
 

@@ -1969,6 +1969,10 @@ export interface components {
       stealth_roll?: {
         [key: string]: unknown;
       } | null;
+      /** Action Economy */
+      action_economy?: {
+        [key: string]: boolean;
+      } | null;
     };
     /** ConcentrationCheckResponse */
     ConcentrationCheckResponse: {
