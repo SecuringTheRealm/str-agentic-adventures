@@ -1,6 +1,6 @@
 import type React from "react";
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import ErrorState from "../components/ErrorState";
 import GameInterface from "../components/GameInterface";
 import LoadingState from "../components/LoadingState";
@@ -9,7 +9,6 @@ import type { Campaign, Character } from "../types";
 
 const GamePage: React.FC = () => {
   const { id, characterId } = useParams<{ id: string; characterId: string }>();
-  const navigate = useNavigate();
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [character, setCharacter] = useState<Character | null>(null);
   const [loading, setLoading] = useState(true);

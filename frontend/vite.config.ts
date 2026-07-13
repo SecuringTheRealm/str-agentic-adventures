@@ -29,11 +29,7 @@ export default defineConfig({
     forceRerunTriggers: [],
     fileParallelism: false,
     pool: "threads",
-    poolOptions: {
-      threads: {
-        singleThread: true,
-      },
-    },
+    maxWorkers: 1,
     clearMocks: true,
     isolate: true,
     exclude: [

@@ -284,7 +284,7 @@ class WebSocketConnection {
       return;
     }
 
-    if (!this.url || !this.url.startsWith("ws")) {
+    if (!this.url?.startsWith("ws")) {
       throw new Error(`Invalid WebSocket URL: ${this.url}`);
     }
 

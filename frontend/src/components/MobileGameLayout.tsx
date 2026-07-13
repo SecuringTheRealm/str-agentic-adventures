@@ -106,6 +106,7 @@ const MobileGameLayout: React.FC<MobileGameLayoutProps> = ({
     return (
       <Tooltip>
         <TooltipTrigger asChild>
+          {/* biome-ignore lint/a11y/noNoninteractiveTabindex: span is the focusable Radix Tooltip trigger for a disabled button */}
           <span className={styles.visualButtonWrapper} tabIndex={0}>
             {button}
           </span>
