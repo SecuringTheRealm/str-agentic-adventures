@@ -2,6 +2,8 @@
 Tests for the inventory system API endpoints.
 """
 
+from unittest.mock import AsyncMock, patch
+
 import pytest
 from app.main import app
 from fastapi.testclient import TestClient
@@ -16,7 +18,7 @@ class TestInventorySystemEndpoints:
         return TestClient(app)
 
     def test_manage_equipment_equip(self, client) -> None:
-        """Test equipping equipment endpoint."""
+        """Equipping an item persists to the real inventory and reports its own effects."""
         character_id = "test_char_123"
         request_data = {
             "character_id": character_id,
@@ -25,19 +27,37 @@ class TestInventorySystemEndpoints:
             "slot": "chest",
         }
 
-        response = client.post(
-            f"/game/character/{character_id}/equipment", json=request_data
-        )
-        assert response.status_code == 200
+        with patch(
+            "app.api.routes.character_routes.get_scribe"
+        ) as mock_get_scribe:
+            mock_scribe = mock_get_scribe.return_value
+            mock_scribe.equip_item = AsyncMock(
+                return_value={
+                    "character_id": character_id,
+                    "equipped_item": {
+                        "id": "plate_armor",
+                        "effects": {"armor_class": 8, "stealth": -1},
+                    },
+                    "slot": "chest",
+                }
+            )
 
-        data = response.json()
-        assert data["success"] is True
-        assert "Successfully equipped" in data["message"]
-        assert "armor_class" in data["stat_changes"]
-        assert data["armor_class_change"] == 8
+            response = client.post(
+                f"/game/character/{character_id}/equipment", json=request_data
+            )
+            assert response.status_code == 200
+
+            data = response.json()
+            assert data["success"] is True
+            assert "Successfully equipped" in data["message"]
+            assert data["stat_changes"]["armor_class"] == 8
+            assert data["armor_class_change"] == 8
+            mock_scribe.equip_item.assert_called_once_with(
+                character_id, "plate_armor", "chest"
+            )
 
     def test_manage_equipment_unequip(self, client) -> None:
-        """Test unequipping equipment endpoint."""
+        """Unequipping an item reverses its effects and persists the change."""
         character_id = "test_char_123"
         request_data = {
             "character_id": character_id,
@@ -46,16 +66,67 @@ class TestInventorySystemEndpoints:
             "slot": "chest",
         }
 
+        with patch(
+            "app.api.routes.character_routes.get_scribe"
+        ) as mock_get_scribe:
+            mock_scribe = mock_get_scribe.return_value
+            mock_scribe.unequip_item = AsyncMock(
+                return_value={
+                    "character_id": character_id,
+                    "unequipped_item": {
+                        "id": "plate_armor",
+                        "effects": {"armor_class": 8},
+                    },
+                    "slot": "chest",
+                }
+            )
+
+            response = client.post(
+                f"/game/character/{character_id}/equipment", json=request_data
+            )
+            assert response.status_code == 200
+
+            data = response.json()
+            assert data["success"] is True
+            assert "Successfully unequipped" in data["message"]
+            assert data["armor_class_change"] == -8  # Negative because unequipping
+
+    def test_manage_equipment_character_not_found(self, client) -> None:
+        """A nonexistent character returns 404, not fake success."""
+        character_id = "does-not-exist"
+        request_data = {
+            "character_id": character_id,
+            "action": "equip",
+            "equipment_id": "plate_armor",
+            "slot": "chest",
+        }
+
+        with patch(
+            "app.api.routes.character_routes.get_scribe"
+        ) as mock_get_scribe:
+            mock_scribe = mock_get_scribe.return_value
+            mock_scribe.equip_item = AsyncMock(
+                return_value={"error": f"Character {character_id} not found"}
+            )
+
+            response = client.post(
+                f"/game/character/{character_id}/equipment", json=request_data
+            )
+            assert response.status_code == 404
+
+    def test_manage_equipment_missing_slot(self, client) -> None:
+        """Equipping without a slot is an honest 400, not fake success."""
+        character_id = "test_char_123"
+        request_data = {
+            "character_id": character_id,
+            "action": "equip",
+            "equipment_id": "plate_armor",
+        }
+
         response = client.post(
             f"/game/character/{character_id}/equipment", json=request_data
         )
-        assert response.status_code == 200
-
-        data = response.json()
-        assert data["success"] is True
-        assert "Successfully unequipped" in data["message"]
-        assert "armor_class" in data["stat_changes"]
-        assert data["armor_class_change"] == -8  # Negative because unequipping
+        assert response.status_code == 400
 
     def test_manage_equipment_invalid_action(self, client) -> None:
         """Test equipment management with invalid action rejects at schema level."""
@@ -75,23 +146,53 @@ class TestInventorySystemEndpoints:
         assert any(e["loc"][-1] == "action" for e in data["detail"])
 
     def test_get_encumbrance(self, client) -> None:
-        """Test getting character encumbrance."""
+        """Encumbrance is computed from the real character's Strength and inventory."""
         character_id = "test_char_123"
 
-        response = client.get(f"/game/character/{character_id}/encumbrance")
-        assert response.status_code == 200
+        with patch(
+            "app.api.routes.character_routes.get_scribe"
+        ) as mock_get_scribe:
+            mock_scribe = mock_get_scribe.return_value
+            mock_scribe.calculate_encumbrance = AsyncMock(
+                return_value={
+                    "character_id": character_id,
+                    "total_weight": 85.5,
+                    "carrying_capacity": 225,  # STR 15 * 15, per SRD
+                    "push_drag_lift": 450,
+                    "encumbrance_level": "unencumbered",
+                    "speed_penalty": 0,
+                    "weight_breakdown": {"inventory": 85.5, "equipment": 0},
+                }
+            )
 
-        data = response.json()
-        assert data["character_id"] == character_id
-        assert "current_weight" in data
-        assert "carrying_capacity" in data
-        assert data["encumbrance_level"] in [
-            "unencumbered",
-            "encumbered",
-            "heavily_encumbered",
-        ]
-        assert "speed_penalty" in data
-        assert isinstance(data["speed_penalty"], int)
+            response = client.get(f"/game/character/{character_id}/encumbrance")
+            assert response.status_code == 200
+
+            data = response.json()
+            assert data["character_id"] == character_id
+            assert data["current_weight"] == 85.5
+            assert data["carrying_capacity"] == 225
+            assert data["encumbrance_level"] in [
+                "unencumbered",
+                "encumbered",
+                "heavily_encumbered",
+            ]
+            assert isinstance(data["speed_penalty"], int)
+
+    def test_get_encumbrance_character_not_found(self, client) -> None:
+        """A nonexistent character returns 404, not hardcoded fake data."""
+        character_id = "does-not-exist"
+
+        with patch(
+            "app.api.routes.character_routes.get_scribe"
+        ) as mock_get_scribe:
+            mock_scribe = mock_get_scribe.return_value
+            mock_scribe.calculate_encumbrance = AsyncMock(
+                return_value={"error": f"Character {character_id} not found"}
+            )
+
+            response = client.get(f"/game/character/{character_id}/encumbrance")
+            assert response.status_code == 404
 
     def test_manage_magical_effects_apply(self, client) -> None:
         """Test applying magical item effects."""

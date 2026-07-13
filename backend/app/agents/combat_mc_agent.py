@@ -29,23 +29,50 @@ def resolve_attack(
     damage_dice: str,
     advantage: bool = False,
     disadvantage: bool = False,
+    attacker_conditions: list[str] | None = None,
+    target_conditions: list[str] | None = None,
 ) -> str:
     """Resolve a melee or ranged attack roll against a target's armour class.
 
-    Determines hit or miss and calculates damage.
+    Determines hit or miss and calculates damage. Natural 20 always hits and
+    crits; natural 1 always misses (SRD p.194).
 
     :param attack_bonus: The attacker's total attack bonus.
     :param target_ac: The target's armour class.
     :param damage_dice: Damage dice notation (e.g., 1d8+3).
     :param advantage: Whether the attack has advantage.
     :param disadvantage: Whether the attack has disadvantage.
+    :param attacker_conditions: D&D 5e condition names currently affecting
+        the attacker (e.g. ["prone", "poisoned"]).
+    :param target_conditions: D&D 5e condition names currently affecting the
+        target (e.g. ["restrained"]).
     :return: JSON-encoded attack resolution result.
     """
+    from app.rules_engine import get_attack_modifiers
+
+    condition_mods = get_attack_modifiers(
+        attacker_conditions or [], target_conditions or []
+    )
+    advantage = advantage or condition_mods["advantage"]
+    disadvantage = disadvantage or condition_mods["disadvantage"]
+
     roll = DiceRoller.roll_d20(attack_bonus, advantage, disadvantage)
-    hit = roll["total"] >= target_ac
-    result: dict[str, Any] = {"attack_roll": roll, "hit": hit, "target_ac": target_ac}
+    natural_roll = roll["total"] - roll["modifier"]
+    critical = natural_roll == 20
+    miss = natural_roll == 1
+    hit = True if critical else False if miss else roll["total"] >= target_ac
+    result: dict[str, Any] = {
+        "attack_roll": roll,
+        "hit": hit,
+        "critical": critical,
+        "target_ac": target_ac,
+    }
     if hit:
         damage = DiceRoller.roll_damage(damage_dice)
+        if critical:
+            extra = DiceRoller.roll_damage(damage_dice)
+            damage["total"] += extra["total"]
+            damage["rolls"].extend(extra["rolls"])
         result["damage"] = damage
     return json.dumps(result)
 

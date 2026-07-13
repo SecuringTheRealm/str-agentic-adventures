@@ -2,12 +2,7 @@ import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { useMediaQuery } from "../hooks/useMediaQuery";
 import { useRealtimeVoice } from "../hooks/useRealtimeVoice";
 import { useWebSocketSDK } from "../hooks/useWebSocketSDK";
@@ -27,10 +22,10 @@ import BattleMap from "./BattleMap";
 import CharacterSheet from "./CharacterSheet";
 import ChatBox from "./ChatBox";
 import DiceRoller from "./DiceRoller";
-import FloorRequestCard from "./FloorRequestCard";
 import styles from "./GameInterface.module.css";
 import ImageDisplay from "./ImageDisplay";
 import MobileGameLayout from "./MobileGameLayout";
+import VisualActionButton from "./VisualActionButton";
 
 interface GameInterfaceProps {
   character: Character;
@@ -111,7 +106,6 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
   const [suggestedActions, setSuggestedActions] = useState<string[]>([]);
 
   const voice = useRealtimeVoice();
-  const [dmWantsFloor, setDmWantsFloor] = useState(false);
 
   // Stable session ID for image-generation budget tracking.
   // useRef ensures it never changes across re-renders.
@@ -137,23 +131,58 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
     setCheckingImageGenerationAvailability,
   ] = useState<boolean>(true);
 
+  // Watchdog for a chat turn that dies mid-stream (socket drops between
+  // chat_start_stream and chat_complete): without this the "thinking"
+  // spinner never clears because chat_complete/chat_error simply never
+  // arrives.
+  const chatWatchdogRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const CHAT_RESPONSE_TIMEOUT_MS = 30000;
+
+  const clearChatWatchdog = useCallback(() => {
+    if (chatWatchdogRef.current) {
+      clearTimeout(chatWatchdogRef.current);
+      chatWatchdogRef.current = null;
+    }
+  }, []);
+
+  const armChatWatchdog = useCallback(() => {
+    clearChatWatchdog();
+    chatWatchdogRef.current = setTimeout(() => {
+      setIsStreaming(false);
+      setLoading(false);
+      setStreamingMessage("");
+      setMessages((prev) => [
+        ...prev,
+        {
+          text: "Connection lost while waiting for a response. Please try again.",
+          sender: "dm",
+        },
+      ]);
+    }, CHAT_RESPONSE_TIMEOUT_MS);
+  }, [clearChatWatchdog]);
+
+  useEffect(() => clearChatWatchdog, [clearChatWatchdog]);
+
   const handleChatWebSocketMessage = (message: WebSocketMessage) => {
     switch (message.type) {
       case "chat_start":
         setLoading(true);
         setIsStreaming(false);
         setStreamingMessage("");
+        armChatWatchdog();
         break;
 
       case "chat_typing":
         setLoading(true);
         setIsStreaming(false);
+        armChatWatchdog();
         break;
 
       case "chat_start_stream":
         setLoading(false);
         setIsStreaming(true);
         setStreamingMessage("");
+        armChatWatchdog();
         break;
 
       case "chat_stream":
@@ -163,9 +192,11 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
               ""
           );
         }
+        armChatWatchdog();
         break;
 
       case "chat_complete":
+        clearChatWatchdog();
         setIsStreaming(false);
         setLoading(false);
         if (typeof message.message === "string") {
@@ -178,6 +209,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
         break;
 
       case "chat_error":
+        clearChatWatchdog();
         setIsStreaming(false);
         setLoading(false);
         setMessages((prev) => [
@@ -233,7 +265,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
           // Attempt to load structured battle map data
           generateStructuredBattleMap(
             { location: "dungeon", terrain: "stone", size: "medium" },
-            message.combat_context as object | undefined
+            message.combat_context as Record<string, unknown> | undefined
           )
             .then((data) => setBattleMapData(data))
             .catch((err) =>
@@ -272,10 +304,6 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
       case "character_update":
         // Handle character updates (would need character state management)
         console.log("Character update received:", message);
-        break;
-
-      case "dm_floor_request":
-        setDmWantsFloor(true);
         break;
 
       default:
@@ -663,41 +691,6 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
     imageGenerationStatusMessage ||
     (imagesRemaining === 0 ? "Image limit reached for this session." : null);
 
-  const renderVisualButton = (
-    label: string,
-    onClick: () => Promise<void>,
-    testId: string
-  ) => {
-    const button = (
-      <Button
-        variant="secondary"
-        onClick={() => {
-          void onClick();
-        }}
-        disabled={visualsDisabled}
-        data-testid={testId}
-      >
-        {imageLoading ? "Generating..." : label}
-      </Button>
-    );
-
-    if (!visualsDisabled || !visualsDisabledReason) {
-      return button;
-    }
-
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          {/* biome-ignore lint/a11y/noNoninteractiveTabindex: span is the focusable Radix Tooltip trigger for a disabled button */}
-          <span className={styles.visualButtonWrapper} tabIndex={0}>
-            {button}
-          </span>
-        </TooltipTrigger>
-        <TooltipContent>{visualsDisabledReason}</TooltipContent>
-      </Tooltip>
-    );
-  };
-
   const handleTokenMove = useCallback(
     (tokenId: string, x: number, y: number) => {
       // Optimistic local update
@@ -978,10 +971,6 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
           aria-label="Visuals and battle map"
           className={styles.rightPanel}
         >
-          <FloorRequestCard
-            visible={dmWantsFloor}
-            onGrantFloor={() => setDmWantsFloor(false)}
-          />
           <TooltipProvider delayDuration={150}>
             <div className={styles.visualControls}>
               <h4>Generate Visuals</h4>
@@ -1002,21 +991,30 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
                 </p>
               )}
               <div className={styles.visualButtons}>
-                {renderVisualButton(
-                  "Character Portrait",
-                  handleGenerateCharacterPortrait,
-                  "generate-portrait-button"
-                )}
-                {renderVisualButton(
-                  "Scene Illustration",
-                  handleGenerateSceneIllustration,
-                  "generate-scene-button"
-                )}
-                {renderVisualButton(
-                  "Battle Map",
-                  handleGenerateBattleMap,
-                  "generate-battle-map-button"
-                )}
+                <VisualActionButton
+                  label="Character Portrait"
+                  loading={imageLoading}
+                  onClick={handleGenerateCharacterPortrait}
+                  disabled={visualsDisabled}
+                  disabledReason={visualsDisabledReason}
+                  testId="generate-portrait-button"
+                />
+                <VisualActionButton
+                  label="Scene Illustration"
+                  loading={imageLoading}
+                  onClick={handleGenerateSceneIllustration}
+                  disabled={visualsDisabled}
+                  disabledReason={visualsDisabledReason}
+                  testId="generate-scene-button"
+                />
+                <VisualActionButton
+                  label="Battle Map"
+                  loading={imageLoading}
+                  onClick={handleGenerateBattleMap}
+                  disabled={visualsDisabled}
+                  disabledReason={visualsDisabledReason}
+                  testId="generate-battle-map-button"
+                />
               </div>
             </div>
           </TooltipProvider>

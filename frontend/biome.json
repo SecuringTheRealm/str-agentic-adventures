@@ -42,5 +42,27 @@
       "bracketSpacing": true,
       "quoteStyle": "double"
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["src/components/**", "src/hooks/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "../api-client/client": "Import from services/api.ts instead of the SDK client directly.",
+                  "../../api-client/client": "Import from services/api.ts instead of the SDK client directly.",
+                  "../api-client/websocketClient": "Import wsClient from services/api.ts instead.",
+                  "../../api-client/websocketClient": "Import wsClient from services/api.ts instead."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
 }

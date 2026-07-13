@@ -5,8 +5,8 @@ This implementation provides real-time multiplayer communication using FastAPI's
 native WebSocket support, as per the updated ADR 0008 decision.
 
 Campaign-scoped endpoints validate that the campaign exists before accepting the
-connection.  The global endpoint applies per-client rate limiting to prevent
-broadcast-based DoS (see issue #650).
+connection.  All endpoints (chat, campaign, and global) apply per-client rate
+limiting to prevent message-flood DoS (see issue #650 and ADR-0022).
 """
 
 import json
@@ -216,10 +216,23 @@ async def chat_websocket(websocket: WebSocket, campaign_id: str) -> None:
         return
 
     await manager.connect(websocket, campaign_id)
+    client_key = _client_key_for(websocket)
     try:
         while True:
             # Listen for chat messages from client
             data = await websocket.receive_text()
+
+            # Rate-limit inbound messages
+            if not _rate_limit_ok(client_key):
+                await manager.send_personal_message(
+                    json.dumps({
+                        "type": "error",
+                        "message": "Rate limit exceeded. Please slow down.",
+                    }),
+                    websocket,
+                )
+                continue
+
             try:
                 message = json.loads(data)
                 await handle_chat_message(message, websocket, campaign_id)
@@ -229,6 +242,7 @@ async def chat_websocket(websocket: WebSocket, campaign_id: str) -> None:
                     websocket,
                 )
     except WebSocketDisconnect:
+        _global_ws_rate.pop(client_key, None)
         manager.disconnect(websocket, campaign_id)
         logger.info("Client disconnected from chat in campaign %s", campaign_id)
 
@@ -276,10 +290,23 @@ async def campaign_websocket(
         websocket,
     )
 
+    client_key = _client_key_for(websocket)
     try:
         while True:
             # Listen for messages from client
             data = await websocket.receive_text()
+
+            # Rate-limit inbound messages
+            if not _rate_limit_ok(client_key):
+                await manager.send_personal_message(
+                    json.dumps({
+                        "type": "error",
+                        "message": "Rate limit exceeded. Please slow down.",
+                    }),
+                    websocket,
+                )
+                continue
+
             try:
                 message = json.loads(data)
                 await handle_websocket_message(message, websocket, campaign_id)
@@ -289,6 +316,7 @@ async def campaign_websocket(
                     websocket,
                 )
     except WebSocketDisconnect:
+        _global_ws_rate.pop(client_key, None)
         # Broadcast player_leave before cleaning up
         if player_name:
             # Disconnect first so the leaving player doesn't get their own leave msg

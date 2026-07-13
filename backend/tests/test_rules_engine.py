@@ -493,3 +493,16 @@ class TestIsAsiLevel:
     )
     def test_non_asi_levels(self, level: int) -> None:
         assert is_asi_level(level) is False
+
+    def test_fighter_bonus_asi_at_level_6(self) -> None:
+        """Fighter gets bonus ASIs beyond the base 5-level rule (F05)."""
+        assert is_asi_level(6, "fighter") is True
+
+    def test_fighter_bonus_asi_at_level_14(self) -> None:
+        assert is_asi_level(14, "fighter") is True
+
+    def test_rogue_bonus_asi_at_level_10(self) -> None:
+        assert is_asi_level(10, "rogue") is True
+
+    def test_wizard_has_no_bonus_asi_at_level_6(self) -> None:
+        assert is_asi_level(6, "wizard") is False

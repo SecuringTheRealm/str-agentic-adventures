@@ -14,11 +14,13 @@ from app.srd_data import (
     get_all_weapons,
     get_armor_by_category,
     get_armor_by_id,
+    get_asi_levels,
     get_level_for_xp,
     get_monster_by_id,
     get_monster_by_name,
     get_monsters_by_cr,
     get_monsters_by_type,
+    get_spell_slots,
     get_weapon_by_id,
     get_weapons_by_category,
     get_weapons_with_property,
@@ -442,3 +444,62 @@ class TestArmor:
         all_armor = get_all_armor()
         assert isinstance(all_armor, list)
         assert len(all_armor) >= 13
+
+
+# ---------------------------------------------------------------------------
+# ASI levels per class (F05)
+# ---------------------------------------------------------------------------
+
+
+class TestGetAsiLevels:
+    """Fighter and Rogue get bonus ASIs beyond the base 4/8/12/16/19 rule."""
+
+    def test_fighter_asi_levels_include_bonus_levels(self) -> None:
+        assert get_asi_levels("fighter") == [4, 6, 8, 12, 14, 16, 19]
+
+    def test_rogue_asi_levels_include_bonus_level(self) -> None:
+        assert get_asi_levels("rogue") == [4, 8, 10, 12, 16, 19]
+
+    def test_wizard_asi_levels_are_base_only(self) -> None:
+        assert get_asi_levels("wizard") == [4, 8, 12, 16, 19]
+
+
+# ---------------------------------------------------------------------------
+# Spell slots per class/level (F28)
+# ---------------------------------------------------------------------------
+
+
+class TestGetSpellSlots:
+    """SRD spell slot progression for full casters, half casters, and warlock."""
+
+    def test_full_caster_level_1(self) -> None:
+        assert get_spell_slots("wizard", 1) == {1: 2}
+
+    def test_full_caster_level_3_gets_second_level_slots(self) -> None:
+        assert get_spell_slots("wizard", 3) == {1: 4, 2: 2}
+
+    def test_full_caster_level_20(self) -> None:
+        assert get_spell_slots("sorcerer", 20) == {
+            1: 4,
+            2: 3,
+            3: 3,
+            4: 3,
+            5: 3,
+            6: 2,
+            7: 2,
+            8: 1,
+            9: 1,
+        }
+
+    def test_half_caster_no_slots_at_level_1(self) -> None:
+        assert get_spell_slots("paladin", 1) == {}
+
+    def test_half_caster_matches_full_caster_at_half_level(self) -> None:
+        # Paladin level 5 casts like a full caster at level 3.
+        assert get_spell_slots("paladin", 5) == {1: 4, 2: 2}
+
+    def test_warlock_uses_pact_magic_table(self) -> None:
+        assert get_spell_slots("warlock", 5) == {3: 2}
+
+    def test_non_caster_gets_no_slots(self) -> None:
+        assert get_spell_slots("fighter", 10) == {}

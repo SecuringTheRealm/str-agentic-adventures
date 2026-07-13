@@ -47,29 +47,37 @@ async def get_realtime_token() -> dict:
                 "Content-Type": "application/json",
             }
 
+        deployment = settings.azure_openai_realtime_deployment
+
         async with httpx.AsyncClient() as client:
+            # GA realtime protocol: POST /openai/v1/realtime/client_secrets, no
+            # api-version query param. See:
+            # https://learn.microsoft.com/azure/foundry/openai/how-to/realtime-audio-webrtc
             response = await client.post(
-                f"{endpoint}/openai/realtime/sessions?api-version=2025-04-01-preview",
+                f"{endpoint}/openai/v1/realtime/client_secrets",
                 headers=headers,
                 json={
-                    "model": "gpt-realtime-mini",
-                    "voice": "ballad",
+                    "session": {
+                        "type": "realtime",
+                        "model": deployment,
+                        "audio": {"output": {"voice": "ballad"}},
+                    },
                 },
                 timeout=10.0,
             )
             response.raise_for_status()
             data = response.json()
 
-        token_value = data.get("client_secret", {}).get("value")
+        token_value = data.get("value")
         if not token_value:
             raise HTTPException(status_code=502, detail="Realtime session returned no token")
 
         return {
             "token": token_value,
             "endpoint": endpoint,
-            "deployment": "gpt-realtime-mini",
+            "deployment": deployment,
             "voice": "ballad",
-            "expires_at": data.get("client_secret", {}).get("expires_at"),
+            "expires_at": data.get("expires_at"),
         }
 
     except httpx.HTTPStatusError as e:

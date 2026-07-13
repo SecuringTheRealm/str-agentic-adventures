@@ -45,6 +45,22 @@ export const useWebSocketSDK = (options: UseWebSocketSDKOptions) => {
     maxReconnectAttempts,
   } = options;
 
+  // Keep the latest callback props in refs so `connect` doesn't need them in
+  // its dependency array. Callers (e.g. GameInterface) pass brand-new inline
+  // closures on every render; putting them in deps gave `connect` a new
+  // identity each render, which tore the socket down via the mount effect's
+  // cleanup before it ever stabilised. Plain assignment on every render is
+  // fine here since these are only read from within WebSocket event
+  // callbacks, never during render.
+  const onConnectRef = useRef(onConnect);
+  onConnectRef.current = onConnect;
+  const onDisconnectRef = useRef(onDisconnect);
+  onDisconnectRef.current = onDisconnect;
+  const onMessageRef = useRef(onMessage);
+  onMessageRef.current = onMessage;
+  const onErrorRef = useRef(onError);
+  onErrorRef.current = onError;
+
   const connect = useCallback(() => {
     if (connectionRef.current?.isConnected()) {
       return;
@@ -61,18 +77,18 @@ export const useWebSocketSDK = (options: UseWebSocketSDKOptions) => {
           setIsConnected(true);
           setIsConnecting(false);
           setError(null);
-          onConnect?.();
+          onConnectRef.current?.();
         },
         onDisconnect: () => {
           setIsConnected(false);
           setIsConnecting(false);
-          onDisconnect?.();
+          onDisconnectRef.current?.();
         },
-        onMessage,
+        onMessage: (message) => onMessageRef.current?.(message),
         onError: (event) => {
           setError("WebSocket connection error");
           setIsConnecting(false);
-          onError?.(event);
+          onErrorRef.current?.(event);
         },
       };
 
@@ -102,16 +118,7 @@ export const useWebSocketSDK = (options: UseWebSocketSDKOptions) => {
       setError(errorMessage);
       setIsConnecting(false);
     }
-  }, [
-    connectionType,
-    campaignId,
-    onConnect,
-    onDisconnect,
-    onMessage,
-    onError,
-    reconnectInterval,
-    maxReconnectAttempts,
-  ]);
+  }, [connectionType, campaignId, reconnectInterval, maxReconnectAttempts]);
 
   const disconnect = useCallback(() => {
     shouldConnectRef.current = false;

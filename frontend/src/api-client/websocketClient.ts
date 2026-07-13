@@ -165,10 +165,6 @@ export interface TokenMoveMessage extends BaseWebSocketMessage {
   y: number;
 }
 
-export interface DmFloorRequestMessage extends BaseWebSocketMessage {
-  type: "dm_floor_request";
-}
-
 /**
  * Union type of all possible WebSocket messages
  */
@@ -186,7 +182,6 @@ export type WebSocketMessage =
   | CharacterUpdateMessage
   | DmNarrationMessage
   | TokenMoveMessage
-  | DmFloorRequestMessage
   | PlayerJoinMessage
   | PlayerLeaveMessage
   | PlayerListMessage

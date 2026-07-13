@@ -1053,20 +1053,33 @@ class RulesEnginePlugin:
             logger.error("Error calculating proficiency bonus: %s", str(e))
             return {"error": f"Error calculating proficiency bonus: {str(e)}"}
 
-    def check_asi_eligibility(self, level: int, asi_used: int) -> dict[str, Any]:
+    def check_asi_eligibility(
+        self, level: int, asi_used: int, char_class: str | None = None
+    ) -> dict[str, Any]:
         """
         Check if a character can gain ability score improvement at their level.
 
         Args:
             level: The character's level
             asi_used: Number of ASI/feats already used
+            char_class: The character's class. When given, uses the exact
+                per-class ASI levels (Fighter/Rogue get bonus levels);
+                otherwise falls back to the base 5-level rule shared by
+                all classes.
 
         Returns:
             Dict[str, Any]: ASI eligibility information
         """
         try:
+            if char_class:
+                from app.srd_data import get_asi_levels
+
+                asi_levels = get_asi_levels(char_class)
+            else:
+                asi_levels = self.asi_levels
+
             asi_levels_reached = [
-                asi_level for asi_level in self.asi_levels if level >= asi_level
+                asi_level for asi_level in asi_levels if level >= asi_level
             ]
             asi_available = len(asi_levels_reached)
             asi_remaining = max(asi_available - asi_used, 0)

@@ -4,33 +4,51 @@ import logging
 import random
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, Response, status
+from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
+from app.agents.scribe_agent import get_scribe
 from app.database import DbDep
 from app.models.api_models import (
-    ManageSpellsResult,
     ManageSpellSlotsResult,
+    ManageSpellsResult,
     SpellAttackBonusResponse,
     SpellSaveDCResponse,
 )
 from app.models.game_models import (
     CastSpellRequest,
     CharacterClass,
+    CharacterSheet,
     ConcentrationCheckResponse,
     ConcentrationRequest,
     ManageSpellSlotsRequest,
     ManageSpellsRequest,
     Spell,
     SpellAttackBonusRequest,
+    SpellCasting,
     SpellCastingResponse,
     SpellListResponse,
+    SpellSlot,
 )
+from app.srd_data import get_spell_slots
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["spells"])
+
+# Spellcasting ability by class (D&D 5e SRD).
+SPELLCASTING_ABILITIES: dict[str, str] = {
+    "wizard": "intelligence",
+    "artificer": "intelligence",
+    "cleric": "wisdom",
+    "druid": "wisdom",
+    "ranger": "wisdom",
+    "bard": "charisma",
+    "paladin": "charisma",
+    "sorcerer": "charisma",
+    "warlock": "charisma",
+}
 
 
 class SpellSaveDCRequest(BaseModel):
@@ -41,12 +59,50 @@ class SpellSaveDCRequest(BaseModel):
 
 @router.post("/character/{character_id}/spells", response_model=ManageSpellsResult)
 async def manage_character_spells(
-    character_id: str, request: ManageSpellsRequest, response: Response
+    character_id: str, request: ManageSpellsRequest
 ) -> dict[str, Any]:
-    """Manage known spells for a character."""
+    """Learn, forget, prepare, or unprepare spells, persisted to the character sheet."""
     try:
-        # Stub: no persistence yet — returns confirmation without storing
-        response.headers["X-Fallback"] = "true"
+        scribe = get_scribe()
+        character_data = await scribe.get_character(character_id)
+        if character_data is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Character {character_id} not found",
+            )
+
+        character = CharacterSheet.model_validate(character_data)
+        if character.spellcasting is None:
+            character.spellcasting = SpellCasting(
+                spellcasting_ability=SPELLCASTING_ABILITIES.get(
+                    character.character_class.value, "intelligence"
+                )
+            )
+
+        known = set(character.spellcasting.known_spells)
+        prepared = set(character.spellcasting.prepared_spells)
+
+        if request.action == "learn":
+            known.update(request.spell_ids)
+        elif request.action == "forget":
+            known.difference_update(request.spell_ids)
+            prepared.difference_update(request.spell_ids)
+        elif request.action == "prepare":
+            unknown = set(request.spell_ids) - known
+            if unknown:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Cannot prepare unknown spells: {sorted(unknown)}",
+                )
+            prepared.update(request.spell_ids)
+        elif request.action == "unprepare":
+            prepared.difference_update(request.spell_ids)
+
+        character.spellcasting.known_spells = sorted(known)
+        character.spellcasting.prepared_spells = sorted(prepared)
+
+        await scribe.update_character(character_id, character.model_dump())
+
         return {
             "character_id": character_id,
             "action": request.action,
@@ -54,6 +110,8 @@ async def manage_character_spells(
             "success": True,
             "message": f"Successfully {request.action} spells for character {character_id}",
         }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -65,12 +123,58 @@ async def manage_character_spells(
     "/character/{character_id}/spell-slots", response_model=ManageSpellSlotsResult
 )
 async def manage_spell_slots(
-    character_id: str, request: ManageSpellSlotsRequest, response: Response
+    character_id: str, request: ManageSpellSlotsRequest
 ) -> dict[str, Any]:
-    """Manage spell slot usage and recovery for a character."""
+    """Expend, recover, or set a character's spell slots, persisted to their sheet."""
     try:
-        # Stub: no persistence yet — returns confirmation without storing
-        response.headers["X-Fallback"] = "true"
+        scribe = get_scribe()
+        character_data = await scribe.get_character(character_id)
+        if character_data is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Character {character_id} not found",
+            )
+
+        character = CharacterSheet.model_validate(character_data)
+        if character.spellcasting is None:
+            character.spellcasting = SpellCasting(
+                spellcasting_ability=SPELLCASTING_ABILITIES.get(
+                    character.character_class.value, "intelligence"
+                )
+            )
+
+        slot = next(
+            (
+                s
+                for s in character.spellcasting.spell_slots
+                if s.level == request.slot_level
+            ),
+            None,
+        )
+        if slot is None:
+            default_total = get_spell_slots(
+                character.character_class.value, character.level
+            ).get(request.slot_level, 0)
+            slot = SpellSlot(level=request.slot_level, total=default_total)
+            character.spellcasting.spell_slots.append(slot)
+
+        count = request.count if request.count is not None else 1
+
+        if request.action == "use":
+            if slot.used + count > slot.total:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"No level {request.slot_level} spell slots remaining",
+                )
+            slot.used += count
+        elif request.action == "recover":
+            slot.used = max(0, slot.used - count)
+        elif request.action == "set":
+            slot.total = count
+            slot.used = min(slot.used, count)
+
+        await scribe.update_character(character_id, character.model_dump())
+
         return {
             "character_id": character_id,
             "action": request.action,
@@ -79,6 +183,8 @@ async def manage_spell_slots(
             "success": True,
             "message": f"Successfully {request.action} spell slots for character {character_id}",
         }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -376,21 +482,8 @@ async def calculate_spell_save_dc_endpoint(
 ) -> dict[str, Any]:
     """Calculate spell save DC for a character."""
     try:
-        # Map character classes to their spellcasting abilities
-        spellcasting_abilities = {
-            "wizard": "intelligence",
-            "artificer": "intelligence",
-            "cleric": "wisdom",
-            "druid": "wisdom",
-            "ranger": "wisdom",
-            "bard": "charisma",
-            "paladin": "charisma",
-            "sorcerer": "charisma",
-            "warlock": "charisma",
-        }
-
         # Get spellcasting ability for the class
-        spellcasting_ability = spellcasting_abilities.get(request.character_class.value)
+        spellcasting_ability = SPELLCASTING_ABILITIES.get(request.character_class.value)
         if not spellcasting_ability:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -499,21 +592,8 @@ async def manage_concentration(character_id: str, request: ConcentrationRequest)
 async def calculate_spell_attack_bonus(request: SpellAttackBonusRequest) -> dict[str, Any]:
     """Calculate spell attack bonus for a character."""
     try:
-        # Map character classes to their spellcasting abilities
-        spellcasting_abilities = {
-            "wizard": "intelligence",
-            "artificer": "intelligence",
-            "cleric": "wisdom",
-            "druid": "wisdom",
-            "ranger": "wisdom",
-            "bard": "charisma",
-            "paladin": "charisma",
-            "sorcerer": "charisma",
-            "warlock": "charisma",
-        }
-
         # Get spellcasting ability for the class
-        spellcasting_ability = spellcasting_abilities.get(request.character_class)
+        spellcasting_ability = SPELLCASTING_ABILITIES.get(request.character_class)
         if not spellcasting_ability:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,

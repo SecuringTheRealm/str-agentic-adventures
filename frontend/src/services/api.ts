@@ -11,6 +11,7 @@
  * without requiring Java or generated runtime code.
  */
 import { api } from "../api-client/client";
+import type { components } from "../api-client/schema.d.ts";
 // Import WebSocket client for unified SDK
 import {
   WebSocketClient,
@@ -19,7 +20,6 @@ import {
   websocketClient,
 } from "../api-client/websocketClient";
 import type { BattleMapData } from "../types/battleMap";
-import { getApiBaseUrl } from "../utils/urls";
 
 // Export WebSocket client for unified SDK access
 export const wsClient = websocketClient;
@@ -83,35 +83,30 @@ export interface Campaign {
   predefined_characters?: Record<string, unknown>[];
 }
 
-export interface CharacterCreateRequest {
-  name: string;
+// Request bodies below are typed directly from the generated OpenAPI schema
+// (see schema.d.ts) rather than hand-rolled here, so a backend field rename
+// or a tightened type (e.g. race/character_class literal unions) is caught
+// by tsc instead of silently passing through an `as any`/`as never` cast.
+export type CharacterCreateRequest = Omit<
+  components["schemas"]["CreateCharacterRequest"],
+  "race" | "character_class"
+> & {
+  // Kept loose here: callers (e.g. CharacterCreation.tsx) collect race/class
+  // from free-form select values and createCharacter() below lowercases
+  // them before sending, so the narrowing to the schema's literal unions
+  // happens at the request boundary, not in component state.
   race: string;
   character_class: string;
-  abilities: AbilityScores;
-  backstory?: string;
-}
+};
 
-export interface CampaignCreateRequest {
-  name: string;
-  setting?: string;
-  tone?: string;
-  homebrew_rules?: string[];
-  description?: string;
-}
+export type CampaignCreateRequest =
+  components["schemas"]["CreateCampaignRequest"];
 
-export interface CampaignUpdateRequest {
-  name?: string;
-  description?: string;
-  setting?: string;
-  tone?: string;
-  homebrew_rules?: string[];
-  world_description?: string;
-}
+export type CampaignUpdateRequest =
+  components["schemas"]["CampaignUpdateRequest"];
 
-export interface CloneCampaignRequest {
-  template_id: string;
-  name?: string;
-}
+export type CloneCampaignRequest =
+  components["schemas"]["CloneCampaignRequest"];
 
 export interface PlayerInput {
   character_id: string;
@@ -119,19 +114,10 @@ export interface PlayerInput {
   message: string;
 }
 
-export interface AIAssistanceRequest {
-  prompt: string;
-  context: string;
-  campaign_tone: string | null;
-}
+export type AIAssistanceRequest = components["schemas"]["AIAssistanceRequest"];
 
-export interface AIContentGenerationRequest {
-  suggestion: string;
-  current_text: string;
-  content_type?: string;
-  context_type: string;
-  campaign_tone: string | null;
-}
+export type AIContentGenerationRequest =
+  components["schemas"]["AIContentGenerationRequest"];
 
 export interface InventoryItem {
   name?: string;
@@ -169,10 +155,6 @@ export interface VisualGenerationStatus {
   message: string | null;
 }
 
-interface DependencyHealthStatus {
-  azure_openai?: "healthy" | "degraded" | "unavailable";
-}
-
 // ============================================================================
 // API wrapper functions
 //
@@ -183,16 +165,16 @@ interface DependencyHealthStatus {
 export const createCharacter = async (
   characterData: CharacterCreateRequest
 ): Promise<Character> => {
-  // Normalise race and character_class to lowercase as backend expects
-  const body = {
+  // Normalise race and character_class to lowercase as backend expects,
+  // narrowing to the schema's literal unions at this request boundary.
+  const body: components["schemas"]["CreateCharacterRequest"] = {
     ...characterData,
-    race: characterData.race?.toLowerCase(),
-    character_class: characterData.character_class?.toLowerCase(),
+    race: characterData.race?.toLowerCase() as components["schemas"]["Race"],
+    character_class:
+      characterData.character_class?.toLowerCase() as components["schemas"]["CharacterClass"],
   };
 
-  const { data, error } = await api.POST("/game/character", {
-    body: body as any,
-  });
+  const { data, error } = await api.POST("/game/character", { body });
   if (error) throw error;
   return data as Character;
 };
@@ -219,7 +201,7 @@ export const createCampaign = async (
   campaignData: CampaignCreateRequest
 ): Promise<Campaign> => {
   const { data, error } = await api.POST("/game/campaign", {
-    body: campaignData as any,
+    body: campaignData,
   });
   if (error) throw error;
   return data as Campaign;
@@ -249,7 +231,7 @@ export const updateCampaign = async (
 ): Promise<Campaign> => {
   const { data, error } = await api.PUT("/game/campaign/{campaign_id}", {
     params: { path: { campaign_id: campaignId } },
-    body: updates as any,
+    body: updates,
   });
   if (error) throw error;
   return data as Campaign;
@@ -259,7 +241,7 @@ export const cloneCampaign = async (
   cloneData: CloneCampaignRequest
 ): Promise<Campaign> => {
   const { data, error } = await api.POST("/game/campaign/clone", {
-    body: cloneData as any,
+    body: cloneData,
   });
   if (error) throw error;
   return data as Campaign;
@@ -326,54 +308,52 @@ export const getCampaignTemplatesWithRetry = async (): Promise<Campaign[]> => {
 
 export const getAIAssistance = async (request: AIAssistanceRequest) => {
   const { data, error } = await api.POST("/game/campaign/ai-assist", {
-    body: request as any,
+    body: request,
   });
   if (error) throw error;
-  return data as { suggestions: string[]; enhanced_text?: string | null };
+  return data;
 };
 
 export const generateAIContent = async (
   request: AIContentGenerationRequest
 ) => {
   const { data, error } = await api.POST("/game/campaign/ai-generate", {
-    body: request as any,
-  });
-  if (error) throw error;
-  return data as {
-    generated_content: string;
-    success: boolean;
-    error?: string | null;
-  };
-};
-
-export const generateImage = async (imageRequest: Record<string, unknown>) => {
-  const { data, error } = await api.POST("/game/generate-image", {
-    body: imageRequest as never,
+    body: request,
   });
   if (error) throw error;
   return data;
 };
 
+export const generateImage = async (
+  imageRequest: components["schemas"]["GenerateImageRequest"]
+) => {
+  const { data, error } = await api.POST("/game/generate-image", {
+    body: imageRequest,
+  });
+  if (error) throw error;
+  return data;
+};
+
+// /game/battle-map's request body is a genuinely untyped dict on the
+// backend (see schema.d.ts) -- Record<string, unknown> matches it exactly,
+// no cast needed.
 export const generateBattleMap = async (
   mapRequest: Record<string, unknown>
 ) => {
   const { data, error } = await api.POST("/game/battle-map", {
-    body: mapRequest as never,
+    body: mapRequest,
   });
   if (error) throw error;
   return data;
 };
 
 export const generateStructuredBattleMap = async (
-  environment: object,
-  combatContext?: object
+  environment: components["schemas"]["EnvironmentSpec"],
+  combatContext?: Record<string, unknown>
 ): Promise<BattleMapData> => {
-  const { data, error } = await (api as any).POST(
-    "/game/battle-map/structured",
-    {
-      body: { environment, combat_context: combatContext },
-    }
-  );
+  const { data, error } = await api.POST("/game/battle-map/structured", {
+    body: { environment, combat_context: combatContext },
+  });
   if (error) throw error;
   return data as BattleMapData;
 };
@@ -391,7 +371,7 @@ export const getOpeningNarrative = async (
     "/game/campaign/{campaign_id}/opening-narrative",
     {
       params: { path: { campaign_id: campaignId } },
-      body: { character } as never,
+      body: { character },
     }
   );
   if (error) throw error;
@@ -400,18 +380,10 @@ export const getOpeningNarrative = async (
 
 export const getVisualGenerationStatus =
   async (): Promise<VisualGenerationStatus> => {
-    const response = await fetch(`${getApiBaseUrl()}/health/dependencies`, {
-      headers: { Accept: "application/json" },
-    });
+    const { data, error } = await api.GET("/health/dependencies");
+    if (error) throw error;
 
-    if (!response.ok) {
-      throw new Error(
-        `Failed to load visual generation status (${response.status.toString()})`
-      );
-    }
-
-    const dependencyHealth = (await response.json()) as DependencyHealthStatus;
-    const azureStatus = dependencyHealth.azure_openai ?? "unavailable";
+    const azureStatus = data.azure_openai ?? "unavailable";
 
     if (azureStatus === "healthy") {
       return {
@@ -451,14 +423,14 @@ export const rollDice = async (
 ) => {
   if (characterId && skill) {
     const { data, error } = await api.POST("/game/dice/roll-with-character", {
-      body: { notation, character_id: characterId, skill } as never,
+      body: { notation, character_id: characterId, skill },
     });
     if (error) throw error;
     return data;
   }
 
   const { data, error } = await api.POST("/game/dice/roll", {
-    body: { notation } as never,
+    body: { notation },
   });
   if (error) throw error;
   return data;

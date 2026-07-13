@@ -2,9 +2,34 @@
 Tests for the spell system API endpoints.
 """
 
+from unittest.mock import AsyncMock, patch
+
 import pytest
 from app.main import app
 from fastapi.testclient import TestClient
+
+
+def _wizard_character_data(**overrides):
+    """A minimal persisted wizard character dict, as returned by scribe.get_character."""
+    data = {
+        "id": "test_char_123",
+        "name": "Test Wizard",
+        "race": "human",
+        "character_class": "wizard",
+        "level": 3,
+        "abilities": {
+            "strength": 8,
+            "dexterity": 14,
+            "constitution": 12,
+            "intelligence": 16,
+            "wisdom": 10,
+            "charisma": 10,
+        },
+        "hit_points": {"current": 18, "maximum": 18},
+        "spellcasting": None,
+    }
+    data.update(overrides)
+    return data
 
 
 class TestSpellSystemEndpoints:
@@ -16,26 +41,68 @@ class TestSpellSystemEndpoints:
         return TestClient(app)
 
     def test_manage_character_spells(self, client) -> None:
-        """Test managing character spells endpoint."""
+        """Learning spells persists them to the character sheet."""
         character_id = "test_char_123"
         request_data = {
             "action": "learn",
             "spell_ids": ["magic_missile", "fireball"],
         }
 
-        response = client.post(
-            f"/game/character/{character_id}/spells", json=request_data
-        )
-        assert response.status_code == 200
+        with patch("app.api.routes.spell_routes.get_scribe") as mock_get_scribe:
+            mock_scribe = mock_get_scribe.return_value
+            mock_scribe.get_character = AsyncMock(
+                return_value=_wizard_character_data()
+            )
+            mock_scribe.update_character = AsyncMock(return_value={})
 
-        data = response.json()
-        assert data["character_id"] == character_id
-        assert data["action"] == "learn"
-        assert data["spell_ids"] == ["magic_missile", "fireball"]
-        assert data["success"] is True
+            response = client.post(
+                f"/game/character/{character_id}/spells", json=request_data
+            )
+            assert response.status_code == 200
+
+            data = response.json()
+            assert data["character_id"] == character_id
+            assert data["action"] == "learn"
+            assert data["spell_ids"] == ["magic_missile", "fireball"]
+            assert data["success"] is True
+
+            # The character sheet passed to persistence has the learned spells.
+            updated = mock_scribe.update_character.call_args[0][1]
+            assert set(updated["spellcasting"]["known_spells"]) == {
+                "magic_missile",
+                "fireball",
+            }
+
+    def test_manage_character_spells_prepare_requires_known(self, client) -> None:
+        """Preparing a spell that hasn't been learned is an honest 400, not fake success."""
+        character_id = "test_char_123"
+        request_data = {"action": "prepare", "spell_ids": ["fireball"]}
+
+        with patch("app.api.routes.spell_routes.get_scribe") as mock_get_scribe:
+            mock_scribe = mock_get_scribe.return_value
+            mock_scribe.get_character = AsyncMock(
+                return_value=_wizard_character_data()
+            )
+
+            response = client.post(
+                f"/game/character/{character_id}/spells", json=request_data
+            )
+            assert response.status_code == 400
+
+    def test_manage_character_spells_not_found(self, client) -> None:
+        """A nonexistent character returns 404, not fake success."""
+        with patch("app.api.routes.spell_routes.get_scribe") as mock_get_scribe:
+            mock_scribe = mock_get_scribe.return_value
+            mock_scribe.get_character = AsyncMock(return_value=None)
+
+            response = client.post(
+                "/game/character/does-not-exist/spells",
+                json={"action": "learn", "spell_ids": ["magic_missile"]},
+            )
+            assert response.status_code == 404
 
     def test_manage_spell_slots(self, client) -> None:
-        """Test managing spell slots endpoint."""
+        """Using a spell slot persists the expenditure to the character sheet."""
         character_id = "test_char_123"
         request_data = {
             "action": "use",
@@ -43,16 +110,46 @@ class TestSpellSystemEndpoints:
             "count": 1,
         }
 
-        response = client.post(
-            f"/game/character/{character_id}/spell-slots", json=request_data
-        )
-        assert response.status_code == 200
+        with patch("app.api.routes.spell_routes.get_scribe") as mock_get_scribe:
+            mock_scribe = mock_get_scribe.return_value
+            mock_scribe.get_character = AsyncMock(
+                return_value=_wizard_character_data()
+            )
+            mock_scribe.update_character = AsyncMock(return_value={})
 
-        data = response.json()
-        assert data["character_id"] == character_id
-        assert data["action"] == "use"
-        assert data["slot_level"] == 1
-        assert data["success"] is True
+            response = client.post(
+                f"/game/character/{character_id}/spell-slots", json=request_data
+            )
+            assert response.status_code == 200
+
+            data = response.json()
+            assert data["character_id"] == character_id
+            assert data["action"] == "use"
+            assert data["slot_level"] == 1
+            assert data["success"] is True
+
+            # A level-3 wizard has 4 level-1 slots (SRD table); one was spent.
+            updated = mock_scribe.update_character.call_args[0][1]
+            slots = updated["spellcasting"]["spell_slots"]
+            level_1_slot = next(s for s in slots if s["level"] == 1)
+            assert level_1_slot["total"] == 4
+            assert level_1_slot["used"] == 1
+
+    def test_manage_spell_slots_cannot_exceed_total(self, client) -> None:
+        """Using more slots than remain is an honest 400, not fake success."""
+        character_id = "test_char_123"
+        request_data = {"action": "use", "slot_level": 1, "count": 5}
+
+        with patch("app.api.routes.spell_routes.get_scribe") as mock_get_scribe:
+            mock_scribe = mock_get_scribe.return_value
+            mock_scribe.get_character = AsyncMock(
+                return_value=_wizard_character_data()
+            )
+
+            response = client.post(
+                f"/game/character/{character_id}/spell-slots", json=request_data
+            )
+            assert response.status_code == 400
 
     def test_cast_spell_in_combat(self, client) -> None:
         """Test casting spell in combat endpoint."""

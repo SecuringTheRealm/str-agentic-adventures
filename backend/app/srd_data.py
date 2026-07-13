@@ -159,6 +159,102 @@ def get_class_info(character_class: str) -> dict[str, Any]:
     return class_data.get(character_class.lower(), {})
 
 
+ASI_FEATURE_NAME = "Ability Score Improvement"
+
+
+# D&D 5e SRD spell slots per spell level (1-9), by caster level 1-20.
+# Full casters (bard, cleric, druid, sorcerer, wizard) use this table directly.
+FULL_CASTER_SPELL_SLOTS: dict[int, list[int]] = {
+    1: [2],
+    2: [3],
+    3: [4, 2],
+    4: [4, 3],
+    5: [4, 3, 2],
+    6: [4, 3, 3],
+    7: [4, 3, 3, 1],
+    8: [4, 3, 3, 2],
+    9: [4, 3, 3, 3, 1],
+    10: [4, 3, 3, 3, 2],
+    11: [4, 3, 3, 3, 2, 1],
+    12: [4, 3, 3, 3, 2, 1],
+    13: [4, 3, 3, 3, 2, 1, 1],
+    14: [4, 3, 3, 3, 2, 1, 1],
+    15: [4, 3, 3, 3, 2, 1, 1, 1],
+    16: [4, 3, 3, 3, 2, 1, 1, 1],
+    17: [4, 3, 3, 3, 2, 1, 1, 1, 1],
+    18: [4, 3, 3, 3, 3, 1, 1, 1, 1],
+    19: [4, 3, 3, 3, 3, 2, 1, 1, 1],
+    20: [4, 3, 3, 3, 3, 2, 2, 1, 1],
+}
+
+# Warlock Pact Magic: (slot_level, slot_count) by character level (separate
+# short-rest-recovery system per the SRD; not the full-caster table above).
+WARLOCK_PACT_SLOTS: dict[int, tuple[int, int]] = {
+    1: (1, 1), 2: (1, 2), 3: (2, 2), 4: (2, 2), 5: (3, 2),
+    6: (3, 2), 7: (4, 2), 8: (4, 2), 9: (5, 2), 10: (5, 2),
+    11: (5, 3), 12: (5, 3), 13: (5, 3), 14: (5, 3), 15: (5, 3),
+    16: (5, 3), 17: (5, 4), 18: (5, 4), 19: (5, 4), 20: (5, 4),
+}
+
+FULL_CASTER_CLASSES = frozenset({"bard", "cleric", "druid", "sorcerer", "wizard"})
+HALF_CASTER_CLASSES = frozenset({"paladin", "ranger"})
+
+
+def get_spell_slots(character_class: str, level: int) -> dict[int, int]:
+    """Get the number of spell slots per spell level for a class at a level.
+
+    Full casters (bard/cleric/druid/sorcerer/wizard) use the standard SRD
+    slot table directly by character level. Half-casters (paladin/ranger)
+    use the same table at their effective caster level and get no slots
+    below level 2. Warlock uses the separate Pact Magic table. All other
+    classes (and levels outside 1-20) get no spell slots.
+
+    Args:
+        character_class: The character class name.
+        level: The character's level.
+
+    Returns:
+        A dict mapping spell level (1-9) to number of slots available.
+    """
+    char_class = character_class.lower()
+    if not 1 <= level <= 20:
+        return {}
+
+    if char_class == "warlock":
+        slot_level, count = WARLOCK_PACT_SLOTS[level]
+        return {slot_level: count}
+
+    if char_class in FULL_CASTER_CLASSES:
+        caster_level = level
+    elif char_class in HALF_CASTER_CLASSES:
+        if level < 2:
+            return {}
+        caster_level = (level + 1) // 2
+    else:
+        return {}
+
+    return dict(enumerate(FULL_CASTER_SPELL_SLOTS[caster_level], start=1))
+
+
+def get_asi_levels(character_class: str) -> list[int]:
+    """Get the levels (1-20) at which a class gains an Ability Score Improvement.
+
+    Most classes get ASIs at 4, 8, 12, 16, 19; Fighter and Rogue get bonus
+    ASIs at extra levels per the D&D 5e SRD (encoded in class_features.json).
+
+    Args:
+        character_class: The character class name (e.g. 'fighter', 'rogue').
+
+    Returns:
+        A sorted list of levels that grant an Ability Score Improvement.
+    """
+    return [
+        level
+        for level in range(1, 21)
+        if ASI_FEATURE_NAME in get_features_at_level(character_class, level)
+    ]
+
+
 def get_racial_traits(race: str) -> dict[str, Any]:
     """Get racial traits for a specific race."""
     racial_data = load_racial_traits()

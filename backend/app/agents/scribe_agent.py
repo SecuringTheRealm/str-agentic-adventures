@@ -1072,13 +1072,21 @@ class ScribeAgent(BaseAgent):
 
                 proficiency_bonus = prof_result["proficiency_bonus"]
 
-                asi_info = rules_engine.check_asi_eligibility(next_level, asi_used)
+                asi_info = rules_engine.check_asi_eligibility(
+                    next_level, asi_used, character_class
+                )
                 if asi_info.get("error"):
                     return asi_info
 
+                level_features = get_class_features(character_class, next_level) or []
+                is_asi_level_for_class = any(
+                    feature.get("name") == "Ability Score Improvement"
+                    for feature in level_features
+                )
+
                 if (
                     remaining_improvements
-                    and next_level in getattr(rules_engine, "asi_levels", [])
+                    and is_asi_level_for_class
                     and asi_info.get("asi_remaining", 0) > 0
                 ):
                     total_improvements = sum(remaining_improvements.values())
@@ -1112,7 +1120,6 @@ class ScribeAgent(BaseAgent):
                         asi_used += 1
                         remaining_improvements = None
 
-                level_features = get_class_features(character_class, next_level) or []
                 character.setdefault("features", [])
                 existing_features = {
                     (feature.get("name"), feature.get("level_gained"))

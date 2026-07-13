@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     # Model Deployments (names match Bicep deployment resource names)
     azure_openai_chat_deployment: str = "gpt-41-mini"
     azure_openai_dalle_deployment: str = "gpt-image-1-mini"
+    azure_openai_realtime_deployment: str = "gpt-realtime-mini"
 
     # Per-agent chat deployment overrides (F03). Empty string falls back to
     # ``azure_openai_chat_deployment`` via ``deployment_for()``. Only the three

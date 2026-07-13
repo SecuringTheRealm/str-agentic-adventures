@@ -1,12 +1,7 @@
 import type React from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import type { Campaign, Character, DiceResult } from "../types";
 import BattleMap from "./BattleMap";
 import CharacterSheet from "./CharacterSheet";
@@ -16,6 +11,7 @@ import DiceRoller from "./DiceRoller";
 import ImageDisplay from "./ImageDisplay";
 import MobileDrawer from "./MobileDrawer";
 import styles from "./MobileGameLayout.module.css";
+import VisualActionButton from "./VisualActionButton";
 
 type TabId = "chat" | "character" | "gamestate" | "map";
 
@@ -81,40 +77,6 @@ const MobileGameLayout: React.FC<MobileGameLayoutProps> = ({
   const disabledReason =
     imageGenerationStatusMessage ||
     (imagesRemaining === 0 ? "Image limit reached for this session." : null);
-
-  const renderVisualButton = (
-    label: string,
-    onClick: () => void,
-    testId: string
-  ) => {
-    const button = (
-      <Button
-        variant="default"
-        onClick={onClick}
-        disabled={visualsDisabled}
-        style={{ minHeight: 44 }}
-        data-testid={testId}
-      >
-        {imageLoading ? "Generating..." : label}
-      </Button>
-    );
-
-    if (!disabledReason || !visualsDisabled) {
-      return button;
-    }
-
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          {/* biome-ignore lint/a11y/noNoninteractiveTabindex: span is the focusable Radix Tooltip trigger for a disabled button */}
-          <span className={styles.visualButtonWrapper} tabIndex={0}>
-            {button}
-          </span>
-        </TooltipTrigger>
-        <TooltipContent>{disabledReason}</TooltipContent>
-      </Tooltip>
-    );
-  };
 
   return (
     <div className={styles.mobileLayout} data-testid="mobile-game-layout">
@@ -182,21 +144,36 @@ const MobileGameLayout: React.FC<MobileGameLayoutProps> = ({
                       : "Image limit reached"}
                   </p>
                 )}
-                {renderVisualButton(
-                  "Character Portrait",
-                  onGeneratePortrait,
-                  "generate-portrait-button"
-                )}
-                {renderVisualButton(
-                  "Scene Illustration",
-                  onGenerateScene,
-                  "generate-scene-button"
-                )}
-                {renderVisualButton(
-                  "Battle Map",
-                  onGenerateBattleMap,
-                  "generate-battle-map-button"
-                )}
+                <VisualActionButton
+                  label="Character Portrait"
+                  loading={imageLoading}
+                  onClick={onGeneratePortrait}
+                  disabled={visualsDisabled}
+                  disabledReason={disabledReason}
+                  testId="generate-portrait-button"
+                  variant="default"
+                  style={{ minHeight: 44 }}
+                />
+                <VisualActionButton
+                  label="Scene Illustration"
+                  loading={imageLoading}
+                  onClick={onGenerateScene}
+                  disabled={visualsDisabled}
+                  disabledReason={disabledReason}
+                  testId="generate-scene-button"
+                  variant="default"
+                  style={{ minHeight: 44 }}
+                />
+                <VisualActionButton
+                  label="Battle Map"
+                  loading={imageLoading}
+                  onClick={onGenerateBattleMap}
+                  disabled={visualsDisabled}
+                  disabledReason={disabledReason}
+                  testId="generate-battle-map-button"
+                  variant="default"
+                  style={{ minHeight: 44 }}
+                />
                 <ImageDisplay imageUrl={currentImage} />
               </div>
             </TooltipProvider>
