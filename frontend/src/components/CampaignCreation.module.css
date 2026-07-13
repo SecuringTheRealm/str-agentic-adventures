@@ -114,14 +114,10 @@
 .formGroup input:focus,
 .formGroup select:focus,
 .formGroup textarea:focus {
-  outline: none;
+  outline: 2px solid var(--color-accent-gold);
+  outline-offset: 2px;
   border-color: var(--color-accent-gold); /* Gold focus border */
   box-shadow: 0 0 0 2px var(--color-gold-glow-20);
-
-  outline: 2px solid #e4bb1e;
-  outline-offset: 2px;
-  border-color: #e4bb1e; /* Gold focus border */
-  box-shadow: 0 0 0 2px rgba(228, 187, 30, 0.2);
 }
 
 .optionalField {

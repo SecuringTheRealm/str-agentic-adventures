@@ -9,6 +9,9 @@ on:
   push:
     branches: [main]
     paths-ignore: ['**.md', 'docs/**']
+  schedule:
+    # Run nightly at 3 AM UTC to save runner minutes (re-enabled: flow-test selectors fixed, #751)
+    - cron: '0 3 * * *'
   workflow_dispatch:
 
 jobs:
