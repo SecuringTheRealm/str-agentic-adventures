@@ -82,9 +82,9 @@ const ChatBox: React.FC<ChatBoxProps> = ({
       {voiceEnabled && <VoiceIndicator isSpeaking={isSpeaking ?? false} />}
       <ScrollArea className={styles.messagesContainer}>
         <div role="log" aria-live="polite" aria-label="Chat messages">
-          {messages.map((message, index) => (
+          {messages.map((message) => (
             <div
-              key={`msg-${index}`}
+              key={`${message.sender}-${message.text}`}
               className={`${styles.message} ${message.sender === "player" ? styles.playerMessage : styles.dmMessage}`}
             >
               <div className={styles.messageSender}>

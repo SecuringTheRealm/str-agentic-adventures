@@ -1,0 +1,7 @@
+.visualButtonWrapper {
+  display: block;
+}
+
+.visualButtonWrapper > button {
+  width: 100%;
+}

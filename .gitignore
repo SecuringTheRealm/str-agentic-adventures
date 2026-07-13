@@ -413,6 +413,7 @@ evidence.csv
 
 # Bicep generated files
 infra/main.json
+infra/modules/*.json
 
 # Local databases and cache files
 *.db

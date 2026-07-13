@@ -155,8 +155,39 @@ module aiFoundry 'modules/ai-foundry.bicep' = {
   }
 }
 
-// Backend Container App will be deployed separately via GitHub Actions workflow
-// This ensures the latest code is always deployed without requiring Bicep updates
+// Backend Container App — provisioned here so azd/CI has somewhere to deploy the
+// image to; `azd deploy` (or an `az containerapp update --image`) replaces the
+// placeholder image on each push.
+module containerApp 'modules/container-apps.bicep' = {
+  name: 'container-app'
+  scope: rg
+  params: {
+    name: '${environmentName}-backend'
+    location: location
+    tags: tags
+    containerAppsEnvironmentId: containerAppsEnvironment.outputs.id
+    containerRegistryLoginServer: containerRegistry.outputs.loginServer
+    managedIdentityId: managedIdentity.outputs.id
+    managedIdentityClientId: managedIdentity.outputs.clientId
+    keyVaultUri: keyVault.outputs.uri
+    azureOpenAiEndpoint: aiFoundry.outputs.endpoint
+    azureAiProjectEndpoint: aiFoundry.outputs.projectEndpoint
+    chatDeployment: aiFoundry.outputs.chatDeploymentName
+    dmDeployment: aiFoundry.outputs.dmDeploymentName
+    narratorDeployment: aiFoundry.outputs.chatDeploymentName
+    combatDeployment: aiFoundry.outputs.chatDeploymentName
+    cartographerDeployment: aiFoundry.outputs.chatDeploymentName
+    scribeDeployment: aiFoundry.outputs.nanoDeploymentName
+    artistDeployment: aiFoundry.outputs.nanoDeploymentName
+    imageDeployment: aiFoundry.outputs.imageDeploymentName
+    realtimeDeployment: aiFoundry.outputs.realtimeDeploymentName
+    storageAccountName: storage.outputs.name
+    appInsightsConnectionString: appInsights.outputs.connectionString
+    databaseHost: postgresql.outputs.host
+    databaseName: postgresql.outputs.databaseName
+    databaseUser: postgresql.outputs.administratorLogin
+  }
+}
 
 // Create cost budget with alert notifications (only if contact emails provided)
 module budget 'modules/budget.bicep' = if (length(budgetContactEmails) > 0) {
@@ -178,7 +209,7 @@ module frontend 'modules/frontend.bicep' = {
     name: '${environmentName}-frontend-${resourceToken}'
     location: 'westeurope'  // Static Web Apps not available in all regions; westeurope is nearest supported
     tags: tags
-    backendUrl: 'https://${environmentName}-backend.${containerAppsEnvironment.outputs.defaultDomain}/api'
+    backendUrl: 'https://${containerApp.outputs.fqdn}/api'
   }
 }
 
@@ -204,3 +235,6 @@ output DATABASE_NAME string = postgresql.outputs.databaseName
 output APPLICATIONINSIGHTS_CONNECTION_STRING string = appInsights.outputs.connectionString
 output AZURE_OPENAI_ENDPOINT string = aiFoundry.outputs.endpoint
 output AZURE_AI_FOUNDRY_NAME string = aiFoundry.outputs.name
+output AZURE_AI_PROJECT_ENDPOINT string = aiFoundry.outputs.projectEndpoint
+output SERVICE_BACKEND_NAME string = containerApp.outputs.name
+output SERVICE_BACKEND_URI string = 'https://${containerApp.outputs.fqdn}'

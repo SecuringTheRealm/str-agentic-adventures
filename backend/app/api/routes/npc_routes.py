@@ -9,6 +9,10 @@ from typing import Any
 from fastapi import APIRouter, HTTPException, status
 
 from app.database import DbDep
+from app.models.api_models import (
+    NPCConversationRecordedResponse,
+    NPCDialogueContextResponse,
+)
 from app.models.db_models import NPC as NPCDB
 from app.models.db_models import NPCProfileDB, NPCRelationshipDB
 from app.models.game_models import (
@@ -488,7 +492,10 @@ async def update_npc_disposition(
 # ---------------------------------------------------------------------------
 
 
-@router.get("/npcs/{campaign_id}/{npc_id}/dialogue-context")
+@router.get(
+    "/npcs/{campaign_id}/{npc_id}/dialogue-context",
+    response_model=NPCDialogueContextResponse,
+)
 async def get_npc_dialogue_context(
     campaign_id: str,
     npc_id: str,
@@ -507,6 +514,7 @@ async def get_npc_dialogue_context(
 @router.post(
     "/npcs/{campaign_id}/{npc_id}/conversation",
     status_code=status.HTTP_201_CREATED,
+    response_model=NPCConversationRecordedResponse,
 )
 async def record_npc_conversation(
     campaign_id: str,

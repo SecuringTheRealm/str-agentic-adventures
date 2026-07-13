@@ -2,7 +2,6 @@
  > AI-powered web app for tabletop RPGs that replaces the human Dungeon Master while maintaining creativity, flexibility, and immersion.
 
 ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/SecuringTheRealm/str-agentic-adventures/unit-tests.yml?branch=main&label=Tests)
-![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/SecuringTheRealm/str-agentic-adventures/deploy-production.yml?branch=main&label=Production%20Deployment)
 ![GitHub issues](https://img.shields.io/github/issues/SecuringTheRealm/str-agentic-adventures)
 ![GitHub](https://img.shields.io/github/license/SecuringTheRealm/str-agentic-adventures)
 ![GitHub Repo stars](https://img.shields.io/github/stars/SecuringTheRealm/str-agentic-adventures?style=social)
@@ -98,7 +97,7 @@ For setup instructions, see [Deployment Guide](docs/deployment.md).
 
 ### Required Azure Services
 
-- **Azure AI Foundry project** with deployed OpenAI models (GPT-4o-mini, text-embedding-ada-002, gpt-image-1-mini)
+- **Azure AI Foundry project** with deployed OpenAI models (gpt-41-mini, gpt-realtime-mini, gpt-image-1-mini)
 - **Azure Container Apps** for backend hosting
 - **Azure Static Web Apps** for frontend hosting
 - **Azure Storage Account** for file and image storage
@@ -125,8 +124,8 @@ To run the application locally, you need access to Azure OpenAI models through A
 2. **Deploy required models**:
    - Navigate to **Deployments** in your Azure AI Foundry project
    - Deploy the following models:
-     - **GPT-4o-mini** (for chat completion)
-     - **text-embedding-ada-002** (for embeddings)
+     - **gpt-41-mini** (for chat completion)
+     - **gpt-realtime-mini** (for realtime voice, optional)
      - **gpt-image-1-mini** (for image generation, optional)
 
 3. **Get your endpoints and keys**:
@@ -143,8 +142,8 @@ To run the application locally, you need access to Azure OpenAI models through A
    # Edit .env file with your Azure AI Foundry credentials:
    # AZURE_OPENAI_ENDPOINT=https://your-project.openai.azure.com/
    # AZURE_OPENAI_API_KEY=your-api-key-here
-   # AZURE_OPENAI_CHAT_DEPLOYMENT=gpt-4o-mini
-   # AZURE_OPENAI_EMBEDDING_DEPLOYMENT=text-embedding-ada-002
+   # AZURE_OPENAI_CHAT_DEPLOYMENT=gpt-41-mini
+   # AZURE_OPENAI_REALTIME_DEPLOYMENT=gpt-realtime-mini
    ```
 
 2. **Install dependencies and start services**:

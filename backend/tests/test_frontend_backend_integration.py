@@ -214,7 +214,9 @@ class TestFrontendBackendIntegration:
 
         # Should succeed with mocked response or handle fallback gracefully
         # Accept 200 (success), 404 (character not found), or 500 (unexpected error in fallback)
-        assert response.status_code in [200, 404, 500], f"Unexpected status: {response.status_code}, response: {response.json()}"
+        assert response.status_code in [200, 404, 500], (
+            f"Unexpected status: {response.status_code}, response: {response.json()}"
+        )
 
     def test_image_generation_endpoint_exists(self, client) -> None:
         """Test image generation endpoint matches frontend expectations."""

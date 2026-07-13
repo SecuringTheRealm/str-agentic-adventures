@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from "react";
-import { getApiBaseUrl } from "../utils/urls";
+import { getRealtimeToken } from "../services/voice";
 
 type ConnectionState = "disconnected" | "connecting" | "connected" | "error";
 
@@ -40,10 +40,8 @@ export function useRealtimeVoice(): UseRealtimeVoiceReturn {
     setState((s) => ({ ...s, connectionState: "connecting", error: null }));
 
     try {
-      // 1. Get ephemeral token from backend
-      const tokenRes = await fetch(`${getApiBaseUrl()}/api/realtime/token`);
-      if (!tokenRes.ok) throw new Error("Failed to get realtime token");
-      const { token, endpoint, deployment } = await tokenRes.json();
+      // 1. Get ephemeral token from backend (via the typed SDK client)
+      const { token, endpoint } = await getRealtimeToken();
 
       // 2. Create WebRTC peer connection
       const pc = new RTCPeerConnection();
@@ -70,16 +68,25 @@ export function useRealtimeVoice(): UseRealtimeVoiceReturn {
       dcRef.current = dc;
 
       dc.onopen = () => {
-        // Configure session with DM system prompt
+        // Configure session with DM system prompt (GA session.update shape:
+        // https://learn.microsoft.com/azure/foundry/openai/how-to/realtime-audio-preview-api-migration-guide)
         dc.send(
           JSON.stringify({
             type: "session.update",
             session: {
+              type: "realtime",
               instructions:
                 "You are a Dungeon Master for a D&D 5e game. Narrate scenes vividly, voice NPCs with distinct personalities, and respond to player actions. Be dramatic but concise. Always yield the floor after responding — wait for the player to speak next.",
-              voice: "ballad",
-              input_audio_transcription: { model: "whisper-1" },
-              turn_detection: { type: "server_vad", silence_duration_ms: 800 },
+              audio: {
+                output: { voice: "ballad" },
+                input: {
+                  transcription: { model: "whisper-1" },
+                  turn_detection: {
+                    type: "server_vad",
+                    silence_duration_ms: 800,
+                  },
+                },
+              },
             },
           })
         );
@@ -88,13 +95,13 @@ export function useRealtimeVoice(): UseRealtimeVoiceReturn {
       dc.onmessage = (event) => {
         const msg = JSON.parse(event.data);
         switch (msg.type) {
-          case "response.audio_transcript.delta":
+          case "response.output_audio_transcript.delta":
             setState((s) => ({
               ...s,
               transcript: s.transcript + (msg.delta || ""),
             }));
             break;
-          case "response.audio_transcript.done":
+          case "response.output_audio_transcript.done":
             setState((s) => ({ ...s, isSpeaking: false }));
             break;
           case "response.created":
@@ -116,18 +123,17 @@ export function useRealtimeVoice(): UseRealtimeVoiceReturn {
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
 
+      // GA WebRTC connect endpoint — no deployment/api-version query params;
+      // the deployment travels in the session body via the token-mint call.
       const baseUrl = endpoint.replace(/\/$/, "");
-      const sdpRes = await fetch(
-        `${baseUrl}/openai/v1/realtime?deployment=${deployment}&api-version=2025-04-01-preview`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/sdp",
-          },
-          body: offer.sdp,
-        }
-      );
+      const sdpRes = await fetch(`${baseUrl}/openai/v1/realtime/calls`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/sdp",
+        },
+        body: offer.sdp,
+      });
 
       if (!sdpRes.ok) throw new Error(`SDP exchange failed: ${sdpRes.status}`);
 

@@ -9,6 +9,12 @@ from fastapi import APIRouter, HTTPException, status
 
 from app.agents.scribe_agent import get_scribe
 from app.database import get_session_context
+from app.models.api_models import (
+    CombatInitResult,
+    CombatTurnResult,
+    EncounterGenerationResult,
+    XPAwardResult,
+)
 from app.models.db_models import CombatState
 from app.utils.dice import DiceRoller
 
@@ -70,7 +76,7 @@ def _load_combat(combat_id: str) -> dict[str, Any] | None:
         return None
 
 
-@router.post("/combat/initialize", response_model=dict[str, Any])
+@router.post("/combat/initialize", response_model=CombatInitResult)
 async def initialize_combat(combat_data: dict[str, Any]) -> dict[str, Any]:
     """Initialize a new combat encounter."""
     try:
@@ -162,7 +168,7 @@ async def initialize_combat(combat_data: dict[str, Any]) -> dict[str, Any]:
         ) from e
 
 
-@router.post("/combat/{combat_id}/turn", response_model=dict[str, Any])
+@router.post("/combat/{combat_id}/turn", response_model=CombatTurnResult)
 async def process_combat_turn(combat_id: str, turn_data: dict[str, Any]) -> dict[str, Any]:
     """Process a single combat turn."""
     try:
@@ -299,7 +305,7 @@ async def process_combat_turn(combat_id: str, turn_data: dict[str, Any]) -> dict
         ) from e
 
 
-@router.post("/encounter/generate", response_model=dict[str, Any])
+@router.post("/encounter/generate", response_model=EncounterGenerationResult)
 async def generate_encounter(encounter_request: dict[str, Any]) -> dict[str, Any]:
     """Generate a balanced encounter for the party.
 
@@ -371,7 +377,7 @@ async def generate_encounter(encounter_request: dict[str, Any]) -> dict[str, Any
         ) from e
 
 
-@router.post("/encounter/xp-award", response_model=dict[str, Any])
+@router.post("/encounter/xp-award", response_model=XPAwardResult)
 async def encounter_xp_award(award_request: dict[str, Any]) -> dict[str, Any]:
     """Calculate XP awarded to each character after completing an encounter.
 

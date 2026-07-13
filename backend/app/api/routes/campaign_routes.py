@@ -6,6 +6,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException, status
 
 from app.config import ConfigDep
+from app.models.api_models import CampaignTemplatesResponse, MessageResponse
 from app.models.game_models import (
     Campaign,
     CampaignListResponse,
@@ -65,7 +66,7 @@ async def list_campaigns() -> dict[str, Any]:
         ) from e
 
 
-@router.get("/campaign/templates")
+@router.get("/campaign/templates", response_model=CampaignTemplatesResponse)
 async def get_campaign_templates() -> dict[str, Any]:
     """Get pre-built campaign templates."""
     try:
@@ -153,7 +154,7 @@ async def clone_campaign(clone_data: CloneCampaignRequest) -> dict[str, Any]:
         ) from None
 
 
-@router.delete("/campaign/{campaign_id}")
+@router.delete("/campaign/{campaign_id}", response_model=MessageResponse)
 async def delete_campaign(campaign_id: str) -> dict[str, Any]:
     """Delete a custom campaign (templates cannot be deleted)."""
     try:

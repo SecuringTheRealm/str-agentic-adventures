@@ -17,11 +17,12 @@
 - Only exception: external service calls (e.g., Azure Realtime SDP exchange).
 
 ## Agent Framework
-- Use the singleton `azure_openai_client` from `backend/app/azure_openai_client.py` — never instantiate clients directly.
-- All agents MUST handle Azure OpenAI unavailability: when `is_configured()` returns False, use deterministic fallback logic.
-- Microsoft Agent Framework SDK (azure-ai-agents) lifecycle: `create_agent` → `create_thread` → `add_message` → `create_and_process_run`. See `agent_client_setup.py`.
-- Circuit breaker (pybreaker) guards Azure calls — 3 failures trips open, 60s auto-reset. Check `/health/dependencies`.
-- See ADR-0018 for architectural decisions.
+- Chat runs through the GA Microsoft Agent Framework (`agent-framework-foundry`): the singleton `agent_client_manager` in `backend/app/agent_client_setup.py` wraps a `FoundryChatClient` (Foundry project endpoint + `DefaultAzureCredential`). Chat agents call `self.azure_client.chat_completion(...)` (their `azure_client` is the manager); never instantiate clients directly.
+- Availability is config-based: `settings.is_foundry_configured()` (chat) and `settings.is_azure_openai_configured()` (images). When unconfigured, agents use deterministic fallback logic — never call Azure. CI has no secrets, so fallback must always work.
+- Per-agent model: set `deployment_setting` on the agent (env `AZURE_OPENAI_{DM,NARRATOR,COMBAT}_DEPLOYMENT`, defaulting to `AZURE_OPENAI_CHAT_DEPLOYMENT`). No model router.
+- Images only: `azure_openai_client` (`AsyncAzureOpenAI.images.generate`, gpt-image-1 family). Not for chat.
+- Circuit breaker (pybreaker) wraps the real Azure chat + image calls — 3 failures trips open, 60s auto-reset. Check `/health/dependencies`.
+- See ADR-0023 (supersedes-in-part ADR-0018) for architectural decisions.
 
 ## Database
 - Use SQLAlchemy ORM for all DB interactions — never raw sqlite3/psycopg2.

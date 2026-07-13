@@ -9,6 +9,11 @@ from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 
 from app.database import DbDep
+from app.models.api_models import (
+    SaveSlotLoadResponse,
+    SaveSlotRestoreResponse,
+    SaveSlotSummaryResponse,
+)
 from app.models.db_models import Campaign as CampaignDB
 from app.models.db_models import SaveSlot as SaveSlotDB
 from app.models.game_models import (
@@ -189,7 +194,10 @@ async def delete_save_slot(campaign_id: str, slot_number: int, db: DbDep) -> Non
     db.commit()
 
 
-@router.post("/campaign/{campaign_id}/saves/{slot_number}/load")
+@router.post(
+    "/campaign/{campaign_id}/saves/{slot_number}/load",
+    response_model=SaveSlotLoadResponse,
+)
 async def load_save_slot(campaign_id: str, slot_number: int, db: DbDep) -> dict[str, Any]:
     """Load a save slot, returning the full save_data state blob."""
     campaign = db.query(CampaignDB).filter(CampaignDB.id == campaign_id).first()
@@ -232,7 +240,7 @@ async def load_save_slot(campaign_id: str, slot_number: int, db: DbDep) -> dict[
     response_model=SaveSlot,
     status_code=status.HTTP_201_CREATED,
 )
-async def capture_game_state(campaign_id: str, db: DbDep):
+async def capture_game_state(campaign_id: str, db: DbDep) -> SaveSlot:
     """Capture the current game state into a new save slot.
 
     Serialises all campaign data, characters, NPCs, NPC profiles,
@@ -312,8 +320,13 @@ async def capture_game_state(campaign_id: str, db: DbDep):
     return _save_slot_from_db(db_slot)
 
 
-@router.post("/campaign/{campaign_id}/saves/{slot_number}/restore")
-async def restore_game_state(campaign_id: str, slot_number: int, db: DbDep):
+@router.post(
+    "/campaign/{campaign_id}/saves/{slot_number}/restore",
+    response_model=SaveSlotRestoreResponse,
+)
+async def restore_game_state(
+    campaign_id: str, slot_number: int, db: DbDep
+) -> SaveSlotRestoreResponse:
     """Restore game state from a save slot.
 
     Reads the state blob from the specified save slot and recreates campaign
@@ -363,8 +376,13 @@ async def restore_game_state(campaign_id: str, slot_number: int, db: DbDep):
     }
 
 
-@router.get("/campaign/{campaign_id}/saves/{slot_number}/summary")
-async def get_save_summary(campaign_id: str, slot_number: int, db: DbDep):
+@router.get(
+    "/campaign/{campaign_id}/saves/{slot_number}/summary",
+    response_model=SaveSlotSummaryResponse,
+)
+async def get_save_summary(
+    campaign_id: str, slot_number: int, db: DbDep
+) -> SaveSlotSummaryResponse:
     """Return a human-readable summary of the state in a save slot."""
     campaign = db.query(CampaignDB).filter(CampaignDB.id == campaign_id).first()
     if not campaign:
@@ -388,5 +406,4 @@ async def get_save_summary(campaign_id: str, slot_number: int, db: DbDep):
         )
 
     state_data = db_slot.save_data or {}
-    summary = game_state_service.get_save_summary(state_data)
-    return summary
+    return game_state_service.get_save_summary(state_data)

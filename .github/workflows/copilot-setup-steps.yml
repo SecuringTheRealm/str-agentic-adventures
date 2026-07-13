@@ -1,6 +1,10 @@
 ---
 name: "Copilot Setup Steps"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 # This workflow customizes the GitHub Copilot coding agent environment.
 # See: https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/customize-the-agent-environment
 
@@ -91,6 +95,14 @@ jobs:
       # Set up Bun for frontend dependency management and tooling
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
+
+      # Cache Bun dependencies
+      - name: Cache bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('frontend/bun.lock') }}
+          restore-keys: ${{ runner.os }}-bun-
 
       # Install frontend dependencies
       - name: Install frontend dependencies

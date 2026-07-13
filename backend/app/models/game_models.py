@@ -256,6 +256,7 @@ class CharacterSheet(BaseModel):
     )
     hit_dice_remaining: int | None = None  # Defaults to level if None
     exhaustion_level: int = 0  # 0-6, 6 = death
+    conditions: list[str] = Field(default_factory=list)  # Active Condition values
 
 
 class CombatParticipant(BaseModel):
@@ -274,6 +275,7 @@ class Enemy(BaseModel):
     actions: list[dict[str, Any]]
     abilities: Abilities | None = None
     armor_class: int = 10
+    conditions: list[str] = Field(default_factory=list)  # Active Condition values
 
 
 class CombatEncounter(BaseModel):

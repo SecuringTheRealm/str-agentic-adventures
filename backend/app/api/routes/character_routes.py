@@ -3,10 +3,16 @@
 import logging
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, Response, status
+from fastapi import APIRouter, HTTPException, status
 
 from app.agents.scribe_agent import get_scribe
 from app.config import ConfigDep
+from app.models.api_models import (
+    AwardExperienceResult,
+    CharacterGetResponse,
+    LevelUpResult,
+    ProgressionInfoResponse,
+)
 from app.models.game_models import (
     AwardExperienceRequest,
     CharacterSheet,
@@ -58,7 +64,7 @@ async def create_character(character_data: CreateCharacterRequest, config: Confi
         ) from None
 
 
-@router.get("/character/{character_id}", response_model=dict[str, Any])
+@router.get("/character/{character_id}", response_model=CharacterGetResponse)
 async def get_character(character_id: str, config: ConfigDep) -> dict[str, Any]:
     """Retrieve a character sheet by ID."""
     try:
@@ -89,7 +95,7 @@ async def get_character(character_id: str, config: ConfigDep) -> dict[str, Any]:
         ) from None
 
 
-@router.post("/character/{character_id}/level-up", response_model=dict[str, Any])
+@router.post("/character/{character_id}/level-up", response_model=LevelUpResult)
 async def level_up_character(character_id: str, level_up_data: LevelUpRequest) -> dict[str, Any]:
     """Level up a character."""
     try:
@@ -117,7 +123,7 @@ async def level_up_character(character_id: str, level_up_data: LevelUpRequest) -
 
 
 @router.post(
-    "/character/{character_id}/award-experience", response_model=dict[str, Any]
+    "/character/{character_id}/award-experience", response_model=AwardExperienceResult
 )
 async def award_experience(character_id: str, experience_data: AwardExperienceRequest) -> dict[str, Any]:
     """Award experience points to a character."""
@@ -140,7 +146,9 @@ async def award_experience(character_id: str, experience_data: AwardExperienceRe
         ) from None
 
 
-@router.get("/character/{character_id}/progression-info", response_model=dict[str, Any])
+@router.get(
+    "/character/{character_id}/progression-info", response_model=ProgressionInfoResponse
+)
 async def get_progression_info(character_id: str) -> dict[str, Any]:
     """Get progression information for a character."""
     try:
@@ -157,10 +165,13 @@ async def get_progression_info(character_id: str) -> dict[str, Any]:
 
         current_experience = character.get("experience", 0)
         current_level = character.get("level", 1)
+        current_class = character.get("character_class", "fighter")
         asi_used = character.get("ability_score_improvements_used", 0)
 
         level_info = rules_engine.calculate_level(current_experience)
-        asi_info = rules_engine.check_asi_eligibility(current_level, asi_used)
+        asi_info = rules_engine.check_asi_eligibility(
+            current_level, asi_used, current_class
+        )
         proficiency_info = rules_engine.calculate_proficiency_bonus(current_level)
 
         return {
@@ -182,39 +193,51 @@ async def get_progression_info(character_id: str) -> dict[str, Any]:
 
 @router.post("/character/{character_id}/equipment", response_model=EquipmentResponse)
 async def manage_equipment(character_id: str, request: ManageEquipmentRequest) -> dict[str, Any]:
-    """Equip/unequip items with stat effects."""
+    """Equip/unequip items against the character's real inventory."""
     try:
-        # This would integrate with a character storage system
-        # For now, simulate equipment management with basic stat effects
+        if not request.slot:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="slot is required",
+            )
 
-        sample_stat_effects = {
-            "plate_armor": {"armor_class": 8, "stealth": -1},
-            "magic_sword": {"attack_bonus": 1, "damage_bonus": 1},
-            "ring_of_protection": {"armor_class": 1, "saving_throws": 1},
-        }
-
-        equipment_name = request.equipment_id.lower()
-        stat_changes = sample_stat_effects.get(equipment_name, {})
-
+        scribe = get_scribe()
         if request.action == "equip":
-            message = f"Successfully equipped {request.equipment_id}"
-            armor_class_change = stat_changes.get("armor_class", 0)
+            result = await scribe.equip_item(
+                character_id, request.equipment_id, request.slot.value
+            )
+            item = result.get("equipped_item")
         elif request.action == "unequip":
-            message = f"Successfully unequipped {request.equipment_id}"
-            # Reverse the stat changes for unequipping
-            stat_changes = {k: -v for k, v in stat_changes.items()}
-            armor_class_change = stat_changes.get("armor_class", 0)
+            result = await scribe.unequip_item(character_id, request.slot.value)
+            item = result.get("unequipped_item")
         else:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Invalid action: {request.action}",
             )
 
+        if result.get("error"):
+            error_status = (
+                status.HTTP_404_NOT_FOUND
+                if "not found" in result["error"]
+                else status.HTTP_400_BAD_REQUEST
+            )
+            raise HTTPException(status_code=error_status, detail=result["error"])
+
+        # Stat changes come from the real item's own effects data; unset for
+        # items with no recorded effects (never fabricated).
+        effects = (item or {}).get("effects", {})
+        stat_changes = {
+            stat: value for stat, value in effects.items() if isinstance(value, int)
+        }
+        if request.action == "unequip":
+            stat_changes = {stat: -value for stat, value in stat_changes.items()}
+
         return EquipmentResponse(
             success=True,
-            message=message,
+            message=f"Successfully {request.action}ped {request.equipment_id}",
             stat_changes=stat_changes,
-            armor_class_change=armor_class_change,
+            armor_class_change=stat_changes.get("armor_class", 0),
         )
     except HTTPException:
         raise
@@ -227,35 +250,24 @@ async def manage_equipment(character_id: str, request: ManageEquipmentRequest) -
 
 
 @router.get("/character/{character_id}/encumbrance", response_model=EncumbranceResponse)
-async def get_encumbrance(character_id: str, response: Response) -> dict[str, Any]:
-    """Calculate carrying capacity and weight."""
+async def get_encumbrance(character_id: str) -> dict[str, Any]:
+    """Calculate carrying capacity and weight from the character's real inventory."""
     try:
-        # Stub: returns hardcoded data until real character storage is wired up
-        response.headers["X-Fallback"] = "true"
-
-        # Simulate character strength-based carrying capacity
-        strength_score = 15  # Would be retrieved from character data
-        carrying_capacity = strength_score * 15  # 15 lbs per point of Strength
-        current_weight = 85.5  # Would be calculated from actual inventory
-
-        # Determine encumbrance level
-        if current_weight <= carrying_capacity:
-            encumbrance_level = "unencumbered"
-            speed_penalty = 0
-        elif current_weight <= carrying_capacity * 2:
-            encumbrance_level = "encumbered"
-            speed_penalty = 10
-        else:
-            encumbrance_level = "heavily_encumbered"
-            speed_penalty = 20
+        result = await get_scribe().calculate_encumbrance(character_id)
+        if result.get("error"):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=result["error"]
+            )
 
         return EncumbranceResponse(
             character_id=character_id,
-            current_weight=current_weight,
-            carrying_capacity=carrying_capacity,
-            encumbrance_level=encumbrance_level,
-            speed_penalty=speed_penalty,
+            current_weight=result["total_weight"],
+            carrying_capacity=result["carrying_capacity"],
+            encumbrance_level=result["encumbrance_level"],
+            speed_penalty=result["speed_penalty"],
         )
+    except HTTPException:
+        raise
     except Exception:
         logger.exception("Failed to calculate encumbrance")
         raise HTTPException(

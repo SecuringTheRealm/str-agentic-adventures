@@ -64,8 +64,8 @@ vi.mock("./ChatBox", () => ({
   }) => (
     <div data-testid="chat-box">
       <div data-testid="messages">
-        {messages.map((msg, idx) => (
-          <div key={`${msg.text}-${idx}`}>{msg.text}</div>
+        {messages.map((msg) => (
+          <div key={msg.text}>{msg.text}</div>
         ))}
       </div>
       {suggestedActions && suggestedActions.length > 0 && (
@@ -279,9 +279,7 @@ describe("GameInterface", () => {
     };
     mockSendPlayerInput.mockResolvedValue(mockResponse);
 
-    const { rerender } = render(
-      <GameInterface character={mockCharacter} campaign={mockCampaign} />
-    );
+    render(<GameInterface character={mockCharacter} campaign={mockCampaign} />);
 
     // Simulate that the component will use REST API fallback by triggering a re-render after initial setup
     await act(async () => {

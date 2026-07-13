@@ -21,51 +21,9 @@ class ArtistAgent(BaseAgent):
     def _post_init(self) -> None:
         """Initialize Artist-specific components after base client setup."""
         self._init_azure_client()
-        self._register_skills()
 
         # Store generated art references
         self.generated_art = {}
-
-    def _register_skills(self) -> None:
-        """Register necessary skills for the Artist agent."""
-        # Note: Plugins converted to direct method access
-        if self._fallback_mode or self.chat_client is None:
-            logger.info("Artist agent in fallback mode - using basic functionality")
-            return
-
-        try:
-            # Import artist-specific plugins for direct access
-            from app.plugins.art_style_analysis_plugin import ArtStyleAnalysisPlugin
-            from app.plugins.character_visualization_plugin import (
-                CharacterVisualizationPlugin,
-            )
-            from app.plugins.image_generation_plugin import ImageGenerationPlugin
-            from app.plugins.scene_composition_plugin import SceneCompositionPlugin
-            from app.plugins.visual_consistency_plugin import VisualConsistencyPlugin
-
-            # Create plugin instances
-            image_generation = ImageGenerationPlugin()
-            art_style_analysis = ArtStyleAnalysisPlugin()
-            visual_consistency = VisualConsistencyPlugin()
-            character_visualization = CharacterVisualizationPlugin()
-            scene_composition = SceneCompositionPlugin()
-
-            # Store references for direct method access (no kernel registration needed)
-            self.image_generation = image_generation
-            self.art_style_analysis = art_style_analysis
-            self.visual_consistency = visual_consistency
-            self.character_visualization = character_visualization
-            self.scene_composition = scene_composition
-
-            logger.info("Artist agent plugins initialized for direct access")
-        except Exception as e:
-            logger.error("Error initializing Artist agent plugins: %s", str(e))
-            # Don't raise - enter fallback mode instead
-            self._fallback_mode = True
-            logger.warning(
-                "Artist agent entering fallback mode - "
-                "using basic functionality without advanced plugins"
-            )
 
     async def generate_character_portrait(
         self, character_details: dict[str, Any]

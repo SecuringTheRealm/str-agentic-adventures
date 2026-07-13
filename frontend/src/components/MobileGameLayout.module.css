@@ -122,14 +122,6 @@
   margin: 0;
 }
 
-.visualButtonWrapper {
-  display: block;
-}
-
-.visualButtonWrapper > button {
-  width: 100%;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .tabButton {
     transition: none;

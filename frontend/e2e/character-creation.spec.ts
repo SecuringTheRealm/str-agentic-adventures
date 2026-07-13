@@ -1,306 +1,160 @@
 import { expect, test } from "@playwright/test";
 
-test.describe
-  .skip("Character Creation Flow", () => {
-    test.beforeEach(async ({ page }) => {
-      await page.goto("/");
+/**
+ * Helper: create a campaign via the real /campaigns/new route (rendered by
+ * CampaignEditor) and land on the character-selection screen. The old
+ * version of this file drove a "Create Campaign" button/form that doesn't
+ * exist on the home page and referenced fields from CampaignCreation.tsx,
+ * a component no page ever renders -- CampaignEditor is what's actually
+ * mounted at /campaigns/new, so we drive that instead.
+ */
+async function createCampaign(
+  page: import("@playwright/test").Page,
+  name: string
+) {
+  await page.goto("/campaigns/new");
+  await page.getByLabel("Campaign Name *").fill(name);
+  await page
+    .getByLabel("Campaign Setting *")
+    .fill("A classic fantasy realm with ancient ruins and mystical forests");
+  await page.getByRole("button", { name: "Create Campaign" }).click();
+  await page.waitForURL(/\/campaigns\/[^/]+\/characters$/, {
+    timeout: 15000,
+  });
+  await expect(page.getByText("Choose Your Character")).toBeVisible();
+}
 
-      // First create or select a campaign to get to character selection
-      // This assumes we can get to character selection somehow
-      await expect(page.locator("h1")).toContainText(
-        "Securing the Realm - Agentic Adventures"
+/** Open a shadcn/Radix <Select> by its trigger testid and pick an option by text. */
+async function chooseSelectOption(
+  page: import("@playwright/test").Page,
+  triggerTestId: string,
+  optionText: string
+) {
+  await page.getByTestId(triggerTestId).click();
+  await page.getByRole("option", { name: optionText, exact: true }).click();
+}
+
+test.describe("Character Creation Flow", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator("h1")).toContainText(
+      "Securing the Realm - Agentic Adventures"
+    );
+  });
+
+  test("should show character selection options", async ({ page }) => {
+    await createCampaign(page, "Test Campaign for Character");
+
+    await expect(page.getByTestId("create-character-btn")).toBeVisible();
+    await expect(page.getByTestId("browse-characters-btn")).toBeVisible();
+  });
+
+  test("should be able to create a new D&D 5e character", async ({ page }) => {
+    await createCampaign(page, "Test Campaign");
+    await page.getByTestId("create-character-btn").click();
+
+    await expect(page.getByTestId("character-name-input")).toBeVisible();
+    await page.getByTestId("character-name-input").fill("Thorin Ironbeard");
+
+    // NOTE: API expects lowercase values (e.g., "dwarf" not "Dwarf") --
+    // CharacterCreation.tsx lowercases the option value itself, the visible
+    // option text stays capitalised.
+    await chooseSelectOption(page, "character-race-select", "Dwarf");
+    await chooseSelectOption(page, "character-class-select", "Fighter");
+
+    await page
+      .getByTestId("character-backstory-input")
+      .fill(
+        "A veteran warrior from the mountain clans, skilled in combat and loyal to his companions."
       );
+
+    // Defaults are 13 across the board (78 total, the required point-buy
+    // sum) -- keep the net change at zero so the form's total-points
+    // validation still passes.
+    await page.getByTestId("ability-strength").fill("15");
+    await page.getByTestId("ability-dexterity").fill("11");
+
+    await page.getByTestId("submit-character-btn").click();
+
+    await page.waitForURL(/\/campaigns\/[^/]+\/play\/[^/]+$/, {
+      timeout: 15000,
     });
-
-    test("should show character selection options", async ({ page }) => {
-      // Try to get to character selection by creating a quick campaign
-      const createButton = page.locator(
-        'button:has-text("Create Campaign"), button:has-text("Create Custom")'
-      );
-
-      if ((await createButton.count()) > 0) {
-        await createButton.first().click();
-
-        // Quick campaign creation
-        await page.fill(
-          'input[name="name"], [placeholder*="campaign"]',
-          "Test Campaign for Character"
-        );
-
-        const submitButton = page.locator(
-          'button[type="submit"], button:has-text("Create")'
-        );
-        await submitButton.click();
-
-        // Should now be in character selection
-        await expect(page.locator('text="Choose Your Character"')).toBeVisible({
-          timeout: 10000,
-        });
-
-        // Should show character creation options
-        await expect(
-          page.locator(
-            'button:has-text("Create Character"), button:has-text("Create New")'
-          )
-        ).toBeVisible();
-        await expect(
-          page.locator(
-            'button:has-text("Browse Characters"), button:has-text("Predefined")'
-          )
-        ).toBeVisible();
-
-        await page.screenshot({
-          path: "screenshots/character-selection.png",
-          fullPage: true,
-        });
-      }
-    });
-
-    test("should be able to create a new D&D 5e character", async ({
-      page,
-    }) => {
-      // Navigate to character creation (this would need the previous steps)
-      // For now, let's assume we can get to character creation directly
-
-      // Try multiple navigation paths to character creation
-      await page.goto("/");
-
-      // First try to get to character selection
-      const createCampaignBtn = page.locator(
-        'button:has-text("Create Campaign")'
-      );
-      if ((await createCampaignBtn.count()) > 0) {
-        await createCampaignBtn.click();
-        await page.fill('input[name="name"]', "Test Campaign");
-        await page.locator('button[type="submit"]').click();
-
-        // Now should be in character selection
-        await expect(page.locator('text="Choose Your Character"')).toBeVisible({
-          timeout: 10000,
-        });
-
-        // Click create character
-        const createCharacterBtn = page.locator(
-          'button:has-text("Create Character"), button:has-text("Create New")'
-        );
-        await createCharacterBtn.click();
-
-        // Should show character creation form with D&D 5e options
-        await expect(
-          page.locator('input[name="name"], [placeholder*="character"]')
-        ).toBeVisible();
-
-        // Fill character details according to D&D 5e SRD
-        await page.fill('input[name="name"]', "Thorin Ironbeard");
-
-        // Select race (must be from SRD list)
-        // NOTE: API expects lowercase values (e.g., "dwarf" not "Dwarf")
-        const raceSelect = page.locator('select[name="race"]');
-        if ((await raceSelect.count()) > 0) {
-          await raceSelect.selectOption("dwarf");
-        }
-
-        // Select class (must be from SRD list)
-        // NOTE: API expects lowercase values (e.g., "fighter" not "Fighter")
-        const classSelect = page.locator(
-          'select[name="character_class"], select[name="class"]'
-        );
-        if ((await classSelect.count()) > 0) {
-          await classSelect.selectOption("fighter");
-        }
-
-        // Fill backstory
-        const backstoryField = page.locator('textarea[name="backstory"]');
-        if ((await backstoryField.count()) > 0) {
-          await backstoryField.fill(
-            "A veteran warrior from the mountain clans, skilled in combat and loyal to his companions."
-          );
-        }
-
-        // Check ability scores (should follow D&D 5e rules)
-        const strengthInput = page.locator(
-          'input[name="abilities.strength"], input[data-ability="strength"]'
-        );
-        if ((await strengthInput.count()) > 0) {
-          await strengthInput.fill("15");
-        }
-
-        const dexterityInput = page.locator(
-          'input[name="abilities.dexterity"], input[data-ability="dexterity"]'
-        );
-        if ((await dexterityInput.count()) > 0) {
-          await dexterityInput.fill("12");
-        }
-
-        const constitutionInput = page.locator(
-          'input[name="abilities.constitution"], input[data-ability="constitution"]'
-        );
-        if ((await constitutionInput.count()) > 0) {
-          await constitutionInput.fill("14");
-        }
-
-        await page.screenshot({
-          path: "screenshots/character-creation-form.png",
-          fullPage: true,
-        });
-
-        // Submit character creation
-        const submitCharacterBtn = page.locator(
-          'button[type="submit"], button:has-text("Create Character")'
-        );
-        await submitCharacterBtn.click();
-
-        // Should proceed to game interface
-        await expect(
-          page.locator('[data-testid="game-interface"]')
-        ).toBeVisible({
-          timeout: 10000,
-        });
-
-        await page.screenshot({
-          path: "screenshots/character-created.png",
-          fullPage: true,
-        });
-      }
-    });
-
-    test("should be able to browse predefined characters", async ({ page }) => {
-      // Similar setup - get to character selection first
-      await page.goto("/");
-
-      const createCampaignBtn = page.locator(
-        'button:has-text("Create Campaign")'
-      );
-      if ((await createCampaignBtn.count()) > 0) {
-        await createCampaignBtn.click();
-        await page.fill('input[name="name"]', "Test Campaign");
-        await page.locator('button[type="submit"]').click();
-
-        await expect(page.locator('text="Choose Your Character"')).toBeVisible({
-          timeout: 10000,
-        });
-
-        // Click browse characters
-        const browseBtn = page.locator(
-          'button:has-text("Browse Characters"), button:has-text("Predefined")'
-        );
-        if ((await browseBtn.count()) > 0) {
-          await browseBtn.click();
-
-          // Should show list of predefined characters
-          await expect(
-            page.locator('.character-card, [data-testid="character-option"]')
-          ).toBeVisible();
-
-          await page.screenshot({
-            path: "screenshots/predefined-characters.png",
-            fullPage: true,
-          });
-
-          // Select a predefined character
-          const firstCharacter = page
-            .locator('.character-card, [data-testid="character-option"]')
-            .first();
-          if ((await firstCharacter.count()) > 0) {
-            await firstCharacter.click();
-
-            // Should proceed to game interface
-            await expect(
-              page.locator('[data-testid="game-interface"]')
-            ).toBeVisible({ timeout: 10000 });
-
-            await page.screenshot({
-              path: "screenshots/predefined-character-selected.png",
-              fullPage: true,
-            });
-          }
-        }
-      }
-    });
-
-    test("should validate D&D 5e character creation rules", async ({
-      page,
-    }) => {
-      // This test ensures the character creation follows SRD rules
-      await page.goto("/");
-
-      // Navigate to character creation (abbreviated for this test)
-      // Would need full navigation flow in real test
-
-      // Test that only valid races are available (from SRD)
-      const validRaces = [
-        "Human",
-        "Elf",
-        "Dwarf",
-        "Halfling",
-        "Dragonborn",
-        "Gnome",
-        "Half-Elf",
-        "Half-Orc",
-        "Tiefling",
-      ];
-      const raceSelect = page.locator('select[name="race"]');
-
-      if ((await raceSelect.count()) > 0) {
-        const options = await raceSelect.locator("option").allTextContents();
-
-        // Verify all options are valid SRD races
-        for (const option of options) {
-          if (option?.trim()) {
-            expect(validRaces).toContain(option.trim());
-          }
-        }
-      }
-
-      // Test that only valid classes are available (from SRD)
-      const validClasses = [
-        "Barbarian",
-        "Bard",
-        "Cleric",
-        "Druid",
-        "Fighter",
-        "Monk",
-        "Paladin",
-        "Ranger",
-        "Rogue",
-        "Sorcerer",
-        "Warlock",
-        "Wizard",
-      ];
-      const classSelect = page.locator(
-        'select[name="character_class"], select[name="class"]'
-      );
-
-      if ((await classSelect.count()) > 0) {
-        const options = await classSelect.locator("option").allTextContents();
-
-        // Verify all options are valid SRD classes
-        for (const option of options) {
-          if (option?.trim()) {
-            expect(validClasses).toContain(option.trim());
-          }
-        }
-      }
-
-      // Test ability score validation (should be 3-20 range)
-      const abilityInputs = page.locator('input[name^="abilities."]');
-      const count = await abilityInputs.count();
-
-      if (count > 0) {
-        for (let i = 0; i < count; i++) {
-          const input = abilityInputs.nth(i);
-
-          // Test minimum value
-          await input.fill("2");
-          // Should show validation error or reset to minimum
-
-          // Test maximum value
-          await input.fill("21");
-          // Should show validation error or reset to maximum
-
-          // Set valid value
-          await input.fill("13");
-        }
-      }
+    await expect(page.getByTestId("game-interface")).toBeVisible({
+      timeout: 10000,
     });
   });
+
+  test("should be able to browse predefined characters", async ({ page }) => {
+    await createCampaign(page, "Test Campaign");
+    await page.getByTestId("browse-characters-btn").click();
+
+    await expect(
+      page.getByText("Choose a Pre-Defined Character")
+    ).toBeVisible();
+
+    const selectButtons = page.getByRole("button", {
+      name: /Select This Character/,
+    });
+    await expect(selectButtons.first()).toBeVisible();
+    await selectButtons.first().click();
+
+    await page.waitForURL(/\/campaigns\/[^/]+\/play\/[^/]+$/, {
+      timeout: 15000,
+    });
+    await expect(page.getByTestId("game-interface")).toBeVisible({
+      timeout: 10000,
+    });
+  });
+
+  test("should validate D&D 5e character creation rules", async ({ page }) => {
+    await createCampaign(page, "Test Campaign SRD");
+    await page.getByTestId("create-character-btn").click();
+    await expect(page.getByTestId("character-name-input")).toBeVisible();
+
+    const validRaces = [
+      "Human",
+      "Elf",
+      "Dwarf",
+      "Halfling",
+      "Dragonborn",
+      "Gnome",
+      "Half-Elf",
+      "Half-Orc",
+      "Tiefling",
+    ];
+    await page.getByTestId("character-race-select").click();
+    const raceOptions = await page.getByRole("option").allTextContents();
+    for (const option of raceOptions) {
+      expect(validRaces).toContain(option.trim());
+    }
+    // Close the popover before opening the next one.
+    await page.keyboard.press("Escape");
+
+    const validClasses = [
+      "Barbarian",
+      "Bard",
+      "Cleric",
+      "Druid",
+      "Fighter",
+      "Monk",
+      "Paladin",
+      "Ranger",
+      "Rogue",
+      "Sorcerer",
+      "Warlock",
+      "Wizard",
+    ];
+    await page.getByTestId("character-class-select").click();
+    const classOptions = await page.getByRole("option").allTextContents();
+    for (const option of classOptions) {
+      expect(validClasses).toContain(option.trim());
+    }
+    await page.keyboard.press("Escape");
+
+    // Ability score inputs are clamped to the D&D 5e 8-18 range via
+    // min/max attributes (see CharacterCreation.tsx).
+    const strengthInput = page.getByTestId("ability-strength");
+    await expect(strengthInput).toHaveAttribute("min", "8");
+    await expect(strengthInput).toHaveAttribute("max", "18");
+  });
+});

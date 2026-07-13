@@ -21,58 +21,9 @@ class CombatCartographerAgent(BaseAgent):
     def _post_init(self) -> None:
         """Initialize Combat Cartographer-specific components after base client setup."""
         self._init_azure_client()
-        self._register_skills()
 
         # Store map references
         self.battle_maps = {}
-
-    def _register_skills(self) -> None:
-        """Register necessary skills for the Combat Cartographer agent."""
-        # Skip plugin registration if in fallback mode
-        if self._fallback_mode or self.chat_client is None:
-            logger.info(
-                "Combat Cartographer agent in fallback mode - using basic functionality"
-            )
-            return
-
-        try:
-            # Import combat cartographer-specific plugins for direct access
-            # Note: MapGenerationPlugin removed — generate_battle_map() uses
-            # Azure image generation directly and never called the plugin.
-            from app.plugins.battle_positioning_plugin import BattlePositioningPlugin
-            from app.plugins.environmental_hazards_plugin import (
-                EnvironmentalHazardsPlugin,
-            )
-            from app.plugins.tactical_analysis_plugin import TacticalAnalysisPlugin
-            from app.plugins.terrain_assessment_plugin import TerrainAssessmentPlugin
-
-            # Define plugin configuration: (PluginClass, attribute_name)
-            plugins_config = [
-                (TacticalAnalysisPlugin, "tactical_analysis"),
-                (TerrainAssessmentPlugin, "terrain_assessment"),
-                (BattlePositioningPlugin, "battle_positioning"),
-                (EnvironmentalHazardsPlugin, "environmental_hazards"),
-            ]
-
-            # Create plugin instances for direct method access
-            for plugin_class, attribute_name in plugins_config:
-                # Create plugin instance
-                plugin_instance = plugin_class()
-
-                # Store reference for direct access (no kernel registration needed)
-                setattr(self, attribute_name, plugin_instance)
-
-            logger.info("Combat Cartographer agent plugins initialized for direct access")
-        except Exception as e:
-            logger.error(
-                "Error initializing Combat Cartographer agent plugins: %s", str(e)
-            )
-            # Don't raise - enter fallback mode instead
-            self._fallback_mode = True
-            logger.warning(
-                "Combat Cartographer agent entering fallback mode - "
-                "using basic functionality without advanced plugins"
-            )
 
     async def generate_battle_map(
         self,

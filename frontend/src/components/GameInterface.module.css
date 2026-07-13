@@ -110,14 +110,6 @@
   gap: 8px;
 }
 
-.visualButtonWrapper {
-  display: block;
-}
-
-.visualButtonWrapper > button {
-  width: 100%;
-}
-
 .visualButton {
   padding: 8px 12px;
   min-height: 44px;

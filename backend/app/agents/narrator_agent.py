@@ -10,9 +10,8 @@ import logging
 from collections.abc import Callable
 from typing import Any
 
+from app.agent_client_setup import agent_client_manager
 from app.agents.base_agent import BaseAgent
-from app.azure_openai_client import azure_openai_client
-from app.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +67,7 @@ class NarratorAgent(BaseAgent):
     """
 
     agent_name = "Narrator"
+    deployment_setting = "azure_openai_narrator_deployment"
 
     def _post_init(self) -> None:
         """Initialize Narrator-specific components after base client setup."""
@@ -75,29 +75,7 @@ class NarratorAgent(BaseAgent):
             self._initialize_fallback_components()
         else:
             self._register_skills()
-            try:
-                self.azure_client = azure_openai_client
-            except Exception as azure_error:
-                logger.error(
-                    "Failed to initialize Azure OpenAI client for Narrator agent: %s",
-                    azure_error,
-                )
-                logger.warning("Narrator agent switching to fallback mode.")
-                self._fallback_mode = True
-                self._initialize_fallback_components()
-
-    def _get_sdk_instructions(self) -> str:
-        """Return system instructions for the SDK Narrator agent."""
-        return (
-            "You are the Narrator collaborating with a Dungeon Master. "
-            "Craft immersive, sensory scene descriptions for players in 3-4 "
-            "sentences. Keep the tone cinematic but concise. Focus on "
-            "actionable details that invite interaction."
-        )
-
-    def _get_sdk_tool_functions(self) -> list[Callable[..., Any]]:
-        """Return callable narrative tool functions for the SDK agent."""
-        return _get_narrator_tool_functions()
+            self.azure_client = agent_client_manager
 
     def _initialize_fallback_components(self) -> None:
         """Initialize fallback components when Azure OpenAI is not available."""
@@ -126,12 +104,6 @@ class NarratorAgent(BaseAgent):
         Returns:
             The AI response text, or None when both paths fail.
         """
-        # --- Try the SDK first ---
-        sdk_response = await self._sdk_chat(session_id, user_message)
-        if sdk_response is not None:
-            return sdk_response
-
-        # --- Fall back to direct AzureOpenAIClient ---
         if not self.azure_client:
             return None
 
@@ -143,13 +115,13 @@ class NarratorAgent(BaseAgent):
 
             response = await self.azure_client.chat_completion(
                 messages=messages,
-                deployment=settings.azure_openai_mini_deployment or None,
+                deployment=self._deployment,
                 temperature=temperature,
                 max_tokens=max_tokens,
             )
             return response.strip() if response else None
         except Exception as exc:
-            logger.error("Narrator direct Azure call failed: %s", exc)
+            logger.error("Narrator chat call failed: %s", exc)
             return None
 
     def _register_skills(self) -> None:
@@ -515,7 +487,10 @@ class NarratorAgent(BaseAgent):
                 # Create main story arc
                 main_arc_result = self.narrative_generation.create_story_arc(
                     title=f"The {setting.title()} Adventure",
-                    description=f"A {tone} adventure set in a {setting} world where heroes rise to face great challenges.",
+                    description=(
+                        f"A {tone} adventure set in a {setting} world where "
+                        "heroes rise to face great challenges."
+                    ),
                     arc_type="main",
                     themes=f"{tone}, adventure, discovery",
                     character_ids=",".join(characters)

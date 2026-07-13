@@ -15,8 +15,8 @@ from collections.abc import Callable
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
+from app.agent_client_setup import agent_client_manager
 from app.agents.base_agent import BaseAgent
-from app.azure_openai_client import azure_openai_client
 from app.database import get_session_context
 from app.models.db_models import ConversationThread
 from app.utils.dice import DiceRoller
@@ -76,32 +76,17 @@ class DungeonMasterAgent(BaseAgent):
     """
 
     agent_name = "DM"
+    deployment_setting = "azure_openai_dm_deployment"
 
     def _post_init(self) -> None:
         """Initialize DM-specific components after base client setup."""
         self._threads: dict[str, list[dict[str, str]]] = {}
 
         if not self._fallback_mode:
-            try:
-                self.azure_client = azure_openai_client
-            except Exception as azure_error:
-                logger.error(
-                    "Failed to initialize Azure OpenAI client for DM agent: %s. "
-                    "Operating in fallback mode.",
-                    azure_error,
-                )
-                self._fallback_mode = True
+            self.azure_client = agent_client_manager
 
         # Fallback components are initialized lazily
         self._fallback_initialized = False
-
-    def _get_sdk_instructions(self) -> str:
-        """Return the DM system prompt for SDK agent creation."""
-        return self._get_dm_system_prompt()
-
-    def _get_sdk_tool_functions(self) -> list[Callable[..., Any]]:
-        """Return callable dice-rolling tool functions for the SDK agent."""
-        return _get_dm_tool_functions()
 
     def _get_dm_system_prompt(self) -> str:
         """Generate the static system prompt for the Dungeon Master role."""
@@ -303,37 +288,23 @@ class DungeonMasterAgent(BaseAgent):
             self._persist_thread(session_id)
             return result
 
-        # --- Try the Microsoft Agent Framework SDK first ---
-        sdk_response = await self._sdk_chat(session_id, user_message)
-        if sdk_response is not None:
-            logger.info("DM received response via Microsoft Agent Framework SDK.")
-            thread.append({"role": "user", "content": user_message})
-            thread.append({"role": "assistant", "content": sdk_response})
-            return {
-                "message": sdk_response,
-                "visuals": [],
-                "state_updates": {"last_action": user_input},
-                "combat_updates": None,
-            }
-
-        # --- Fall back to direct AzureOpenAIClient ---
+        # --- Microsoft Agent Framework chat (Foundry) ---
         try:
             system_prompt = self._get_dm_system_prompt()
             messages = self._build_messages(system_prompt, user_message, thread)
 
             if not self.azure_client:
-                raise RuntimeError("Azure OpenAI client is not initialized")
+                raise RuntimeError("Chat client is not initialized")
 
             try:
                 ai_response = await self.azure_client.chat_completion(
                     messages=messages,
+                    deployment=self._deployment,
                     temperature=0.7,
                     max_tokens=500,
                 )
             except Exception as azure_error:
-                logger.error(
-                    "Azure OpenAI chat completion failed: %s", azure_error
-                )
+                logger.error("Chat completion failed: %s", azure_error)
                 raise
 
             ai_response = ai_response.strip()
@@ -471,7 +442,10 @@ class DungeonMasterAgent(BaseAgent):
             full_response = ""
             try:
                 async for chunk_text in self.azure_client.chat_completion_stream(
-                    messages=messages, temperature=0.7, max_tokens=500
+                    messages=messages,
+                    deployment=self._deployment,
+                    temperature=0.7,
+                    max_tokens=500,
                 ):
                     if not chunk_text:
                         continue
@@ -733,6 +707,7 @@ class DungeonMasterAgent(BaseAgent):
                     {"role": "system", "content": self._get_dm_system_prompt()},
                     {"role": "user", "content": prompt},
                 ],
+                deployment=self._deployment,
                 temperature=0.8,
                 max_tokens=150,
             )

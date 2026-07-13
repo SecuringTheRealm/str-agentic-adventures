@@ -283,11 +283,8 @@ const DiceRoller: React.FC<DiceRollerProps> = ({
           <div className={styles.rollHistory}>
             <h4>Recent Rolls</h4>
             <div className={styles.historyList}>
-              {rollHistory.map((result, index) => (
-                <div
-                  key={`${result.timestamp}-${index}`}
-                  className={styles.historyItem}
-                >
+              {rollHistory.map((result) => (
+                <div key={result.timestamp} className={styles.historyItem}>
                   <span className={styles.historyNotation}>
                     {result.notation}
                   </span>

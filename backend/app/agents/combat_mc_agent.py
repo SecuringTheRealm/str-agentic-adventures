@@ -11,6 +11,7 @@ import random
 from collections.abc import Callable
 from typing import Any
 
+from app.agent_client_setup import agent_client_manager
 from app.agents.base_agent import BaseAgent
 from app.utils.dice import DiceRoller
 
@@ -28,23 +29,50 @@ def resolve_attack(
     damage_dice: str,
     advantage: bool = False,
     disadvantage: bool = False,
+    attacker_conditions: list[str] | None = None,
+    target_conditions: list[str] | None = None,
 ) -> str:
     """Resolve a melee or ranged attack roll against a target's armour class.
 
-    Determines hit or miss and calculates damage.
+    Determines hit or miss and calculates damage. Natural 20 always hits and
+    crits; natural 1 always misses (SRD p.194).
 
     :param attack_bonus: The attacker's total attack bonus.
     :param target_ac: The target's armour class.
     :param damage_dice: Damage dice notation (e.g., 1d8+3).
     :param advantage: Whether the attack has advantage.
     :param disadvantage: Whether the attack has disadvantage.
+    :param attacker_conditions: D&D 5e condition names currently affecting
+        the attacker (e.g. ["prone", "poisoned"]).
+    :param target_conditions: D&D 5e condition names currently affecting the
+        target (e.g. ["restrained"]).
     :return: JSON-encoded attack resolution result.
     """
+    from app.rules_engine import get_attack_modifiers
+
+    condition_mods = get_attack_modifiers(
+        attacker_conditions or [], target_conditions or []
+    )
+    advantage = advantage or condition_mods["advantage"]
+    disadvantage = disadvantage or condition_mods["disadvantage"]
+
     roll = DiceRoller.roll_d20(attack_bonus, advantage, disadvantage)
-    hit = roll["total"] >= target_ac
-    result: dict[str, Any] = {"attack_roll": roll, "hit": hit, "target_ac": target_ac}
+    natural_roll = roll["total"] - roll["modifier"]
+    critical = natural_roll == 20
+    miss = natural_roll == 1
+    hit = True if critical else False if miss else roll["total"] >= target_ac
+    result: dict[str, Any] = {
+        "attack_roll": roll,
+        "hit": hit,
+        "critical": critical,
+        "target_ac": target_ac,
+    }
     if hit:
         damage = DiceRoller.roll_damage(damage_dice)
+        if critical:
+            extra = DiceRoller.roll_damage(damage_dice)
+            damage["total"] += extra["total"]
+            damage["rolls"].extend(extra["rolls"])
         result["damage"] = damage
     return json.dumps(result)
 
@@ -99,6 +127,7 @@ class CombatMCAgent(BaseAgent):
     """
 
     agent_name = "Combat MC"
+    deployment_setting = "azure_openai_combat_deployment"
 
     def _post_init(self) -> None:
         """Initialize Combat MC-specific components after base client setup."""
@@ -106,30 +135,12 @@ class CombatMCAgent(BaseAgent):
 
         if not self._fallback_mode:
             self._register_skills()
-            try:
-                from app.azure_openai_client import azure_openai_client
-
-                self.azure_client = azure_openai_client
-            except Exception:
-                logger.debug("Azure OpenAI client unavailable for Combat MC narration")
+            self.azure_client = agent_client_manager
         else:
             self._initialize_fallback_mechanics()
 
         # Active combat tracking
         self.active_combats = {}
-
-    def _get_sdk_instructions(self) -> str:
-        """Return system instructions for the SDK Combat MC agent."""
-        return (
-            "You are the Combat Master for a D&D 5e game. You manage combat "
-            "encounters, resolve attacks, track initiative, and adjudicate "
-            "combat mechanics. Use the provided tools to resolve attacks, "
-            "skill checks, and damage calculations according to D&D 5e rules."
-        )
-
-    def _get_sdk_tool_functions(self) -> list[Callable[..., Any]]:
-        """Return callable combat tool functions for the SDK agent."""
-        return _get_combat_tool_functions()
 
     def _register_skills(self) -> None:
         """Register necessary skills for the Combat MC agent."""
@@ -223,6 +234,7 @@ class CombatMCAgent(BaseAgent):
                     },
                     {"role": "user", "content": prompt},
                 ],
+                deployment=self._deployment,
                 temperature=0.8,
                 max_tokens=120,
             )
@@ -686,7 +698,10 @@ class CombatMCAgent(BaseAgent):
                         "attack_roll": attack_result,
                         "damage": damage_result["total"],
                         "damage_detail": damage_result,
-                        "message": f"{'Critical hit!' if attack_result['is_critical_hit'] else 'Attack hits'} for {damage_result['total']} damage!",
+                        "message": (
+                            f"{'Critical hit!' if attack_result['is_critical_hit'] else 'Attack hits'} "
+                            f"for {damage_result['total']} damage!"
+                        ),
                     }
                 )
             else:
@@ -766,7 +781,10 @@ class CombatMCAgent(BaseAgent):
                         "damage": damage_result["total_damage"],
                         "damage_detail": damage_result,
                         "spell_attack_bonus": spell_attack_bonus_result,
-                        "message": f"Spell attack hits for {damage_result['total_damage']} {damage_result['damage_type']} damage!",
+                        "message": (
+                            f"Spell attack hits for {damage_result['total_damage']} "
+                            f"{damage_result['damage_type']} damage!"
+                        ),
                     }
                 )
             else:
@@ -775,7 +793,10 @@ class CombatMCAgent(BaseAgent):
                         "success": attack_result["is_hit"],
                         "attack_roll": attack_result,
                         "spell_attack_bonus": spell_attack_bonus_result,
-                        "message": f"Spell attack {'hits' if attack_result['is_hit'] else 'misses'} (rolled {attack_result['total']} vs AC {target_ac})",
+                        "message": (
+                            f"Spell attack {'hits' if attack_result['is_hit'] else 'misses'} "
+                            f"(rolled {attack_result['total']} vs AC {target_ac})"
+                        ),
                     }
                 )
 
@@ -812,7 +833,10 @@ class CombatMCAgent(BaseAgent):
                     "success": True,
                     "damage": damage_result["total_damage"],
                     "damage_detail": damage_result,
-                    "message": f"Spell deals {damage_result['total_damage']} {damage_type} damage to {target_count} target(s)!",
+                    "message": (
+                        f"Spell deals {damage_result['total_damage']} {damage_type} "
+                        f"damage to {target_count} target(s)!"
+                    ),
                 }
             )
 
@@ -890,7 +914,10 @@ class CombatMCAgent(BaseAgent):
                     "success": success,
                     "roll": skill_result,
                     "dc": dc,
-                    "message": f"Skill check {'succeeds' if success else 'fails'} (rolled {skill_result['total']} vs DC {dc})",
+                    "message": (
+                        f"Skill check {'succeeds' if success else 'fails'} "
+                        f"(rolled {skill_result['total']} vs DC {dc})"
+                    ),
                 }
             )
 
@@ -928,7 +955,10 @@ class CombatMCAgent(BaseAgent):
                 {
                     "success": save_result["save_successful"],
                     "save_result": save_result,
-                    "message": f"Saving throw {'succeeds' if save_result['save_successful'] else 'fails'} (rolled {save_result['total_roll']} vs DC {save_dc})",
+                    "message": (
+                        f"Saving throw {'succeeds' if save_result['save_successful'] else 'fails'} "
+                        f"(rolled {save_result['total_roll']} vs DC {save_dc})"
+                    ),
                 }
             )
 
@@ -1059,7 +1089,10 @@ class CombatMCAgent(BaseAgent):
                 "success": success,
                 "attacker_check": attacker_check,
                 "defender_check": defender_check,
-                "message": f"{action_type.capitalize()} {'succeeds' if success else 'fails'} (attacker {attacker_check['total']} vs defender {defender_check['total']})",
+                "message": (
+                    f"{action_type.capitalize()} {'succeeds' if success else 'fails'} "
+                    f"(attacker {attacker_check['total']} vs defender {defender_check['total']})"
+                ),
             }
         )
 

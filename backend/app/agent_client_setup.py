@@ -1,9 +1,11 @@
-"""
-Microsoft Agent Framework client setup and initialization for the AI Dungeon Master.
+"""Microsoft Agent Framework chat runtime for the AI Dungeon Master.
 
-This module provides the AgentClientManager which manages the lifecycle of
-Microsoft Agent Framework SDK clients (create agent, thread, message, run)
-with automatic fallback to direct AzureOpenAIClient when the SDK is unavailable.
+The single LLM chat path: an ``agent-framework`` ``FoundryChatClient`` (GA
+Microsoft Agent Framework, ``agent_framework.foundry``) targeting the Foundry
+project endpoint with ``DefaultAzureCredential``.  Availability is config-based
+(``settings.is_foundry_configured()``); when unconfigured, callers fall back to
+deterministic logic.  Supersedes the classic azure-ai-agents Threads/Runs path
+and the hand-rolled azure-ai-inference chat client (see ADR-0023).
 """
 
 from __future__ import annotations
@@ -12,453 +14,179 @@ import logging
 import os
 from typing import TYPE_CHECKING, Any
 
-from azure.ai.agents.aio import AgentsClient
-from azure.ai.agents.models import (
-    AgentThreadCreationOptions,
-    AsyncToolSet,
-    FunctionToolDefinition,
-    MessageRole,
-    RunStatus,
-    ThreadMessageOptions,
-)
-from azure.ai.inference import ChatCompletionsClient
-from azure.identity import DefaultAzureCredential
-from azure.identity.aio import DefaultAzureCredential as AsyncDefaultAzureCredential
 from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import ConsoleSpanExporter, SimpleSpanProcessor
 
+from app.azure_openai_client import guarded_azure_call
 from app.config import settings
 
 if TYPE_CHECKING:
-    from azure.ai.agents.models import Agent
+    from collections.abc import AsyncIterator
+
+    from agent_framework.foundry import FoundryChatClient
 
 logger = logging.getLogger(__name__)
 
 
 class AgentClientManager:
-    """Manager for Microsoft Agent Framework SDK clients and lifecycle operations.
+    """Manages the Foundry chat client and provides chat/streaming helpers.
 
-    Provides methods to create agents, threads, messages, and runs via the SDK.
-    All lifecycle methods return None on failure, enabling callers to fall back
-    to the direct AzureOpenAIClient wrapper.
+    The chat methods mirror the message-list-in / text-out shape the agents
+    expect, are guarded by the shared circuit breaker, and raise on failure so
+    agents fall back deterministically.
     """
 
     def __init__(self) -> None:
-        """Initialize the agent client manager."""
-        self._chat_client = None
-        self._agents_client: AgentsClient | None = None
-        self._is_configured = False
-        self._fallback_mode = False
-        self._tracer = None
-        self._created_agent_ids: list[str] = []
-
-    def get_chat_client(self) -> ChatCompletionsClient | None:
-        """Get the Azure OpenAI chat client, creating it if necessary.
-
-        Returns:
-            Chat client, or None in fallback mode.
-        """
-        if self._chat_client is not None:
-            return self._chat_client
-
-        if self._fallback_mode:
-            return None
-
-        if not self._is_configured:
-            try:
-                self._chat_client = self._create_chat_client()
-                self._is_configured = True
-                logger.info("Azure OpenAI chat client initialized successfully")
-            except ValueError as e:
-                logger.warning(
-                    "Azure OpenAI not configured, entering fallback mode: %s", e
-                )
-                self._fallback_mode = True
-                return None
-            except Exception as e:
-                logger.error("Failed to initialize chat client: %s", e)
-                self._fallback_mode = True
-                return None
-
-        return self._chat_client
-
-    def get_agents_client(self) -> AgentsClient | None:
-        """Get the Microsoft Agent Framework client, creating it if necessary.
-
-        The agents client has its own initialisation path, independent of the
-        chat client.  Failure here does NOT set ``_fallback_mode`` — that flag
-        only controls the chat-completions path.
-
-        Returns:
-            Agents client, or None when unavailable.
-        """
-        if self._agents_client is not None:
-            return self._agents_client
-
-        if self._fallback_mode:
-            return None
-
-        try:
-            self._agents_client = self._create_agents_client()
-            logger.info(
-                "Microsoft Agent Framework client initialized successfully"
-            )
-        except ValueError as e:
-            logger.warning("Azure AI not configured for agents: %s", e)
-            return None
-        except Exception as e:
-            logger.error("Failed to initialize agents client: %s", e)
-            return None
-
-        return self._agents_client
+        self._client: FoundryChatClient | None = None
+        self._tracer: trace.Tracer | None = None
 
     # -----------------------------------------------------------------
-    # Agent lifecycle methods
+    # Availability
     # -----------------------------------------------------------------
 
-    async def create_agent(
-        self,
-        name: str,
-        instructions: str,
-        tools: list[FunctionToolDefinition] | None = None,
-        model: str | None = None,
-        *,
-        toolset: AsyncToolSet | None = None,
-    ) -> dict[str, Any] | None:
-        """Create an agent via the Microsoft Agent Framework SDK.
+    def get_chat_client(self) -> AgentClientManager | None:
+        """Return an availability sentinel: ``self`` when Foundry is configured.
 
-        When *toolset* is provided the SDK registers its tool definitions
-        on the agent and can dispatch tool calls automatically during
-        ``create_and_process``.  Legacy callers may still pass a plain
-        *tools* list of ``FunctionToolDefinition`` objects.
-
-        Args:
-            name: Human-readable agent name.
-            instructions: System-level instructions for the agent.
-            tools: Optional list of FunctionToolDefinition instances (legacy).
-            model: Model deployment name (defaults to chat deployment).
-            toolset: Optional ``AsyncToolSet`` for auto tool-call dispatch.
-
-        Returns:
-            Dict with ``id`` and ``name`` on success, or None on failure.
+        Agents treat a ``None`` return as "operate in fallback mode".
         """
-        client = self.get_agents_client()
-        if client is None:
-            return None
-        try:
-            model = model or settings.azure_openai_chat_deployment
-            kwargs: dict[str, Any] = {
-                "model": model,
-                "name": name,
-                "instructions": instructions,
-            }
-            if toolset is not None:
-                kwargs["toolset"] = toolset
-            else:
-                kwargs["tools"] = tools or []
+        return self if settings.is_foundry_configured() else None
 
-            agent: Agent = await client.create_agent(**kwargs)
-            self._created_agent_ids.append(agent.id)
-            logger.info("Created SDK agent: %s (id=%s)", name, agent.id)
-            return {"id": agent.id, "name": name}
-        except Exception as e:
-            logger.warning("Failed to create SDK agent %s: %s", name, e)
-            return None
+    def is_fallback_mode(self) -> bool:
+        """True when the Foundry chat path is unavailable (config-based)."""
+        return not settings.is_foundry_configured()
 
-    async def create_thread(self) -> str | None:
-        """Create a conversation thread via the SDK.
-
-        Returns:
-            Thread ID string on success, or None on failure.
-        """
-        client = self.get_agents_client()
-        if client is None:
-            return None
-        try:
-            thread = await client.threads.create()
-            logger.info("Created SDK thread: %s", thread.id)
-            return thread.id
-        except Exception as e:
-            logger.warning("Failed to create SDK thread: %s", e)
-            return None
-
-    async def add_message(
-        self, thread_id: str, role: str, content: str
-    ) -> bool:
-        """Add a message to an existing thread.
-
-        Args:
-            thread_id: The SDK thread identifier.
-            role: Message role — ``"user"`` or ``"assistant"``.
-            content: Message text content.
-
-        Returns:
-            True on success, False on failure.
-        """
-        client = self.get_agents_client()
-        if client is None:
-            return False
-        try:
-            sdk_role = MessageRole.USER if role == "user" else MessageRole.AGENT
-            await client.messages.create(
-                thread_id=thread_id,
-                role=sdk_role,
-                content=content,
-            )
-            return True
-        except Exception as e:
-            logger.warning("Failed to add message to thread %s: %s", thread_id, e)
-            return False
-
-    async def create_and_process_run(
-        self,
-        thread_id: str,
-        agent_id: str,
-        *,
-        toolset: AsyncToolSet | None = None,
-    ) -> str | None:
-        """Create a run on an existing thread and wait for completion.
-
-        Args:
-            thread_id: The SDK thread identifier.
-            agent_id: The SDK agent identifier.
-            toolset: Optional ``AsyncToolSet`` for automatic tool-call dispatch.
-
-        Returns:
-            The assistant's response text on success, or None on failure.
-        """
-        client = self.get_agents_client()
-        if client is None:
-            return None
-        try:
-            run = await client.runs.create_and_process(
-                thread_id=thread_id,
-                agent_id=agent_id,
-                toolset=toolset,
-            )
-
-            status = run.status
-
-            # Terminal failure states
-            if status == RunStatus.FAILED:
-                logger.warning("SDK run failed: %s", run.last_error)
-                return None
-            if status == RunStatus.CANCELLED:
-                logger.warning("SDK run was cancelled (agent_id=%s)", agent_id)
-                return None
-            if status == RunStatus.EXPIRED:
-                logger.warning("SDK run expired (agent_id=%s)", agent_id)
-                return None
-
-            # requires_action should not normally occur when using
-            # create_and_process with a toolset, but handle it defensively.
-            if status == RunStatus.REQUIRES_ACTION:
-                logger.warning(
-                    "SDK run requires_action after processing — "
-                    "tool calls were not handled automatically (agent_id=%s)",
-                    agent_id,
-                )
-                return None
-
-            # Retrieve the last assistant message from the thread
-            messages = await client.messages.list(thread_id=thread_id)
-            for msg in reversed(messages.data):
-                if msg.role == "assistant" and msg.content:
-                    for part in msg.content:
-                        if hasattr(part, "text") and hasattr(part.text, "value"):
-                            return part.text.value
-            return None
-        except Exception as e:
-            logger.warning(
-                "Failed to process run for agent %s: %s", agent_id, e
-            )
-            return None
-
-    async def create_thread_and_process_run(
-        self,
-        agent_id: str,
-        user_message: str,
-        *,
-        instructions: str | None = None,
-        toolset: AsyncToolSet | None = None,
-    ) -> tuple[str | None, str | None]:
-        """Create a new thread with a user message and run the agent in one call.
-
-        This is a convenience wrapper around the SDK's combined operation.
-
-        Args:
-            agent_id: The SDK agent identifier.
-            user_message: The initial user message.
-            instructions: Optional instruction override for this run.
-            toolset: Optional ``AsyncToolSet`` for automatic tool-call dispatch.
-
-        Returns:
-            Tuple of (thread_id, response_text), or (None, None) on failure.
-        """
-        client = self.get_agents_client()
-        if client is None:
-            return None, None
-        try:
-            thread_options = AgentThreadCreationOptions(
-                messages=[
-                    ThreadMessageOptions(role=MessageRole.USER, content=user_message)
-                ]
-            )
-            run = await client.create_thread_and_process_run(
-                agent_id=agent_id,
-                thread=thread_options,
-                instructions=instructions,
-                toolset=toolset,
-            )
-
-            status = run.status
-
-            # Terminal failure states
-            if status == RunStatus.FAILED:
-                logger.warning("SDK run failed: %s", run.last_error)
-                return None, None
-            if status == RunStatus.CANCELLED:
-                logger.warning("SDK run was cancelled (agent_id=%s)", agent_id)
-                return None, None
-            if status == RunStatus.EXPIRED:
-                logger.warning("SDK run expired (agent_id=%s)", agent_id)
-                return None, None
-            if status == RunStatus.REQUIRES_ACTION:
-                logger.warning(
-                    "SDK run requires_action after processing — "
-                    "tool calls were not handled automatically (agent_id=%s)",
-                    agent_id,
-                )
-                return None, None
-
-            thread_id = run.thread_id
-            messages = await client.messages.list(thread_id=thread_id)
-            response_text = None
-            for msg in reversed(messages.data):
-                if msg.role == "assistant" and msg.content:
-                    for part in msg.content:
-                        if hasattr(part, "text") and hasattr(part.text, "value"):
-                            response_text = part.text.value
-                            break
-                    if response_text:
-                        break
-            return thread_id, response_text
-        except Exception as e:
-            logger.warning(
-                "Failed to create thread and process run for agent %s: %s",
-                agent_id,
-                e,
-            )
-            return None, None
-
-    # -----------------------------------------------------------------
-    # Client creation helpers
-    # -----------------------------------------------------------------
-
-    def _create_chat_client(self) -> ChatCompletionsClient:
-        """Create and configure Azure OpenAI chat client.
-
-        Returns:
-            Configured chat client.
-
-        Raises:
-            ValueError: If Azure OpenAI is not configured.
-        """
-        if not settings.is_azure_openai_configured():
-            raise ValueError(
-                "Azure OpenAI configuration is missing or invalid. "
-                "This agentic demo requires proper Azure OpenAI setup. "
-                "Please ensure the following environment variables are set: "
-                "AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_CHAT_DEPLOYMENT, "
-                "AZURE_OPENAI_EMBEDDING_DEPLOYMENT. "
-                "Authentication uses DefaultAzureCredential (managed identity) "
-                "by default; set AZURE_OPENAI_API_KEY only for local development."
-            )
-
-        try:
-            credential = DefaultAzureCredential()
-
-            chat_client = ChatCompletionsClient(
-                endpoint=settings.azure_openai_endpoint,
-                credential=credential,
-                api_version=settings.azure_openai_api_version,
-            )
-
-            logger.info("Azure OpenAI chat client configured successfully")
-            return chat_client
-
-        except Exception as e:
-            logger.error("Failed to configure chat client: %s", str(e))
-            raise
-
-    def _create_agents_client(self) -> AgentsClient:
-        """Create and configure the Microsoft Agent Framework client.
-
-        Uses the async DefaultAzureCredential since the AgentsClient from
-        ``azure.ai.agents.aio`` requires an async token credential.
-
-        Returns:
-            Configured agents client.
-
-        Raises:
-            ValueError: If Azure AI project endpoint is not configured.
-        """
+    def _get_client(self) -> FoundryChatClient:
+        """Lazily build and cache the FoundryChatClient."""
+        if self._client is not None:
+            return self._client
         if not settings.azure_ai_project_endpoint:
             raise ValueError(
-                "Azure AI project endpoint is not configured. "
+                "Microsoft Foundry project endpoint is not configured. "
                 "Set AZURE_AI_PROJECT_ENDPOINT to your Foundry project endpoint "
-                "(format: https://<account>.services.ai.azure.com/api/projects/<project>)."
+                "(https://<account>.services.ai.azure.com/api/projects/<project>)."
             )
+        from agent_framework.foundry import FoundryChatClient
+        from azure.identity.aio import DefaultAzureCredential
 
-        try:
-            # Async credential for the async AgentsClient
-            credential = AsyncDefaultAzureCredential()
+        self._client = FoundryChatClient(
+            project_endpoint=settings.azure_ai_project_endpoint,
+            credential=DefaultAzureCredential(),
+        )
+        logger.info("FoundryChatClient initialised for Agent Framework chat")
+        return self._client
 
-            agents_client = AgentsClient(
-                endpoint=settings.azure_ai_project_endpoint,
-                credential=credential,
-            )
+    @staticmethod
+    def _to_messages(messages: list[dict[str, str]]) -> list[Any]:
+        from agent_framework import Message
 
-            logger.info(
-                "Microsoft Agent Framework client configured successfully"
-            )
-            return agents_client
+        return [Message(m["role"], [m["content"]]) for m in messages]
 
-        except Exception as e:
-            logger.error("Failed to configure agents client: %s", str(e))
-            raise
+    @staticmethod
+    def _options(
+        deployment: str | None, temperature: float | None, max_tokens: int | None
+    ) -> dict[str, Any]:
+        options: dict[str, Any] = {}
+        if deployment:
+            options["model"] = deployment
+        if temperature is not None:
+            options["temperature"] = temperature
+        if max_tokens is not None:
+            options["max_tokens"] = max_tokens
+        return options
 
     # -----------------------------------------------------------------
-    # Observability
+    # Chat
+    # -----------------------------------------------------------------
+
+    async def chat_completion(
+        self,
+        messages: list[dict[str, str]],
+        deployment: str | None = None,
+        *,
+        temperature: float | None = None,
+        max_tokens: int | None = None,
+        **_kwargs: Any,  # noqa: ANN401 - accept/ignore legacy kwargs
+    ) -> str:
+        """Generate a chat completion via the Foundry chat client.
+
+        Raises on any failure (breaker open, network, service) so the calling
+        agent can fall back deterministically.
+        """
+        client = self._get_client()
+        response = await guarded_azure_call(
+            client.get_response(
+                self._to_messages(messages),
+                options=self._options(
+                    deployment or settings.azure_openai_chat_deployment,
+                    temperature,
+                    max_tokens,
+                ),
+            )
+        )
+        return (response.text or "").strip()
+
+    async def chat_completion_stream(
+        self,
+        messages: list[dict[str, str]],
+        deployment: str | None = None,
+        *,
+        temperature: float | None = None,
+        max_tokens: int | None = None,
+        **_kwargs: Any,  # noqa: ANN401
+    ) -> AsyncIterator[str]:
+        """Stream a chat completion via the Foundry chat client."""
+        import pybreaker
+
+        from app.azure_openai_client import azure_circuit_breaker
+
+        if azure_circuit_breaker.current_state == pybreaker.STATE_OPEN:
+            raise pybreaker.CircuitBreakerError("Azure circuit breaker is open")
+
+        client = self._get_client()
+        stream = client.get_response(
+            self._to_messages(messages),
+            stream=True,
+            options=self._options(
+                deployment or settings.azure_openai_chat_deployment,
+                temperature,
+                max_tokens,
+            ),
+        )
+        async for update in stream:
+            if update.text:
+                yield update.text
+
+    # -----------------------------------------------------------------
+    # Observability & cleanup
     # -----------------------------------------------------------------
 
     def setup_observability(self) -> None:
-        """Setup OpenTelemetry for agent observability."""
+        """Configure OpenTelemetry tracing (Azure Monitor when available)."""
         try:
             provider = TracerProvider()
-
-            # Use Azure Monitor exporter if connection string is available
             connection_string = os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING")
             if connection_string:
                 try:
-                    from azure.monitor.opentelemetry.exporter import AzureMonitorTraceExporter  # noqa: I001
+                    from azure.monitor.opentelemetry.exporter import (  # noqa: I001
+                        AzureMonitorTraceExporter,
+                    )
                     from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
-                    exporter = AzureMonitorTraceExporter(connection_string=connection_string)
-                    processor = BatchSpanProcessor(exporter)
-                    provider.add_span_processor(processor)
+                    exporter = AzureMonitorTraceExporter(
+                        connection_string=connection_string
+                    )
+                    provider.add_span_processor(BatchSpanProcessor(exporter))
                     logger.info("OpenTelemetry configured with Azure Monitor exporter")
                 except ImportError:
                     logger.warning(
-                        "azure-monitor-opentelemetry-exporter not installed, falling back to console"
+                        "azure-monitor exporter missing, falling back to console"
                     )
-                    processor = SimpleSpanProcessor(ConsoleSpanExporter())
-                    provider.add_span_processor(processor)
+                    provider.add_span_processor(
+                        SimpleSpanProcessor(ConsoleSpanExporter())
+                    )
             else:
-                # Fallback to console for local development
-                processor = SimpleSpanProcessor(ConsoleSpanExporter())
-                provider.add_span_processor(processor)
+                provider.add_span_processor(SimpleSpanProcessor(ConsoleSpanExporter()))
 
             trace.set_tracer_provider(provider)
             self._tracer = trace.get_tracer(__name__)
@@ -467,43 +195,21 @@ class AgentClientManager:
             logger.warning("Failed to setup observability: %s", e)
 
     def get_tracer(self) -> trace.Tracer | None:
-        """Get the OpenTelemetry tracer for agent operations."""
+        """Get the OpenTelemetry tracer, configuring it on first use."""
         if self._tracer is None:
             self.setup_observability()
         return self._tracer
 
-    def is_fallback_mode(self) -> bool:
-        """Check if agent client manager is in fallback mode."""
-        # Trigger initialization if not yet done
-        self.get_chat_client()
-        return self._fallback_mode
-
-    # -----------------------------------------------------------------
-    # Cleanup
-    # -----------------------------------------------------------------
-
     async def cleanup(self) -> None:
-        """Delete all agents created during this process's lifetime.
-
-        Intended to be called during application shutdown so that SDK agent
-        resources are not left dangling on the server.
-        """
-        client = self._agents_client  # Don't trigger lazy init on shutdown
-        if client is None or not self._created_agent_ids:
-            return
-
-        for agent_id in self._created_agent_ids:
-            try:
-                await client.delete_agent(agent_id)
-                logger.info("Deleted SDK agent %s on shutdown", agent_id)
-            except Exception as exc:
-                logger.warning(
-                    "Failed to delete SDK agent %s on shutdown: %s",
-                    agent_id,
-                    exc,
-                )
-
-        self._created_agent_ids.clear()
+        """Close the Foundry chat client on shutdown."""
+        if self._client is not None:
+            close = getattr(self._client, "close", None)
+            if close is not None:
+                try:
+                    await close()
+                except Exception as exc:  # noqa: BLE001
+                    logger.warning("Failed to close Foundry chat client: %s", exc)
+            self._client = None
 
 
 # Singleton instance for global access

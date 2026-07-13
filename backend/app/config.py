@@ -18,15 +18,21 @@ class Settings(BaseSettings):
     azure_openai_endpoint: str = ""
     azure_openai_api_key: str = ""
 
-    azure_openai_api_version: str = "2024-10-21"
+    azure_openai_api_version: str = "2025-04-01-preview"
 
     # Model Deployments (names match Bicep deployment resource names)
     azure_openai_chat_deployment: str = "gpt-41-mini"
-    azure_openai_mini_deployment: str = "gpt-41-mini"  # Falls back to chat model when Phi-4 unavailable
-    azure_openai_embedding_deployment: str = "text-embedding-3-small"
-    azure_openai_dalle_deployment: str = "dall-e-3"
+    azure_openai_dalle_deployment: str = "gpt-image-1-mini"
+    azure_openai_realtime_deployment: str = "gpt-realtime-mini"
 
-    # Azure AI Foundry project endpoint
+    # Per-agent chat deployment overrides (F03). Empty string falls back to
+    # ``azure_openai_chat_deployment`` via ``deployment_for()``. Only the three
+    # chat-driven agents get their own knob; image/scribe agents do not call chat.
+    azure_openai_dm_deployment: str = ""
+    azure_openai_narrator_deployment: str = ""
+    azure_openai_combat_deployment: str = ""
+
+    # Microsoft Foundry project endpoint (Agent Framework FoundryChatClient).
     # Format: https://<account>.services.ai.azure.com/api/projects/<project>
     azure_ai_project_endpoint: str = ""
 
@@ -60,17 +66,26 @@ class Settings(BaseSettings):
     app_log_level: str = "INFO"
 
     def is_azure_openai_configured(self) -> bool:
-        """Check if Azure OpenAI is properly configured.
+        """Check if Azure OpenAI (image generation) is properly configured.
 
         Authentication is handled by DefaultAzureCredential, so an API key
-        is not required.  The key field is kept for backward compatibility
-        with the legacy AzureOpenAIClient wrapper.
+        is not required.  The key field is kept for local-development use.
         """
-        return (
-            bool(self.azure_openai_endpoint)
-            and bool(self.azure_openai_chat_deployment)
-            and bool(self.azure_openai_embedding_deployment)
+        return bool(self.azure_openai_endpoint) and bool(
+            self.azure_openai_chat_deployment
         )
+
+    def is_foundry_configured(self) -> bool:
+        """Check if the Microsoft Foundry project endpoint is configured.
+
+        Gates the Agent Framework FoundryChatClient chat path; when False,
+        agents use deterministic fallback logic.
+        """
+        return bool(self.azure_ai_project_endpoint)
+
+    def deployment_for(self, setting_name: str) -> str:
+        """Resolve a per-agent deployment override, defaulting to the chat model."""
+        return getattr(self, setting_name, "") or self.azure_openai_chat_deployment
 
 
 # Global configuration instance - initialized at startup
@@ -94,8 +109,7 @@ def init_settings() -> Settings:
                 "Azure OpenAI configuration is missing or invalid. "
                 "This agentic demo requires proper Azure OpenAI setup. "
                 "Please ensure the following environment variables are set: "
-                "AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_CHAT_DEPLOYMENT, "
-                "AZURE_OPENAI_EMBEDDING_DEPLOYMENT. "
+                "AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_CHAT_DEPLOYMENT. "
                 "Authentication uses DefaultAzureCredential (managed identity) "
                 "by default; set AZURE_OPENAI_API_KEY only for local development."
             ) from e

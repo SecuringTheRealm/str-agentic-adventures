@@ -552,8 +552,18 @@ def get_proficiency_bonus(level: int) -> int:
     return (level - 1) // 4 + 2
 
 
-def is_asi_level(level: int) -> bool:
-    """Check if this level grants an Ability Score Improvement."""
+def is_asi_level(level: int, char_class: str | None = None) -> bool:
+    """Check if this level grants an Ability Score Improvement.
+
+    Every class gets ASIs at 4, 8, 12, 16, 19; Fighter and Rogue also get
+    bonus ASIs at extra levels. Pass ``char_class`` to check the exact
+    per-class levels (from class_features.json); without it, only the
+    base 5-level rule shared by all classes is checked.
+    """
+    if char_class:
+        from app.srd_data import get_asi_levels
+
+        return level in get_asi_levels(char_class)
     return level in (4, 8, 12, 16, 19)
 
 
@@ -636,7 +646,7 @@ def apply_level_up(
 
     # --- ASI handling ---
     ability_improvements: dict[str, int] = {}
-    if is_asi_level(new_level) and choices and "asi" in choices:
+    if is_asi_level(new_level, char_class) and choices and "asi" in choices:
         asi = choices["asi"]
         if not isinstance(asi, dict):
             raise ValueError(
@@ -845,10 +855,7 @@ def calculate_ac(
         else:
             base_ac, adds_dex, max_dex = entry
             if adds_dex:
-                if max_dex is None:
-                    dex_bonus = dex_modifier
-                else:
-                    dex_bonus = min(dex_modifier, max_dex)
+                dex_bonus = dex_modifier if max_dex is None else min(dex_modifier, max_dex)
                 ac = base_ac + dex_bonus
             else:
                 ac = base_ac

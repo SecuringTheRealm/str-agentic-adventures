@@ -133,6 +133,47 @@ class TestASILevels:
         assert is_asi_level(level) is False
 
 
+class TestPerClassASILevels:
+    """Fighter (6, 14) and Rogue (10) get bonus ASIs beyond the base 5 (F05)."""
+
+    def test_fighter_gets_bonus_asi_at_level_6(self) -> None:
+        assert is_asi_level(6, "fighter") is True
+
+    def test_fighter_gets_bonus_asi_at_level_14(self) -> None:
+        assert is_asi_level(14, "fighter") is True
+
+    def test_rogue_gets_bonus_asi_at_level_10(self) -> None:
+        assert is_asi_level(10, "rogue") is True
+
+    def test_wizard_does_not_get_bonus_asi_at_level_6(self) -> None:
+        assert is_asi_level(6, "wizard") is False
+
+    def test_fighter_level_6_asi_actually_applies_ability_changes(self) -> None:
+        """apply_level_up must apply the ASI, not just note the feature exists."""
+        char = _make_character(
+            level=5,
+            experience=14000,  # enough for level 6
+            char_class="fighter",
+            strength=16,
+        )
+        result = apply_level_up(char, choices={"asi": {"strength": 2}})
+        assert result["new_level"] == 6
+        assert result["ability_improvements"] == {"strength": 2}
+        assert result["updated_character"]["abilities"]["strength"] == 18
+
+    def test_rogue_level_10_asi_actually_applies_ability_changes(self) -> None:
+        char = _make_character(
+            level=9,
+            experience=64000,  # enough for level 10
+            char_class="rogue",
+            dexterity=16,
+        )
+        result = apply_level_up(char, choices={"asi": {"dexterity": 2}})
+        assert result["new_level"] == 10
+        assert result["ability_improvements"] == {"dexterity": 2}
+        assert result["updated_character"]["abilities"]["dexterity"] == 18
+
+
 class TestASIApplication:
     """ASI allows +2 to one ability or +1 to two abilities."""
 

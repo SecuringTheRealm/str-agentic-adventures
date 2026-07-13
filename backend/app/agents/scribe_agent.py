@@ -89,19 +89,6 @@ class ScribeAgent(BaseAgent):
         init_db()
         self._register_skills()
 
-    def _get_sdk_instructions(self) -> str:
-        """Return system instructions for the SDK Scribe agent."""
-        return (
-            "You are the Scribe for a D&D 5e game. You manage character sheets, "
-            "inventory, equipment, and NPC data. Use the provided tools to look "
-            "up character information, NPC details, and inventory data when "
-            "players ask about their characters or the world."
-        )
-
-    def _get_sdk_tool_functions(self) -> list[Callable[..., Any]]:
-        """Return callable character/NPC query tool functions for the SDK agent."""
-        return _get_scribe_tool_functions()
-
     @property
     def characters(self) -> dict[str, Any]:
         """Return all characters from the database."""
@@ -1085,13 +1072,21 @@ class ScribeAgent(BaseAgent):
 
                 proficiency_bonus = prof_result["proficiency_bonus"]
 
-                asi_info = rules_engine.check_asi_eligibility(next_level, asi_used)
+                asi_info = rules_engine.check_asi_eligibility(
+                    next_level, asi_used, character_class
+                )
                 if asi_info.get("error"):
                     return asi_info
 
+                level_features = get_class_features(character_class, next_level) or []
+                is_asi_level_for_class = any(
+                    feature.get("name") == "Ability Score Improvement"
+                    for feature in level_features
+                )
+
                 if (
                     remaining_improvements
-                    and next_level in getattr(rules_engine, "asi_levels", [])
+                    and is_asi_level_for_class
                     and asi_info.get("asi_remaining", 0) > 0
                 ):
                     total_improvements = sum(remaining_improvements.values())
@@ -1125,7 +1120,6 @@ class ScribeAgent(BaseAgent):
                         asi_used += 1
                         remaining_improvements = None
 
-                level_features = get_class_features(character_class, next_level) or []
                 character.setdefault("features", [])
                 existing_features = {
                     (feature.get("name"), feature.get("level_gained"))

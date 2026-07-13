@@ -60,7 +60,7 @@ The following diagram shows Secure the Realm in the context of its users and ext
 graph TB
     Player[Player<br/>D&D Enthusiast]
     WebApp[Secure the Realm<br/>Web Application]
-    AzureOpenAI[Azure OpenAI<br/>GPT-4o-mini & Embeddings]
+    AzureOpenAI[Azure OpenAI<br/>gpt-41-mini & gpt-realtime-mini]
     DallE[Azure OpenAI<br/>gpt-image-1-mini]
     AzureAI[Azure AI Foundry<br/>Project & Endpoints]
 
@@ -80,9 +80,9 @@ graph TB
 
 | System | Purpose | Integration Method |
 |--------|---------|-------------------|
-| **Azure AI Foundry** | Unified AI platform for model deployment | Azure AI Agents SDK (azure-ai-agents, azure-ai-projects) |
-| **Azure OpenAI - GPT-4o-mini** | Chat completion for AI agent reasoning | Azure AI Inference API |
-| **Azure OpenAI - text-embedding-ada-002** | Embeddings for semantic search | Azure AI Inference API |
+| **Azure AI Foundry** | Unified AI platform for model deployment | Microsoft Agent Framework (agent-framework-foundry) |
+| **Azure OpenAI - gpt-41-mini** | Chat completion for AI agent reasoning | Azure AI Inference API |
+| **Azure OpenAI - gpt-realtime-mini** | Realtime voice pipeline (WebRTC) | Azure OpenAI Realtime API |
 | **Azure OpenAI - gpt-image-1-mini** | Image generation for battle maps and art | Azure AI Inference API |
 
 ### User Interactions
@@ -129,7 +129,7 @@ graph TB
     end
 
     subgraph "External Services"
-        AzureOpenAI[Azure OpenAI<br/>GPT-4o-mini]
+        AzureOpenAI[Azure OpenAI<br/>gpt-41-mini]
         DALLE[gpt-image-1-mini<br/>Image Generation]
     end
 
@@ -164,7 +164,7 @@ graph TB
 
 #### 1. React Frontend
 
-**Technology**: TypeScript, React 18, Vite, Material-UI
+**Technology**: TypeScript, React 19, Vite, Radix UI + Tailwind CSS
 
 **Responsibilities**:
 - Present chat interface for player-DM interaction
@@ -206,7 +206,7 @@ graph TB
 - `app/agents/` - AI agent definitions and prompts
 - `app/services/` - Business logic and orchestration
 - `app/models/` - Pydantic data models and SQLAlchemy ORM
-- `app/plugins/` - Semantic Kernel plugins for agent capabilities
+- `app/plugins/` - Azure AI agent functions for agent capabilities
 
 #### 3. AI Agent System
 
@@ -321,7 +321,7 @@ graph TB
     end
 
     subgraph "External Services"
-        AzureAI[Azure OpenAI<br/>GPT-4o-mini]
+        AzureAI[Azure OpenAI<br/>gpt-41-mini]
         DALLE[gpt-image-1-mini]
     end
 
@@ -978,11 +978,11 @@ sequenceDiagram
 
 ### Styling and Theming
 
-**Technology**: CSS Modules + Material-UI
+**Technology**: Tailwind CSS + Radix UI
 
 **Approach**:
 - Component-scoped CSS modules
-- Material-UI theme customization
+- Tailwind CSS theme customization
 - Responsive design with breakpoints
 - Dark mode support (future)
 
@@ -1055,7 +1055,7 @@ graph TB
 
         subgraph "Agent Layer"
             Agents[agents/<br/>6 Specialized Agents]
-            Plugins[plugins/<br/>Semantic Kernel Plugins]
+            Plugins[plugins/<br/>Agent Tool Functions]
         end
 
         subgraph "Configuration"
@@ -1327,7 +1327,7 @@ class Character(BaseModel):
 
 **Technology**: SQLAlchemy + Alembic
 
-**Database File** (Development): `backend/game.db` (SQLite)
+**Database File** (Development): `backend/app.db` (SQLite)
 
 **Production**: PostgreSQL (via Azure Database for PostgreSQL)
 
@@ -1373,7 +1373,7 @@ Each agent file defines:
 ```python
 # Narrator Agent
 narrator_agent = {
-    "model": "gpt-4o-mini",
+    "model": "gpt-41-mini",
     "name": "Narrator",
     "instructions": """
     You are the Narrator agent in a D&D 5e game. Your role is to:
@@ -1408,20 +1408,16 @@ narrator_agent = {
 
 **Plugin Pattern**:
 
-Plugins are Python functions with decorators that make them callable by agents:
+Plugins are plain Python classes whose methods are called directly by agent code (no decorator/registration layer):
 
 ```python
-from semantic_kernel.functions import kernel_function
-
 class NarrativeMemoryPlugin:
-    @kernel_function(name="store_narrative_fact")
-    def store_fact(self, fact: str, campaign_id: str) -> str:
+    def remember_fact(self, fact: str, category: str, importance: int = 5) -> dict:
         """Store an important narrative fact for future recall."""
         # Implementation
-        return "Fact stored successfully"
+        return {"status": "stored"}
 
-    @kernel_function(name="retrieve_narrative_facts")
-    def retrieve_facts(self, query: str, campaign_id: str) -> List[str]:
+    def retrieve_facts(self, query: str, campaign_id: str) -> list[str]:
         """Retrieve relevant narrative facts based on query."""
         # Implementation
         return ["fact1", "fact2", "fact3"]
@@ -1448,12 +1444,12 @@ class Settings(BaseSettings):
     # Azure AI
     AZURE_OPENAI_ENDPOINT: str
     AZURE_OPENAI_API_KEY: str
-    AZURE_OPENAI_CHAT_DEPLOYMENT: str = "gpt-4o-mini"
-    AZURE_OPENAI_EMBEDDING_DEPLOYMENT: str = "text-embedding-ada-002"
+    AZURE_OPENAI_CHAT_DEPLOYMENT: str = "gpt-41-mini"
     AZURE_OPENAI_DALLE_DEPLOYMENT: str = "gpt-image-1-mini"
+    AZURE_OPENAI_REALTIME_DEPLOYMENT: str = "gpt-realtime-mini"
 
     # Database
-    DATABASE_URL: str = "sqlite:///./game.db"
+    DATABASE_URL: str = "sqlite:///./app.db"
 
     class Config:
         env_file = ".env"
@@ -1962,8 +1958,8 @@ graph TB
 
     subgraph "Azure AI Foundry"
         AIProject[AI Foundry Project]
-        GPT4[GPT-4o-mini Deployment]
-        Embeddings[text-embedding-ada-002]
+        GPT4[gpt-41-mini Deployment]
+        Realtime[gpt-realtime-mini Deployment]
         DALLE[gpt-image-1-mini Deployment]
     end
 
@@ -2077,20 +2073,10 @@ api_location: ""  # No backend API in Static Web App
    - Runs: API integration tests, E2E Playwright tests
    - Uses: Secrets for Azure OpenAI
 
-3. **Deploy Production** (`.github/workflows/deploy-production.yml`):
-   - Triggers: Push to main branch
-   - Steps:
-     1. Build frontend: `bun run build`
-     2. Deploy frontend to Azure Static Web Apps
-     3. Build backend Docker image
-     4. Push image to Azure Container Registry
-     5. Deploy container to Azure Container Apps
-     6. Run database migrations
-   - Requires: Azure credentials in GitHub Secrets
+3. **Production Deployment**: there is no automated GitHub Actions deploy workflow. Production deploys are manual via the Azure Developer CLI (`azd up` / `azd deploy`) — see [azd Quickstart](azd-quickstart.md).
 
-   Per-PR Azure environments are intentionally not provisioned — only
-   pushes to `main` deploy to Azure. PRs are validated via the unit,
-   integration, and E2E test workflows alone.
+   PR environments are not automatically provisioned either — PRs are
+   validated via the unit, integration, and E2E test workflows alone.
 
 **Required Secrets**:
 - `AZURE_CREDENTIALS` - Service principal for deployment
@@ -2150,10 +2136,10 @@ This single command:
 | Category | Technology | Version | Purpose |
 |----------|------------|---------|---------|
 | **Language** | TypeScript | ~5.x | Type-safe JavaScript |
-| **Framework** | React | 18.x | UI component library |
-| **Build Tool** | Vite | 5.x | Fast build and dev server |
-| **UI Library** | Material-UI | 5.x | Component library |
-| **API Client** | OpenAPI Generator | Latest | Auto-generated TypeScript client |
+| **Framework** | React | 19.x | UI component library |
+| **Build Tool** | Vite | 8.x | Fast build and dev server |
+| **UI Library** | Radix UI + Tailwind CSS | Latest | Component library |
+| **API Client** | openapi-fetch | Latest | Type-safe TypeScript client generated from OpenAPI schema |
 | **State Management** | React Context + Hooks | Built-in | Application state |
 | **Testing** | Vitest + Testing Library | Latest | Unit and component tests |
 | **E2E Testing** | Playwright | Latest | End-to-end tests |
@@ -2167,8 +2153,7 @@ This single command:
 | **Framework** | FastAPI | Latest | Web framework |
 | **Package Manager** | UV | Latest | Fast Python dependency management |
 | **Web Server** | Uvicorn | Latest | ASGI server |
-| **AI Framework** | Azure AI Agents SDK | Latest | Multi-agent orchestration |
-| **AI Project Client** | azure-ai-projects | Latest | Azure AI Foundry integration |
+| **AI Framework** | Microsoft Agent Framework (agent-framework-foundry) | ≥1.10.0 | Multi-agent orchestration |
 | **AI Inference** | Azure AI Inference | Latest | OpenAI model access |
 | **ORM** | SQLAlchemy | 2.x | Database abstraction |
 | **Migrations** | Alembic | Latest | Database schema versioning |
@@ -2194,8 +2179,8 @@ This single command:
 
 | Model | Purpose | Deployment |
 |-------|---------|------------|
-| **GPT-4o-mini** | Chat completion for all 6 agents | Azure OpenAI via AI Foundry |
-| **text-embedding-ada-002** | Embeddings for semantic search (future) | Azure OpenAI via AI Foundry |
+| **gpt-41-mini** | Chat completion for all 6 agents (per-agent deployment overrides available) | Azure OpenAI via AI Foundry |
+| **gpt-realtime-mini** | Realtime voice pipeline (WebRTC) | Azure OpenAI via AI Foundry |
 | **gpt-image-1-mini** | Image generation (maps, artwork, portraits) | Azure OpenAI via AI Foundry |
 
 ---

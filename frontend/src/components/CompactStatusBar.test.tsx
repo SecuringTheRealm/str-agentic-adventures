@@ -13,7 +13,7 @@ describe("CompactStatusBar", () => {
   });
 
   it("shows green HP bar when above 50%", () => {
-    const { container } = render(
+    render(
       <CompactStatusBar currentHp={40} maxHp={50} armorClass={10} level={1} />
     );
 

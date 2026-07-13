@@ -253,3 +253,51 @@ class TestSRDLevelUp:
                 assert class_feature_added, (
                     f"Expected Roguish Archetype to be added, got: {features_gained}"
                 )
+
+    @pytest.mark.asyncio
+    async def test_fighter_level_6_bonus_asi_is_actually_applied(
+        self, scribe_agent
+    ) -> None:
+        """Fighter's bonus ASI at level 6 must apply ability changes (F05).
+
+        Uses the real rules engine (not mocked) so the fix that derives ASI
+        eligibility from class_features.json, instead of the old hardcoded
+        [4, 8, 12, 16, 19] list, is actually exercised.
+        """
+        fighter_data = {
+            "id": "test_fighter_6",
+            "name": "Test Fighter",
+            "race": "human",
+            "character_class": "fighter",
+            "level": 5,
+            "experience": 14000,  # enough for level 6
+            "abilities": {
+                "strength": 16,
+                "dexterity": 14,
+                "constitution": 15,
+                "intelligence": 10,
+                "wisdom": 12,
+                "charisma": 8,
+            },
+            "hitPoints": {"current": 44, "maximum": 44},
+            "proficiency_bonus": 3,
+            "features": [],
+            "ability_score_improvements_used": 1,
+        }
+
+        with patch("app.agents.scribe_agent.get_session_context") as mock_session:
+            mock_db = MagicMock()
+            mock_character = MagicMock()
+            mock_character.data = fighter_data
+            mock_db.get.return_value = mock_character
+            mock_session.return_value.__enter__.return_value = mock_db
+
+            result = await scribe_agent.level_up_character(
+                "test_fighter_6", {"strength": 2}
+            )
+
+        assert result["new_level"] == 6
+        updated_character = result["updated_character"]
+        assert updated_character["abilities"]["strength"] == 18
+        features_gained = result.get("features_gained", [])
+        assert any("Ability Score Improvement" in f for f in features_gained)
