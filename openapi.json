@@ -246,7 +246,7 @@
           "characters"
         ],
         "summary": "Manage Equipment",
-        "description": "Equip/unequip items with stat effects.",
+        "description": "Equip/unequip items against the character's real inventory.",
         "operationId": "manage_equipment_game_character__character_id__equipment_post",
         "parameters": [
           {
@@ -299,7 +299,7 @@
           "characters"
         ],
         "summary": "Get Encumbrance",
-        "description": "Calculate carrying capacity and weight.",
+        "description": "Calculate carrying capacity and weight from the character's real inventory.",
         "operationId": "get_encumbrance_game_character__character_id__encumbrance_get",
         "parameters": [
           {
@@ -792,7 +792,7 @@
           "spells"
         ],
         "summary": "Manage Character Spells",
-        "description": "Manage known spells for a character.",
+        "description": "Learn, forget, prepare, or unprepare spells, persisted to the character sheet.",
         "operationId": "manage_character_spells_game_character__character_id__spells_post",
         "parameters": [
           {
@@ -845,7 +845,7 @@
           "spells"
         ],
         "summary": "Manage Spell Slots",
-        "description": "Manage spell slot usage and recovery for a character.",
+        "description": "Expend, recover, or set a character's spell slots, persisted to their sheet.",
         "operationId": "manage_spell_slots_game_character__character_id__spell_slots_post",
         "parameters": [
           {
@@ -4315,6 +4315,13 @@
             "type": "integer",
             "title": "Exhaustion Level",
             "default": 0
+          },
+          "conditions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Conditions"
           }
         },
         "type": "object",
@@ -4491,6 +4498,13 @@
             "type": "integer",
             "title": "Exhaustion Level",
             "default": 0
+          },
+          "conditions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Conditions"
           }
         },
         "type": "object",

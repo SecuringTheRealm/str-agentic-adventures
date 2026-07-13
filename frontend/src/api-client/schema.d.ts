@@ -115,7 +115,7 @@ export interface paths {
     put?: never;
     /**
      * Manage Equipment
-     * @description Equip/unequip items with stat effects.
+     * @description Equip/unequip items against the character's real inventory.
      */
     post: operations["manage_equipment_game_character__character_id__equipment_post"];
     delete?: never;
@@ -133,7 +133,7 @@ export interface paths {
     };
     /**
      * Get Encumbrance
-     * @description Calculate carrying capacity and weight.
+     * @description Calculate carrying capacity and weight from the character's real inventory.
      */
     get: operations["get_encumbrance_game_character__character_id__encumbrance_get"];
     put?: never;
@@ -359,7 +359,7 @@ export interface paths {
     put?: never;
     /**
      * Manage Character Spells
-     * @description Manage known spells for a character.
+     * @description Learn, forget, prepare, or unprepare spells, persisted to the character sheet.
      */
     post: operations["manage_character_spells_game_character__character_id__spells_post"];
     delete?: never;
@@ -379,7 +379,7 @@ export interface paths {
     put?: never;
     /**
      * Manage Spell Slots
-     * @description Manage spell slot usage and recovery for a character.
+     * @description Expend, recover, or set a character's spell slots, persisted to their sheet.
      */
     post: operations["manage_spell_slots_game_character__character_id__spell_slots_post"];
     delete?: never;
@@ -1825,6 +1825,8 @@ export interface components {
        * @default 0
        */
       exhaustion_level: number;
+      /** Conditions */
+      conditions?: string[];
     };
     /** CharacterSheet */
     CharacterSheet: {
@@ -1902,6 +1904,8 @@ export interface components {
        * @default 0
        */
       exhaustion_level: number;
+      /** Conditions */
+      conditions?: string[];
     };
     /** CloneCampaignRequest */
     CloneCampaignRequest: {
