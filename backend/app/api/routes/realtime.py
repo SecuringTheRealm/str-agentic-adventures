@@ -6,13 +6,14 @@ import httpx
 from fastapi import APIRouter, HTTPException
 
 from app.config import settings
+from app.models.api_models import RealtimeTokenResponse
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/realtime", tags=["realtime"])
 
 
-@router.get("/token")
+@router.get("/token", response_model=RealtimeTokenResponse)
 async def get_realtime_token() -> dict:
     """Mint an ephemeral WebRTC token for the Azure Foundry realtime API.
 

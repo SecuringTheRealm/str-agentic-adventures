@@ -140,7 +140,6 @@ class TestConfigurationDependencyInjection:
             azure_openai_endpoint="https://test.example.com",
             azure_openai_api_key="test-key",
             azure_openai_chat_deployment="test-deployment",
-            azure_openai_embedding_deployment="test-embedding",
         )
 
         # Override the dependency

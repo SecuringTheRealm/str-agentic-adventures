@@ -10,6 +10,11 @@ from app.agents.base_agent import azure_circuit_breaker
 from app.agents.combat_cartographer_agent import get_combat_cartographer
 from app.api.routes._shared import _get_image_budget, limiter
 from app.config import get_settings
+from app.models.api_models import (
+    BattleMapResult,
+    GeneratedImageResult,
+    ImageGenerationStatusResponse,
+)
 from app.models.game_models import (
     AIAssistanceRequest,
     AIAssistanceResponse,
@@ -23,7 +28,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["ai"])
 
 
-@router.get("/image-generation/status", response_model=dict[str, Any])
+@router.get("/image-generation/status", response_model=ImageGenerationStatusResponse)
 async def get_image_generation_status() -> dict[str, Any]:
     """Report whether visual generation is currently available to the frontend."""
     settings = get_settings()
@@ -191,7 +196,7 @@ async def generate_ai_content(  # noqa: ARG001
         ) from e
 
 
-@router.post("/generate-image", response_model=dict[str, Any])
+@router.post("/generate-image", response_model=GeneratedImageResult)
 @limiter.limit("5/minute")
 async def generate_image(  # noqa: ARG001
     request: Request, image_request: GenerateImageRequest,
@@ -239,7 +244,7 @@ async def generate_image(  # noqa: ARG001
         ) from e
 
 
-@router.post("/battle-map", response_model=dict[str, Any])
+@router.post("/battle-map", response_model=BattleMapResult)
 @limiter.limit("5/minute")
 async def generate_battle_map(  # noqa: ARG001
     request: Request, map_request: dict[str, Any],

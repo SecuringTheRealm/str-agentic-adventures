@@ -1,9 +1,14 @@
 ---
 name: E2E Tests
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches: [main]
+    paths-ignore: ['**.md', 'docs/**']
   workflow_dispatch:
 
 jobs:
@@ -41,6 +46,13 @@ jobs:
       uses: oven-sh/setup-bun@v2
       with:
         bun-version: latest
+
+    - name: Cache bun dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.bun/install/cache
+        key: ${{ runner.os }}-bun-${{ hashFiles('frontend/bun.lock') }}
+        restore-keys: ${{ runner.os }}-bun-
 
     - name: Install frontend dependencies
       run: |

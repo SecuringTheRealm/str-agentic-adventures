@@ -11,6 +11,7 @@ import random
 from collections.abc import Callable
 from typing import Any
 
+from app.agent_client_setup import agent_client_manager
 from app.agents.base_agent import BaseAgent
 from app.utils.dice import DiceRoller
 
@@ -99,6 +100,7 @@ class CombatMCAgent(BaseAgent):
     """
 
     agent_name = "Combat MC"
+    deployment_setting = "azure_openai_combat_deployment"
 
     def _post_init(self) -> None:
         """Initialize Combat MC-specific components after base client setup."""
@@ -106,30 +108,12 @@ class CombatMCAgent(BaseAgent):
 
         if not self._fallback_mode:
             self._register_skills()
-            try:
-                from app.azure_openai_client import azure_openai_client
-
-                self.azure_client = azure_openai_client
-            except Exception:
-                logger.debug("Azure OpenAI client unavailable for Combat MC narration")
+            self.azure_client = agent_client_manager
         else:
             self._initialize_fallback_mechanics()
 
         # Active combat tracking
         self.active_combats = {}
-
-    def _get_sdk_instructions(self) -> str:
-        """Return system instructions for the SDK Combat MC agent."""
-        return (
-            "You are the Combat Master for a D&D 5e game. You manage combat "
-            "encounters, resolve attacks, track initiative, and adjudicate "
-            "combat mechanics. Use the provided tools to resolve attacks, "
-            "skill checks, and damage calculations according to D&D 5e rules."
-        )
-
-    def _get_sdk_tool_functions(self) -> list[Callable[..., Any]]:
-        """Return callable combat tool functions for the SDK agent."""
-        return _get_combat_tool_functions()
 
     def _register_skills(self) -> None:
         """Register necessary skills for the Combat MC agent."""
@@ -223,6 +207,7 @@ class CombatMCAgent(BaseAgent):
                     },
                     {"role": "user", "content": prompt},
                 ],
+                deployment=self._deployment,
                 temperature=0.8,
                 max_tokens=120,
             )

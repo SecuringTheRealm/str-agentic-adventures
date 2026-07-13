@@ -47,8 +47,8 @@ class TestADRCompliance:
             assert "get_chat_client" in content, (
                 "get_chat_client method should be implemented"
             )
-            assert "ChatCompletionsClient" in content, (
-                "Azure AI Inference integration should be present"
+            assert "FoundryChatClient" in content, (
+                "Microsoft Agent Framework Foundry integration should be present"
             )
             assert "OpenTelemetry" in content or "opentelemetry" in content, (
                 "OpenTelemetry observability should be present"
@@ -151,8 +151,8 @@ class TestADRCompliance:
             assert "class AzureOpenAIClient" in content, (
                 "AzureOpenAIClient class should be implemented"
             )
-            assert "chat_completion" in content, (
-                "Chat completion method should be implemented"
+            assert "generate_image" in content, (
+                "Image generation method should be implemented"
             )
             assert "azure" in content.lower(), (
                 "Azure-specific configuration should be present"

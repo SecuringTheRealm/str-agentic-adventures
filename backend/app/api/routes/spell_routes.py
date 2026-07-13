@@ -9,6 +9,12 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.database import DbDep
+from app.models.api_models import (
+    ManageSpellsResult,
+    ManageSpellSlotsResult,
+    SpellAttackBonusResponse,
+    SpellSaveDCResponse,
+)
 from app.models.game_models import (
     CastSpellRequest,
     CharacterClass,
@@ -33,7 +39,7 @@ class SpellSaveDCRequest(BaseModel):
     spellcasting_ability_score: int = Field(ge=1, le=30)
 
 
-@router.post("/character/{character_id}/spells", response_model=dict[str, Any])
+@router.post("/character/{character_id}/spells", response_model=ManageSpellsResult)
 async def manage_character_spells(
     character_id: str, request: ManageSpellsRequest, response: Response
 ) -> dict[str, Any]:
@@ -55,7 +61,9 @@ async def manage_character_spells(
         ) from e
 
 
-@router.post("/character/{character_id}/spell-slots", response_model=dict[str, Any])
+@router.post(
+    "/character/{character_id}/spell-slots", response_model=ManageSpellSlotsResult
+)
 async def manage_spell_slots(
     character_id: str, request: ManageSpellSlotsRequest, response: Response
 ) -> dict[str, Any]:
@@ -362,7 +370,7 @@ async def get_spell_list(
         ) from e
 
 
-@router.post("/spells/save-dc", response_model=dict[str, Any])
+@router.post("/spells/save-dc", response_model=SpellSaveDCResponse)
 async def calculate_spell_save_dc_endpoint(
     request: SpellSaveDCRequest,
 ) -> dict[str, Any]:
@@ -487,7 +495,7 @@ async def manage_concentration(character_id: str, request: ConcentrationRequest)
         ) from e
 
 
-@router.post("/spells/attack-bonus", response_model=dict[str, Any])
+@router.post("/spells/attack-bonus", response_model=SpellAttackBonusResponse)
 async def calculate_spell_attack_bonus(request: SpellAttackBonusRequest) -> dict[str, Any]:
     """Calculate spell attack bonus for a character."""
     try:

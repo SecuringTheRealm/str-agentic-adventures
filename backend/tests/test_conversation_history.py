@@ -27,13 +27,9 @@ from sqlalchemy.orm import sessionmaker
 @pytest.fixture
 def _mock_azure_deps() -> Generator[tuple[Any, Any], None, None]:
     """Patch Azure dependencies so the DM agent can be imported."""
-    with (
-        patch("app.agent_client_setup.agent_client_manager") as mock_mgr,
-        patch(
-            "app.agents.dungeon_master_agent.azure_openai_client"
-        ) as mock_azure,
-    ):
+    with patch("app.agent_client_setup.agent_client_manager") as mock_mgr:
         mock_mgr.get_chat_client.return_value = MagicMock()
+        mock_azure = MagicMock()
         mock_azure.is_configured.return_value = True
         mock_azure.chat_completion = AsyncMock(
             return_value="The DM responds."

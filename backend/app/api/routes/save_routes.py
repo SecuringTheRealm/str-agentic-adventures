@@ -9,6 +9,11 @@ from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 
 from app.database import DbDep
+from app.models.api_models import (
+    SaveSlotLoadResponse,
+    SaveSlotRestoreResponse,
+    SaveSlotSummaryResponse,
+)
 from app.models.db_models import Campaign as CampaignDB
 from app.models.db_models import SaveSlot as SaveSlotDB
 from app.models.game_models import (
@@ -189,7 +194,10 @@ async def delete_save_slot(campaign_id: str, slot_number: int, db: DbDep) -> Non
     db.commit()
 
 
-@router.post("/campaign/{campaign_id}/saves/{slot_number}/load")
+@router.post(
+    "/campaign/{campaign_id}/saves/{slot_number}/load",
+    response_model=SaveSlotLoadResponse,
+)
 async def load_save_slot(campaign_id: str, slot_number: int, db: DbDep) -> dict[str, Any]:
     """Load a save slot, returning the full save_data state blob."""
     campaign = db.query(CampaignDB).filter(CampaignDB.id == campaign_id).first()
@@ -312,7 +320,10 @@ async def capture_game_state(campaign_id: str, db: DbDep):
     return _save_slot_from_db(db_slot)
 
 
-@router.post("/campaign/{campaign_id}/saves/{slot_number}/restore")
+@router.post(
+    "/campaign/{campaign_id}/saves/{slot_number}/restore",
+    response_model=SaveSlotRestoreResponse,
+)
 async def restore_game_state(campaign_id: str, slot_number: int, db: DbDep):
     """Restore game state from a save slot.
 
@@ -363,7 +374,10 @@ async def restore_game_state(campaign_id: str, slot_number: int, db: DbDep):
     }
 
 
-@router.get("/campaign/{campaign_id}/saves/{slot_number}/summary")
+@router.get(
+    "/campaign/{campaign_id}/saves/{slot_number}/summary",
+    response_model=SaveSlotSummaryResponse,
+)
 async def get_save_summary(campaign_id: str, slot_number: int, db: DbDep):
     """Return a human-readable summary of the state in a save slot."""
     campaign = db.query(CampaignDB).filter(CampaignDB.id == campaign_id).first()

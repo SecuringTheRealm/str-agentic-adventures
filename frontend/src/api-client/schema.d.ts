@@ -1530,6 +1530,23 @@ export interface components {
       /** Experience Points */
       experience_points: number;
     };
+    /** AwardExperienceResult */
+    AwardExperienceResult: {
+      /** Character Id */
+      character_id: string;
+      /** Experience Awarded */
+      experience_awarded: number;
+      /** Old Experience */
+      old_experience: number;
+      /** New Experience */
+      new_experience: number;
+      /** Level Info */
+      level_info: {
+        [key: string]: unknown;
+      };
+      /** Can Level Up */
+      can_level_up: boolean;
+    };
     /** BattleMapData */
     BattleMapData: {
       /** Id */
@@ -1566,6 +1583,24 @@ export interface components {
       fog_of_war: boolean;
       /** Ambient Image Url */
       ambient_image_url?: string | null;
+    };
+    /**
+     * BattleMapResult
+     * @description Shape returned by POST /battle-map.
+     *
+     *     Either the artist-generated battle map dict, or (when Azure OpenAI is
+     *     unavailable) a BattleMapData grid dump -- the two shapes barely
+     *     overlap, so unlisted fields pass through unchanged.
+     */
+    BattleMapResult: {
+      /** Id */
+      id?: string | null;
+      /** Error */
+      error?: string | null;
+      /** Images Remaining */
+      images_remaining?: number | null;
+    } & {
+      [key: string]: unknown;
     };
     /** Campaign */
     Campaign: {
@@ -1646,6 +1681,11 @@ export interface components {
       /** Templates */
       templates: components["schemas"]["Campaign"][];
     };
+    /** CampaignTemplatesResponse */
+    CampaignTemplatesResponse: {
+      /** Templates */
+      templates: components["schemas"]["Campaign"][];
+    };
     /** CampaignUpdateRequest */
     CampaignUpdateRequest: {
       /** Name */
@@ -1660,6 +1700,16 @@ export interface components {
       homebrew_rules?: string[] | null;
       /** World Description */
       world_description?: string | null;
+    };
+    /** CampaignWorldGenerationResponse */
+    CampaignWorldGenerationResponse: {
+      /** World Description */
+      world_description: string;
+      /** Setting */
+      setting: string;
+      /** Tone */
+      tone: string;
+      generated_elements: components["schemas"]["GeneratedWorldElements"];
     };
     /** CastSpellRequest */
     CastSpellRequest: {
@@ -1691,6 +1741,91 @@ export interface components {
       | "ranger"
       | "sorcerer"
       | "barbarian";
+    /**
+     * CharacterGetResponse
+     * @description GET /character/{id} response.
+     *
+     *     Same shape as CharacterSheet, but abilities/hit_points are optional:
+     *     persisted character records aren't schema-validated on write, so a
+     *     partial record (e.g. one created before those fields existed) is a
+     *     valid 200 response, not a 500.
+     */
+    CharacterGetResponse: {
+      /** Id */
+      id?: string;
+      /** Name */
+      name: string;
+      race: components["schemas"]["Race"];
+      character_class: components["schemas"]["CharacterClass"];
+      /**
+       * Level
+       * @default 1
+       */
+      level: number;
+      /** Background */
+      background?: string | null;
+      /** Alignment */
+      alignment?: string | null;
+      /**
+       * Experience
+       * @default 0
+       */
+      experience: number;
+      abilities?: components["schemas"]["Abilities"] | null;
+      hit_points?: components["schemas"]["HitPoints"] | null;
+      /**
+       * Armor Class
+       * @default 10
+       */
+      armor_class: number;
+      /**
+       * Speed
+       * @default 30
+       */
+      speed: number;
+      /**
+       * Proficiency Bonus
+       * @default 2
+       */
+      proficiency_bonus: number;
+      /** Skills */
+      skills?: {
+        [key: string]: boolean;
+      };
+      /** Inventory */
+      inventory?: components["schemas"]["InventorySlot"][];
+      structured_inventory?: components["schemas"]["Inventory"];
+      /** Equipped Items */
+      equipped_items?: components["schemas"]["EquippedItem"][];
+      /** Carrying Capacity */
+      carrying_capacity?: number | null;
+      /** Spells */
+      spells?: components["schemas"]["Spell"][];
+      spellcasting?: components["schemas"]["SpellCasting"] | null;
+      /** Features */
+      features?: {
+        [key: string]: unknown;
+      }[];
+      /** Backstory */
+      backstory?: string | null;
+      /**
+       * Ability Score Improvements Used
+       * @default 0
+       */
+      ability_score_improvements_used: number;
+      /**
+       * Hit Dice
+       * @default 1d8
+       */
+      hit_dice: string;
+      /** Hit Dice Remaining */
+      hit_dice_remaining?: number | null;
+      /**
+       * Exhaustion Level
+       * @default 0
+       */
+      exhaustion_level: number;
+    };
     /** CharacterSheet */
     CharacterSheet: {
       /** Id */
@@ -1774,6 +1909,62 @@ export interface components {
       template_id: string;
       /** New Name */
       new_name?: string | null;
+    };
+    /** CombatInitResult */
+    CombatInitResult: {
+      /** Combat Id */
+      combat_id: string;
+      /** Session Id */
+      session_id: string;
+      /** Status */
+      status: string;
+      /** Round */
+      round: number;
+      /** Current Turn */
+      current_turn: number;
+      /** Initiative Order */
+      initiative_order: {
+        [key: string]: unknown;
+      }[];
+      /** Environment */
+      environment: string;
+      /** Battle Map Requested */
+      battle_map_requested: boolean;
+      /** Started At */
+      started_at: string;
+    };
+    /** CombatTurnResult */
+    CombatTurnResult: {
+      /** Combat Id */
+      combat_id: string;
+      /** Character Id */
+      character_id?: string | null;
+      /** Action */
+      action: string;
+      /** Target Id */
+      target_id?: string | null;
+      /** Success */
+      success: boolean;
+      /** Damage */
+      damage: number;
+      /** Description */
+      description: string;
+      /** Next Turn */
+      next_turn: boolean;
+      /** Timestamp */
+      timestamp: string;
+      /** Attack Roll */
+      attack_roll?: {
+        [key: string]: unknown;
+      } | null;
+      /** Damage Roll */
+      damage_roll?: {
+        [key: string]: unknown;
+      } | null;
+      /** Stealth Roll */
+      stealth_roll?: {
+        [key: string]: unknown;
+      } | null;
     };
     /** ConcentrationCheckResponse */
     ConcentrationCheckResponse: {
@@ -1927,6 +2118,46 @@ export interface components {
        */
       notation: string;
     };
+    /**
+     * DiceRollResult
+     * @description Shape returned by the dice roller / rules engine.
+     *
+     *     Notation supports single pools, multi-pool expressions, rerolls, and
+     *     keep/drop modifiers, each of which adds different optional keys
+     *     (pools, rerolls, dropped, character_bonus, ...); unlisted fields pass
+     *     through unchanged rather than being silently dropped.
+     */
+    DiceRollResult: {
+      /** Notation */
+      notation: string;
+      /** Total */
+      total: number;
+      /** Rolls */
+      rolls?: number[] | null;
+      /** Modifier */
+      modifier?: number | null;
+    } & {
+      [key: string]: unknown;
+    };
+    /** EncounterGenerationResult */
+    EncounterGenerationResult: {
+      /** Monsters */
+      monsters: {
+        [key: string]: unknown;
+      }[];
+      /** Difficulty */
+      difficulty: string;
+      /** Xp Budget */
+      xp_budget: number;
+      /** Adjusted Xp */
+      adjusted_xp: number;
+      /** Raw Xp */
+      raw_xp: number;
+      /** Xp Per Character */
+      xp_per_character: number;
+      /** Party Size */
+      party_size: number;
+    };
     /** EncumbranceResponse */
     EncumbranceResponse: {
       /** Character Id */
@@ -2061,6 +2292,34 @@ export interface components {
         [key: string]: unknown;
       } | null;
     };
+    /** GameSessionStartResponse */
+    GameSessionStartResponse: {
+      /** Id */
+      id: string;
+      /** Campaign Id */
+      campaign_id: string;
+      /** Status */
+      status: string;
+      /** Created At */
+      created_at?: string | null;
+      /** Turn Order */
+      turn_order?: string[];
+      /**
+       * Current Turn Index
+       * @default 0
+       */
+      current_turn_index: number;
+      /** Type */
+      type: string;
+      /** Character Ids */
+      character_ids: string[];
+      /** Current Scene */
+      current_scene: string;
+      /** Available Actions */
+      available_actions: string[];
+      /** Scene Count */
+      scene_count: number;
+    };
     /** GenerateImageRequest */
     GenerateImageRequest: {
       /**
@@ -2090,6 +2349,50 @@ export interface components {
        */
       role: string;
     };
+    /**
+     * GeneratedImageResult
+     * @description Shape returned by POST /generate-image.
+     *
+     *     The artist agent returns different optional fields depending on image
+     *     type (character_portrait/scene_illustration/item_visualization) and
+     *     whether generation succeeded or fell back to a placeholder; unlisted
+     *     fields pass through unchanged.
+     */
+    GeneratedImageResult: {
+      /** Id */
+      id?: string | null;
+      /** Type */
+      type?: string | null;
+      /** Description */
+      description?: string | null;
+      /** Image Url */
+      image_url?: string | null;
+      /** Revised Prompt */
+      revised_prompt?: string | null;
+      /** Placeholder */
+      placeholder?: boolean | null;
+      /** Error */
+      error?: string | null;
+      /** Generation Details */
+      generation_details?: {
+        [key: string]: unknown;
+      } | null;
+      /** Images Remaining */
+      images_remaining?: number | null;
+    } & {
+      [key: string]: unknown;
+    };
+    /** GeneratedWorldElements */
+    GeneratedWorldElements: {
+      /** Major Locations */
+      major_locations: components["schemas"]["WorldLocation"][];
+      /** Notable Npcs */
+      notable_npcs: components["schemas"]["WorldNPC"][];
+      /** Plot Hooks */
+      plot_hooks: string[];
+      /** World Lore */
+      world_lore: string[];
+    };
     /** HTTPValidationError */
     HTTPValidationError: {
       /** Detail */
@@ -2101,6 +2404,15 @@ export interface components {
       current: number;
       /** Maximum */
       maximum: number;
+    };
+    /** ImageGenerationStatusResponse */
+    ImageGenerationStatusResponse: {
+      /** Available */
+      available: boolean;
+      /** Status */
+      status: string;
+      /** Message */
+      message?: string | null;
     };
     /**
      * Inventory
@@ -2237,6 +2549,35 @@ export interface components {
       /** Feat Choice */
       feat_choice?: string | null;
     };
+    /** LevelUpResult */
+    LevelUpResult: {
+      /** Success */
+      success: boolean;
+      /** Character Id */
+      character_id: string;
+      /** Old Level */
+      old_level: number;
+      /** New Level */
+      new_level: number;
+      /** Hit Points Gained */
+      hit_points_gained: number;
+      /** Ability Improvements */
+      ability_improvements: {
+        [key: string]: number;
+      };
+      /** New Proficiency Bonus */
+      new_proficiency_bonus: number;
+      /** Features Gained */
+      features_gained: string[];
+      /** Hp Calculation */
+      hp_calculation: {
+        [key: string]: unknown;
+      };
+      /** Updated Character */
+      updated_character: {
+        [key: string]: unknown;
+      };
+    };
     /** MagicalEffectsRequest */
     MagicalEffectsRequest: {
       /** Character Id */
@@ -2290,6 +2631,21 @@ export interface components {
        */
       count: number | null;
     };
+    /** ManageSpellSlotsResult */
+    ManageSpellSlotsResult: {
+      /** Character Id */
+      character_id: string;
+      /** Action */
+      action: string;
+      /** Slot Level */
+      slot_level: number;
+      /** Count */
+      count: number | null;
+      /** Success */
+      success: boolean;
+      /** Message */
+      message: string;
+    };
     /** ManageSpellsRequest */
     ManageSpellsRequest: {
       /**
@@ -2299,6 +2655,19 @@ export interface components {
       action: "learn" | "forget" | "prepare" | "unprepare";
       /** Spell Ids */
       spell_ids: string[];
+    };
+    /** ManageSpellsResult */
+    ManageSpellsResult: {
+      /** Character Id */
+      character_id: string;
+      /** Action */
+      action: string;
+      /** Spell Ids */
+      spell_ids: string[];
+      /** Success */
+      success: boolean;
+      /** Message */
+      message: string;
     };
     /**
      * ManualDiceRollRequest
@@ -2392,6 +2761,33 @@ export interface components {
       hp?: number | null;
       /** Max Hp */
       max_hp?: number | null;
+    };
+    /** MessageResponse */
+    MessageResponse: {
+      /** Message */
+      message: string;
+    };
+    /** MultiplayerSessionResponse */
+    MultiplayerSessionResponse: {
+      /** Id */
+      id: string;
+      /** Campaign Id */
+      campaign_id: string;
+      /** Status */
+      status: string;
+      /** Created At */
+      created_at?: string | null;
+      /** Turn Order */
+      turn_order?: string[];
+      /**
+       * Current Turn Index
+       * @default 0
+       */
+      current_turn_index: number;
+      /** Participants */
+      participants?:
+        | components["schemas"]["SessionParticipantResponse"][]
+        | null;
     };
     /** NPC */
     NPC: {
@@ -2493,6 +2889,44 @@ export interface components {
       disposition_change: number;
       /** Topics */
       topics?: string[];
+    };
+    /** NPCConversationRecordedResponse */
+    NPCConversationRecordedResponse: {
+      /** Status */
+      status: string;
+      /** Npc Id */
+      npc_id: string;
+      /** Campaign Id */
+      campaign_id: string;
+    };
+    /** NPCDialogueContextResponse */
+    NPCDialogueContextResponse: {
+      /** Name */
+      name: string;
+      /** Description */
+      description: string;
+      /** Personality Traits */
+      personality_traits: string[];
+      /** Disposition */
+      disposition: string;
+      /** Disposition Score */
+      disposition_score: number;
+      /** Disposition Tone */
+      disposition_tone: string;
+      /** Location */
+      location: string;
+      /** Is Alive */
+      is_alive: boolean;
+      /** Conversation Notes */
+      conversation_notes: string[];
+      /** Recent Conversations */
+      recent_conversations: {
+        [key: string]: unknown;
+      }[];
+      /** Interactions Count */
+      interactions_count: number;
+      /** Key Events */
+      key_events: string[];
     };
     /** NPCInteractionRequest */
     NPCInteractionRequest: {
@@ -2621,6 +3055,60 @@ export interface components {
         [key: string]: unknown;
       };
     };
+    /** OpeningNarrativeResponse */
+    OpeningNarrativeResponse: {
+      /** Scene Description */
+      scene_description: string;
+      /** Quest Hook */
+      quest_hook: string;
+      /** Suggested Actions */
+      suggested_actions: string[];
+      /** Help Text */
+      help_text: string;
+    };
+    /**
+     * PlayerActionResult
+     * @description Shape returned by POST /session/{session_id}/action.
+     *
+     *     Fields present vary by action type (combat/skill_check/exploration/
+     *     general); type-specific fields are optional.
+     */
+    PlayerActionResult: {
+      /** Type */
+      type: string;
+      /** Description */
+      description: string;
+      /** Result */
+      result: string;
+      /** Session Id */
+      session_id: string;
+      /** Timestamp */
+      timestamp: string;
+      /** Next Actions */
+      next_actions: string[];
+      /** Success */
+      success?: boolean | null;
+      /** Damage */
+      damage?: number | null;
+      /** Dice Rolls */
+      dice_rolls?:
+        | {
+            [key: string]: unknown;
+          }[]
+        | null;
+      /** Effects */
+      effects?: string[] | null;
+      /** Perception Roll */
+      perception_roll?: {
+        [key: string]: unknown;
+      } | null;
+      /** Discoveries */
+      discoveries?: string[] | null;
+      /** Specialist Results */
+      specialist_results?: {
+        [key: string]: unknown;
+      } | null;
+    };
     /** PlayerInput */
     PlayerInput: {
       /** Message */
@@ -2629,6 +3117,25 @@ export interface components {
       character_id: string;
       /** Campaign Id */
       campaign_id: string;
+    };
+    /** ProgressionInfoResponse */
+    ProgressionInfoResponse: {
+      /** Character Id */
+      character_id: string;
+      /** Current Level */
+      current_level: number;
+      /** Level Info */
+      level_info: {
+        [key: string]: unknown;
+      };
+      /** Asi Info */
+      asi_info: {
+        [key: string]: unknown;
+      };
+      /** Proficiency Info */
+      proficiency_info: {
+        [key: string]: unknown;
+      };
     };
     /**
      * Race
@@ -2644,6 +3151,19 @@ export interface components {
       | "half-orc"
       | "dragonborn"
       | "tiefling";
+    /** RealtimeTokenResponse */
+    RealtimeTokenResponse: {
+      /** Token */
+      token: string;
+      /** Endpoint */
+      endpoint: string;
+      /** Deployment */
+      deployment: string;
+      /** Voice */
+      voice: string;
+      /** Expires At */
+      expires_at?: number | null;
+    };
     /**
      * RecordConversationRequest
      * @description Request body for recording an NPC conversation.
@@ -2754,6 +3274,80 @@ export interface components {
       /** Total Count */
       total_count: number;
     };
+    /** SaveSlotLoadResponse */
+    SaveSlotLoadResponse: {
+      /** Slot Number */
+      slot_number: number;
+      /** Name */
+      name: string;
+      /** Character Level */
+      character_level: number;
+      /** Current Location */
+      current_location: string;
+      /** Play Time Seconds */
+      play_time_seconds: number;
+      /** Interaction Count */
+      interaction_count: number;
+      /** Save Data */
+      save_data: {
+        [key: string]: unknown;
+      };
+    };
+    /** SaveSlotRestoreResponse */
+    SaveSlotRestoreResponse: {
+      /** Status */
+      status: string;
+      /** Slot Number */
+      slot_number: number;
+      /** Name */
+      name: string;
+      /** Restored Summary */
+      restored_summary: {
+        [key: string]: unknown;
+      };
+    };
+    /** SaveSlotSummaryResponse */
+    SaveSlotSummaryResponse: {
+      /** Campaign Name */
+      campaign_name: string;
+      /** Setting */
+      setting: string;
+      /** Current Location */
+      current_location: string;
+      /** Characters */
+      characters: string[];
+      /** Character Count */
+      character_count: number;
+      /** Npc Count */
+      npc_count: number;
+      /** Npc Names */
+      npc_names: string[];
+      /** Conversation Entries */
+      conversation_entries: number;
+      /** Has Active Combat */
+      has_active_combat: boolean;
+      /** Captured At */
+      captured_at: string;
+      /** Version */
+      version: number;
+    };
+    /** SessionParticipantResponse */
+    SessionParticipantResponse: {
+      /** Id */
+      id: string;
+      /** Session Id */
+      session_id: string;
+      /** Character Id */
+      character_id: string;
+      /** Player Name */
+      player_name: string;
+      /** Is Dm */
+      is_dm: boolean;
+      /** Is Connected */
+      is_connected: boolean;
+      /** Joined At */
+      joined_at?: string | null;
+    };
     /** SpawnPoint */
     SpawnPoint: {
       /** X */
@@ -2798,6 +3392,23 @@ export interface components {
       level: number;
       /** Spellcasting Ability Score */
       spellcasting_ability_score: number;
+    };
+    /** SpellAttackBonusResponse */
+    SpellAttackBonusResponse: {
+      /** Character Class */
+      character_class: string;
+      /** Level */
+      level: number;
+      /** Spellcasting Ability */
+      spellcasting_ability: string;
+      /** Spellcasting Ability Score */
+      spellcasting_ability_score: number;
+      /** Ability Modifier */
+      ability_modifier: number;
+      /** Proficiency Bonus */
+      proficiency_bonus: number;
+      /** Spell Attack Bonus */
+      spell_attack_bonus: number;
     };
     /** SpellCasting */
     SpellCasting: {
@@ -2860,6 +3471,23 @@ export interface components {
       /** Spellcasting Ability Score */
       spellcasting_ability_score: number;
     };
+    /** SpellSaveDCResponse */
+    SpellSaveDCResponse: {
+      /** Save Dc */
+      save_dc: number;
+      /** Character Class */
+      character_class: string;
+      /** Level */
+      level: number;
+      /** Spellcasting Ability */
+      spellcasting_ability: string;
+      /** Spellcasting Ability Score */
+      spellcasting_ability_score: number;
+      /** Ability Modifier */
+      ability_modifier: number;
+      /** Proficiency Bonus */
+      proficiency_bonus: number;
+    };
     /** SpellSlot */
     SpellSlot: {
       /** Level */
@@ -2911,6 +3539,13 @@ export interface components {
       | "wall"
       | "door"
       | "stairs";
+    /** TurnAdvanceResponse */
+    TurnAdvanceResponse: {
+      /** Character Id */
+      character_id: string;
+      /** Player Name */
+      player_name: string;
+    };
     /** UpdateDispositionRequest */
     UpdateDispositionRequest: {
       /** Disposition Score */
@@ -2930,6 +3565,33 @@ export interface components {
       input?: unknown;
       /** Context */
       ctx?: Record<string, never>;
+    };
+    /** WorldLocation */
+    WorldLocation: {
+      /** Name */
+      name: string;
+      /** Type */
+      type: string;
+      /** Description */
+      description: string;
+    };
+    /** WorldNPC */
+    WorldNPC: {
+      /** Name */
+      name: string;
+      /** Role */
+      role: string;
+      /** Description */
+      description: string;
+    };
+    /** XPAwardResult */
+    XPAwardResult: {
+      /** Total Xp */
+      total_xp: number;
+      /** Xp Per Character */
+      xp_per_character: number;
+      /** Party Size */
+      party_size: number;
     };
   };
   responses: never;
@@ -2990,9 +3652,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": {
-            [key: string]: unknown;
-          };
+          "application/json": components["schemas"]["CharacterGetResponse"];
         };
       };
       /** @description Validation Error */
@@ -3027,9 +3687,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": {
-            [key: string]: unknown;
-          };
+          "application/json": components["schemas"]["LevelUpResult"];
         };
       };
       /** @description Validation Error */
@@ -3064,9 +3722,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": {
-            [key: string]: unknown;
-          };
+          "application/json": components["schemas"]["AwardExperienceResult"];
         };
       };
       /** @description Validation Error */
@@ -3097,9 +3753,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": {
-            [key: string]: unknown;
-          };
+          "application/json": components["schemas"]["ProgressionInfoResponse"];
         };
       };
       /** @description Validation Error */
@@ -3247,9 +3901,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": {
-            [key: string]: unknown;
-          };
+          "application/json": components["schemas"]["CampaignTemplatesResponse"];
         };
       };
     };
@@ -3337,9 +3989,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": {
-            [key: string]: unknown;
-          };
+          "application/json": components["schemas"]["MessageResponse"];
         };
       };
       /** @description Validation Error */
@@ -3407,9 +4057,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": {
-            [key: string]: unknown;
-          };
+          "application/json": components["schemas"]["CombatInitResult"];
         };
       };
       /** @description Validation Error */
@@ -3446,9 +4094,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": {
-            [key: string]: unknown;
-          };
+          "application/json": components["schemas"]["CombatTurnResult"];
         };
       };
       /** @description Validation Error */
@@ -3483,9 +4129,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": {
-            [key: string]: unknown;
-          };
+          "application/json": components["schemas"]["EncounterGenerationResult"];
         };
       };
       /** @description Validation Error */
@@ -3520,9 +4164,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": {
-            [key: string]: unknown;
-          };
+          "application/json": components["schemas"]["XPAwardResult"];
         };
       };
       /** @description Validation Error */
@@ -3557,9 +4199,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": {
-            [key: string]: unknown;
-          };
+          "application/json": components["schemas"]["ManageSpellsResult"];
         };
       };
       /** @description Validation Error */
@@ -3594,9 +4234,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": {
-            [key: string]: unknown;
-          };
+          "application/json": components["schemas"]["ManageSpellSlotsResult"];
         };
       };
       /** @description Validation Error */
@@ -3697,9 +4335,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": {
-            [key: string]: unknown;
-          };
+          "application/json": components["schemas"]["SpellSaveDCResponse"];
         };
       };
       /** @description Validation Error */
@@ -3767,9 +4403,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": {
-            [key: string]: unknown;
-          };
+          "application/json": components["schemas"]["SpellAttackBonusResponse"];
         };
       };
       /** @description Validation Error */
@@ -3802,9 +4436,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": {
-            [key: string]: unknown;
-          };
+          "application/json": components["schemas"]["DiceRollResult"];
         };
       };
       /** @description Validation Error */
@@ -3839,9 +4471,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": {
-            [key: string]: unknown;
-          };
+          "application/json": components["schemas"]["DiceRollResult"];
         };
       };
       /** @description Validation Error */
@@ -3874,9 +4504,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": {
-            [key: string]: unknown;
-          };
+          "application/json": components["schemas"]["DiceRollResult"];
         };
       };
       /** @description Validation Error */
@@ -4178,9 +4806,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": {
-            [key: string]: unknown;
-          };
+          "application/json": components["schemas"]["NPCDialogueContextResponse"];
         };
       };
       /** @description Validation Error */
@@ -4216,9 +4842,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": {
-            [key: string]: unknown;
-          };
+          "application/json": components["schemas"]["NPCConversationRecordedResponse"];
         };
       };
       /** @description Validation Error */
@@ -4247,9 +4871,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": {
-            [key: string]: unknown;
-          };
+          "application/json": components["schemas"]["ImageGenerationStatusResponse"];
         };
       };
     };
@@ -4339,9 +4961,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": {
-            [key: string]: unknown;
-          };
+          "application/json": components["schemas"]["GeneratedImageResult"];
         };
       };
       /** @description Validation Error */
@@ -4376,9 +4996,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": {
-            [key: string]: unknown;
-          };
+          "application/json": components["schemas"]["BattleMapResult"];
         };
       };
       /** @description Validation Error */
@@ -4446,9 +5064,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": {
-            [key: string]: unknown;
-          };
+          "application/json": components["schemas"]["CampaignWorldGenerationResponse"];
         };
       };
       /** @description Validation Error */
@@ -4485,9 +5101,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": {
-            [key: string]: unknown;
-          };
+          "application/json": components["schemas"]["GameSessionStartResponse"];
         };
       };
       /** @description Validation Error */
@@ -4524,9 +5138,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": {
-            [key: string]: unknown;
-          };
+          "application/json": components["schemas"]["OpeningNarrativeResponse"];
         };
       };
       /** @description Validation Error */
@@ -4563,9 +5175,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": {
-            [key: string]: unknown;
-          };
+          "application/json": components["schemas"]["PlayerActionResult"];
         };
       };
       /** @description Validation Error */
@@ -4600,9 +5210,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": {
-            [key: string]: unknown;
-          };
+          "application/json": components["schemas"]["MultiplayerSessionResponse"];
         };
       };
       /** @description Validation Error */
@@ -4633,9 +5241,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": {
-            [key: string]: unknown;
-          };
+          "application/json": components["schemas"]["MultiplayerSessionResponse"];
         };
       };
       /** @description Validation Error */
@@ -4666,9 +5272,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": {
-            [key: string]: unknown;
-          }[];
+          "application/json": components["schemas"]["SessionParticipantResponse"][];
         };
       };
       /** @description Validation Error */
@@ -4699,9 +5303,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": {
-            [key: string]: unknown;
-          };
+          "application/json": components["schemas"]["TurnAdvanceResponse"];
         };
       };
       /** @description Validation Error */
@@ -4732,9 +5334,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": {
-            [key: string]: unknown;
-          };
+          "application/json": components["schemas"]["MultiplayerSessionResponse"];
         };
       };
       /** @description Validation Error */
@@ -5125,9 +5725,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": {
-            [key: string]: unknown;
-          };
+          "application/json": components["schemas"]["SaveSlotLoadResponse"];
         };
       };
       /** @description Validation Error */
@@ -5190,7 +5788,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": unknown;
+          "application/json": components["schemas"]["SaveSlotRestoreResponse"];
         };
       };
       /** @description Validation Error */
@@ -5222,7 +5820,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": unknown;
+          "application/json": components["schemas"]["SaveSlotSummaryResponse"];
         };
       };
       /** @description Validation Error */
@@ -5284,9 +5882,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": {
-            [key: string]: unknown;
-          };
+          "application/json": components["schemas"]["RealtimeTokenResponse"];
         };
       };
     };

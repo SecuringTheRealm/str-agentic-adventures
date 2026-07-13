@@ -7,6 +7,12 @@ from fastapi import APIRouter, HTTPException, Response, status
 
 from app.agents.scribe_agent import get_scribe
 from app.config import ConfigDep
+from app.models.api_models import (
+    AwardExperienceResult,
+    CharacterGetResponse,
+    LevelUpResult,
+    ProgressionInfoResponse,
+)
 from app.models.game_models import (
     AwardExperienceRequest,
     CharacterSheet,
@@ -58,7 +64,7 @@ async def create_character(character_data: CreateCharacterRequest, config: Confi
         ) from None
 
 
-@router.get("/character/{character_id}", response_model=dict[str, Any])
+@router.get("/character/{character_id}", response_model=CharacterGetResponse)
 async def get_character(character_id: str, config: ConfigDep) -> dict[str, Any]:
     """Retrieve a character sheet by ID."""
     try:
@@ -89,7 +95,7 @@ async def get_character(character_id: str, config: ConfigDep) -> dict[str, Any]:
         ) from None
 
 
-@router.post("/character/{character_id}/level-up", response_model=dict[str, Any])
+@router.post("/character/{character_id}/level-up", response_model=LevelUpResult)
 async def level_up_character(character_id: str, level_up_data: LevelUpRequest) -> dict[str, Any]:
     """Level up a character."""
     try:
@@ -117,7 +123,7 @@ async def level_up_character(character_id: str, level_up_data: LevelUpRequest) -
 
 
 @router.post(
-    "/character/{character_id}/award-experience", response_model=dict[str, Any]
+    "/character/{character_id}/award-experience", response_model=AwardExperienceResult
 )
 async def award_experience(character_id: str, experience_data: AwardExperienceRequest) -> dict[str, Any]:
     """Award experience points to a character."""
@@ -140,7 +146,9 @@ async def award_experience(character_id: str, experience_data: AwardExperienceRe
         ) from None
 
 
-@router.get("/character/{character_id}/progression-info", response_model=dict[str, Any])
+@router.get(
+    "/character/{character_id}/progression-info", response_model=ProgressionInfoResponse
+)
 async def get_progression_info(character_id: str) -> dict[str, Any]:
     """Get progression information for a character."""
     try:

@@ -89,19 +89,6 @@ class ScribeAgent(BaseAgent):
         init_db()
         self._register_skills()
 
-    def _get_sdk_instructions(self) -> str:
-        """Return system instructions for the SDK Scribe agent."""
-        return (
-            "You are the Scribe for a D&D 5e game. You manage character sheets, "
-            "inventory, equipment, and NPC data. Use the provided tools to look "
-            "up character information, NPC details, and inventory data when "
-            "players ask about their characters or the world."
-        )
-
-    def _get_sdk_tool_functions(self) -> list[Callable[..., Any]]:
-        """Return callable character/NPC query tool functions for the SDK agent."""
-        return _get_scribe_tool_functions()
-
     @property
     def characters(self) -> dict[str, Any]:
         """Return all characters from the database."""

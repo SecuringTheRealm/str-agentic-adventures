@@ -22,6 +22,15 @@ from app.api.routes.combat_routes import (
 )
 from app.auto_save import check_and_schedule_auto_save
 from app.config import get_settings
+from app.models.api_models import (
+    CampaignWorldGenerationResponse,
+    GameSessionStartResponse,
+    MultiplayerSessionResponse,
+    OpeningNarrativeResponse,
+    PlayerActionResult,
+    SessionParticipantResponse,
+    TurnAdvanceResponse,
+)
 from app.models.game_models import (
     GameResponse,
     PlayerInput,
@@ -150,7 +159,9 @@ async def process_player_input(  # noqa: ARG001
         ) from None
 
 
-@router.post("/campaign/generate-world", response_model=dict[str, Any])
+@router.post(
+    "/campaign/generate-world", response_model=CampaignWorldGenerationResponse
+)
 @limiter.limit("30/minute")
 async def generate_campaign_world(  # noqa: ARG001
     request: Request, campaign_data: dict[str, Any],
@@ -185,7 +196,9 @@ async def generate_campaign_world(  # noqa: ARG001
         ) from e
 
 
-@router.post("/campaign/{campaign_id}/start-session", response_model=dict[str, Any])
+@router.post(
+    "/campaign/{campaign_id}/start-session", response_model=GameSessionStartResponse
+)
 async def start_game_session(campaign_id: str, session_data: dict[str, Any]) -> dict[str, Any]:
     """Start a new game session for a campaign."""
     from app.services.session_manager import session_manager
@@ -206,7 +219,9 @@ async def start_game_session(campaign_id: str, session_data: dict[str, Any]) -> 
         ) from e
 
 
-@router.post("/campaign/{campaign_id}/opening-narrative", response_model=dict[str, Any])
+@router.post(
+    "/campaign/{campaign_id}/opening-narrative", response_model=OpeningNarrativeResponse
+)
 async def get_opening_narrative(campaign_id: str, request_data: dict[str, Any]) -> dict[str, Any]:
     """Generate an atmospheric opening narrative for a new game session.
 
@@ -244,7 +259,7 @@ async def get_opening_narrative(campaign_id: str, request_data: dict[str, Any]) 
         ) from e
 
 
-@router.post("/session/{session_id}/action", response_model=dict[str, Any])
+@router.post("/session/{session_id}/action", response_model=PlayerActionResult)
 async def process_player_action(session_id: str, action_data: dict[str, Any]) -> dict[str, Any]:
     """Process a player action within a game session."""
     try:
@@ -669,7 +684,7 @@ def generate_available_actions(session_type: str) -> list[str]:
 # ---------------------------------------------------------------------------
 
 
-@router.post("/session/create", response_model=dict[str, Any])
+@router.post("/session/create", response_model=MultiplayerSessionResponse)
 async def create_multiplayer_session(body: dict[str, Any]) -> dict[str, Any]:
     """Create a new multiplayer game session for a campaign."""
     from app.services.session_manager import session_manager
@@ -689,7 +704,7 @@ async def create_multiplayer_session(body: dict[str, Any]) -> dict[str, Any]:
         ) from e
 
 
-@router.get("/session/{session_id}", response_model=dict[str, Any])
+@router.get("/session/{session_id}", response_model=MultiplayerSessionResponse)
 async def get_multiplayer_session(session_id: str) -> dict[str, Any]:
     """Get session details including participants."""
     from app.services.session_manager import session_manager
@@ -703,7 +718,10 @@ async def get_multiplayer_session(session_id: str) -> dict[str, Any]:
     return result
 
 
-@router.get("/session/{session_id}/participants", response_model=list[dict[str, Any]])
+@router.get(
+    "/session/{session_id}/participants",
+    response_model=list[SessionParticipantResponse],
+)
 async def list_session_participants(session_id: str) -> list[dict[str, Any]]:
     """List participants in a session."""
     from app.services.session_manager import session_manager
@@ -711,7 +729,7 @@ async def list_session_participants(session_id: str) -> list[dict[str, Any]]:
     return session_manager.get_participants(session_id)
 
 
-@router.post("/session/{session_id}/turn/advance", response_model=dict[str, Any])
+@router.post("/session/{session_id}/turn/advance", response_model=TurnAdvanceResponse)
 async def advance_session_turn(session_id: str) -> dict[str, Any]:
     """Advance to the next turn in a session."""
     from app.api.websocket_routes import broadcast_turn_advance
@@ -746,7 +764,7 @@ async def advance_session_turn(session_id: str) -> dict[str, Any]:
         ) from e
 
 
-@router.post("/session/{session_id}/end", response_model=dict[str, Any])
+@router.post("/session/{session_id}/end", response_model=MultiplayerSessionResponse)
 async def end_multiplayer_session(session_id: str) -> dict[str, Any]:
     """End a multiplayer game session."""
     from app.services.session_manager import session_manager

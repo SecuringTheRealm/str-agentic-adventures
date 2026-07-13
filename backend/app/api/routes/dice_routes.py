@@ -6,6 +6,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException, status
 
 from app.agents.scribe_agent import get_scribe
+from app.models.api_models import DiceRollResult
 from app.models.game_models import DiceRollRequest, ManualDiceRollRequest
 
 logger = logging.getLogger(__name__)
@@ -13,7 +14,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["dice"])
 
 
-@router.post("/dice/roll", response_model=dict[str, Any])
+@router.post("/dice/roll", response_model=DiceRollResult)
 async def roll_dice(request: DiceRollRequest) -> dict[str, Any]:
     """Roll dice using D&D notation."""
     try:
@@ -45,7 +46,7 @@ async def roll_dice(request: DiceRollRequest) -> dict[str, Any]:
         ) from None
 
 
-@router.post("/dice/roll-with-character", response_model=dict[str, Any])
+@router.post("/dice/roll-with-character", response_model=DiceRollResult)
 async def roll_dice_with_character(roll_data: dict[str, Any]) -> dict[str, Any]:
     """Roll dice with character context for skill checks."""
     try:
@@ -87,7 +88,7 @@ async def roll_dice_with_character(roll_data: dict[str, Any]) -> dict[str, Any]:
         ) from None
 
 
-@router.post("/dice/manual-roll", response_model=dict[str, Any])
+@router.post("/dice/manual-roll", response_model=DiceRollResult)
 async def input_manual_roll(body: ManualDiceRollRequest) -> dict[str, Any]:
     """Input a manual dice roll value.
 

@@ -305,7 +305,6 @@ class TestProcessPlayerInputAutoSave:
             azure_openai_endpoint="",
             azure_openai_api_key="",
             azure_openai_chat_deployment="",
-            azure_openai_embedding_deployment="",
         )
         set_settings(test_settings)
 
@@ -381,7 +380,6 @@ class TestProcessPlayerInputAutoSave:
             azure_openai_endpoint="",
             azure_openai_api_key="",
             azure_openai_chat_deployment="",
-            azure_openai_embedding_deployment="",
         )
         set_settings(test_settings)
 

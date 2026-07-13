@@ -1,5 +1,9 @@
 name: Verify generated client
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   pull_request:
     paths:
@@ -23,6 +27,13 @@ jobs:
         enable-cache: true
 
     - uses: oven-sh/setup-bun@v2
+
+    - name: Cache bun dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.bun/install/cache
+        key: ${{ runner.os }}-bun-${{ hashFiles('frontend/bun.lock') }}
+        restore-keys: ${{ runner.os }}-bun-
 
     - name: Install backend deps
       run: uv sync --frozen

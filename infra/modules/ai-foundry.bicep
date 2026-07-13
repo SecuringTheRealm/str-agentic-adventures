@@ -14,10 +14,7 @@ param disableLocalAuth bool = false
 param managedIdentityPrincipalId string
 
 @description('Deploy image generation model (requires gated access on some subscriptions)')
-param deployImageModel bool = false
-
-@description('Deploy non-OpenAI models (Phi, Llama — may require Marketplace agreement)')
-param deployPartnerModels bool = false
+param deployImageModel bool = true
 
 resource foundry 'Microsoft.CognitiveServices/accounts@2024-10-01' = {
   name: name
@@ -37,39 +34,63 @@ resource foundry 'Microsoft.CognitiveServices/accounts@2024-10-01' = {
   }
 }
 
-// GPT-4.1-mini — primary chat model (replaces retiring gpt-4o-mini)
+// gpt-5-mini — default/general chat model: combat, cartographer and narrator
+// agents use this tier unless overridden via their own deployment env var.
 resource chatDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-10-01' = {
   parent: foundry
-  name: 'gpt-41-mini'
+  name: 'gpt-5-mini'
   sku: {
     name: 'GlobalStandard'
-    capacity: 8
+    capacity: 100
   }
   properties: {
     model: {
       format: 'OpenAI'
-      name: 'gpt-4.1-mini'
-      version: '2025-04-14'
+      name: 'gpt-5-mini'
+      version: '2025-08-07'
     }
   }
 }
 
-// text-embedding-3-small — cheaper and better than ada-002
-resource embeddingDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-10-01' = {
+// gpt-5 — premium reasoning tier for the Dungeon Master orchestrator agent.
+// A 'Hosted on Azure' (v2) Claude deployment (e.g. claude-sonnet-5) is an
+// equally valid DM/Narrator brain — point AZURE_OPENAI_DM_DEPLOYMENT /
+// AZURE_OPENAI_NARRATOR_DEPLOYMENT at it via env var once deployed. Do not
+// add Marketplace/CCU Claude deployments here.
+resource dmDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-10-01' = {
   parent: foundry
-  name: 'text-embedding-3-small'
+  name: 'gpt-5'
   sku: {
     name: 'GlobalStandard'
-    capacity: 8
+    capacity: 30
   }
   properties: {
     model: {
       format: 'OpenAI'
-      name: 'text-embedding-3-small'
-      version: '1'
+      name: 'gpt-5'
+      version: '2025-08-07'
     }
   }
   dependsOn: [chatDeployment]
+}
+
+// gpt-5-nano — cheapest tier for the Scribe (note-taking) and Artist
+// (image-prompt drafting) agents.
+resource nanoDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-10-01' = {
+  parent: foundry
+  name: 'gpt-5-nano'
+  sku: {
+    name: 'GlobalStandard'
+    capacity: 100
+  }
+  properties: {
+    model: {
+      format: 'OpenAI'
+      name: 'gpt-5-nano'
+      version: '2025-08-07'
+    }
+  }
+  dependsOn: [dmDeployment]
 }
 
 // gpt-realtime-mini — real-time voice for DM narration via WebRTC
@@ -87,11 +108,12 @@ resource realtimeDeployment 'Microsoft.CognitiveServices/accounts/deployments@20
       version: '2025-12-15'
     }
   }
-  dependsOn: [embeddingDeployment]
+  dependsOn: [nanoDeployment]
 }
 
-// Image generation — disabled by default (all models are gated or deprecated on this subscription)
-// Enable with deployImageModel=true once gpt-image-1-mini access is granted
+// gpt-image-1-mini — cost-efficient image generation for the Artist agent.
+// Set deployImageModel=false if this subscription hasn't been granted
+// access to the (limited-access preview) image model.
 resource imageDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-10-01' = if (deployImageModel) {
   parent: foundry
   name: 'gpt-image-1-mini'
@@ -106,41 +128,7 @@ resource imageDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-
       version: '2025-10-06'
     }
   }
-  dependsOn: [embeddingDeployment]
-}
-
-// Phi-4-mini — cheap reasoning for rules lookups and simple decisions
-resource phiDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-10-01' = if (deployPartnerModels) {
-  parent: foundry
-  name: 'Phi-4-mini-instruct'
-  sku: {
-    name: 'GlobalStandard'
-    capacity: 1
-  }
-  properties: {
-    model: {
-      format: 'Microsoft'
-      name: 'Phi-4-mini-instruct'
-    }
-  }
-  dependsOn: [embeddingDeployment]
-}
-
-// Llama-4-Scout — open-weight storytelling for lore generation
-resource llamaDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-10-01' = if (deployPartnerModels) {
-  parent: foundry
-  name: 'Llama-4-Scout-17B-16E-Instruct'
-  sku: {
-    name: 'GlobalStandard'
-    capacity: 1
-  }
-  properties: {
-    model: {
-      format: 'Meta'
-      name: 'Llama-4-Scout-17B-16E-Instruct'
-    }
-  }
-  dependsOn: [phiDeployment]
+  dependsOn: [realtimeDeployment]
 }
 
 // Cognitive Services OpenAI User role for the managed identity
@@ -158,10 +146,28 @@ resource openAiUserRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
 @description('The endpoint URL for the AI Foundry resource')
 output endpoint string = foundry.properties.endpoint
 
+@description('The default project endpoint (AIServices kind accounts get an implicit default project named after the account)')
+output projectEndpoint string = 'https://${foundry.name}.services.ai.azure.com/api/projects/${foundry.name}'
+
 @description('The resource name')
 output name string = foundry.name
 
 @description('The resource ID')
 output id string = foundry.id
+
+@description('Default/general chat deployment name (gpt-5-mini)')
+output chatDeploymentName string = chatDeployment.name
+
+@description('Premium reasoning deployment name for the DM agent (gpt-5)')
+output dmDeploymentName string = dmDeployment.name
+
+@description('Cheapest-tier deployment name for Scribe/Artist agents (gpt-5-nano)')
+output nanoDeploymentName string = nanoDeployment.name
+
+@description('Realtime voice deployment name (gpt-realtime-mini)')
+output realtimeDeploymentName string = realtimeDeployment.name
+
+@description('Image generation deployment name, empty string if not deployed')
+output imageDeploymentName string = deployImageModel ? imageDeployment.name : ''
 
 // API key intentionally not output — use managed identity auth in all environments
