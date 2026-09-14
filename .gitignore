@@ -461,3 +461,4 @@ frontend/bun.lock
 
 # Draft e2e specs
 frontend/e2e/
+.claude/settings.local.json
